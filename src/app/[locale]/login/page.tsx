@@ -37,7 +37,14 @@ function LoginContent() {
 
       const { data, error: authError } = await supabase.auth.signInWithPassword(loginParams);
 
-      if (authError) throw authError;
+      if (authError) {
+        if (authError.message.toLowerCase().includes('email not confirmed')) {
+          setError(locale === 'am' ? 'እባክዎ መጀመሪያ ኢሜልዎን ያረጋግጡ። የላክንልዎትን ሊንክ በኢንቦክስዎ ይፈልጉ።' : 'Please confirm your email first. Check your inbox for the verification link.');
+        } else {
+          throw authError;
+        }
+        return;
+      }
 
       if (data.user) {
         // Check if user is onboarded

@@ -6,6 +6,7 @@ import {Poppins, Noto_Sans_Ethiopic} from "next/font/google";
 import "@/app/globals.css";
 import ConditionalLayout from "@/components/ConditionalLayout";
 import {UIProvider} from "@/context/UIContext";
+import {AuthProvider} from "@/context/AuthContext";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -43,11 +44,13 @@ export default async function LocaleLayout({
     <html lang={locale} dir={direction} className={`${poppins.variable} ${notoEthiopic.variable} antialiased`}>
       <body className="min-h-screen bg-white dark:bg-accent font-sans flex flex-col transition-colors duration-500">
         <NextIntlClientProvider messages={messages}>
-          <UIProvider>
-            <ConditionalLayout>
-              {children}
-            </ConditionalLayout>
-          </UIProvider>
+          <AuthProvider>
+            <UIProvider>
+              <ConditionalLayout>
+                {children}
+              </ConditionalLayout>
+            </UIProvider>
+          </AuthProvider>
         </NextIntlClientProvider>
       </body>
     </html>
