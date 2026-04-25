@@ -101,41 +101,31 @@ function OnboardingContent() {
     setIsSubmitting(true);
     setErrorMsg('');
     try {
-      const authParams: any = {
+      const isInternational = formData.location === 'Other (International)';
+      const currency = isInternational ? 'USD' : 'ETB';
+
+      const signUpOptions: any = {
         password: formData.password,
+        options: {
+          data: { 
+            ...formData,
+            currency_locked: currency,
+            is_onboarded: true,
+            birth_date: formData.birth_date || null
+          }
+        }
       };
-      
+
       if (authMode === 'email') {
-        authParams.email = formData.email;
+        signUpOptions.email = formData.email;
       } else {
-        authParams.phone = `${formData.country_code}${formData.phone}`;
+        signUpOptions.phone = `${formData.country_code}${formData.phone}`;
       }
 
-      const { data: authData, error: authError } = await supabase.auth.signUp(authParams);
+      const { error: authError } = await supabase.auth.signUp(signUpOptions);
 
       if (authError) throw authError;
 
-      if (authData.user) {
-        const isInternational = formData.location === 'Other (International)';
-        const currency = isInternational ? 'USD' : 'ETB';
-
-        const profilePayload = { 
-          ...formData, 
-          id: authData.user.id,
-          currency_locked: currency,
-          trial_ends_at: null
-        } as any;
-        
-        delete profilePayload.email;
-        delete profilePayload.phone;
-        delete profilePayload.country_code;
-        delete profilePayload.password;
-        profilePayload.is_onboarded = true;
-        profilePayload.birth_date = profilePayload.birth_date || null;
-
-        const { error: profileError } = await supabase.from('profiles').upsert([profilePayload]);
-        if (profileError) throw profileError;
-      }
       setStep(5);
     } catch (error: any) {
       setErrorMsg(error.message);
