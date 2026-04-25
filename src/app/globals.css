@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+:root {
+  --background: #FFFFFF;
+  --foreground: #0F172A;
+  
+  --primary: #E2725B;      /* Terracotta */
+  --secondary: #D2B48C;    /* Beige */
+  --accent: #0F172A;       /* Navy */
+  --muted: #F8F4F1;        /* Warm Off-white */
+  
+  --card: #FFFFFF;
+  --card-foreground: #0F172A;
+  --border: #F0EBE2;
+
+  /* Spacing Scale */
+  --spacing-unit: 8px;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-muted: var(--muted);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-poppins), var(--font-noto-ethiopic), sans-serif;
+  font-weight: 300; /* Minimalist default */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Minimalism: Lighter Weights for a Professional Feel */
+h1 {
+  @apply font-semibold tracking-tighter text-4xl md:text-5xl lg:text-6xl leading-tight;
+}
+
+h2 {
+  @apply font-semibold tracking-tight text-3xl md:text-4xl leading-snug;
+}
+
+h3 {
+  @apply font-medium text-2xl md:text-3xl tracking-tight;
+}
+
+h4 {
+  @apply font-medium text-xl md:text-2xl;
+}
+
+p, span, div {
+   @apply font-normal leading-relaxed;
+}
+
+/* Branding Text - Kept slightly bolder for distinction */
+.brand-text {
+   @apply font-bold tracking-tighter uppercase italic;
+}
+
+.nav-link {
+  @apply text-sm font-semibold uppercase tracking-[0.2em] transition-all hover:text-primary;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-[var(--primary)] text-white px-10 py-4 rounded-full font-bold uppercase tracking-[0.15em] text-[10px] hover:shadow-2xl hover:-translate-y-0.5 transition-all active:scale-95;
+  }
+  
+  .btn-secondary {
+    @apply bg-white text-accent border border-border px-10 py-4 rounded-full font-bold uppercase tracking-[0.15em] text-[10px] hover:bg-muted transition-all active:scale-95;
+  }
+
+  .card-premium {
+    @apply bg-[var(--card)] text-[var(--card-foreground)] rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[var(--border)] p-10 transition-all hover:shadow-[0_20px_40px_rgb(0,0,0,0.06)];
+  }
+
+  .input-premium {
+    @apply w-full bg-muted border-none rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary/20 transition-all font-medium text-accent outline-none;
+  }
+
+  .glass-effect {
+    @apply backdrop-blur-md bg-white/70 border border-white/20;
+  }
+}
+
+/* Admin Specific Overrides */
+.admin-dark {
+   --background: #09090b;
+   --foreground: #fafafa;
+   --card: #18181b;
+   --card-foreground: #fafafa;
+   --border: #27272a;
+   --muted: #27272a;
+}

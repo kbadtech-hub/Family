@@ -1,0 +1,346 @@
+{
+  "Index": {
+    "Hero": {
+      "tagline": "ባህላዊ ሙቀት፣ ዘመናዊ ትውውቅ",
+      "title1": "ጠንካራ ትዳር",
+      "title2": "ለትውልድ የሚተርፍ ቤተሰብ",
+      "subtitle": "የቤተሰብ እሴቶችን መሰረት በማድረግ እና በዘመናዊ ቴክኖሎጂ የታገዘ የኢትዮጵያ ቤተሰቦችን መገንቢያ መድረክ።",
+      "cta1": "አካውንት ይፍጠሩ",
+      "cta2": "ራእያችን",
+      "verify1": "የተረጋገጠ",
+      "verify2": "በማንነት ማረጋገጫ",
+      "verify3": "አቡሻህር ሞተር"
+    },
+    "Vision": {
+      "tagline": "ቅርስ",
+      "title": "ቤተሰብን በዲጂታል ዓለም",
+      "subtitle": "በቤተሰብ ራዕይ ውስጥ የአቡሻህር ጥበብ አለ።",
+      "cta": "ያግኙን",
+      "stat": "የትክክለኛነት መጠን"
+    },
+    "modal": {
+      "step1": "ክፍያ",
+      "where": "የት ነው ያሉት?",
+      "currencyNote": "በምንዛሬ እናሳይዎታለን",
+      "localTitle": "ኢትዮጵያ ውስጥ",
+      "localSub": "በብር",
+      "globalTitle": "በውጭ",
+      "globalSub": "በዶላር"
+    }
+  },
+  "Nav": {
+    "home": "መነሻ",
+    "about": "ስለ እኛ",
+    "classes": "ክፍሎች",
+    "signIn": "ይግቡ",
+    "signUp": "ይመዝገቡ",
+    "login": "መግቢያ / መመዝገቢያ",
+    "logout": "ይውጡ",
+    "settings": "ቅንብሮች",
+    "dashboard": "ማስተዳደሪያ",
+    "chat": "ውይይት",
+    "community": "ማህበረሰብ",
+    "workshops": "ስልጠናዎች",
+    "profile": "መገለጫ"
+  },
+  "Dashboard": {
+    "welcome": "እንኳን ደህና መጡ",
+    "subtitle": "የህይወት አጋርዎን ያግኙ",
+    "premium": {
+      "active": "ፕሪሚየም ነቅቷል",
+      "pending": "ግምገማ ላይ",
+      "expired": "የሙከራ ጊዜ አልቋል",
+      "unlock": "ፕሪሚየም ይክፈቱ"
+    },
+    "matching": {
+      "title": "ተዛማጅ",
+      "viewAll": "ሁሉንም እይ",
+      "percent": "ተዛማጅ"
+    },
+    "trialExpired": "የሙከራ ጊዜዎ አልቋል",
+    "trialEnded": "የ 3 ቀን የሙከራ ጊዜዎ አልቋል። ፍጹም አጋርዎን ማግኘት ለመቀጠል እባክዎ ይመዝገቡ።",
+    "upgradeNow": "አሁን ያሻሽሉ",
+    "backToDash": "ወደ ማስተዳደሪያ ይመለሱ",
+    "subscription": "ምዝገባ"
+  },
+  "Footer": {
+    "tagline": "ቤተሰብ | Beteseb",
+    "description": "ቤተሰብን በባህል፣ በቴክኖሎጂ።",
+    "connect": "ይገናኙ",
+    "platform": "መድረክ",
+    "legal": "ህጋዊ",
+    "vision": "ራዕይ",
+    "classes": "ክፍሎች",
+    "start": "ይጀምሩ",
+    "terms": "የአጠቃቀም ውል",
+    "privacy": "ግላዊነት",
+    "admin": "አስተዳዳሪ",
+    "copyright": "© 2026 ቤተሰብ.",
+    "address": "ሀረር",
+    "community": "ማህበረሰብ"
+  },
+  "Auth": {
+    "signIn": "ይግቡ",
+    "signUp": "ይመዝገቡ",
+    "email": "ኢሜል",
+    "phone": "ስልክ ቁጥር",
+    "password": "የይለፍ ቃል",
+    "forgot": "የይለፍ ቃል ረሱ?",
+    "noAccount": "አካውንት የለዎትም?",
+    "haveAccount": "አካውንት አለዎት?",
+    "phoneTab": "ስልክ",
+    "countryCode": "ሀገር",
+    "processing": "እየተከናወነ ነው..."
+  },
+  "Community": {
+    "title": "የቤተሰብ ምክክር",
+    "subtitle": "ስለ ባህል እሴቶች ይወያዩ",
+    "newPostPlaceholder": "ሀሳብዎን ያካፍሉ...",
+    "postButton": "ለማህበረሰቡ ያጋሩ",
+    "feedTitle": "ውይይቶች",
+    "adminApprovalNote": "በአስተዳዳሪ ይገመገማል",
+    "authorFormat": "በ",
+    "pending": "ግምገማ ላይ",
+    "languageToggle": "ቋንቋ ቀይር",
+    "anonymousUser": "ያልታወቀ ተጠቃሚ",
+    "noPosts": "ምንም የለም",
+    "like": "ወድጄዋለሁ",
+    "reply": "መልስ",
+    "loginRequired": "ለመሳተፍ ይግቡ",
+    "moderated": "የተገመገመ",
+    "topicDay": "የቀኑ አጀንዳ",
+    "topicQuestion": "\"በትዳር ውስጥ ለዘላቂ ደስታ አስፈላጊ ናቸው ብለው የሚያምኑባቸው ሶስት ዋና እሴቶች ምንድን ናቸው?\"",
+    "topicJoin": "ከ 1,200 በላይ ከሚሆኑ የቤተሰብ አባላት ጋር ይወያዩ። የእርስዎ ድምጽ አስፈላጊ ነው።",
+    "joinBtn": "ውይይቱን ይቀላቀሉ",
+    "aiFilter": "AI የደህንነት ማጣሪያ ነቅቷል",
+    "checking": "እየተረጋገጠ ነው...",
+    "verifyToPostTitle": "ለመሳተፍ ማረጋገጫ ያስፈልጋል",
+    "verifyToPostSub": "ውይይቶችን ማንበብ ይችላሉ፣ ነገር ግን ለመሳተፍ ማንነትዎን ማረጋገጥ አለብዎት።",
+    "memberBadge": "የቤተሰብ አባል",
+    "loadingFeed": "መረጃው እየተጫነ ነው...",
+    "safetyAlert": "መልእክትዎ ከቤተሰባችን እሴቶች ጋር የማይጣጣም ይዘት ይዟል። እባክዎን በትህትና ይግለጹ።"
+  },
+  "About": {
+    "tagline": "ለኢትዮጵያዊ ልብ",
+    "subtitle": "ከማዛመጃ በላይ",
+    "missionTitle": "ተልዕኮው",
+    "missionDesc": "ርቀትን ማስወገድ",
+    "mission1": "ማንነት ማረጋገጫ ግዴታ ነው",
+    "mission2": "አቡሻህር",
+    "mission3": "የቅድመ ጋብቻ ምክር",
+    "mission4": "የማህበረሰብ ቁጥጥር",
+    "principlesTag": "መርሆዎች",
+    "principlesTitle": "ባህል. እምነት",
+    "value1Title": "ቤተሰብ ይቀድማል",
+    "value1Desc": "...",
+    "value2Title": "ባህላዊ ክብር",
+    "value2Desc": "...",
+    "value3Title": "ደህንነት",
+    "value3Desc": "...",
+    "ctaTitle": "የቅርሱ አካል ይሁኑ",
+    "ctaButton": "ቤተሰብን ይቀላቀሉ",
+    "ourStory": "ታሪካችን",
+    "joinStats": "ከ 1,000 በላይ ደስተኛ ቤተሰቦችን ይቀላቀሉ"
+  },
+  "Resources": {
+    "learningHub": "ማዕከል",
+    "heroTitle": "እውቀት ለ {betterLife}",
+    "betterLife": "ተሻለ ህይወት",
+    "searchPlaceholder": "ይፈልጉ...",
+    "noMatch": "አልተገኘም",
+    "noMatchSubtitle": "እንደገና ይሞክሩ",
+    "readCollection": "ያንብቡ",
+    "deepLearn": "መማር ይፈልጋሉ {deeply}?",
+    "deeply": "በጥልቀት",
+    "joinDesc": "ማህበረሰባችንን ይቀላቀሉ"
+  },
+  "Chatbot": {
+    "welcome": "ወደ ቤተሰብ እንኳን ደህና መጡ",
+    "faq": {
+      "abushakir": "አቡሻህር...",
+      "pricing": "ክፍያ...",
+      "verified": "ማረጋገጫ...",
+      "hello": "ሰላም...",
+      "default": "እኔ ረዳት ነኝ"
+    },
+    "placeholder": "የፈለጉትን ይጠይቁ...",
+    "status": "ረዳት",
+    "btn": {
+      "abushakir": "አቡሻህር",
+      "pricing": "ክፍያ",
+      "verified": "ማረጋገጫ"
+    },
+    "botName": "ቤተሰብ AI"
+  },
+  "Onboarding": {
+    "title": "የቤተሰብ መግቢያ",
+    "personalDetails": "የግል መረጃ",
+    "personalSubtitle": "መሰረታዊ ነገሮችን እንጀምር",
+    "demographics": "ስነ-ህዝባዊ",
+    "career": "ሙያ",
+    "reviewTitle": "መገለጫውን ይገምግሙ",
+    "reviewSubtitle": "ያረጋግጡ",
+    "finishTitle": "ተጠናቋል!",
+    "finishSubtitle": "መገለጫ እየተገመገመ ነው",
+    "finishCTA": "ወደ ማስተዳደሪያ ይግቡ",
+    "fields": {
+      "email": "ኢሜል",
+      "password": "የይለፍ ቃል",
+      "passwordHint": "6 ቁምፊዎች",
+      "fullName": "ሙሉ ስም",
+      "fullNamePlaceholder": "አበበ",
+      "birthDate": "የልደት ቀን",
+      "birthTime": "ሰዓት",
+      "gender": "ጾታ",
+      "genderPlaceholder": "ይምረጡ",
+      "location": "ቦታ",
+      "locationPlaceholder": "ይምረጡ",
+      "religion": "ሃይማኖት",
+      "religionPlaceholder": "ይምረጡ",
+      "maritalStatus": "የጋብቻ ሁኔታ",
+      "maritalPlaceholder": "ይምረጡ",
+      "jobTitle": "የሥራ መደብ",
+      "jobPlaceholder": "ምሳሌ፡ መሃንዲስ",
+      "financeHabit": "የገንዘብ አያያዝ",
+      "financePlaceholder": "ይምረጡ",
+      "familyValues": "የቤተሰብ እሴት",
+      "familyPlaceholder": "ይምረጡ",
+      "conflictResolution": "ግጭት አፈታት",
+      "conflictPlaceholder": "ይምረጡ",
+      "spouseRequirements": "መስፈርት",
+      "spousePlaceholder": "ይግለጹ",
+      "phone": "ስልክ ቁጥር",
+      "phoneTab": "ስልክ",
+      "starSign": "ኮከብ",
+      "unknown": "ያልታወቀ",
+      "abushakirBadge": "አቡሻህር",
+      "country": "ሀገር"
+    },
+    "idVerification": {
+      "title": "ማንነትን ማረጋገጥ",
+      "subtitle": "መታወቂያ ያስፈልጋል",
+      "uploadClick": "መታወቂያ ይጫኑ {type}",
+      "uploadHint": "PNG, JPG",
+      "uploaded": "ተጭኗል!",
+      "doc": "ማንነት ማረጋገጫ ይጫኑ",
+      "idType": "ፓስፖርት ወይም መታወቂያ",
+      "idCaptured": "ማረጋገጫ ተጭኗል",
+      "takeSelfie": "ፎቶ አንሳ",
+      "livePhoto": "የቀጥታ ፎቶ",
+      "selfieCaptured": "ፎቶ ተነስቷል",
+      "submitAI": "ለAI ማረጋገጫ ላክ",
+      "rejected": "ማረጋገጫው ተቀባይነት አላገኘም። እባክዎ ፎቶዎች ግልጽ መሆናቸውን አረጋግጠው እንደገና ይሞክሩ።"
+    },
+    "nav": {
+      "back": "ተመለስ",
+      "continue": "ቀጥል",
+      "finish": "ጨርስ",
+      "processing": "እየተከናወነ ነው..."
+    },
+    "loading": "እየተጫነ ነው...",
+    "footerTagline": "የኢትዮጵያ ቤተሰቦችን በመላው ዓለም ማገናኘት"
+  },
+  "Classes": {
+    "hero": {
+      "tagline": "ማዛመድ",
+      "title1": "ከማዛመድ በላይ",
+      "title2": "ጥበብ",
+      "subtitle": "ስልጠና ይመዝገቡ",
+      "cta": "ይመዝገቡ"
+    },
+    "list": {
+      "class1": {
+        "title": "አቡሻህር",
+        "desc": "...",
+        "date": "ማክሰኞ",
+        "badge": "ነፃ"
+      },
+      "class2": {
+        "title": "ባህል",
+        "desc": "...",
+        "date": "ሐሙስ",
+        "badge": "ተፈላጊ"
+      },
+      "class3": {
+        "title": "ማረጋገጫ",
+        "desc": "...",
+        "date": "ቅዳሜ",
+        "badge": "አዲስ"
+      }
+    },
+    "counseling": {
+      "tagline": "ድጋፍ",
+      "title1": "ባለሙያዎች",
+      "title2": "ለእርስዎ",
+      "subtitle": "የግል ምክክር",
+      "stat1Value": "500+",
+      "stat1Label": "አማካሪዎች",
+      "stat2Value": "100%",
+      "stat2Label": "ሚስጥራዊ",
+      "curriculumTitle": "ትምህርት",
+      "topics": {
+        "t1": "ግንኙነት",
+        "t2": "ግጭት አፈታት",
+        "t3": "ፋይናንስ",
+        "t4": "ባህላዊ ሚናዎች"
+      }
+    },
+    "footerMeta": "ዲያስፖራ",
+    "footerCTA": "ይጀምሩ"
+  },
+  "TopHeader": {
+    "email": "contact@beteseb.com",
+    "phone": "+49 123 456 789",
+    "suggestion": "ምርጫዎ {lang} ነው?",
+    "switchBtn": "ቀይር"
+  },
+  "Constants": {
+    "Religions": {
+      "Orthodox": "ኦርቶዶክስ",
+      "Protestant": "ፕሮቴስታንት",
+      "Catholic": "ካቶሊክ",
+      "Muslim": "ሙስሊም",
+      "Other": "ሌላ"
+    },
+    "Genders": {
+      "Male": "ወንድ",
+      "Female": "ሴት"
+    },
+    "Marital": {
+      "Single": "ያላገባ/ች",
+      "Divorced": "የተፋታ/ች",
+      "Widow": "አርማ",
+      "Widower": "አርማ"
+    },
+    "Finance": {
+      "Spender": "አውጪ",
+      "Saver": "ቆጣቢ",
+      "Balanced": "መካከለኛ",
+      "Frugal": "ቁጥብ"
+    },
+    "Values": {
+      "Traditional": "ባህላዊ",
+      "Modern": "ዘመናዊ",
+      "Liberal": "ሊበራል",
+      "Religious-Centric": "ሃይማኖታዊ"
+    },
+    "Conflict": {
+      "Direct Discussion": "መወያየት",
+      "Indirect / Subtle": "በተዘዋዋሪ",
+      "Silent Treatment": "ዝምታ",
+      "Mediation Required": "ሽምግልና"
+    },
+    "Locations": {
+      "Addis Ababa": "አዲስ አበባ",
+      "Dire Dawa": "ድሬ ዳዋ",
+      "Mekelle": "መቀሌ",
+      "Adama": "አዳማ",
+      "Bahir Dar": "ባህር ዳር",
+      "Gondar": "ጎንደር",
+      "Hawassa": "ሀዋሳ",
+      "Jimma": "ጅማ",
+      "Jijiga": "ጅጅጋ",
+      "Other (International)": "ከሀገር ውጭ"
+    }
+  }
+}

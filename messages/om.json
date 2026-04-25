@@ -1,0 +1,374 @@
+{
+  "Index": {
+    "Hero": {
+      "tagline": "Oowwa Aadaa, Akkaataa Ammayyaa",
+      "title1": "Gaa’ela Jabaa",
+      "title2": "Maatii Dhalootaaf",
+      "subtitle": "Maatii Itiyoophiyaa cimsuu fi aadaa irratti hundaa’uun gaa’ela gaarii ijaaruuf carraaqna.",
+      "cta1": "Hikaawuntii uumi",
+      "cta2": " Mul’ata Keenya",
+      "verify1": "Paaspoortii mirkanaa’e",
+      "verify2": "Eenyummaa Mirkanaaa’e",
+      "verify3": "Mootora Abuushakir"
+    },
+    "Vision": {
+      "tagline": "Dhaalmaya Keenya",
+      "title": "Addunyaa Digitaalaa keessatti Maatii Tiksuu",
+      "subtitle": "Mul’ata Beteseb keessatti ogummaa Abuushakir ni argama. Haala ammayyaan maatii keessan ijaaraa.",
+      "cta": "Mul’ata Keenya Ilaalaa",
+      "stat": "Sirrummaa Gaa’elaa"
+    },
+    "modal": {
+      "step1": "Tarkaanfii 1: Nageenya fi Gatii",
+      "where": "Eessa jirtu?",
+      "currencyNote": "Bakka jirtan irratti hundaa’uun gatii fi kaffaltii isiniif argisiisna.",
+      "localTitle": "Itiyoophiyaa Keessa",
+      "localSub": "Kaffaltii Qarshiin",
+      "globalTitle": "Addunyaa Mara",
+      "globalSub": "Kaffaltii Doolaaraan"
+    }
+  },
+  "Nav": {
+    "home": "Mana",
+    "about": "Waa’ee Keenya",
+    "classes": "Kilaasota",
+    "signIn": "Seenaa",
+    "signUp": "Maatii Ta’aa",
+    "login": "Seenuu / Galmaa’uu",
+    "logout": "Ba’uu",
+    "settings": "Sajataa",
+    "dashboard": "Dasiboordii",
+    "chat": "Tapha",
+    "community": "Hawaasa",
+    "workshops": "Leenjii",
+    "profile": "Piroofayilii"
+  },
+  "Dashboard": {
+    "welcome": "Baga Nagaan Dhufte",
+    "subtitle": "Hiriyaa jireenyaa kee barbaadi",
+    "trialExpired": "Yeroon yaalii xumurameera",
+    "trialEnded": "Yeroon yaalii kee guyyaa 3 xumurameera. Maaloo itti fufuuf kaffaltii raawwadhu.",
+    "upgradeNow": "Ammuma Fooyyessi",
+    "backToDash": "Gara Dasiboordiitti deebi’i",
+    "subscription": "Kaffaltii",
+    "premium": {
+      "active": "Piriimiyeemiin hojiirra jira",
+      "pending": "Ilaalamaa jira",
+      "expired": "Yeroon xumurameera",
+      "unlock": "Piriimiyeemii banadhu"
+    },
+    "matching": {
+      "title": "Namoota Sitti dhiyaatan",
+      "viewAll": "Hunda Ilaali",
+      "percent": "Waliigaltee"
+    }
+  },
+  "Auth": {
+    "signIn": "Seenaa",
+    "signUp": "Galmaa’i",
+    "email": "Imeelii",
+    "phone": "Lakkoofsa Bilbilaa",
+    "password": "Jecha Iccitii",
+    "forgot": "Jecha iccitii irranfattee?",
+    "noAccount": "Hikaawuntii hin qabduu?",
+    "haveAccount": "Hikaawuntii qabduu?",
+    "phoneTab": "Bilbila",
+    "countryCode": "Koodii Biyyaa",
+    "processing": "Hojatamaa jira..."
+  },
+  "Chatbot": {
+    "welcome": "Baga gara Beteseb nagaan dhufte!",
+    "status": "Gargaaraa",
+    "botName": "Beteseb AI",
+    "placeholder": "Waan feete na gaafadhu...",
+    "faq": {
+      "abushakir": "Mootirri keenya Abuushakir irratti hundaa’a",
+      "pricing": "Gatii garaagaraa qabna",
+      "verified": "Eenyummaa mirkaneessuun dirqama",
+      "hello": "Akkam! Gargaaraa keeti",
+      "default": "Waa’ee keenya hunda siif ibsuu danda’a"
+    },
+    "btn": {
+      "abushakir": "Abuushakir",
+      "pricing": "Gatii",
+      "verified": "Mirkaneessa"
+    }
+  },
+  "Community": {
+    "title": "Gorsa Maatii fi Hawaasa",
+    "subtitle": "Waa’ee aadaa, gaa’elaa fi dhimmoota maatii irratti mari’adhaa.",
+    "newPostPlaceholder": "Yaada kee qoodi ykn gorsa gaafadhu...",
+    "postButton": "Hawaasaaf qoodi",
+    "feedTitle": "Mariidhaan dhiyoo",
+    "adminApprovalNote": "Maxxansi kee bulchitootaan ilaalamuu qaba.",
+    "authorFormat": "Kan maxxanse",
+    "pending": "Ilaalamaa jira",
+    "languageToggle": "Afaan jijjiiri",
+    "anonymousUser": "Eenyummaan isaa hin beekamne",
+    "noPosts": "Maxxansi hin jiru. Marii jalqabaa ati jalqabi!",
+    "like": "Jaalladhu",
+    "reply": "Deebii",
+    "loginRequired": "Maaloo maxxansuuf galmaa’aa ykn senaa",
+    "moderated": "Mirkanaa’eera",
+    "topicDay": "Mataa duree guyyaa",
+    "topicQuestion": "\"Barata ammayyaa keessatti gaa'ela itti fufiinsa qabuuf dhimmoonni murteessoon 3 maali jettee yaadda?\"",
+    "topicJoin": "Maatii Beteseb 1,200+ waliin marii irratti hirmaadhu. Sagaleen kee murteessaadha.",
+    "joinBtn": "Marii Hirmaadhu",
+    "aiFilter": "AI Safety Filter Hojii irra jira",
+    "checking": "Checking...",
+    "verifyToPostTitle": "Verification Required to Post",
+    "verifyToPostSub": "You can read community posts, but you need to verify your identity to join the discussion.",
+    "memberBadge": "Beteseb Member",
+    "loadingFeed": "Loading Family Feed...",
+    "safetyAlert": "Your post contains content that does not align with our family-oriented community values. Please keep it respectful."
+  },
+  "About": {
+    "tagline": "Mul’ata Keenya",
+    "subtitle": "Beteseb gaa’ela qofa miti",
+    "missionTitle": "Ergaa Keenya",
+    "missionDesc": "Fageenya maqsuuf hojanna...",
+    "joinStats": "Maatii 1,000+ gammadanitti makamaa",
+    "ctaTitle": "Dhaalmaya kanaan makamaa",
+    "ctaButton": "Har’uma makamaa",
+    "mission1": "Mandatory identity verification for all members.",
+    "mission2": "Integration of Abushakir compatibility logic.",
+    "mission3": "Expert-led pre-marriage family counseling.",
+    "mission4": "Community-driven moderation for privacy.",
+    "principlesTag": "Core Principles",
+    "principlesTitle": "Tradition. Trust. Technology.",
+    "value1Title": "Family First",
+    "value1Desc": "Everything we do is focused on the longevity...",
+    "value2Title": "Cultural Honor",
+    "value2Desc": "We respect and preserve...",
+    "value3Title": "Absolute Safety",
+    "value3Desc": "A zero-tolerance policy...",
+    "ourStory": "Our Story"
+  },
+  "community": {
+    "communityTitle": "Maree Maatii",
+    "communitySubtitle": "Waa’ee aadaa fi gaa’elaa mari’adhaa",
+    "newPostPlaceholder": "Yaada kee qoodi...",
+    "postButton": "Hawaasaaf qoodi",
+    "moderated": "Ilaalameera",
+    "topicDay": "Mataduree Har’aa",
+    "loadingFeed": "Feedii fe’aa jira...",
+    "safetyAlert": "Yaadni kee ulaagaa keenya hin guunne. Maaloo kabajaan barreessi.",
+    "feedTitle": "Recent Discussions",
+    "adminApprovalNote": "Posts are reviewed by moderators to maintain family values.",
+    "authorFormat": "Posted by",
+    "pending": "Pending Approval",
+    "languageToggle": "Switch Language",
+    "anonymousUser": "Anonymous User",
+    "noPosts": "No posts available yet. Be the first to start a discussion!",
+    "like": "Like",
+    "reply": "Reply",
+    "loginRequired": "Please register/login to post",
+    "topicQuestion": "\"What are the three core values you believe are essential for a lasting marriage in the digital age?\"",
+    "topicJoin": "Join the discussion with 1,200+ Beteseb family members. Your voice matters.",
+    "joinBtn": "Join Discussion",
+    "aiFilter": "AI Safety Filter Active",
+    "checking": "Checking...",
+    "verifyToPostTitle": "Verification Required to Post",
+    "verifyToPostSub": "You can read community posts, but you need to verify your identity to join the discussion.",
+    "memberBadge": "Beteseb Member"
+  },
+  "Onboarding": {
+    "title": "Balbala Maatii",
+    "personalDetails": "Oduu Dhuunfaa",
+    "idVerification": {
+      "title": "Eenyummaa Mirkaneessuu",
+      "subtitle": "Waraqaan eenyummaa ni barbaadama",
+      "doc": "Waraqaa Olfe’i",
+      "idType": "Paaspoortii ykn ID",
+      "idCaptured": "ID fudhatameera",
+      "takeSelfie": "Suuraa ka’i",
+      "livePhoto": "Suuraa qabatamaa",
+      "selfieCaptured": "Suuraan fudhatameera",
+      "submitAI": "AI-f ergi",
+      "rejected": "Mirkaneessi kee hin fudhatamne.",
+      "uploadClick": "Click to upload your {type}",
+      "uploadHint": "PNG, JPG, or PDF (max. 10MB)",
+      "uploaded": "Document Uploaded!"
+    },
+    "nav": {
+      "back": "Deebi’i",
+      "continue": "Itti fufi",
+      "finish": "Xumuri",
+      "processing": "Hojatamaa jira..."
+    },
+    "personalSubtitle": "Let's start with the basics for your profile.",
+    "demographics": "Demographics",
+    "career": "Career & Psychology",
+    "reviewTitle": "Review Profile",
+    "reviewSubtitle": "Please confirm your details are correct before finalizing.",
+    "finishTitle": "You're All Set!",
+    "finishSubtitle": "Your profile is being reviewed. Start exploring your matches today.",
+    "finishCTA": "Enter Beteseb Dashboard",
+    "fields": {
+      "email": "Email Address",
+      "password": "Password",
+      "passwordHint": "Minimum 6 characters",
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "Abebe Balcha",
+      "birthDate": "Birth Date",
+      "birthTime": "Birth Time",
+      "gender": "Gender",
+      "genderPlaceholder": "Select Gender",
+      "location": "Location",
+      "locationPlaceholder": "Select Location",
+      "religion": "Religion",
+      "religionPlaceholder": "Select Religion",
+      "maritalStatus": "Marital Status",
+      "maritalPlaceholder": "Select Status",
+      "jobTitle": "Job Title",
+      "jobPlaceholder": "e.g. Software Engineer",
+      "financeHabit": "Financial Habit",
+      "financePlaceholder": "Select Habit",
+      "familyValues": "Family Values",
+      "familyPlaceholder": "Select Value",
+      "conflictResolution": "Conflict Resolution",
+      "conflictPlaceholder": "Select Style",
+      "spouseRequirements": "Marriage Criteria / Spouse Requirements",
+      "spousePlaceholder": "Describe what you are looking for in a partner (Mandatory)...",
+      "phone": "Phone Number",
+      "phoneTab": "Phone",
+      "starSign": "Star Sign",
+      "unknown": "Unknown",
+      "abushakirBadge": "Abushakir Engine",
+      "country": "Country"
+    },
+    "loading": "Beteseb | Loading Family Portal...",
+    "footerTagline": "Bringing Ethiopian Families Together Globally"
+  },
+  "Footer": {
+    "tagline": "ቤተሰብ | Beteseb - Gaa’ela Itiyoophiyaa Addunyaa Maraa",
+    "description": "Aadaa, teeknoolojii fi oowwa maatii waliin maatii Itiyoophiyaa addunyaa mara haala gaariin walitti fiduuf hojanna.",
+    "connect": "Qunnamtii",
+    "platform": "Pilaatoformii",
+    "legal": "Seera",
+    "vision": "Mul’ata Keenya",
+    "classes": "Kilaasota Gaa’elaa",
+    "start": "Barnoota Jalqabi",
+    "terms": "Haala Itti Fayyadamaa",
+    "privacy": "Iccitii eeguu",
+    "admin": "Balgala Admin",
+    "copyright": "© 2026 Beteseb (ቤተሰብ). Maatii Walitti Fiduu.",
+    "address": "Harar, Itiyoophiyaa",
+    "community": "Hawaasa"
+  },
+  "Resources": {
+    "learningHub": "Learning Hub",
+    "heroTitle": "Knowledge for {betterLife}",
+    "betterLife": "Better Life.",
+    "searchPlaceholder": "Search resources...",
+    "noMatch": "No matching resources",
+    "noMatchSubtitle": "Try adjusting your filters or search keywords.",
+    "readCollection": "Read Collection",
+    "deepLearn": "Want to learn {deeply}?",
+    "deeply": "more deeply?",
+    "joinDesc": "Join our community to get access to exclusive workshops..."
+  },
+  "Classes": {
+    "hero": {
+      "tagline": "Adeemsa Gaa’elaa Qajeelfamaan",
+      "title1": "Gaa’ela qofa miti.",
+      "title2": "Ogummaa Jireenyaa.",
+      "subtitle": "Leenjii fi kilaasota gaa’ela duraa keenya irratti hirmaadhaa.",
+      "cta": "Galmaa’ii hunda argadhu"
+    },
+    "list": {
+      "class1": {
+        "title": "Abuushakir Hubachuu",
+        "desc": "Ogummaa gaa’elaa Itiyoophiyaa durii hubachuu...",
+        "date": "Kibxata hunda @ 7 PM",
+        "badge": "BILISA"
+      },
+      "class2": {
+        "title": "Aadaa fi Maatii",
+        "desc": "Jireenya ammayyaa keessatti aadaa eeggachuu...",
+        "date": "Kamisa hunda @ 6 PM",
+        "badge": "BEEKAMAA"
+      },
+      "class3": {
+        "title": "Adeemsa Mirkanaa’e",
+        "desc": "Piroofayilii keessan akkamitti sirreessitu...",
+        "date": "Sanbata @ 11 AM",
+        "badge": "GALMAA’UU"
+      }
+    },
+    "counseling": {
+      "tagline": "Gargaarsa Dhuunfaa",
+      "title1": "Ogeeyyii Addunyaa.",
+      "title2": "Isiniif qophaa’an.",
+      "subtitle": "Gorsa dhuunfaa maatii keessaniif argadhu.",
+      "stat1Value": "500+",
+      "stat1Label": "Ogeeyyii Hojii irra jiran",
+      "stat2Value": "100%",
+      "stat2Label": "Iccitii",
+      "curriculumTitle": "Qabiyyee Leenjii",
+      "topics": {
+        "t1": "Hariiroo Aadaa Garaa Garaa",
+        "t2": "Walitti bu’iinsa hiikuu",
+        "t3": "Maallaqa bulchuu",
+        "t4": "Gahee Aadaa fi Ammayyaa"
+      }
+    },
+    "footerMeta": "Addunyaa Maraaf",
+    "footerCTA": "Premium Jalqabi"
+  },
+  "TopHeader": {
+    "email": "contact@beteseb.com",
+    "phone": "+49 (0) 123 456 789",
+    "suggestion": "{lang} fayyadamuu filattu? Jijjiiruuf?",
+    "switchBtn": "Jijjiiri"
+  },
+  "Constants": {
+    "Religions": {
+      "Orthodox": "Ortodoksii",
+      "Protestant": "Pirootestaantii",
+      "Catholic": "Kaatoolikii",
+      "Muslim": "Musliima",
+      "Other": "Kan biraa"
+    },
+    "Genders": {
+      "Male": "Dhiira",
+      "Female": "Dhalaa"
+    },
+    "Marital": {
+      "Single": "Hin fuune/hin heerumne",
+      "Divorced": "Kan hiike/hiikte",
+      "Widow": "Haadha manaa kan irraa du’e",
+      "Widower": "Abbaa manaa kan irraa du’e"
+    },
+    "Finance": {
+      "Spender": "Baasii baasaa",
+      "Saver": "Qusataa",
+      "Balanced": "Giddu-galeessa",
+      "Frugal": "Qusataa cimaa"
+    },
+    "Values": {
+      "Traditional": "Aadaa",
+      "Modern": "Ammayyaa",
+      "Liberal": "Libiraalii",
+      "Religious-Centric": "Amantii"
+    },
+    "Conflict": {
+      "Direct Discussion": "Maree kallattiin",
+      "Indirect / Subtle": "Maree kallattii hin taane",
+      "Silent Treatment": "Callisuu",
+      "Mediation Required": "Jaarsummaa"
+    },
+    "Locations": {
+      "Addis Ababa": "Finfinnee",
+      "Dire Dawa": "Dirree Dhawaa",
+      "Mekelle": "Maqalee",
+      "Adama": "Adaamaa",
+      "Bahir Dar": "Baahir Daar",
+      "Gondar": "Gondar",
+      "Hawassa": "Hawaasaa",
+      "Jimma": "Jimmaa",
+      "Jijiga": "Jijigaa",
+      "Other (International)": "Biyya alaa"
+    }
+  }
+}
