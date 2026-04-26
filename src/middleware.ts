@@ -42,6 +42,12 @@ export async function middleware(request: NextRequest) {
   const isDashboardRoute = segments.includes('dashboard') || segments.includes('community') || segments.includes('chat') || segments.includes('admin');
   const isOnboardingRoute = segments.includes('onboarding');
   const isLoginRoute = segments.includes('login');
+  const isAdminRoute = segments.includes('admin');
+
+  // 3. Bypass for Admin Development
+  if (isAdminRoute && user?.email === 'zuretalem@gmail.com') {
+    return response;
+  }
 
   if (isDashboardRoute) {
     if (!user) {
