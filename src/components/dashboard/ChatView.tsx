@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useRouter } from '@/i18n/routing';
+import { useTranslations, useLocale } from 'next-intl';
 import { 
   Send, 
   Search, 
@@ -23,6 +25,7 @@ interface Message {
   id: string;
   sender_id: string;
   receiver_id: string;
+  content: string;
   is_read: boolean;
   translations?: Record<string, string>;
   created_at: string;
@@ -36,6 +39,8 @@ interface Profile {
 }
 
 export default function ChatView() {
+  const t = useTranslations('Community');
+  const locale = useLocale();
   const [matches, setMatches] = useState<Profile[]>([]);
   const [selectedMatch, setSelectedMatch] = useState<Profile | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
