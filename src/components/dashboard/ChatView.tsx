@@ -11,7 +11,10 @@ import {
   CheckCheck,
   User,
   Heart,
-  Lightbulb
+  Lightbulb,
+  Languages,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import Image from 'next/image';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -20,9 +23,9 @@ interface Message {
   id: string;
   sender_id: string;
   receiver_id: string;
-  content: string;
-  created_at: string;
   is_read: boolean;
+  translations?: Record<string, string>;
+  created_at: string;
 }
 
 interface Profile {
@@ -117,6 +120,40 @@ export default function ChatView() {
     ];
     const random = suggestions[Math.floor(Math.random() * suggestions.length)];
     setNewMessage(random);
+  };
+
+  const handleTranslate = async (messageId: string, targetLang: string) => {
+    // Simulate AI Translation
+    // In a real app, this would call an Edge Function or AI API
+    const msg = messages.find(m => m.id === messageId);
+    if (!msg) return;
+
+    if (msg.translations?.[targetLang]) {
+        // Toggle back to original (simulated by clearing for this view)
+        setMessages(prev => prev.map(m => m.id === messageId ? { ...m, translations: { ...m.translations, [targetLang]: '' } } : m));
+        return;
+    }
+
+    setMessages(prev => prev.map(m => {
+      if (m.id === messageId) {
+        return {
+          ...m,
+          translations: {
+            ...m.translations,
+            [targetLang]: `[AI ${targetLang.toUpperCase()}]: ${m.content} (Translated)`
+          }
+        };
+      }
+      return m;
+    }));
+
+    // Persist to DB
+    await supabase.from('messages').update({
+      translations: {
+        ...msg.translations,
+        [targetLang]: `[AI ${targetLang.toUpperCase()}]: ${msg.content} (Translated)`
+      }
+    }).eq('id', messageId);
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -235,7 +272,15 @@ export default function ChatView() {
                         : 'bg-white text-gray-600 rounded-tl-none border border-muted'
                       }
                     `}>
-                      {msg.content}
+                      {msg.translations?.[locale] || msg.content}
+                      
+                      {/* Translation Toggle */}
+                      <button 
+                        onClick={() => handleTranslate(msg.id, locale)}
+                        className={`absolute -bottom-6 ${msg.sender_id === currentUser?.id ? 'right-0' : 'left-0'} p-2 text-[8px] font-black uppercase tracking-widest flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all hover:text-primary`}
+                      >
+                        <Languages size={10} /> {msg.translations?.[locale] ? 'Original' : 'Translate to ' + locale}
+                      </button>
                     </div>
                     <div className={`flex items-center gap-2 mt-2 px-2 text-[10px] ${msg.sender_id === currentUser?.id ? 'justify-end text-gray-400' : 'justify-start text-gray-400'}`}>
                       {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

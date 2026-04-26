@@ -74,3 +74,29 @@ export const LOCATIONS = [
   'Jijiga',
   'Other (International)'
 ];
+export const JOB_CATEGORIES = [
+  'Technology & IT',
+  'Healthcare & Medical',
+  'Education & Research',
+  'Business & Finance',
+  'Arts & Entertainment',
+  'Engineering & Construction',
+  'Legal & Law Enforcement',
+  'Service & Hospitality',
+  'Government & Public Service',
+  'Agriculture & Nature',
+  'Other'
+];
+
+export const SPOUSE_REQUIREMENTS_TAGS = [
+  'Religious Compatibility',
+  'Family Oriented',
+  'Career Focused',
+  'Traditional Values',
+  'Modern Outlook',
+  'Healthy Lifestyle',
+  'Wants Children',
+  'Travel Lover',
+  'Education Priority',
+  'Financial Stability'
+];

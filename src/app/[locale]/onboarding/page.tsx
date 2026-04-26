@@ -37,7 +37,9 @@ import {
   MARITAL_STATUSES,
   FAMILY_VALUES,
   FINANCE_HABITS,
-  CONFLICT_RESOLUTIONS
+  CONFLICT_RESOLUTIONS,
+  JOB_CATEGORIES,
+  SPOUSE_REQUIREMENTS_TAGS
 } from '@/lib/constants';
 import { COUNTRIES } from '@/lib/countries';
 import { Mail, Phone, Globe } from 'lucide-react';
@@ -151,33 +153,6 @@ function OnboardingContent() {
     } catch (error: any) {
       setErrorMsg(error.message);
       setStep(1);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleIdUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsSubmitting(true);
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `temp-${Math.random()}.${fileExt}`;
-      
-      const { error } = await supabase.storage
-        .from('id-verification')
-        .upload(fileName, file);
-
-      if (error) throw error;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('id-verification')
-        .getPublicUrl(fileName);
-
-      updateField('id_url', publicUrl);
-    } catch (error: any) {
-      alert('Upload failed: ' + error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -386,13 +361,14 @@ function OnboardingContent() {
                 <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
                   <Briefcase size={16} /> {t('fields.jobTitle')}
                 </span>
-                <input 
-                   type="text"
-                   value={formData.job}
-                   onChange={(e) => updateField('job', e.target.value)}
-                   className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted" 
-                   placeholder={t('fields.jobPlaceholder')}
-                />
+                <select 
+                  value={formData.job}
+                  onChange={(e) => updateField('job', e.target.value)}
+                  className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
+                >
+                  <option value="">{t('fields.jobPlaceholder')}</option>
+                  {JOB_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                </select>
               </label>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -435,18 +411,36 @@ function OnboardingContent() {
                     {CONFLICT_RESOLUTIONS.map(c => <option key={c} value={c}>{t_const(`Conflict.${c}`)}</option>)}
                   </select>
                 </label>
-                <label className="block md:col-span-2">
-                  <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                     <Heart size={16} className="text-primary" /> {t('fields.spouseRequirements')}
-                  </span>
-                  <textarea 
-                     value={formData.spouse_requirements}
-                     onChange={(e) => updateField('spouse_requirements', e.target.value)}
-                     className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted min-h-[120px]" 
-                     placeholder={t('fields.spousePlaceholder')}
-                     required
-                  />
-                </label>
+              <label className="block md:col-span-2">
+                <span className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-4">
+                   <Heart size={16} className="text-primary" /> {t('fields.spouseRequirements')}
+                </span>
+                <div className="flex flex-wrap gap-3">
+                  {SPOUSE_REQUIREMENTS_TAGS.map(tag => {
+                    const isSelected = formData.spouse_requirements.split(', ').includes(tag);
+                    return (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => {
+                          const currentTags = formData.spouse_requirements ? formData.spouse_requirements.split(', ') : [];
+                          const nextTags = isSelected 
+                            ? currentTags.filter(t => t !== tag)
+                            : [...currentTags, tag].filter(Boolean);
+                          updateField('spouse_requirements', nextTags.join(', '));
+                        }}
+                        className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                          isSelected 
+                            ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105' 
+                            : 'bg-muted text-gray-400 hover:bg-muted/80'
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                    );
+                  })}
+                </div>
+              </label>
               </div>
             </div>
           </div>

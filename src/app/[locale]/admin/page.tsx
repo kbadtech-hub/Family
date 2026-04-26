@@ -213,6 +213,9 @@ export default function AdminPortal() {
       } else if (activeTab === 'posts') {
         const { data } = await supabase.from('site_posts').select('*').order('created_at', { ascending: false });
         if (data) setPosts(data);
+      } else if (activeTab === 'matches') {
+        const { data } = await supabase.from('profiles').select('id, full_name, avatar_url, star_sign').limit(100);
+        if (data) setUsers(data);
       }
     };
     fetchAdminData();
@@ -462,6 +465,7 @@ export default function AdminPortal() {
             { id: 'messaging', icon: MessageSquare, label: 'Communication' },
             { id: 'posts', icon: Film, label: 'Articles & News' },
             { id: 'pricing', icon: CreditCard, label: 'Pricing & Trial' },
+            { id: 'matches', icon: Heart, label: 'Manual Matches' },
             { id: 'staff', icon: Users, label: 'Manage Staff' },
             { id: 'security', icon: ShieldAlert, label: 'Access Control' },
           ].map(item => (
@@ -1192,6 +1196,54 @@ export default function AdminPortal() {
              </div>
            </div>
          )}
+        {activeTab === 'matches' && (
+          <div className="space-y-8 animate-in fade-in duration-500">
+            <header className="flex justify-between items-end">
+              <div>
+                <h2 className="text-3xl font-bold italic uppercase tracking-tighter">Manual Match Overrides</h2>
+                <p className="text-foreground/40 mt-1">Force-link profiles and bypass AI recommendation logic.</p>
+              </div>
+            </header>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+               <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5">
+                  <div className="flex items-center gap-3 mb-8">
+                     <Search className="text-primary" size={24} />
+                     <h3 className="text-xl font-bold uppercase tracking-widest">Profile Discovery</h3>
+                  </div>
+                  <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                     {users.map(user => (
+                        <div key={user.id} className="flex items-center justify-between p-4 bg-background rounded-2xl border border-white/5 group hover:border-primary/30 transition-all">
+                           <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 rounded-xl bg-secondary border border-primary overflow-hidden">
+                                 {user.avatar_url ? <img src={user.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-primary font-bold">{user.full_name?.charAt(0)}</div>}
+                              </div>
+                              <div>
+                                 <p className="font-bold text-sm">{user.full_name}</p>
+                                 <p className="text-[10px] text-primary uppercase font-black">{user.star_sign || 'Abushakir'}</p>
+                              </div>
+                           </div>
+                           <button className="px-4 py-2 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-full opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">Select for Match</button>
+                        </div>
+                     ))}
+                  </div>
+               </div>
+
+               <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5 flex flex-col items-center justify-center text-center space-y-6">
+                  <div className="w-20 h-20 bg-primary/10 rounded-[2rem] flex items-center justify-center mb-4">
+                     <Heart size={40} className="text-primary" />
+                  </div>
+                  <h3 className="text-2xl font-bold italic">Match Forge</h3>
+                  <p className="text-gray-400 max-w-xs mx-auto text-sm">Select two profiles from the left to manually create a "Sacred Union" match. This will prioritize them in each other's feeds.</p>
+                  <div className="flex gap-4 opacity-30">
+                     <div className="w-16 h-16 rounded-2xl bg-muted border-2 border-dashed border-gray-500" />
+                     <div className="w-16 h-16 rounded-2xl bg-muted border-2 border-dashed border-gray-500" />
+                  </div>
+                  <button disabled className="btn-primary opacity-50 cursor-not-allowed">Forge Manual Match</button>
+               </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
