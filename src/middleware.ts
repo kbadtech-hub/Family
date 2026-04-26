@@ -44,8 +44,8 @@ export async function middleware(request: NextRequest) {
   const isLoginRoute = segments.includes('login');
   const isAdminRoute = segments.includes('admin');
 
-  // 3. Bypass for Admin Development
-  if (isAdminRoute && user?.email === 'zuretalem@gmail.com') {
+  // 3. Bypass for Admin Development (Primary Dev Email)
+  if (isAdminRoute && user?.email === 'kalidseid111@gmail.com') {
     return response;
   }
 
@@ -60,19 +60,21 @@ export async function middleware(request: NextRequest) {
     }
 
     // Fetch profile and verification status
-    const [{ data: profile }, { data: verification }] = await Promise.all([
-      supabase.from('profiles').select('is_onboarded, is_verified').eq('id', user.id).single(),
-      supabase.from('verifications').select('status').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).single()
-    ]);
+    const { data: profile } = await supabase.from('profiles').select('is_onboarded, is_verified, role').eq('id', user.id).single();
+    
+    // Check for verification (unless it's an admin route for an admin)
+    const isStaff = profile?.role === 'admin' || profile?.role === 'super_admin';
+    
+    if (isAdminRoute && !isStaff && user.email !== 'kalidseid111@gmail.com') {
+      return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
+    }
 
     if (!profile?.is_onboarded) {
       return NextResponse.redirect(new URL(`/${locale}/onboarding`, request.url));
     }
 
-    const isVerified = profile?.is_verified || verification?.status === 'verified';
-    if (!isVerified) {
-      // If not verified, redirect to onboarding with step=verification or a dedicated page
-      // Using onboarding step 5 as the verification step
+    const isVerified = profile?.is_verified;
+    if (!isVerified && !isStaff && user.email !== 'kalidseid111@gmail.com') {
       return NextResponse.redirect(new URL(`/${locale}/onboarding?step=5`, request.url));
     }
   }
