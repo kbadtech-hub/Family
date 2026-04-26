@@ -14,11 +14,25 @@ CREATE TABLE public.profiles (
     avatar_url TEXT,
     bio TEXT,
     language TEXT DEFAULT 'am',
-    star_sign TEXT,
-    location JSONB DEFAULT '{}'::jsonb,
+    star_sign TEXT, -- Abushakir Star Signs
+    is_diaspora BOOLEAN DEFAULT FALSE,
+    is_onboarded BOOLEAN DEFAULT FALSE,
+    is_verified BOOLEAN DEFAULT FALSE,
+    
+    -- Demographic details from Onboarding
+    gender TEXT,
+    religion TEXT,
+    marital_status TEXT,
+    job TEXT,
+    education TEXT,
+    birth_date DATE,
+    birth_time TEXT,
+    location TEXT,
+    spouse_requirements TEXT,
+    
     quiz_results JSONB DEFAULT '{}'::jsonb,
     role TEXT DEFAULT 'user' CHECK (role IN ('user', 'admin', 'super_admin')),
-    is_verified BOOLEAN DEFAULT FALSE,
+    trial_ends_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -27,10 +41,12 @@ CREATE TABLE public.profiles (
 CREATE TABLE public.verifications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
-    id_card_url TEXT NOT NULL,
+    id_url TEXT NOT NULL, -- Matched to app code
     selfie_url TEXT NOT NULL,
+    doc_type TEXT DEFAULT 'id',
     status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
     admin_notes TEXT,
+    verified_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -50,8 +66,14 @@ CREATE TABLE public.payments (
 -- 4. settings (Admin Control)
 CREATE TABLE public.settings (
     id TEXT PRIMARY KEY DEFAULT 'global',
+    system_access_key TEXT DEFAULT 'Harar@2026',
+    cms_content JSONB DEFAULT '{}'::jsonb,
+    contact_info JSONB DEFAULT '{}'::jsonb,
     social_links JSONB DEFAULT '{}'::jsonb,
     slogans JSONB DEFAULT '[]'::jsonb,
+    bank_details JSONB DEFAULT '{}'::jsonb,
+    pricing_usd JSONB DEFAULT '{"1m": 50, "3m": 120, "6m": 200, "12m": 350, "class": 25, "trial_days": 3}'::jsonb,
+    pricing_etb JSONB DEFAULT '{"1m": 500, "3m": 1200, "6m": 2000, "12m": 3500, "class": 250, "trial_days": 3}'::jsonb,
     payment_toggles JSONB DEFAULT '{}'::jsonb,
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -112,6 +134,14 @@ CREATE POLICY "Users can insert own payments." ON public.payments
 CREATE POLICY "Settings are viewable by everyone." ON public.settings
     FOR SELECT USING (true);
 
+CREATE POLICY "Super admins can update settings." ON public.settings
+    FOR UPDATE USING (
+        EXISTS (
+            SELECT 1 FROM public.profiles 
+            WHERE id = auth.uid() AND role = 'super_admin'
+        )
+    );
+
 -- Matches Policies
 CREATE POLICY "Users can view their own matches." ON public.matches
     FOR SELECT USING (auth.uid() = user_one_id OR auth.uid() = user_two_id);
@@ -140,8 +170,40 @@ CREATE POLICY "Users can insert messages in their matches." ON public.messages
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO public.profiles (id, full_name, email, avatar_url)
-    VALUES (new.id, new.raw_user_meta_data->>'full_name', new.email, new.raw_user_meta_data->>'avatar_url');
+    INSERT INTO public.profiles (
+        id, 
+        full_name, 
+        email, 
+        avatar_url,
+        is_onboarded,
+        gender,
+        religion,
+        marital_status,
+        job,
+        education,
+        birth_date,
+        birth_time,
+        location,
+        star_sign,
+        spouse_requirements
+    )
+    VALUES (
+        new.id, 
+        new.raw_user_meta_data->>'full_name', 
+        new.email, 
+        new.raw_user_meta_data->>'avatar_url',
+        COALESCE((new.raw_user_meta_data->>'is_onboarded')::boolean, false),
+        new.raw_user_meta_data->>'gender',
+        new.raw_user_meta_data->>'religion',
+        new.raw_user_meta_data->>'marital_status',
+        new.raw_user_meta_data->>'job',
+        new.raw_user_meta_data->>'education',
+        CASE WHEN new.raw_user_meta_data->>'birth_date' IS NOT NULL THEN (new.raw_user_meta_data->>'birth_date')::date ELSE NULL END,
+        new.raw_user_meta_data->>'birth_time',
+        new.raw_user_meta_data->>'location',
+        new.raw_user_meta_data->>'star_sign',
+        new.raw_user_meta_data->>'spouse_requirements'
+    );
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
