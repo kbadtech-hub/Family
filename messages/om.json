@@ -234,8 +234,9 @@
       "phoneTab": "Phone",
       "starSign": "Star Sign",
       "unknown": "Unknown",
-      "abushakirBadge": "Abushakir Engine",
-      "country": "Country"
+      "abushakirBadge": "Injiinii Abushaakir",
+      "country": "Biyya",
+      "countryPlaceholder": "Biyya Filadhu"
     },
     "loading": "Beteseb | Loading Family Portal...",
     "footerTagline": "Bringing Ethiopian Families Together Globally"

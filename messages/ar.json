@@ -214,7 +214,8 @@
       "starSign": "برج النجم",
       "unknown": "غير معروف",
       "abushakirBadge": "محرك أبوشاكر",
-      "country": "دولة"
+      "country": "البلد",
+      "countryPlaceholder": "اختر البلد"
     },
     "idVerification": {
       "title": "التحقق من الهوية",

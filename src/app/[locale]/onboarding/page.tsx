@@ -48,6 +48,7 @@ function OnboardingContent() {
   const locale = useLocale();
   const router = useRouter();
   const [step, setStep] = useState(1);
+  const [userType, setUserType] = useState<'Local' | 'Diaspora' | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [verificationStatus, setVerificationStatus] = useState<'none' | 'pending' | 'verified' | 'rejected'>('none');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -92,11 +93,14 @@ function OnboardingContent() {
   }
 
   useEffect(() => {
-    const pref = searchParams.get('pref_location');
-    if (pref === 'Diaspora') {
-      updateField('location', 'Other (International)');
-    } else if (pref === 'Local') {
-      updateField('location', 'Addis Ababa'); // Default to capital for local
+    const pref = searchParams.get('pref_location') as 'Local' | 'Diaspora' | null;
+    if (pref) {
+      setUserType(pref);
+      if (pref === 'Diaspora') {
+        updateField('location', 'United States'); // Default country for diaspora
+      } else if (pref === 'Local') {
+        updateField('location', 'Addis Ababa'); // Default city for local
+      }
     }
 
     const stepParam = searchParams.get('step');
@@ -116,8 +120,7 @@ function OnboardingContent() {
     setIsSubmitting(true);
     setErrorMsg('');
     try {
-      const isInternational = formData.location === 'Other (International)';
-      const currency = isInternational ? 'USD' : 'ETB';
+      const currency = userType === 'Diaspora' ? 'USD' : 'ETB';
 
       const signUpOptions: any = {
         password: formData.password,
@@ -328,15 +331,19 @@ function OnboardingContent() {
               
               <label className="block">
                 <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                   <MapPin size={16} /> {t('fields.location')}
+                   <MapPin size={16} /> {userType === 'Local' ? t('fields.location') : t('fields.country')}
                 </span>
                 <select 
                   value={formData.location}
                   onChange={(e) => updateField('location', e.target.value)}
                   className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
                 >
-                  <option value="">{t('fields.locationPlaceholder')}</option>
-                  {LOCATIONS.map(l => <option key={l} value={l}>{t_const(`Locations.${l}`)}</option>)}
+                  <option value="">{userType === 'Local' ? t('fields.locationPlaceholder') : t('fields.countryPlaceholder')}</option>
+                  {userType === 'Local' ? (
+                    LOCATIONS.filter(l => l !== 'Other (International)').map(l => <option key={l} value={l}>{t_const(`Locations.${l}`)}</option>)
+                  ) : (
+                    COUNTRIES.map(c => <option key={c.iso} value={c.name}>{c.name}</option>)
+                  )}
                 </select>
               </label>
 
@@ -461,7 +468,7 @@ function OnboardingContent() {
                      <span className="font-bold text-primary">{(StarSignLabels as any)[formData.star_sign] || t('fields.unknown')}</span>
                   </div>
                   <div className={`flex justify-between border-b border-muted/50 pb-3 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
-                     <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">{t('fields.location')}</span>
+                     <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">{userType === 'Local' ? t('fields.location') : t('fields.country')}</span>
                      <span className="font-bold text-accent">{formData.location}</span>
                   </div>
                   <div className={`flex justify-between border-b border-muted/50 pb-3 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>

@@ -214,7 +214,8 @@
       "starSign": "Star Sign",
       "unknown": "Unknown",
       "abushakirBadge": "Abushakir Engine",
-      "country": "Country"
+      "country": "Country",
+      "countryPlaceholder": "Select Country"
     },
     "idVerification": {
       "title": "Identity Verification",

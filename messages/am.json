@@ -214,7 +214,8 @@
       "starSign": "ኮከብ",
       "unknown": "ያልታወቀ",
       "abushakirBadge": "አቡሻህር",
-      "country": "ሀገር"
+      "country": "ሀገር",
+      "countryPlaceholder": "ሀገር ይምረጡ"
     },
     "idVerification": {
       "title": "ማንነትን ማረጋገጥ",
