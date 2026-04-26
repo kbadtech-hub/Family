@@ -22,6 +22,13 @@ function LoginContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    const errorParam = new URLSearchParams(window.location.search).get('error');
+    if (errorParam === 'unconfirmed') {
+      setError(locale === 'am' ? 'እባክዎ መጀመሪያ ኢሜልዎን ያረጋግጡ። የላክንልዎትን ሊንክ በኢንቦክስዎ ይፈልጉ።' : 'Please confirm your email first. Check your inbox for the verification link.');
+    }
+  }, [locale]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -55,7 +62,20 @@ function LoginContent() {
           .single();
 
         if (profile?.is_onboarded) {
-          router.push('/dashboard');
+          // Check verification
+          const { data: verification } = await supabase
+            .from('verifications')
+            .select('status')
+            .eq('user_id', data.user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+          if (verification?.status === 'verified') {
+            router.push('/dashboard');
+          } else {
+            router.push('/onboarding?step=5');
+          }
         } else {
           router.push('/onboarding');
         }

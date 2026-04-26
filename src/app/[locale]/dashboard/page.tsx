@@ -221,10 +221,6 @@ export default function DashboardPage() {
                       <button onClick={() => setShowPayment(false)} className="mb-6 text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">← {t('backToDash')}</button>
                       <PaymentPortal profile={profile} onPaymentStarted={() => setShowPayment(false)} />
                     </div>
-                  ) : verificationStatus !== 'verified' && profile?.id ? (
-                    <div className="col-span-full">
-                      <VerificationGate userId={profile.id} onVerified={() => setVerificationStatus('verified')} />
-                    </div>
                   ) : isTrialExpired && paymentStatus !== 'approved' ? (
                     <div className="col-span-full bg-white p-12 rounded-[3rem] border border-red-100 text-center space-y-6">
                       <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto">
@@ -280,25 +276,20 @@ export default function DashboardPage() {
         )}
 
         {/* Tab Components */}
-        {(activeTab === 'chat' || activeTab === 'workshops') && verificationStatus !== 'verified' && profile?.id && (
-          <div className="flex-1 flex flex-col pt-10 items-center justify-center">
-             <VerificationGate userId={profile.id} onVerified={() => setVerificationStatus('verified')} />
-          </div>
-        )}
 
-        {activeTab === 'chat' && verificationStatus === 'verified' && (
+        {activeTab === 'chat' && (
            <div className="mt-10 h-[calc(100vh-200px)]">
               <ChatView />
            </div>
         )}
 
-        {activeTab === 'workshops' && verificationStatus === 'verified' && (
+        {activeTab === 'workshops' && (
            <div className="flex items-center justify-center h-64 bg-white rounded-[3rem] border border-gray-100 mt-10">
               <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">Workshops Feature Coming Soon</p>
            </div>
         )}
 
-        {activeTab === 'community' && <CommunityView isVerified={verificationStatus === 'verified'} />}
+        {activeTab === 'community' && <CommunityView isVerified={true} />}
       </main>
     </div>
   );

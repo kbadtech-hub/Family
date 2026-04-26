@@ -23,8 +23,12 @@ import {
   BookOpen,
   UploadCloud,
   Eye,
-  EyeOff
+  EyeOff,
+  Camera,
+  Loader2,
+  Sparkles
 } from 'lucide-react';
+import VerificationGate from '@/components/dashboard/VerificationGate';
 import { calculateStarSign, StarSignLabels } from '@/lib/abushakir';
 import { 
   RELIGIONS, 
@@ -44,6 +48,8 @@ function OnboardingContent() {
   const locale = useLocale();
   const router = useRouter();
   const [step, setStep] = useState(1);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [verificationStatus, setVerificationStatus] = useState<'none' | 'pending' | 'verified' | 'rejected'>('none');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [authMode, setAuthMode] = useState<'email' | 'phone'>('email');
@@ -92,9 +98,18 @@ function OnboardingContent() {
     } else if (pref === 'Local') {
       updateField('location', 'Addis Ababa'); // Default to capital for local
     }
+
+    const stepParam = searchParams.get('step');
+    if (stepParam) {
+      setStep(parseInt(stepParam));
+      // Try to get userId if it exists in session
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) setUserId(user.id);
+      });
+    }
   }, [searchParams]);
 
-  const nextStep = () => setStep(s => Math.min(s + 1, 5));
+  const nextStep = () => setStep(s => Math.min(s + 1, 6));
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
 
   const handleFinish = async () => {
@@ -122,10 +137,13 @@ function OnboardingContent() {
         signUpOptions.phone = `${formData.country_code}${formData.phone}`;
       }
 
-      const { error: authError } = await supabase.auth.signUp(signUpOptions);
+      const { data, error: authError } = await supabase.auth.signUp(signUpOptions);
 
       if (authError) throw authError;
 
+      if (data.user) {
+        setUserId(data.user.id);
+      }
       setStep(5);
     } catch (error: any) {
       setErrorMsg(error.message);
@@ -459,6 +477,23 @@ function OnboardingContent() {
           </div>
         );
       case 5:
+        return userId ? (
+          <div className="space-y-6 animate-in slide-in-from-right duration-300">
+             <VerificationGate 
+               userId={userId} 
+               onVerified={() => {
+                 setVerificationStatus('verified');
+                 setStep(6);
+               }} 
+             />
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center p-20">
+             <Loader2 size={40} className="text-primary animate-spin" />
+             <p className="mt-4 font-bold text-accent italic">Preparing Verification...</p>
+          </div>
+        );
+      case 6:
         return (
           <div className="space-y-8 text-center animate-in zoom-in duration-500">
              <div className="mx-auto w-24 h-24 bg-green-100 rounded-full flex items-center justify-center shadow-xl shadow-green-500/10">
@@ -484,12 +519,12 @@ function OnboardingContent() {
     <div className="min-h-screen bg-[var(--secondary)] bg-opacity-10 py-12 px-4 flex items-center justify-center" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       <div className="max-w-xl w-full">
         <div className="mb-8 flex justify-between items-center px-4">
-          {[1,2,3,4,5].map(i => (
+          {[1,2,3,4,5,6].map(i => (
              <React.Fragment key={i}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold transition-all ${step >= i ? 'bg-primary text-white scale-110 shadow-lg' : 'bg-white text-gray-300'}`}>
                    <span className="text-[10px]">{i}</span>
                 </div>
-                {i < 5 && <div className={`flex-1 h-1 mx-2 rounded-full ${step > i ? 'bg-primary' : 'bg-white'}`} />}
+                {i < 6 && <div className={`flex-1 h-1 mx-2 rounded-full ${step > i ? 'bg-primary' : 'bg-white'}`} />}
              </React.Fragment>
           ))}
         </div>
@@ -523,7 +558,7 @@ function OnboardingContent() {
                   disabled={isSubmitting}
                   className={`flex-[2] btn-primary flex items-center justify-center gap-2 ${isSubmitting ? 'opacity-50' : ''}`}
                 >
-                  {isSubmitting ? t('nav.processing') : (step === 5 ? t('nav.finish') : t('nav.continue'))} {locale === 'ar' ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+                  {isSubmitting ? t('nav.processing') : (step === 6 ? t('nav.finish') : t('nav.continue'))} {locale === 'ar' ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
                 </button>
               </div>
             )}
