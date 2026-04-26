@@ -8,7 +8,8 @@ import {
   Send,
   User,
   ShieldCheck,
-  Sparkles
+  Sparkles,
+  CheckCircle2
 } from 'lucide-react';
 
 interface Post {
@@ -21,6 +22,7 @@ interface Post {
     full_name: string;
     avatar_url: string;
     star_sign: string;
+    is_verified: boolean;
   } | null;
 }
 
@@ -35,7 +37,7 @@ export default function CommunityView({ isVerified = false }: { isVerified?: boo
     const fetchPosts = async () => {
       const { data } = await supabase
         .from('community_posts')
-        .select('*, profiles(full_name, avatar_url, star_sign)')
+        .select('*, profiles(full_name, avatar_url, star_sign, is_verified)')
         .order('created_at', { ascending: false });
       
       if (data) setPosts(data as Post[]);
@@ -165,10 +167,13 @@ export default function CommunityView({ isVerified = false }: { isVerified?: boo
                       <div className="w-full h-full flex items-center justify-center text-primary"><User size={24} /></div>
                     )}
                  </div>
-                 <div>
-                    <h4 className="font-black text-foreground group-hover:text-primary transition-colors uppercase tracking-widest text-xs">{post.profiles?.full_name || t('anonymousUser')}</h4>
+                  <div>
+                    <h4 className="font-black text-foreground group-hover:text-primary transition-colors uppercase tracking-widest text-xs flex items-center gap-1">
+                      {post.profiles?.full_name || t('anonymousUser')}
+                      {post.profiles?.is_verified && <CheckCircle2 size={12} className="text-primary fill-primary/10" />}
+                    </h4>
                     <p className="text-[10px] text-primary font-black uppercase tracking-widest">{post.profiles?.star_sign || t('memberBadge')}</p>
-                 </div>
+                  </div>
               </div>
             </div>
 

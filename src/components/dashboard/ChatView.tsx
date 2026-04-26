@@ -16,7 +16,8 @@ import {
   Lightbulb,
   Languages,
   Eye,
-  EyeOff
+  EyeOff,
+  CheckCircle2
 } from 'lucide-react';
 import Image from 'next/image';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -36,6 +37,7 @@ interface Profile {
   full_name: string;
   avatar_url: string;
   star_sign: string;
+  is_verified: boolean;
 }
 
 export default function ChatView() {
@@ -220,7 +222,10 @@ export default function ChatView() {
                   <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
                 </div>
                 <div className="flex-1 text-left">
-                  <p className="font-bold text-accent group-hover:text-primary transition-colors">{match.full_name}</p>
+                  <p className="font-bold text-accent group-hover:text-primary transition-colors flex items-center gap-1">
+                    {match.full_name}
+                    {match.is_verified && <CheckCircle2 size={12} className="text-primary fill-primary/10" />}
+                  </p>
                   <p className="text-[10px] text-primary font-black uppercase tracking-widest">{match.star_sign || 'Abushakir Match'}</p>
                 </div>
               </button>
@@ -240,7 +245,10 @@ export default function ChatView() {
                   <Image src={selectedMatch.avatar_url || 'https://images.unsplash.com/photo-1531123897727-8f129e16fd3c?auto=format&fit=crop&q=80&w=200'} alt="" width={40} height={40} className="w-full h-full object-cover" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-accent">{selectedMatch.full_name}</h3>
+                  <h3 className="font-bold text-accent flex items-center gap-1">
+                    {selectedMatch.full_name}
+                    {selectedMatch.is_verified && <CheckCircle2 size={14} className="text-primary fill-primary/10" />}
+                  </h3>
                   <p className="text-[10px] text-green-500 font-bold uppercase tracking-widest">Active Now</p>
                 </div>
               </div>

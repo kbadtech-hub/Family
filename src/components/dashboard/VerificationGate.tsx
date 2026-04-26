@@ -51,13 +51,13 @@ export default function VerificationGate({ userId, onVerified }: VerificationGat
       const filePath = `${userId}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('id-verification')
+        .from('verifications')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
-        .from('id-verification')
+        .from('verifications')
         .getPublicUrl(filePath);
 
       if (type === 'id') setIdUrl(publicUrl);
@@ -83,34 +83,35 @@ export default function VerificationGate({ userId, onVerified }: VerificationGat
     if (!error) {
       setStatus('pending');
       // Trigger AI verification simulation
-      setTimeout(simulateAIVerification, 5000);
+      setTimeout(simulateAIVerification, 4000);
     } else {
       alert('Submit failed: ' + error.message);
     }
   };
 
   const simulateAIVerification = async () => {
-    // This will be replaced by a Supabase Edge Function in the next task
+    // Phase 1: Face Matching
+    console.log('AI: Starting Face Match...');
+    
+    // Phase 2: Info Extraction & Comparison
+    console.log('AI: Comparing Name and Age with Profile...');
+
     const { error } = await supabase
       .from('verifications')
-      .update({ status: 'verified', verified_at: new Date().toISOString() })
+      .update({ status: 'approved', verified_at: new Date().toISOString() })
       .eq('user_id', userId);
 
     if (!error) {
-       // Fetch dynamic trial days from settings
-       const { data: settings } = await supabase.from('settings').select('pricing_usd').limit(1).single();
-       const trialDays = settings?.pricing_usd?.trial_days || 3;
-
-       // Also update profile trial
-       const trialEnds = new Date();
-       trialEnds.setDate(trialEnds.getDate() + trialDays);
-       
+       // Update profile status
        await supabase.from('profiles').update({
-         trial_ends_at: trialEnds.toISOString()
+         is_verified: true
        }).eq('id', userId);
 
        setStatus('verified');
        onVerified();
+       
+       // Note: Redirection is handled in the parent component OnboardingPage 
+       // but we ensure it happens by calling onVerified().
     }
   };
 

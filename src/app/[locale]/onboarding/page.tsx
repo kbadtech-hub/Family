@@ -484,6 +484,7 @@ function OnboardingContent() {
                onVerified={() => {
                  setVerificationStatus('verified');
                  setStep(6);
+                 setTimeout(() => router.push('/dashboard'), 2000);
                }} 
              />
           </div>
