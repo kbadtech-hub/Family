@@ -62,19 +62,26 @@ export async function middleware(request: NextRequest) {
     // Fetch profile and verification status
     const { data: profile } = await supabase.from('profiles').select('is_onboarded, is_verified, role').eq('id', user.id).single();
     
-    // Check for verification (unless it's an admin route for an admin)
-    const isStaff = profile?.role === 'admin' || profile?.role === 'super_admin';
+    // Check for staff status (Admin/Super Admin)
+    const isStaff = profile?.role === 'admin' || profile?.role === 'super_admin' || user.email === 'kalidseid111@gmail.com';
     
-    if (isAdminRoute && !isStaff && user.email !== 'kalidseid111@gmail.com') {
+    // Admin route protection
+    if (isAdminRoute && !isStaff) {
       return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
     }
 
+    // Bypass onboarding/verification for staff
+    if (isStaff) {
+      return response;
+    }
+
+    // Onboarding gate for regular users
     if (!profile?.is_onboarded) {
       return NextResponse.redirect(new URL(`/${locale}/onboarding`, request.url));
     }
 
-    const isVerified = profile?.is_verified;
-    if (!isVerified && !isStaff && user.email !== 'kalidseid111@gmail.com') {
+    // Verification gate for regular users
+    if (!profile?.is_verified) {
       return NextResponse.redirect(new URL(`/${locale}/onboarding?step=5`, request.url));
     }
   }
