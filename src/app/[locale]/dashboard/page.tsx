@@ -22,6 +22,8 @@ import CommunityView from '@/components/dashboard/CommunityView';
 import VerificationGate from '@/components/dashboard/VerificationGate';
 import PaymentPortal from '@/components/payment/PaymentPortal';
 import ChatView from '@/components/dashboard/ChatView';
+import ProfileView from '@/components/dashboard/ProfileView';
+import MatchDetailView from '@/components/dashboard/MatchDetailView';
 
 export default function DashboardPage() {
   const t = useTranslations('Dashboard');
@@ -55,6 +57,7 @@ export default function DashboardPage() {
   const [verificationStatus, setVerificationStatus] = useState<string>('loading');
   const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
   const [isTrialExpired, setIsTrialExpired] = useState(false);
+  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
 
   const languages = [
     { id: 'en', label: 'English' },
@@ -232,7 +235,11 @@ export default function DashboardPage() {
                     </div>
                   ) : (
                     matches.map(match => (
-                      <div key={match.id} className="bg-white p-6 rounded-[2.5rem] border border-border shadow-sm group hover:shadow-xl transition-all duration-500">
+                      <div 
+                        key={match.id} 
+                        onClick={() => setSelectedMatchId(match.id)}
+                        className="bg-white p-6 rounded-[2.5rem] border border-border shadow-sm group hover:shadow-xl transition-all duration-500 cursor-pointer"
+                      >
                         <div className="relative aspect-square rounded-[2rem] overflow-hidden mb-5">
                           <Image src={match.image} alt={match.name} width={400} height={400} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                           <div className={`absolute top-4 ${locale === 'ar' ? 'left-4' : 'right-4'} bg-primary text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg`}>
@@ -290,6 +297,32 @@ export default function DashboardPage() {
         )}
 
         {activeTab === 'community' && <CommunityView isVerified={true} />}
+
+        {activeTab === 'profile' && profile && (
+          <ProfileView 
+            profile={profile} 
+            onUpdate={() => {
+              // Re-fetch profile to update dashboard UI
+              supabase.auth.getUser().then(({ data: { user } }) => {
+                if (user) {
+                  supabase.from('profiles').select('*').eq('id', user.id).single()
+                    .then(({ data }) => data && setProfile(data as Profile));
+                }
+              });
+            }} 
+          />
+        )}
+
+        {selectedMatchId && (
+          <MatchDetailView 
+            matchId={selectedMatchId} 
+            onClose={() => setSelectedMatchId(null)} 
+            onStartChat={(id) => {
+              setSelectedMatchId(null);
+              setActiveTab('chat');
+            }}
+          />
+        )}
       </main>
     </div>
   );
