@@ -977,7 +977,6 @@ function OnboardingContent() {
         </div>
 
         <div className="mt-12 text-center text-accent/40 flex flex-col items-center gap-4">
-           <Heart size={24} className="fill-primary text-primary" />
            <p className="font-bold text-lg tracking-widest uppercase">{locale === 'am' ? 'ቤተሰብ' : 'Beteseb'}</p>
            <p className="text-sm">{t('footerTagline')}</p>
         </div>

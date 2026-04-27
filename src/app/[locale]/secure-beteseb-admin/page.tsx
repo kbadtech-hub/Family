@@ -585,34 +585,7 @@ export default function AdminPortal() {
 
   const displayVerifications = verifications.length > 0 ? verifications : MOCK_VERIFICATIONS;
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
 
-    setIsSaving(true);
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `logo-${Math.random()}.${fileExt}`;
-      const filePath = `public/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('content')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('content')
-        .getPublicUrl(filePath);
-
-      setCmsForm({ ...cmsForm, logo_url: publicUrl });
-      alert('Logo uploaded! Click Deploy to save changes.');
-    } catch (err: unknown) {
-      alert('Upload error: ' + (err instanceof Error ? err.message : 'Unknown error'));
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   if (!isAuthenticated) {
      return (
@@ -767,11 +740,10 @@ export default function AdminPortal() {
                     </div>
                     <div className="space-y-8">
                        <div className="space-y-4">
-                          <label className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Global Logo</label>
+                          <label className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Site Identity (Disabled)</label>
                           <div className="flex items-center gap-6 p-6 bg-background rounded-3xl border border-white/5">
-                             <Image src={cmsForm.logo_url || "/logo.png"} width={200} height={48} className="h-12 w-auto object-contain" alt="Logo" />
-                             <input type="file" onChange={handleLogoUpload} className="hidden" id="logo-upload" />
-                             <label htmlFor="logo-upload" className="btn-secondary py-3 text-[10px] cursor-pointer">Choose Image</label>
+                             <p className="text-foreground/20 italic text-sm">Visual Branding Disabled</p>
+
                           </div>
                        </div>
 
