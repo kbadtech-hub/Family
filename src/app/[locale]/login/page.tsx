@@ -224,7 +224,7 @@ function LoginContent() {
               <p className="text-gray-400 text-sm font-medium">
                 {t('noAccount')}{' '}
                 <button 
-                  onClick={() => router.push('/onboarding')}
+                  onClick={() => router.push('/signup')}
                   className="text-primary font-bold hover:underline ml-1"
                 >
                   {t('signUp')}

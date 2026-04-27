@@ -26,10 +26,12 @@ import {
   Camera,
   Loader2,
   X,
-  Sparkles
+  Sparkles,
+  Upload
 } from 'lucide-react';
 import VerificationGate from '@/components/dashboard/VerificationGate';
 import { calculateStarSign, StarSignLabels } from '@/lib/abushakir';
+import { simulateIdentityVerification } from '@/lib/verification';
 import { 
   RELIGIONS, 
   GENDERS, 
@@ -57,11 +59,12 @@ function OnboardingContent() {
   const locale = useLocale();
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const [userType, setUserType] = useState<'Local' | 'Diaspora' | null>(null);
+  const [userType, setUserType] = useState<'Local' | 'Diaspora' | 'Any'>('Any');
   const [userId, setUserId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [authMode, setAuthMode] = useState<'email' | 'phone'>('email');
+  const [isVerifying, setIsVerifying] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     phone: '',
@@ -94,7 +97,9 @@ function OnboardingContent() {
     eth_birth_year: '',
     calendar_type: (locale === 'am' || locale === 'om') ? 'ethiopian' : 'gregorian',
     future_children: '',
-    otp: ''
+    otp: '',
+    id_photo: '',
+    selfie_photo: ''
   });
   const [showPassword, setShowPassword] = useState(false);
 
@@ -142,13 +147,16 @@ function OnboardingContent() {
       }
     }
 
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setUserId(user.id);
+        updateField('email', user.email || '');
+      }
+    });
+
     const stepParam = searchParams.get('step');
     if (stepParam) {
       setStep(parseInt(stepParam));
-      // Try to get userId if it exists in session
-      supabase.auth.getUser().then(({ data: { user } }) => {
-        if (user) setUserId(user.id);
-      });
     }
     const emailParam = searchParams.get('email');
     if (emailParam) {
@@ -159,33 +167,38 @@ function OnboardingContent() {
   const validateStep = (currentStep: number) => {
     setErrorMsg('');
     switch (currentStep) {
-      case 1:
+      case 1: // Signup (if applicable)
         if (authMode === 'email' && !formData.email) return t('errors.emailRequired');
-        if (authMode === 'phone' && !formData.phone) return t('errors.phoneRequired');
         if (!formData.password || formData.password.length < 6) return t('errors.passwordLength');
+        break;
+      case 2: // OTP
+        if (!formData.otp || formData.otp.length !== 6) return t('errors.otpRequired');
+        break;
+      case 3: // Basic Profile
         if (!formData.full_name) return t('errors.fullNameRequired');
         if (!formData.birth_date) return t('errors.birthDateRequired');
-        break;
-      case 2:
         if (!formData.gender) return t('errors.genderRequired');
         if (!formData.location) return t('errors.locationRequired');
         if (!formData.religion) return t('errors.religionRequired');
         if (!formData.marital_status) return t('errors.maritalRequired');
         break;
-      case 3:
+      case 4: // Career & Psychology
         if (!formData.job) return t('errors.jobRequired');
         if (!formData.finance_habit) return t('errors.financeRequired');
         if (!formData.family_value) return t('errors.valuesRequired');
         if (!formData.conflict_resolution) return t('errors.conflictRequired');
-        if (!formData.spouse_requirements) return t('errors.requirementsRequired');
+        if (!formData.spouse_requirements.length) return t('errors.requirementsRequired');
         break;
-      case 4:
+      case 5: // Partner Prefs
         if (!formData.partner_countries.length) return t('errors.partnerCountryRequired');
         if (!formData.partner_religion) return t('errors.partnerReligionRequired');
         if (!formData.partner_intent) return t('errors.partnerIntentRequired');
         break;
-      case 6:
-        if (!formData.otp || formData.otp.length !== 6) return t('errors.otpRequired');
+      case 6: // ID Upload
+        if (!formData.id_photo) return locale === 'am' ? 'እባክዎ መታወቂያዎን ያስገቡ' : 'Please upload your ID';
+        break;
+      case 7: // Selfie
+        if (!formData.selfie_photo) return locale === 'am' ? 'እባክዎ ሰልፊ ፎቶዎን ያስገቡ' : 'Please take a selfie';
         break;
       default:
         return null;
@@ -193,13 +206,22 @@ function OnboardingContent() {
     return null;
   };
 
-  const nextStep = () => {
+  const nextStep = async () => {
     const error = validateStep(step);
     if (error) {
       setErrorMsg(error);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
+    
+    // Sync progress to DB if logged in
+    if (userId) {
+      await supabase.from('profiles').update({ 
+        onboarding_step: step + 1,
+        ...formData
+      }).eq('id', userId);
+    }
+
     setStep(s => Math.min(s + 1, 9));
   };
 
@@ -292,7 +314,8 @@ function OnboardingContent() {
 
       if (error) throw error;
       
-      setStep(7); // Move to Gallery
+      // Redirect to dashboard after OTP success
+      router.push('/dashboard');
     } catch (error: unknown) {
       if (error instanceof Error) setErrorMsg(error.message);
     } finally {
@@ -305,518 +328,43 @@ function OnboardingContent() {
       case 1:
         return (
           <div className="space-y-6 animate-in slide-in-from-right duration-300">
-            <h2 className="text-3xl font-bold text-accent italic">{t('personalDetails')}</h2>
+            <h2 className="text-3xl font-bold text-accent italic">{t('signUp')}</h2>
             <p className="text-gray-500">{t('personalSubtitle')}</p>
             
-            {errorMsg && <div className="p-4 bg-red-100 text-red-600 rounded-xl">{errorMsg}</div>}
-            
-            {/* Auth Mode Toggle */}
-            <div className="flex gap-2 p-1 bg-muted rounded-xl mb-6">
-              <button
-                onClick={() => setAuthMode('email')}
-                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${authMode === 'email' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'}`}
-              >
-                <Mail size={14} /> {t('fields.email')}
-              </button>
-              <button
-                onClick={() => setAuthMode('phone')}
-                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${authMode === 'phone' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'}`}
-              >
-                <Phone size={14} /> {t('fields.phoneTab')}
-              </button>
-            </div>
-
             <div className="space-y-4">
-              {authMode === 'email' ? (
-                <label className="block">
-                  <span className="text-sm font-medium text-gray-700">{t('fields.email')}</span>
-                  <input 
-                    type="email" 
-                    value={formData.email}
-                    onChange={(e) => updateField('email', e.target.value)}
-                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted" 
-                    placeholder="name@example.com"
-                  />
-                </label>
-              ) : (
-                <div className="space-y-1">
-                  <span className="text-sm font-medium text-gray-700">{t('fields.phone')}</span>
-                  <div className="flex gap-2">
-                    <select
-                      value={formData.country_code}
-                      onChange={(e) => updateField('country_code', e.target.value)}
-                      aria-label="Select country code"
-                      className="block w-32 rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted font-bold text-sm"
-                    >
-                      {COUNTRIES.map(c => <option key={c.iso} value={c.code}>{c.iso} {c.code}</option>)}
-                    </select>
-                    <input 
-                      type="tel" 
-                      value={formData.phone}
-                      onChange={(e) => updateField('phone', e.target.value)}
-                      className="block flex-1 rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted" 
-                      placeholder="912345678"
-                    />
-                  </div>
-                </div>
-              )}
               <label className="block">
-                <span className="text-sm font-medium text-gray-700">{t('fields.password')}</span>
-                <div className="relative">
-                  <input 
-                     type={showPassword ? 'text' : 'password'} 
-                     value={formData.password}
-                     onChange={(e) => updateField('password', e.target.value)}
-                     className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted pr-12" 
-                     placeholder={t('fields.passwordHint')}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-primary transition-all rounded-xl mt-0.5"
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </label>
-              <label className="block">
-                <span className="text-sm font-medium text-gray-700">{t('fields.fullName')}</span>
+                <span className="text-sm font-medium text-gray-700">{t('fields.email')}</span>
                 <input 
-                   type="text" 
-                   value={formData.full_name}
-                   onChange={(e) => updateField('full_name', e.target.value)}
-                   className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted" 
-                   placeholder={t('fields.fullNamePlaceholder')}
+                  type="email" 
+                  value={formData.email}
+                  onChange={(e) => updateField('email', e.target.value)}
+                  className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted" 
+                  placeholder="name@example.com"
                 />
               </label>
-
-              <div className="grid grid-cols-1 gap-4">
-                <div className="flex gap-2 p-1 bg-muted rounded-2xl w-fit">
-                   <button 
-                     type="button"
-                     onClick={() => updateField('calendar_type', 'gregorian')}
-                     className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${formData.calendar_type === 'gregorian' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'}`}
-                   >
-                     {t('calendar.gregorian')}
-                   </button>
-                   <button 
-                     type="button"
-                     onClick={() => updateField('calendar_type', 'ethiopian')}
-                     className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${formData.calendar_type === 'ethiopian' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'}`}
-                   >
-                     {t('calendar.ethiopian')}
-                   </button>
-                </div>
-
-                {formData.calendar_type === 'ethiopian' ? (
-                  <div className="space-y-2">
-                    <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                      <Calendar size={16} /> {t('fields.birthDate')}
-                    </span>
-                    <div className="grid grid-cols-3 gap-2">
-                       <input 
-                         type="number" placeholder={t('calendar.day')} min={1} max={30}
-                         value={formData.eth_birth_day}
-                         onChange={(e) => updateField('eth_birth_day', e.target.value)}
-                         className="p-3 bg-muted rounded-xl text-center"
-                       />
-                       <select 
-                         value={formData.eth_birth_month}
-                         onChange={(e) => updateField('eth_birth_month', e.target.value)}
-                         className="p-3 bg-muted rounded-xl"
-                         aria-label="Month"
-                       >
-                         <option value="">{t('calendar.month')}</option>
-                         {['Meskerem', 'Tikemt', 'Hidar', 'Tahsas', 'Tir', 'Yekatit', 'Megabit', 'Miazia', 'Genbot', 'Sene', 'Hamle', 'Nehase', 'Pagume'].map((m, i) => (
-                           <option key={m} value={i + 1}>{t_const(`Months.${m}`)}</option>
-                         ))}
-                       </select>
-                       <input 
-                         type="number" placeholder={t('calendar.year')} min={1900} max={2017}
-                         value={formData.eth_birth_year}
-                         onChange={(e) => updateField('eth_birth_year', e.target.value)}
-                         className="p-3 bg-muted rounded-xl text-center"
-                       />
-                    </div>
-                  </div>
-                ) : (
-                  <label className="block">
-                    <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                      <Calendar size={16} /> {t('fields.birthDate')}
-                    </span>
-                    <input 
-                      type="date" 
-                      value={formData.birth_date}
-                      onChange={(e) => updateField('birth_date', e.target.value)}
-                      className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted" 
-                    />
-                  </label>
-                )}
-                <label className="block">
-                  <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <Clock size={16} /> {t('fields.birthTime')}
-                  </span>
-                  <input 
-                    type="time" 
-                    value={formData.birth_time}
-                    onChange={(e) => updateField('birth_time', e.target.value)}
-                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted" 
-                  />
-                </label>
-              </div>
-
-              {formData.star_sign && (
-                <div className="p-4 bg-primary/10 rounded-xl border border-primary/20 flex items-center gap-3">
-                  <ShieldCheck className="text-primary" />
-                  <div>
-                    <p className="text-[10px] text-primary font-black uppercase tracking-wider">{t('fields.abushakirBadge')}</p>
-                    <p className="text-accent font-bold">{(StarSignLabels as Record<string, string>)[formData.star_sign]}</p>
-                  </div>
-                </div>
-              )}
+              <label className="block">
+                <span className="text-sm font-medium text-gray-700">{t('fields.password')}</span>
+                <input 
+                   type="password" 
+                   value={formData.password}
+                   onChange={(e) => updateField('password', e.target.value)}
+                   className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted" 
+                   placeholder={t('fields.passwordHint')}
+                />
+              </label>
+            </div>
+            <div className="pt-4">
+               <button 
+                 onClick={handleFinish}
+                 disabled={isSubmitting}
+                 className="w-full btn-primary py-5 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-primary/20"
+               >
+                 {isSubmitting ? <Loader2 className="animate-spin" /> : <>{t('signUp')} <ChevronRight size={18} /></>}
+               </button>
             </div>
           </div>
         );
       case 2:
-        return (
-          <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-accent italic">{t('demographics')}</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <label className="block">
-                <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                   <User size={16} /> {t('fields.gender')}
-                </span>
-                <select 
-                  value={formData.gender}
-                  onChange={(e) => updateField('gender', e.target.value)}
-                  className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
-                >
-                  <option value="">{t('fields.genderPlaceholder')}</option>
-                  {GENDERS.map(g => <option key={g} value={g}>{t_const(`Genders.${g}`)}</option>)}
-                </select>
-              </label>
-              
-              <label className="block">
-                <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                   <MapPin size={16} /> {userType === 'Local' ? t('fields.location') : t('fields.country')}
-                </span>
-                <select 
-                  value={formData.location}
-                  onChange={(e) => updateField('location', e.target.value)}
-                  className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
-                >
-                  <option value="">{userType === 'Local' ? t('fields.locationPlaceholder') : t('fields.countryPlaceholder')}</option>
-                  {userType === 'Local' ? (
-                    LOCATIONS.filter(l => l !== 'Other (International)').map(l => <option key={l} value={l}>{t_const(`Locations.${l}`)}</option>)
-                  ) : (
-                    COUNTRIES.map(c => <option key={c.iso} value={c.name}>{t_const(`Countries.${c.name}`) || c.name}</option>)
-                  )}
-                </select>
-              </label>
-
-              <label className="block">
-                <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                   <BookOpen size={16} /> {t('fields.religion')}
-                </span>
-                <select 
-                   value={formData.religion}
-                   onChange={(e) => updateField('religion', e.target.value)}
-                   className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
-                >
-                  <option value="">{t('fields.religionPlaceholder')}</option>
-                  {RELIGIONS.map(r => <option key={r} value={r}>{t_const(`Religions.${r}`)}</option>)}
-                </select>
-              </label>
-
-              <label className="block">
-                <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                   <Heart size={16} /> {t('fields.maritalStatus')}
-                </span>
-                <select 
-                  value={formData.marital_status}
-                  onChange={(e) => updateField('marital_status', e.target.value)}
-                  className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
-                >
-                  <option value="">{t('fields.maritalPlaceholder')}</option>
-                  {(formData.gender === 'Female' ? MARITAL_STATUS_FEMALE : MARITAL_STATUS_MALE).map(s => (
-                    <option key={s} value={s}>{t_const(`Marital.${s}`)}</option>
-                  ))}
-                </select>
-              </label>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <label className="block">
-                  <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                     <Users size={16} /> {t('fields.hasChildren')}
-                  </span>
-                  <select 
-                    value={formData.has_children}
-                    onChange={(e) => updateField('has_children', e.target.value)}
-                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
-                  >
-                    <option value="">{t('fields.genderPlaceholder')}</option>
-                    {HAVE_CHILDREN_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`Children.${o}`)}</option>)}
-                  </select>
-                </label>
-
-                <label className="block">
-                  <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                     <Sparkles size={16} /> {locale === 'am' ? 'የልጅ እቅድ (ወደፊት)' : 'Future Children Plans'}
-                  </span>
-                  <select 
-                    value={formData.future_children}
-                    onChange={(e) => updateField('future_children', e.target.value)}
-                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
-                  >
-                    <option value="">{t('fields.genderPlaceholder')}</option>
-                    {FUTURE_CHILDREN_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`FutureChildren.${o}`)}</option>)}
-                  </select>
-                </label>
-              </div>
-            </div>
-          </div>
-        );
-      case 3:
-        return (
-          <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-accent italic">{t('career')}</h2>
-            <div className="space-y-4">
-              <label className="block">
-                <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                  <Briefcase size={16} /> {t('fields.jobTitle')}
-                </span>
-                <select 
-                  value={formData.job}
-                  onChange={(e) => updateField('job', e.target.value)}
-                  className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
-                >
-                  <option value="">{t('fields.jobPlaceholder')}</option>
-                  {JOB_CATEGORIES.map(cat => <option key={cat} value={cat}>{t_const(`Jobs.${cat}`)}</option>)}
-                </select>
-              </label>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <label className="block">
-                  <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                     <Wallet size={16} /> {t('fields.financeHabit')}
-                  </span>
-                  <select 
-                     value={formData.finance_habit}
-                     onChange={(e) => updateField('finance_habit', e.target.value)}
-                     className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
-                  >
-                    <option value="">{t('fields.financePlaceholder')}</option>
-                    {FINANCE_HABITS.map(h => <option key={h} value={h}>{t_const(`Finance.${h}`)}</option>)}
-                  </select>
-                </label>
-                <label className="block">
-                  <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                     <Users size={16} /> {t('fields.familyValues')}
-                  </span>
-                  <select 
-                    value={formData.family_value}
-                    onChange={(e) => updateField('family_value', e.target.value)}
-                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
-                  >
-                    <option value="">{t('fields.familyPlaceholder')}</option>
-                    {FAMILY_VALUES.map(v => <option key={v} value={v}>{t_const(`Values.${v}`)}</option>)}
-                  </select>
-                </label>
-                <label className="block md:col-span-2">
-                  <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                     <Handshake size={16} /> {t('fields.conflictResolution')}
-                  </span>
-                  <select 
-                    value={formData.conflict_resolution}
-                    onChange={(e) => updateField('conflict_resolution', e.target.value)}
-                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
-                  >
-                    <option value="">{t('fields.conflictPlaceholder')}</option>
-                    {CONFLICT_RESOLUTIONS.map(c => <option key={c} value={c}>{t_const(`Conflict.${c}`)}</option>)}
-                  </select>
-                </label>
-              <label className="block md:col-span-2">
-                <span className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-4">
-                   <Heart size={16} className="text-primary" /> {t('fields.spouseRequirements')}
-                </span>
-                <div className="flex flex-wrap gap-3">
-                  {SPOUSE_REQUIREMENTS_TAGS.map(tag => {
-                    const isSelected = formData.spouse_requirements.includes(tag);
-                    return (
-                      <button
-                        key={tag}
-                        type="button"
-                        onClick={() => {
-                          const currentTags = formData.spouse_requirements;
-                          const nextTags = isSelected 
-                            ? currentTags.filter(t => t !== tag)
-                            : [...currentTags, tag];
-                          updateField('spouse_requirements', nextTags);
-                        }}
-                        className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                          isSelected 
-                            ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105' 
-                            : 'bg-muted text-gray-400 hover:bg-muted/80'
-                        }`}
-                      >
-                        {t_const(`Requirements.${tag}`)}
-                      </button>
-                    );
-                  })}
-                </div>
-              </label>
-              </div>
-            </div>
-          </div>
-        );
-      case 4:
-        return (
-          <div className="space-y-6 animate-in slide-in-from-right duration-300">
-            <h2 className="text-3xl font-bold text-accent italic">{t('fields.partnerPrefs')}</h2>
-            
-            <div className="space-y-6">
-              {/* Country Multi-select */}
-              <div className="space-y-2">
-                <span className="text-sm font-medium text-gray-700 block">{t('fields.partnerCountry')}</span>
-                <div className="flex flex-wrap gap-2">
-                   {[{ name: 'Anywhere' }, ...COUNTRIES].sort((a, b) => {
-                     const nameA = a.name === 'Anywhere' ? (locale === 'am' ? 'ከየትኛውም ሀገር' : locale === 'ar' ? 'من أي مكان' : locale === 'om' ? 'Eessaayyuu' : 'Anywhere') : t_const(`Countries.${a.name}`);
-                     const nameB = b.name === 'Anywhere' ? (locale === 'am' ? 'ከየትኛውም ሀገር' : locale === 'ar' ? 'من أي مكان' : locale === 'om' ? 'Eessaayyuu' : 'Anywhere') : t_const(`Countries.${b.name}`);
-                     return nameA.localeCompare(nameB, locale);
-                   }).map(country => {
-                     const isSelected = formData.partner_countries.includes(country.name);
-                     return (
-                       <button
-                         key={country.name}
-                         type="button"
-                         onClick={() => {
-                           if (country.name === 'Anywhere') {
-                             updateField('partner_countries', ['Anywhere']);
-                             return;
-                           }
-                           let next = formData.partner_countries.filter(c => c !== 'Anywhere');
-                           if (isSelected) {
-                             next = next.filter(c => c !== country.name);
-                           } else {
-                             if (next.length >= 5) return;
-                             next = [...next, country.name];
-                           }
-                           updateField('partner_countries', next);
-                         }}
-                         className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest border transition-all ${isSelected ? 'bg-primary text-white border-primary' : 'bg-muted text-gray-400 border-transparent'}`}
-                       >
-                         {country.name === 'Anywhere' ? (locale === 'am' ? 'ከየትኛውም ሀገር' : locale === 'ar' ? 'من أي مكان' : locale === 'om' ? 'Eessaayyuu' : 'Anywhere') : t_const(`Countries.${country.name}`)}
-                       </button>
-                     );
-                   })}
-                </div>
-                <p className="text-[10px] text-gray-400 italic">Max 5 countries</p>
-              </div>
-
-              {/* Age Range Slider */}
-              <div className="space-y-2">
-                <span className="text-sm font-medium text-gray-700 block">{t('fields.partnerAge')}</span>
-                <div className="flex items-center gap-4">
-                  <input 
-                    type="number" min={18} max={formData.partner_age_max}
-                    value={formData.partner_age_min}
-                    onChange={(e) => updateField('partner_age_min', parseInt(e.target.value))}
-                    className="w-20 p-3 bg-muted rounded-xl text-center font-bold"
-                    aria-label="Minimum Age"
-                  />
-                  <span className="text-gray-300">to</span>
-                  <input 
-                    type="number" min={formData.partner_age_min} max={100}
-                    value={formData.partner_age_max}
-                    onChange={(e) => updateField('partner_age_max', parseInt(e.target.value))}
-                    className="w-20 p-3 bg-muted rounded-xl text-center font-bold"
-                    aria-label="Maximum Age"
-                  />
-                </div>
-              </div>
-
-              <label className="block">
-                <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                   <BookOpen size={16} /> {t('fields.partnerReligion')}
-                </span>
-                <select 
-                   value={formData.partner_religion}
-                   onChange={(e) => updateField('partner_religion', e.target.value)}
-                   className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
-                >
-                  <option value="">{t('fields.religionPlaceholder')}</option>
-                  {RELIGIONS.map(r => <option key={r} value={r}>{t_const(`Religions.${r}`)}</option>)}
-                </select>
-              </label>
-
-              <label className="block">
-                <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                   <Heart size={16} /> {locale === 'am' ? 'የአጋር ጋብቻ ሁኔታ' : 'Partner Marital Status'}
-                </span>
-                <select 
-                  value={formData.partner_intent}
-                  onChange={(e) => updateField('partner_intent', e.target.value)}
-                  className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
-                >
-                  <option value="">{t('fields.maritalPlaceholder')}</option>
-                  {PARTNER_MARITAL_PREF_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`Marital.${o}`)}</option>)}
-                </select>
-              </label>
-
-              <label className="block">
-                <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                   <Users size={16} /> {locale === 'am' ? 'የአጋር የልጅ ምርጫ' : 'Partner Children Preference'}
-                </span>
-                <select 
-                  value={formData.partner_children_pref}
-                  onChange={(e) => updateField('partner_children_pref', e.target.value)}
-                  className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
-                >
-                  <option value="">{t('fields.genderPlaceholder')}</option>
-                  {PARTNER_CHILDREN_PREF_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`PartnerChildren.${o}`)}</option>)}
-                </select>
-              </label>
-            </div>
-          </div>
-        );
-      case 5:
-        return (
-          <div className="space-y-6 animate-in slide-in-from-right duration-300">
-            <h2 className="text-3xl font-bold text-accent italic">{t('reviewTitle')}</h2>
-            <p className="text-gray-500">{t('reviewSubtitle')}</p>
-            
-            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-               <div className="bg-muted/30 p-6 rounded-[2rem] space-y-4">
-                  <div className={`flex justify-between border-b border-muted/50 pb-3 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
-                     <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">{t('fields.fullName')}</span>
-                     <span className="font-bold text-accent">{formData.full_name}</span>
-                  </div>
-                  <div className={`flex justify-between border-b border-muted/50 pb-3 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
-                     <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">{t('fields.starSign')}</span>
-                     <span className="font-bold text-primary">{(StarSignLabels as Record<string, string>)[formData.star_sign] || t('fields.unknown')}</span>
-                  </div>
-                  <div className={`flex justify-between border-b border-muted/50 pb-3 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
-                     <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">{userType === 'Local' ? t('fields.location') : t('fields.country')}</span>
-                     <span className="font-bold text-accent">{formData.location}</span>
-                  </div>
-                  <div className={`flex justify-between border-b border-muted/50 pb-3 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
-                     <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">{t('fields.religion')}</span>
-                     <span className="font-bold text-accent">{formData.religion}</span>
-                  </div>
-                  <div className={`flex justify-between border-b border-muted/50 pb-3 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
-                     <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">{t('fields.jobTitle')}</span>
-                     <span className="font-bold text-accent">{t_const(`Jobs.${formData.job}`)}</span>
-                  </div>
-                  <div className={`flex justify-between border-b border-muted/50 pb-3 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
-                     <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">{t('fields.hasChildren')}</span>
-                     <span className="font-bold text-accent">{t_const(`Children.${formData.has_children}`)}</span>
-                  </div>
-               </div>
-            </div>
-          </div>
-        );
-      case 6:
         return (
           <div className="space-y-6 animate-in slide-in-from-right duration-300">
             <div className="text-center space-y-4">
@@ -844,124 +392,328 @@ function OnboardingContent() {
                >
                  {isSubmitting ? t('nav.processing') : (locale === 'am' ? 'አረጋግጥ' : 'Verify & Continue')}
                </button>
-               <button 
-                 onClick={handleResendOTP}
-                 disabled={isSubmitting}
-                 className="w-full text-xs font-bold text-primary uppercase tracking-widest mt-4 disabled:opacity-50"
-               >
-                 {locale === 'am' ? 'ኮዱ አልደረሰዎትም? እንደገና ላክ' : 'Didn\'t get code? Resend'}
-               </button>
-               <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 text-center">
-                  <p className="text-xs text-primary font-bold">{locale === 'am' ? 'ወይም ኢሜልዎ ውስጥ ያለውን ሊንክ ይጫኑ' : 'Or click the link in your email'}</p>
-                  <p className="text-[10px] text-gray-400 mt-1">{locale === 'am' ? 'ሊንኩን ሲጫኑ ይህ ገጽ በራሱ ይዘመናል' : 'This page will auto-update after you click the link'}</p>
+            </div>
+          </div>
+        );
+      case 3:
+        return (
+          <div className="space-y-6 animate-in slide-in-from-right duration-300">
+            <h2 className="text-3xl font-bold text-accent italic">{t('demographics')}</h2>
+            
+            <div className="space-y-4">
+              <label className="block">
+                <span className="text-sm font-medium text-gray-700">{t('fields.fullName')}</span>
+                <input 
+                   type="text" 
+                   value={formData.full_name}
+                   onChange={(e) => updateField('full_name', e.target.value)}
+                   className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted" 
+                   placeholder={t('fields.fullNamePlaceholder')}
+                />
+              </label>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2 col-span-full">
+                  <div className="flex gap-2 p-1 bg-muted rounded-2xl w-fit">
+                    <button type="button" onClick={() => updateField('calendar_type', 'gregorian')} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${formData.calendar_type === 'gregorian' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'}`}>{t('calendar.gregorian')}</button>
+                    <button type="button" onClick={() => updateField('calendar_type', 'ethiopian')} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${formData.calendar_type === 'ethiopian' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'}`}>{t('calendar.ethiopian')}</button>
+                  </div>
+                  {formData.calendar_type === 'ethiopian' ? (
+                    <div className="grid grid-cols-3 gap-2">
+                       <input type="number" placeholder={t('calendar.day')} value={formData.eth_birth_day} onChange={(e) => updateField('eth_birth_day', e.target.value)} className="p-3 bg-muted rounded-xl text-center" />
+                       <select value={formData.eth_birth_month} onChange={(e) => updateField('eth_birth_month', e.target.value)} className="p-3 bg-muted rounded-xl">
+                         <option value="">{t('calendar.month')}</option>
+                         {['Meskerem', 'Tikemt', 'Hidar', 'Tahsas', 'Tir', 'Yekatit', 'Megabit', 'Miazia', 'Genbot', 'Sene', 'Hamle', 'Nehase', 'Pagume'].map((m, i) => <option key={m} value={i + 1}>{t_const(`Months.${m}`)}</option>)}
+                       </select>
+                       <input type="number" placeholder={t('calendar.year')} value={formData.eth_birth_year} onChange={(e) => updateField('eth_birth_year', e.target.value)} className="p-3 bg-muted rounded-xl text-center" />
+                    </div>
+                  ) : (
+                    <input type="date" value={formData.birth_date} onChange={(e) => updateField('birth_date', e.target.value)} className="w-full rounded-xl border-gray-300 p-3 bg-muted" />
+                  )}
+                </div>
+
+                <select value={formData.gender} onChange={(e) => updateField('gender', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                  <option value="">{t('fields.gender')}</option>
+                  {GENDERS.map(g => <option key={g} value={g}>{t_const(`Genders.${g}`)}</option>)}
+                </select>
+
+                <select value={formData.location} onChange={(e) => updateField('location', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                  <option value="">{t('fields.location')}</option>
+                  {COUNTRIES.map(c => <option key={c.iso} value={c.name}>{t_const(`Countries.${c.name}`) || c.name}</option>)}
+                </select>
+
+                <select value={formData.religion} onChange={(e) => updateField('religion', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                  <option value="">{t('fields.religion')}</option>
+                  {RELIGIONS.map(r => <option key={r} value={r}>{t_const(`Religions.${r}`)}</option>)}
+                </select>
+
+                <select value={formData.marital_status} onChange={(e) => updateField('marital_status', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                  <option value="">{t('fields.maritalStatus')}</option>
+                  {(formData.gender === 'Female' ? MARITAL_STATUS_FEMALE : MARITAL_STATUS_MALE).map(s => <option key={s} value={s}>{t_const(`Marital.${s}`)}</option>)}
+                </select>
+
+                <select value={formData.has_children} onChange={(e) => updateField('has_children', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                  <option value="">{t('fields.hasChildren')}</option>
+                  {HAVE_CHILDREN_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`Children.${o}`)}</option>)}
+                </select>
+
+                <select value={formData.future_children} onChange={(e) => updateField('future_children', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                  <option value="">{locale === 'am' ? 'የልጅ እቅድ' : 'Future Children'}</option>
+                  {FUTURE_CHILDREN_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`FutureChildren.${o}`)}</option>)}
+                </select>
+              </div>
+            </div>
+          </div>
+        );
+      case 4:
+        return (
+          <div className="space-y-6">
+            <h2 className="text-3xl font-bold text-accent italic">{t('career')}</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <select value={formData.job} onChange={(e) => updateField('job', e.target.value)} className="p-3 bg-muted rounded-xl col-span-full font-bold">
+                  <option value="">{t('fields.jobTitle')}</option>
+                  {JOB_CATEGORIES.map(cat => <option key={cat} value={cat}>{t_const(`Jobs.${cat}`)}</option>)}
+               </select>
+               <select value={formData.finance_habit} onChange={(e) => updateField('finance_habit', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                  <option value="">{t('fields.financeHabit')}</option>
+                  {FINANCE_HABITS.map(h => <option key={h} value={h}>{t_const(`Finance.${h}`)}</option>)}
+               </select>
+               <select value={formData.family_value} onChange={(e) => updateField('family_value', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                  <option value="">{t('fields.familyValues')}</option>
+                  {FAMILY_VALUES.map(v => <option key={v} value={v}>{t_const(`Values.${v}`)}</option>)}
+               </select>
+               <div className="col-span-full space-y-4">
+                  <span className="text-sm font-bold text-primary uppercase tracking-widest">{t('fields.spouseRequirements')}</span>
+                  <div className="flex flex-wrap gap-2">
+                    {SPOUSE_REQUIREMENTS_TAGS.map(tag => (
+                      <button key={tag} type="button" onClick={() => {
+                        const next = formData.spouse_requirements.includes(tag) ? formData.spouse_requirements.filter(t => t !== tag) : [...formData.spouse_requirements, tag];
+                        updateField('spouse_requirements', next);
+                      }} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${formData.spouse_requirements.includes(tag) ? 'bg-primary text-white' : 'bg-muted text-gray-400'}`}>
+                        {t_const(`Requirements.${tag}`)}
+                      </button>
+                    ))}
+                  </div>
                </div>
             </div>
           </div>
         );
-      case 7:
+      case 5:
         return (
-          <div className="space-y-8 animate-in slide-in-from-right duration-300">
-             <div className="space-y-4 text-center">
+          <div className="space-y-6">
+            <h2 className="text-3xl font-bold text-accent italic">{t('fields.partnerPrefs')}</h2>
+            <div className="space-y-6">
+               <div className="space-y-2">
+                  <span className="text-sm font-bold text-gray-700">{t('fields.partnerCountry')}</span>
+                  <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 bg-muted/50 rounded-xl">
+                    {[{name:'Anywhere'}, ...COUNTRIES].map(c => (
+                      <button key={c.name} type="button" onClick={() => {
+                        if (c.name === 'Anywhere') return updateField('partner_countries', ['Anywhere']);
+                        const next = formData.partner_countries.filter(pc => pc !== 'Anywhere');
+                        updateField('partner_countries', formData.partner_countries.includes(c.name) ? next.filter(pc => pc !== c.name) : [...next, c.name].slice(0, 5));
+                      }} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${formData.partner_countries.includes(c.name) ? 'bg-primary text-white' : 'bg-white text-gray-400'}`}>
+                        {c.name === 'Anywhere' ? 'Anywhere' : t_const(`Countries.${c.name}`) || c.name}
+                      </button>
+                    ))}
+                  </div>
+               </div>
+               <div className="grid grid-cols-2 gap-4">
+                 <select value={formData.partner_religion} onChange={(e) => updateField('partner_religion', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                    <option value="">{t('fields.partnerReligion')}</option>
+                    {RELIGIONS.map(r => <option key={r} value={r}>{t_const(`Religions.${r}`)}</option>)}
+                 </select>
+                 <select value={formData.partner_intent} onChange={(e) => updateField('partner_intent', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                    <option value="">{t('fields.partnerIntent')}</option>
+                    {PARTNER_MARITAL_PREF_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`Marital.${o}`)}</option>)}
+                 </select>
+               </div>
+            </div>
+          </div>
+        );
+      case 6: // ID Upload
+        return (
+          <div className="space-y-8 animate-in slide-in-from-right duration-300 text-center">
+            <div className="space-y-4">
+              <div className="w-20 h-20 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mx-auto">
+                 <Upload size={40} className="text-primary" />
+              </div>
+              <h2 className="text-3xl font-black text-accent italic">{locale === 'am' ? 'መታወቂያዎን ያስገቡ' : 'Upload ID'}</h2>
+              <p className="text-gray-500 max-w-sm mx-auto">{locale === 'am' ? 'እባክዎ ትክክለኛ መታወቂያዎን ወይም ፓስፖርትዎን ፎቶ ያንሱ ወይም ያስገቡ' : 'Please upload a clear photo of your ID Card or Passport.'}</p>
+            </div>
+
+            <label className="block w-full aspect-video rounded-[2.5rem] border-2 border-dashed border-primary/20 bg-muted/30 hover:bg-primary/5 transition-all cursor-pointer relative overflow-hidden group">
+               {formData.id_photo ? (
+                 <Image src={formData.id_photo} fill className="object-cover" alt="ID Preview" />
+               ) : (
+                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+                    <div className="w-12 h-12 bg-white rounded-2xl shadow-lg flex items-center justify-center text-primary group-hover:scale-110 transition-all">
+                       <Camera size={24} />
+                    </div>
+                    <span className="text-xs font-black uppercase tracking-widest text-gray-400">{locale === 'am' ? 'ፎቶ ለማንሳት እዚህ ይጫኑ' : 'Click to Upload / Capture'}</span>
+                 </div>
+               )}
+               <input 
+                 type="file" 
+                 accept="image/*" 
+                 capture="environment"
+                 className="hidden" 
+                 onChange={async (e) => {
+                   const file = e.target.files?.[0];
+                   if (!file || !userId) return;
+                   setIsSubmitting(true);
+                   const fileName = `${userId}/verification-id-${Date.now()}.jpg`;
+                   const { error } = await supabase.storage.from('user_photos').upload(fileName, file);
+                   if (!error) {
+                     const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(fileName);
+                     updateField('id_photo', publicUrl);
+                   }
+                   setIsSubmitting(false);
+                 }}
+               />
+            </label>
+          </div>
+        );
+      case 7: // Selfie & Simulation
+        return (
+          <div className="space-y-8 animate-in slide-in-from-right duration-300 text-center">
+            <div className="space-y-4">
+              <div className="w-20 h-20 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mx-auto">
+                 <User size={40} className="text-primary" />
+              </div>
+              <h2 className="text-3xl font-black text-accent italic">{locale === 'am' ? 'ሰልፊ ይነሱ' : 'Take a Selfie'}</h2>
+              <p className="text-gray-500 max-w-sm mx-auto">{locale === 'am' ? 'ፊቱ በግልጽ የሚታይ አሁናዊ የሰልፊ ፎቶ ይነሱ' : 'Take a clear live selfie to match with your ID.'}</p>
+            </div>
+
+            <label className="block w-64 h-64 mx-auto rounded-full border-4 border-dashed border-primary/20 bg-muted/30 hover:bg-primary/5 transition-all cursor-pointer relative overflow-hidden group">
+               {formData.selfie_photo ? (
+                 <Image src={formData.selfie_photo} fill className="object-cover" alt="Selfie Preview" />
+               ) : (
+                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+                    <Camera size={32} className="text-primary group-hover:scale-110 transition-all" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{locale === 'am' ? 'ሰልፊ ይነሱ' : 'Capture Selfie'}</span>
+                 </div>
+               )}
+               <input 
+                 type="file" 
+                 accept="image/*" 
+                 capture="user"
+                 className="hidden" 
+                 onChange={async (e) => {
+                   const file = e.target.files?.[0];
+                   if (!file || !userId) return;
+                   setIsSubmitting(true);
+                   const fileName = `${userId}/verification-selfie-${Date.now()}.jpg`;
+                   const { error } = await supabase.storage.from('user_photos').upload(fileName, file);
+                   if (!error) {
+                     const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(fileName);
+                     updateField('selfie_photo', publicUrl);
+                     
+                     // Trigger Simulation
+                     setIsVerifying(true);
+                     simulateIdentityVerification(formData.id_photo, publicUrl, {
+                       full_name: formData.full_name,
+                       birth_date: formData.birth_date
+                     }).then(async (result) => {
+                       setIsVerifying(false);
+                       if (result.isMatch) {
+                         // Save verification record
+                         await supabase.from('verifications').insert({
+                           user_id: userId,
+                           id_url: formData.id_photo,
+                           selfie_url: publicUrl,
+                           id_data: result.extractedData,
+                           match_score: result.score,
+                           status: 'verified',
+                           verified_at: new Date().toISOString()
+                         });
+                         // Update profile
+                         await supabase.from('profiles').update({
+                           verification_status: 'verified'
+                         }).eq('id', userId);
+                       } else {
+                         setErrorMsg(locale === 'am' ? 'ማረጋገጫ አልተሳካም: ' + result.reason : 'Verification Failed: ' + result.reason);
+                       }
+                     });
+                   }
+                   setIsSubmitting(false);
+                 }}
+               />
+            </label>
+
+            {(isVerifying || formData.selfie_photo) && (
+              <div className="bg-primary/5 p-6 rounded-[2rem] border border-primary/10">
+                 {isVerifying ? (
+                   <p className="text-xs font-bold text-primary uppercase tracking-widest flex items-center justify-center gap-2 animate-pulse">
+                     <Loader2 className="animate-spin" size={14} /> {locale === 'am' ? 'መረጃዎችዎን እያመሳከርን ነው...' : 'Verifying Identity Match...'}
+                   </p>
+                 ) : (
+                   <div className="flex flex-col items-center gap-2">
+                      <div className="flex items-center gap-2 text-green-600 font-bold uppercase tracking-widest text-[10px]">
+                         <CheckCircle2 size={16} /> {locale === 'am' ? 'ተረጋግጧል' : 'Verified'}
+                      </div>
+                      <p className="text-[10px] text-gray-400">{locale === 'am' ? 'መታወቂያዎ እና ሰልፊዎ ተመሳስለዋል' : 'ID and Selfie matched successfully'}</p>
+                   </div>
+                 )}
+              </div>
+            )}
+          </div>
+        );
+      case 8: // Gallery
+        return (
+          <div className="space-y-8 animate-in slide-in-from-right duration-300 text-center">
+             <div className="space-y-2">
                 <h2 className="text-3xl font-black text-accent italic">{t('gallery')}</h2>
                 <p className="text-gray-500">{t('gallerySubtitle')}</p>
              </div>
-
-             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+             <div className="grid grid-cols-3 gap-3">
                 {formData.gallery_photos.map((url, i) => (
-                  <div key={i} className="relative aspect-[3/4] rounded-2xl overflow-hidden group border border-muted shadow-lg">
-                     <Image src={url} fill className="object-cover group-hover:scale-110 transition-all duration-500" alt="Gallery" />
-                     <button 
-                       onClick={() => {
-                         const next = formData.gallery_photos.filter((_, idx) => idx !== i);
-                         setFormData({ ...formData, gallery_photos: next });
-                       }}
-                       aria-label="Remove photo"
-                       className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                     >
-                       <X size={14} />
-                     </button>
+                  <div key={i} className="relative aspect-[3/4] rounded-2xl overflow-hidden group">
+                     <Image src={url} fill className="object-cover" alt="Gallery" />
+                     <button onClick={() => updateField('gallery_photos', formData.gallery_photos.filter((_, idx) => idx !== i))} className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"><X size={12} /></button>
                   </div>
                 ))}
                 {formData.gallery_photos.length < 5 && (
-                  <label className="aspect-[3/4] rounded-2xl border-2 border-dashed border-muted flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-muted/30 transition-all group">
-                     <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                        <Camera size={24} />
-                     </div>
-                     <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t('galleryUpload')}</span>
-                     <input 
-                       type="file" 
-                       multiple 
-                       className="hidden" 
-                       accept="image/*"
-                       onChange={async (e) => {
-                         const files = Array.from(e.target.files || []);
-                         if (!files.length || !userId) return;
-                         
-                         setIsSubmitting(true);
-                         const uploadedUrls = [...formData.gallery_photos];
-                         
-                         for (const file of files) {
-                           if (uploadedUrls.length >= 5) break;
-                           const fileExt = file.name.split('.').pop();
-                           const fileName = `${userId}/onboarding-${Date.now()}-${Math.random()}.${fileExt}`;
-                           
-                           const { error } = await supabase.storage.from('user_photos').upload(fileName, file);
-                           if (!error) {
-                             const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(fileName);
-                             uploadedUrls.push(publicUrl);
-                           }
-                         }
-                         
-                         // Sync with DB
-                         await supabase.from('profiles').update({ gallery_photos: uploadedUrls }).eq('id', userId);
-                         setFormData({ ...formData, gallery_photos: uploadedUrls });
-                         setIsSubmitting(false);
-                       }}
-                     />
+                  <label className="aspect-[3/4] rounded-2xl border-2 border-dashed border-muted flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-muted">
+                    <Camera size={20} className="text-gray-300" />
+                    <input type="file" multiple className="hidden" onChange={async (e) => {
+                      const files = Array.from(e.target.files || []);
+                      if (!files.length || !userId) return;
+                      setIsSubmitting(true);
+                      const urls = [...formData.gallery_photos];
+                      for (const file of files) {
+                        if (urls.length >= 5) break;
+                        const fileName = `${userId}/gallery-${Date.now()}-${Math.random()}.jpg`;
+                        const { error } = await supabase.storage.from('user_photos').upload(fileName, file);
+                        if (!error) {
+                          const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(fileName);
+                          urls.push(publicUrl);
+                        }
+                      }
+                      updateField('gallery_photos', urls);
+                      setIsSubmitting(false);
+                    }} />
                   </label>
                 )}
              </div>
-
-             <div className="text-center">
-                <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">{t('galleryLimit')} ( {formData.gallery_photos.length} / 5 )</p>
-             </div>
-          </div>
-        );
-      case 8:
-        return userId ? (
-          <div className="space-y-6 animate-in slide-in-from-right duration-300">
-             <VerificationGate 
-               userId={userId} 
-               onVerified={() => {
-
-                 setStep(9);
-                 setTimeout(() => router.push('/dashboard'), 2000);
-               }} 
-             />
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center p-20">
-             <Loader2 size={40} className="text-primary animate-spin" />
-             <p className="mt-4 font-bold text-accent italic">Preparing Verification...</p>
           </div>
         );
       case 9:
         return (
           <div className="space-y-8 text-center animate-in zoom-in duration-500">
-             <div className="mx-auto w-24 h-24 bg-green-100 rounded-full flex items-center justify-center shadow-xl shadow-green-500/10">
+             <div className="mx-auto w-24 h-24 bg-green-100 rounded-full flex items-center justify-center">
                 <CheckCircle2 size={48} className="text-green-500" />
              </div>
              <h2 className="text-4xl font-bold text-accent italic">{t('finishTitle')}</h2>
              <p className="text-lg text-gray-600">{t('finishSubtitle')}</p>
-             
-             <button 
-                onClick={() => router.push('/dashboard')}
-                className="w-full btn-primary text-xl py-4 shadow-xl shadow-primary/20"
-             >
-                {t('finishCTA')}
-             </button>
+             <button onClick={() => {
+                // Final submission logic
+                supabase.from('profiles').update({ is_onboarded: true, verification_status: 'pending' }).eq('id', userId).then(() => router.push('/dashboard'));
+             }} className="w-full btn-primary py-4">{t('finishCTA')}</button>
           </div>
         );
+      default: return null;
+    }
+  };
       default:
         return null;
     }
@@ -988,9 +740,9 @@ function OnboardingContent() {
           <div className="relative">
             {renderStep()}
 
-            {step < 7 && (
+            {step < 9 && (
               <div className={`mt-12 flex justify-between gap-4 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
-                {step > 1 && (
+                {step > 3 && ( // Only show back after profile starts
                   <button 
                     onClick={prevStep}
                     className="flex-1 px-6 py-3 rounded-xl border border-gray-200 text-gray-500 font-semibold hover:bg-gray-50 flex items-center justify-center gap-2"
@@ -999,14 +751,11 @@ function OnboardingContent() {
                   </button>
                 )}
                 <button 
-                  onClick={() => {
-                    if (step === 4) handleFinish();
-                    else nextStep();
-                  }}
+                  onClick={nextStep}
                   disabled={isSubmitting}
                   className={`flex-[2] btn-primary flex items-center justify-center gap-2 ${isSubmitting ? 'opacity-50' : ''}`}
                 >
-                  {isSubmitting ? t('nav.processing') : (step === 9 ? t('nav.finish') : t('nav.continue'))} {locale === 'ar' ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+                  {isSubmitting ? t('nav.processing') : t('nav.continue')} {locale === 'ar' ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
                 </button>
               </div>
             )}

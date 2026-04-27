@@ -217,13 +217,23 @@ function DashboardContent() {
 
       {/* Main Content */}
       <main className="flex-1 p-8 md:p-16 overflow-y-auto">
-        <header className="flex justify-between items-center mb-16">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-6">
           <div>
             <h1 className="text-4xl md:text-5xl font-black text-[#0F172A] italic tracking-tighter">{t('welcome')}</h1>
             <p className="text-gray-400 mt-2 font-bold text-xs uppercase tracking-widest">{t('subtitle')}</p>
           </div>
 
           <div className="flex items-center gap-6">
+            {verificationStatus !== 'verified' && (
+              <button 
+                onClick={() => router.push('/onboarding?step=3')}
+                className="bg-primary/10 text-primary border border-primary/20 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-lg shadow-primary/5 flex items-center gap-3 animate-pulse"
+              >
+                <ShieldCheck size={16} />
+                {locale === 'am' ? 'አካውንቶን ያረጋግጡ' : locale === 'ar' ? 'تحقق من حسابك' : locale === 'om' ? 'Eenyummaa keessan mirkaneessaa' : 'Verify Your Account'}
+              </button>
+            )}
+
             {/* Language Switcher */}
             <div className="relative">
               <button
