@@ -276,9 +276,9 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                 </div>
               </div>
               <div className="flex items-center gap-4 text-gray-400">
-                <button className="hover:text-primary transition-colors"><Phone size={20} /></button>
-                <button className="hover:text-primary transition-colors"><Video size={20} /></button>
-                <button className="hover:text-primary transition-colors"><MoreVertical size={20} /></button>
+                <button aria-label="Start phone call" className="hover:text-primary transition-colors"><Phone size={20} /></button>
+                <button aria-label="Start video call" className="hover:text-primary transition-colors"><Video size={20} /></button>
+                <button aria-label="More options" className="hover:text-primary transition-colors"><MoreVertical size={20} /></button>
               </div>
             </header>
 
@@ -348,6 +348,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                 <button 
                   type="submit"
                   disabled={!newMessage.trim()}
+                  aria-label="Send message"
                   className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center hover:scale-105 transition-transform disabled:opacity-50 disabled:hover:scale-100 shadow-lg shadow-primary/20"
                 >
                   <Send size={20} className="ml-1" />
