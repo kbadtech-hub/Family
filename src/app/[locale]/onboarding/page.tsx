@@ -7,36 +7,21 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { supabase } from '@/lib/supabase';
 import { 
-  Heart, 
   User, 
-  MapPin, 
-  Calendar, 
-  Clock, 
-  Briefcase, 
-  ShieldCheck, 
   CheckCircle2,
   ChevronRight,
   ChevronLeft,
-  Wallet,
-  Users,
-  Handshake,
-  BookOpen,
-  Eye,
-  EyeOff,
   Camera,
   Loader2,
   X,
-  Sparkles,
-  Upload
+  Upload,
+  Mail
 } from 'lucide-react';
-import VerificationGate from '@/components/dashboard/VerificationGate';
-import { calculateStarSign, StarSignLabels } from '@/lib/abushakir';
+import { calculateStarSign } from '@/lib/abushakir';
 import { simulateIdentityVerification } from '@/lib/verification';
 import { 
   RELIGIONS, 
   GENDERS, 
-  LOCATIONS, 
-
   FAMILY_VALUES,
   FINANCE_HABITS,
   CONFLICT_RESOLUTIONS,
@@ -46,11 +31,9 @@ import {
   FUTURE_CHILDREN_OPTIONS,
   MARITAL_STATUS_MALE,
   MARITAL_STATUS_FEMALE,
-  PARTNER_MARITAL_PREF_OPTIONS,
-  PARTNER_CHILDREN_PREF_OPTIONS
+  PARTNER_MARITAL_PREF_OPTIONS
 } from '@/lib/constants';
 import { COUNTRIES } from '@/lib/countries';
-import { Mail, Phone } from 'lucide-react';
 import ethiopianDate from 'ethiopian-date';
 
 function OnboardingContent() {
@@ -63,7 +46,7 @@ function OnboardingContent() {
   const [userId, setUserId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [authMode, setAuthMode] = useState<'email' | 'phone'>('email');
+  const [authMode] = useState<'email' | 'phone'>('email');
   const [isVerifying, setIsVerifying] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -101,7 +84,6 @@ function OnboardingContent() {
     id_photo: '',
     selfie_photo: ''
   });
-  const [showPassword, setShowPassword] = useState(false);
 
 
   const searchParams = useSearchParams();
@@ -231,7 +213,7 @@ function OnboardingContent() {
   };
 
   const handleFinish = async () => {
-    const error = validateStep(4); // Review step is basically valid if previous were, but good to check
+    const error = validateStep(1); 
     if (error) {
       setErrorMsg(error);
       return;
@@ -279,24 +261,7 @@ function OnboardingContent() {
       if (data.user) {
         setUserId(data.user.id);
       }
-      setStep(5); // Move to OTP Verification
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleResendOTP = async () => {
-    setIsSubmitting(true);
-    setErrorMsg('');
-    try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: formData.email,
-      });
-      if (error) throw error;
-      setErrorMsg(locale === 'am' ? 'ኮዱ እንደገና ተልኳል' : 'Code resent successfully');
-    } catch (error: unknown) {
-      if (error instanceof Error) setErrorMsg(error.message);
+      setStep(2); // Move to OTP Verification
     } finally {
       setIsSubmitting(false);
     }
@@ -380,6 +345,7 @@ function OnboardingContent() {
                  type="text" 
                  maxLength={6}
                  value={formData.otp}
+                 aria-label={locale === 'am' ? 'የማረጋገጫ ኮድ' : 'Verification Code'}
                  onChange={(e) => updateField('otp', e.target.value.replace(/\D/g, ''))}
                  className="w-full bg-muted border-none rounded-[2rem] p-6 text-center text-4xl font-black tracking-[0.5em] focus:ring-2 focus:ring-primary/20 transition-all text-accent"
                  placeholder="000000"
@@ -406,6 +372,7 @@ function OnboardingContent() {
                 <input 
                    type="text" 
                    value={formData.full_name}
+                   aria-label={t('fields.fullName')}
                    onChange={(e) => updateField('full_name', e.target.value)}
                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted" 
                    placeholder={t('fields.fullNamePlaceholder')}
@@ -420,44 +387,44 @@ function OnboardingContent() {
                   </div>
                   {formData.calendar_type === 'ethiopian' ? (
                     <div className="grid grid-cols-3 gap-2">
-                       <input type="number" placeholder={t('calendar.day')} value={formData.eth_birth_day} onChange={(e) => updateField('eth_birth_day', e.target.value)} className="p-3 bg-muted rounded-xl text-center" />
-                       <select value={formData.eth_birth_month} onChange={(e) => updateField('eth_birth_month', e.target.value)} className="p-3 bg-muted rounded-xl">
+                       <input type="number" placeholder={t('calendar.day')} value={formData.eth_birth_day} aria-label={t('calendar.day')} onChange={(e) => updateField('eth_birth_day', e.target.value)} className="p-3 bg-muted rounded-xl text-center" />
+                       <select value={formData.eth_birth_month} aria-label={t('calendar.month')} onChange={(e) => updateField('eth_birth_month', e.target.value)} className="p-3 bg-muted rounded-xl">
                          <option value="">{t('calendar.month')}</option>
                          {['Meskerem', 'Tikemt', 'Hidar', 'Tahsas', 'Tir', 'Yekatit', 'Megabit', 'Miazia', 'Genbot', 'Sene', 'Hamle', 'Nehase', 'Pagume'].map((m, i) => <option key={m} value={i + 1}>{t_const(`Months.${m}`)}</option>)}
                        </select>
-                       <input type="number" placeholder={t('calendar.year')} value={formData.eth_birth_year} onChange={(e) => updateField('eth_birth_year', e.target.value)} className="p-3 bg-muted rounded-xl text-center" />
+                       <input type="number" placeholder={t('calendar.year')} value={formData.eth_birth_year} aria-label={t('calendar.year')} onChange={(e) => updateField('eth_birth_year', e.target.value)} className="p-3 bg-muted rounded-xl text-center" />
                     </div>
                   ) : (
-                    <input type="date" value={formData.birth_date} onChange={(e) => updateField('birth_date', e.target.value)} className="w-full rounded-xl border-gray-300 p-3 bg-muted" />
+                    <input type="date" value={formData.birth_date} aria-label={t('fields.birthDate')} onChange={(e) => updateField('birth_date', e.target.value)} className="w-full rounded-xl border-gray-300 p-3 bg-muted" />
                   )}
                 </div>
 
-                <select value={formData.gender} onChange={(e) => updateField('gender', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                <select value={formData.gender} aria-label={t('fields.gender')} onChange={(e) => updateField('gender', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
                   <option value="">{t('fields.gender')}</option>
                   {GENDERS.map(g => <option key={g} value={g}>{t_const(`Genders.${g}`)}</option>)}
                 </select>
 
-                <select value={formData.location} onChange={(e) => updateField('location', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                <select value={formData.location} aria-label={t('fields.location')} onChange={(e) => updateField('location', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
                   <option value="">{t('fields.location')}</option>
                   {COUNTRIES.map(c => <option key={c.iso} value={c.name}>{t_const(`Countries.${c.name}`) || c.name}</option>)}
                 </select>
 
-                <select value={formData.religion} onChange={(e) => updateField('religion', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                <select value={formData.religion} aria-label={t('fields.religion')} onChange={(e) => updateField('religion', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
                   <option value="">{t('fields.religion')}</option>
                   {RELIGIONS.map(r => <option key={r} value={r}>{t_const(`Religions.${r}`)}</option>)}
                 </select>
 
-                <select value={formData.marital_status} onChange={(e) => updateField('marital_status', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                <select value={formData.marital_status} aria-label={t('fields.maritalStatus')} onChange={(e) => updateField('marital_status', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
                   <option value="">{t('fields.maritalStatus')}</option>
                   {(formData.gender === 'Female' ? MARITAL_STATUS_FEMALE : MARITAL_STATUS_MALE).map(s => <option key={s} value={s}>{t_const(`Marital.${s}`)}</option>)}
                 </select>
 
-                <select value={formData.has_children} onChange={(e) => updateField('has_children', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                <select value={formData.has_children} aria-label={t('fields.hasChildren')} onChange={(e) => updateField('has_children', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
                   <option value="">{t('fields.hasChildren')}</option>
                   {HAVE_CHILDREN_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`Children.${o}`)}</option>)}
                 </select>
 
-                <select value={formData.future_children} onChange={(e) => updateField('future_children', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                <select value={formData.future_children} aria-label={locale === 'am' ? 'የልጅ እቅድ' : 'Future Children'} onChange={(e) => updateField('future_children', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
                   <option value="">{locale === 'am' ? 'የልጅ እቅድ' : 'Future Children'}</option>
                   {FUTURE_CHILDREN_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`FutureChildren.${o}`)}</option>)}
                 </select>
@@ -470,23 +437,27 @@ function OnboardingContent() {
           <div className="space-y-6">
             <h2 className="text-3xl font-bold text-accent italic">{t('career')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <select value={formData.job} onChange={(e) => updateField('job', e.target.value)} className="p-3 bg-muted rounded-xl col-span-full font-bold">
+               <select value={formData.job} aria-label={t('fields.jobTitle')} onChange={(e) => updateField('job', e.target.value)} className="p-3 bg-muted rounded-xl col-span-full font-bold">
                   <option value="">{t('fields.jobTitle')}</option>
                   {JOB_CATEGORIES.map(cat => <option key={cat} value={cat}>{t_const(`Jobs.${cat}`)}</option>)}
                </select>
-               <select value={formData.finance_habit} onChange={(e) => updateField('finance_habit', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+               <select value={formData.finance_habit} aria-label={t('fields.financeHabit')} onChange={(e) => updateField('finance_habit', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
                   <option value="">{t('fields.financeHabit')}</option>
                   {FINANCE_HABITS.map(h => <option key={h} value={h}>{t_const(`Finance.${h}`)}</option>)}
                </select>
-               <select value={formData.family_value} onChange={(e) => updateField('family_value', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+               <select value={formData.family_value} aria-label={t('fields.familyValues')} onChange={(e) => updateField('family_value', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
                   <option value="">{t('fields.familyValues')}</option>
                   {FAMILY_VALUES.map(v => <option key={v} value={v}>{t_const(`Values.${v}`)}</option>)}
+               </select>
+               <select value={formData.conflict_resolution} aria-label={t('fields.conflictResolution')} onChange={(e) => updateField('conflict_resolution', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                  <option value="">{t('fields.conflictResolution')}</option>
+                  {CONFLICT_RESOLUTIONS.map(c => <option key={c} value={c}>{t_const(`Conflict.${c}`)}</option>)}
                </select>
                <div className="col-span-full space-y-4">
                   <span className="text-sm font-bold text-primary uppercase tracking-widest">{t('fields.spouseRequirements')}</span>
                   <div className="flex flex-wrap gap-2">
                     {SPOUSE_REQUIREMENTS_TAGS.map(tag => (
-                      <button key={tag} type="button" onClick={() => {
+                      <button key={tag} type="button" aria-label={t_const(`Requirements.${tag}`)} onClick={() => {
                         const next = formData.spouse_requirements.includes(tag) ? formData.spouse_requirements.filter(t => t !== tag) : [...formData.spouse_requirements, tag];
                         updateField('spouse_requirements', next);
                       }} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${formData.spouse_requirements.includes(tag) ? 'bg-primary text-white' : 'bg-muted text-gray-400'}`}>
@@ -507,7 +478,7 @@ function OnboardingContent() {
                   <span className="text-sm font-bold text-gray-700">{t('fields.partnerCountry')}</span>
                   <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 bg-muted/50 rounded-xl">
                     {[{name:'Anywhere'}, ...COUNTRIES].map(c => (
-                      <button key={c.name} type="button" onClick={() => {
+                      <button key={c.name} type="button" aria-label={c.name === 'Anywhere' ? 'Anywhere' : t_const(`Countries.${c.name}`) || c.name} onClick={() => {
                         if (c.name === 'Anywhere') return updateField('partner_countries', ['Anywhere']);
                         const next = formData.partner_countries.filter(pc => pc !== 'Anywhere');
                         updateField('partner_countries', formData.partner_countries.includes(c.name) ? next.filter(pc => pc !== c.name) : [...next, c.name].slice(0, 5));
@@ -518,11 +489,11 @@ function OnboardingContent() {
                   </div>
                </div>
                <div className="grid grid-cols-2 gap-4">
-                 <select value={formData.partner_religion} onChange={(e) => updateField('partner_religion', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                 <select value={formData.partner_religion} aria-label={t('fields.partnerReligion')} onChange={(e) => updateField('partner_religion', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
                     <option value="">{t('fields.partnerReligion')}</option>
                     {RELIGIONS.map(r => <option key={r} value={r}>{t_const(`Religions.${r}`)}</option>)}
                  </select>
-                 <select value={formData.partner_intent} onChange={(e) => updateField('partner_intent', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                 <select value={formData.partner_intent} aria-label={t('fields.partnerIntent')} onChange={(e) => updateField('partner_intent', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
                     <option value="">{t('fields.partnerIntent')}</option>
                     {PARTNER_MARITAL_PREF_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`Marital.${o}`)}</option>)}
                  </select>
@@ -555,7 +526,7 @@ function OnboardingContent() {
                <input 
                  type="file" 
                  accept="image/*" 
-                 capture="environment"
+                 aria-label={locale === 'am' ? 'መታወቂያ ያስገቡ' : 'Upload ID'}
                  className="hidden" 
                  onChange={async (e) => {
                    const file = e.target.files?.[0];
@@ -596,7 +567,7 @@ function OnboardingContent() {
                <input 
                  type="file" 
                  accept="image/*" 
-                 capture="user"
+                 aria-label={locale === 'am' ? 'ሰልፊ ይነሱ' : 'Take Selfie'}
                  className="hidden" 
                  onChange={async (e) => {
                    const file = e.target.files?.[0];
@@ -669,13 +640,13 @@ function OnboardingContent() {
                 {formData.gallery_photos.map((url, i) => (
                   <div key={i} className="relative aspect-[3/4] rounded-2xl overflow-hidden group">
                      <Image src={url} fill className="object-cover" alt="Gallery" />
-                     <button onClick={() => updateField('gallery_photos', formData.gallery_photos.filter((_, idx) => idx !== i))} className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"><X size={12} /></button>
+                     <button type="button" aria-label={locale === 'am' ? 'ፎቶ አስወግድ' : 'Remove Photo'} onClick={() => updateField('gallery_photos', formData.gallery_photos.filter((_, idx) => idx !== i))} className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"><X size={12} /></button>
                   </div>
                 ))}
                 {formData.gallery_photos.length < 5 && (
                   <label className="aspect-[3/4] rounded-2xl border-2 border-dashed border-muted flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-muted">
                     <Camera size={20} className="text-gray-300" />
-                    <input type="file" multiple className="hidden" onChange={async (e) => {
+                    <input type="file" multiple aria-label={t('galleryUpload')} className="hidden" onChange={async (e) => {
                       const files = Array.from(e.target.files || []);
                       if (!files.length || !userId) return;
                       setIsSubmitting(true);
@@ -714,10 +685,6 @@ function OnboardingContent() {
       default: return null;
     }
   };
-      default:
-        return null;
-    }
-  }
 
   return (
     <div className="min-h-screen bg-[var(--secondary)] bg-opacity-10 py-12 px-4 flex items-center justify-center" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
