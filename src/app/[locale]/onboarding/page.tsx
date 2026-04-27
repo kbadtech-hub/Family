@@ -246,20 +246,6 @@ function OnboardingContent() {
     }
   };
 
-  // Auto-check for verification link
-  useEffect(() => {
-    if (step === 6) {
-       const interval = setInterval(async () => {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session?.user?.email_confirmed_at) {
-             setStep(7);
-             clearInterval(interval);
-          }
-       }, 3000);
-       return () => clearInterval(interval);
-    }
-  }, [step]);
-
   const renderStep = () => {
     switch(step) {
       case 1:
@@ -878,7 +864,6 @@ function OnboardingContent() {
         </div>
 
         <div className="mt-12 text-center text-accent/40 flex flex-col items-center gap-4">
-           <Heart size={24} className="fill-primary text-primary" />
            <p className="font-bold text-lg tracking-widest uppercase">{locale === 'am' ? 'ቤተሰብ' : 'Beteseb'}</p>
            <p className="text-sm">{t('footerTagline')}</p>
         </div>

@@ -24,7 +24,7 @@ function LoginContent() {
   useEffect(() => {
     const errorParam = new URLSearchParams(window.location.search).get('error');
     if (errorParam === 'unconfirmed') {
-      router.push('/onboarding?step=5');
+      router.push('/onboarding?step=6');
     }
   }, [locale, router]);
 
@@ -42,7 +42,7 @@ function LoginContent() {
 
       if (authError) {
         if (authError.message.toLowerCase().includes('email not confirmed')) {
-          router.push(`/onboarding?step=5&email=${encodeURIComponent(authMode === 'email' ? email : phone)}`);
+          router.push(`/onboarding?step=6&email=${encodeURIComponent(authMode === 'email' ? email : phone)}`);
         } else {
           throw authError;
         }
@@ -70,7 +70,7 @@ function LoginContent() {
           if (verification?.status === 'verified') {
             router.push('/dashboard');
           } else {
-            router.push('/onboarding?step=5');
+            router.push('/onboarding?step=6');
           }
         } else {
           router.push('/onboarding');
@@ -88,9 +88,6 @@ function LoginContent() {
       <div className="max-w-md w-full">
         {/* Branding */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-[2rem] bg-white shadow-xl shadow-primary/10 mb-6 group hover:scale-110 transition-transform duration-500">
-            <Heart size={40} className="text-primary fill-primary/10 group-hover:fill-primary transition-colors" />
-          </div>
           <h1 className="text-4xl font-black tracking-tighter italic uppercase text-accent leading-none">
             {locale === 'am' ? 'ቤተሰብ' : 'Beteseb'}
           </h1>
