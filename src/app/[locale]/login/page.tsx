@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from '@/i18n/routing';
+import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
 import { Heart, Mail, Phone, Lock, ChevronRight, AlertCircle, Loader2, Globe, Eye, EyeOff } from 'lucide-react';
 import { COUNTRIES } from '@/lib/countries';
@@ -88,10 +89,15 @@ function LoginContent() {
       <div className="max-w-md w-full">
         {/* Branding */}
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-black tracking-tighter italic uppercase text-accent leading-none">
-            {locale === 'am' ? 'ቤተሰብ' : 'Beteseb'}
-          </h1>
-          <p className="text-gray-400 mt-2 font-medium tracking-widest uppercase text-[10px]">
+          <Image 
+            src="/logo.png" 
+            alt="Beteseb" 
+            width={200} 
+            height={50} 
+            className="h-12 w-auto mx-auto object-contain"
+            priority
+          />
+          <p className="text-gray-400 mt-4 font-medium tracking-widest uppercase text-[10px]">
              {locale === 'am' ? 'የኢትዮጵያውያን የትዳር መድረክ' : 'Global Habesha Matching'}
           </p>
         </div>

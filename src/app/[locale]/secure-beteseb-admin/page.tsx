@@ -636,7 +636,7 @@ export default function AdminPortal() {
                  </form>
                  
                  <div className="mt-10 pt-8 border-t border-muted/50 flex justify-center">
-                    <Image src="/logo.png" alt="Beteseb Logo" width={100} height={40} className="h-10 w-auto opacity-30 grayscale" />
+                    <Image src="/logo.png" alt="Beteseb Logo" width={100} height={40} className="h-10 w-auto" />
                  </div>
               </div>
            </div>
@@ -648,9 +648,8 @@ export default function AdminPortal() {
     <div className="min-h-screen bg-background text-foreground flex admin-dark relative">
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-20 bg-card border-b border-border z-[60] flex items-center justify-between px-6">
-         <div className="flex items-center gap-2 text-primary">
-            <Heart size={24} className="fill-primary" />
-            <span className="text-xl font-bold tracking-tighter uppercase">BETESEB</span>
+         <div className="flex items-center gap-2">
+            <Image src="/logo.png" alt="Logo" width={120} height={30} className="h-8 w-auto object-contain" />
          </div>
          <button 
            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -739,13 +738,28 @@ export default function AdminPortal() {
                        <h3 className="text-xl font-bold uppercase tracking-widest">Site Identity</h3>
                     </div>
                     <div className="space-y-8">
-                       <div className="space-y-4">
-                          <label className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Site Identity (Disabled)</label>
-                          <div className="flex items-center gap-6 p-6 bg-background rounded-3xl border border-white/5">
-                             <p className="text-foreground/20 italic text-sm">Visual Branding Disabled</p>
-
-                          </div>
-                       </div>
+                        <div className="space-y-4">
+                           <label className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Global Logo</label>
+                           <div className="flex items-center gap-6 p-6 bg-background rounded-3xl border border-white/5">
+                              <div className="w-20 h-20 bg-muted rounded-2xl flex items-center justify-center overflow-hidden">
+                                 {cmsForm.logo_url ? (
+                                    <Image src={cmsForm.logo_url} alt="Logo" width={80} height={80} className="object-contain" />
+                                 ) : (
+                                    <Image src="/logo.png" alt="Logo" width={80} height={80} className="object-contain" />
+                                 )}
+                              </div>
+                              <div className="flex-1 space-y-2">
+                                 <input 
+                                    type="text" 
+                                    value={cmsForm.logo_url}
+                                    placeholder="https://.../logo.png"
+                                    onChange={(e) => setCmsForm({...cmsForm, logo_url: e.target.value})}
+                                    className="input-premium py-2 text-xs" 
+                                 />
+                                 <p className="text-[9px] text-foreground/40 italic">Leave empty to use /public/logo.png</p>
+                              </div>
+                           </div>
+                        </div>
 
                        <label className="block">
                           <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Hero Headline</span>

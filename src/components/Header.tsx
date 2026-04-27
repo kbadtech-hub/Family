@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link, useRouter, usePathname } from '@/i18n/routing';
 import { Menu, X, Globe, ChevronDown, Heart } from 'lucide-react';
@@ -53,7 +54,14 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-6 flex justify-between items-center text-foreground">
         
         <Link href="/" className="group decoration-transparent">
-          <span className="text-2xl font-black tracking-tighter uppercase italic text-accent">{locale === 'am' ? 'ቤተሰብ' : 'BETESEB'}</span>
+          <Image 
+            src="/logo.png" 
+            alt="Beteseb" 
+            width={160} 
+            height={40} 
+            className="h-10 w-auto object-contain"
+            priority
+          />
         </Link>
 
         {/* Desktop Nav */}

@@ -996,7 +996,13 @@ function OnboardingContent() {
         </div>
 
         <div className="mt-12 text-center text-accent/40 flex flex-col items-center gap-4">
-           <p className="font-bold text-lg tracking-widest uppercase">{locale === 'am' ? 'ቤተሰብ' : 'Beteseb'}</p>
+           <Image 
+             src="/logo.png" 
+             alt="Beteseb" 
+             width={140} 
+             height={36} 
+             className="h-9 w-auto grayscale opacity-50 contrast-125"
+           />
            <p className="text-sm">{t('footerTagline')}</p>
         </div>
       </div>
