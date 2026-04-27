@@ -341,10 +341,24 @@
       "Female": "ሴት"
     },
     "Marital": {
-      "Single": "ያላገባ/ች",
-      "Divorced": "የተፋታ/ች",
-      "Widow": "አርማ",
-      "Widower": "አርማ"
+      "Never Married": "ከዚህ በፊት ያላገባ/ች",
+      "Divorced": "ከዚህ በፊት አግብቶ/ታ የፈታ/ች",
+      "Does Not Matter": "ምርጫው ምንም ይሁን"
+    },
+    "Children": {
+      "Yes": "ልጅ አለኝ",
+      "No": "ልጅ የለኝም",
+      "Does Not Matter": "ምርጫው ምንም ይሁን"
+    },
+    "FutureChildren": {
+      "Wants Children": "መውለድ የሚፈልግ/ግ",
+      "Does Not Want Children": "መውለድ የማይፈልግ/ግ",
+      "Does Not Matter": "ምርጫው ምንም ይሁን"
+    },
+    "PartnerChildren": {
+      "Yes": "ልጅ ያለው/ላት",
+      "No": "ልጅ የሌለው/ላት",
+      "Does Not Matter": "ምርጫው ምንም ይሁን"
     },
     "Finance": {
       "Spender": "አውጪ",
@@ -378,19 +392,6 @@
       "Hamle": "ሐምሌ",
       "Nehase": "ነሐሴ",
       "Pagume": "ጳጉሜ"
-    },
-    "Marital": {
-      "Never Married": "ከዚህ በፊት ያላገባ/ች",
-      "Divorced": "ከዚህ በፊት አግብቶ/ታ የፈታ/ች"
-    },
-    "Children": {
-      "Has Children": "ልጅ ያለኝ",
-      "No Children": "ልጅ የሌለኝ"
-    },
-    "PartnerChildren": {
-      "Has Children": "ልጅ ያለው/ላት",
-      "No Children": "ልጅ የሌለው/ላት",
-      "Does Not Matter": "ልጅ ቢኖረውም ባይኖረውም ችግር የለውም"
     },
     "Locations": {
       "Addis Ababa": "አዲስ አበባ",
@@ -429,18 +430,6 @@
       "Education Priority": "ለትምህርት ቅድሚያ የሚሰጥ/ጥ",
       "Financial Stability": "የፋይናንስ መረጋጋት"
     },
-    "Children": {
-      "Yes": "አለኝ",
-      "No": "የለኝም"
-    },
-    "PartnerIntent": {
-      "Single and No Children": "ያላገባ/ች እና ልጅ የሌለው/ላት",
-      "Single and Has Children": "ያላገባ/ች እና ልጅ ያለው/ላት",
-      "Divorced and No Children": "የተፋታ/ች እና ልጅ የሌለው/ላት",
-      "Divorced and Has Children": "የተፋታ/ች እና ልጅ ያለው/ላት",
-      "Wants Children in Future": "ወደፊት መውለድ የሚፈልግ/ግ",
-      "Does Not Want Children": "መውለድ የማይፈልግ/ግ"
-    },
     "Countries": {
       "Ethiopia": "ኢትዮጵያ",
       "Germany": "ጀርመን",
@@ -456,7 +445,30 @@
       "South Africa": "ደቡብ አፍሪካ",
       "Australia": "አውስትራሊያ",
       "China": "ቻይና",
-      "Japan": "ጃፓን"
+      "Japan": "ጃፓን",
+      "France": "ፈረንሳይ",
+      "Italy": "ጣሊያን",
+      "Russia": "ሩሲያ",
+      "Turkey": "ቱርክ",
+      "Egypt": "ግብፅ",
+      "Sudan": "ሱዳን",
+      "South Sudan": "ደቡብ ሱዳን",
+      "Eritrea": "ኤርትራ",
+      "Djibouti": "ጅቡቲ",
+      "Somalia": "ሶማሊያ",
+      "Uganda": "ኡጋንዳ",
+      "Tanzania": "ታንዛኒያ",
+      "Switzerland": "ስዊዘርላንድ",
+      "Netherlands": "ኔዘርላንድስ",
+      "Belgium": "ቤልጂየም",
+      "Qatar": "ኳታር",
+      "Kuwait": "ኩዌት",
+      "Bahrain": "ባህሬን",
+      "Oman": "ኦማን",
+      "Lebanon": "ሊባኖስ",
+      "Jordan": "ዮርዳኖስ",
+      "India": "ህንድ",
+      "Pakistan": "ፓኪስታን"
     }
   }
 }

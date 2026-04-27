@@ -25,7 +25,8 @@ import {
   EyeOff,
   Camera,
   Loader2,
-  X
+  X,
+  Sparkles
 } from 'lucide-react';
 import VerificationGate from '@/components/dashboard/VerificationGate';
 import { calculateStarSign, StarSignLabels } from '@/lib/abushakir';
@@ -40,9 +41,10 @@ import {
   JOB_CATEGORIES,
   SPOUSE_REQUIREMENTS_TAGS,
   HAVE_CHILDREN_OPTIONS,
-  PARTNER_INTENT_OPTIONS,
+  FUTURE_CHILDREN_OPTIONS,
   MARITAL_STATUS_MALE,
   MARITAL_STATUS_FEMALE,
+  PARTNER_MARITAL_PREF_OPTIONS,
   PARTNER_CHILDREN_PREF_OPTIONS
 } from '@/lib/constants';
 import { COUNTRIES } from '@/lib/countries';
@@ -90,6 +92,7 @@ function OnboardingContent() {
     eth_birth_day: '',
     eth_birth_month: '',
     eth_birth_year: '',
+    future_children: '',
     otp: ''
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -524,19 +527,35 @@ function OnboardingContent() {
                 </select>
               </label>
 
-              <label className="block">
-                <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                   <Users size={16} /> {t('fields.hasChildren')}
-                </span>
-                <select 
-                  value={formData.has_children}
-                  onChange={(e) => updateField('has_children', e.target.value)}
-                  className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
-                >
-                  <option value="">{t('fields.genderPlaceholder')}</option>
-                  {HAVE_CHILDREN_OPTIONS.map(o => <option key={o} value={o}>{t_const(`Children.${o}`)}</option>)}
-                </select>
-              </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label className="block">
+                  <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                     <Users size={16} /> {t('fields.hasChildren')}
+                  </span>
+                  <select 
+                    value={formData.has_children}
+                    onChange={(e) => updateField('has_children', e.target.value)}
+                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
+                  >
+                    <option value="">{t('fields.genderPlaceholder')}</option>
+                    {HAVE_CHILDREN_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`Children.${o}`)}</option>)}
+                  </select>
+                </label>
+
+                <label className="block">
+                  <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                     <Sparkles size={16} /> {locale === 'am' ? 'የልጅ እቅድ (ወደፊት)' : 'Future Children Plans'}
+                  </span>
+                  <select 
+                    value={formData.future_children}
+                    onChange={(e) => updateField('future_children', e.target.value)}
+                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
+                  >
+                    <option value="">{t('fields.genderPlaceholder')}</option>
+                    {FUTURE_CHILDREN_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`FutureChildren.${o}`)}</option>)}
+                  </select>
+                </label>
+              </div>
             </div>
           </div>
         );
@@ -669,7 +688,7 @@ function OnboardingContent() {
                          }}
                          className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest border transition-all ${isSelected ? 'bg-primary text-white border-primary' : 'bg-muted text-gray-400 border-transparent'}`}
                        >
-                         {locale === 'am' ? country.nameAm : country.name}
+                         {country.name === 'Anywhere' ? (locale === 'am' ? 'ከየትኛውም ሀገር' : 'Anywhere') : t_const(`Countries.${country.name}`)}
                        </button>
                      );
                    })}
@@ -715,7 +734,7 @@ function OnboardingContent() {
 
               <label className="block">
                 <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                   <Heart size={16} /> {t('fields.partnerIntent')}
+                   <Heart size={16} /> {locale === 'am' ? 'የአጋር ጋብቻ ሁኔታ' : 'Partner Marital Status'}
                 </span>
                 <select 
                   value={formData.partner_intent}
@@ -723,21 +742,21 @@ function OnboardingContent() {
                   className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
                 >
                   <option value="">{t('fields.maritalPlaceholder')}</option>
-                  {PARTNER_INTENT_OPTIONS.map(o => <option key={o} value={o}>{t_const(`PartnerIntent.${o}`)}</option>)}
+                  {PARTNER_MARITAL_PREF_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`Marital.${o}`)}</option>)}
                 </select>
               </label>
 
               <label className="block">
                 <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                   <Users size={16} /> Partner Children Preference
+                   <Users size={16} /> {locale === 'am' ? 'የአጋር የልጅ ምርጫ' : 'Partner Children Preference'}
                 </span>
                 <select 
                   value={formData.partner_children_pref}
                   onChange={(e) => updateField('partner_children_pref', e.target.value)}
                   className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
                 >
-                  <option value="">Select preference</option>
-                  {PARTNER_CHILDREN_PREF_OPTIONS.map(o => <option key={o} value={o}>{t_const(`PartnerChildren.${o}`)}</option>)}
+                  <option value="">{t('fields.genderPlaceholder')}</option>
+                  {PARTNER_CHILDREN_PREF_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`PartnerChildren.${o}`)}</option>)}
                 </select>
               </label>
             </div>

@@ -29,14 +29,26 @@ export const MARITAL_STATUS_FEMALE = [
   'Divorced'
 ];
 
+export const PARTNER_MARITAL_PREF_OPTIONS = [
+  'Never Married',
+  'Divorced',
+  'Does Not Matter'
+];
+
 export const HAVE_CHILDREN_OPTIONS = [
-  'Has Children',
-  'No Children'
+  'Yes',
+  'No'
+];
+
+export const FUTURE_CHILDREN_OPTIONS = [
+  'Wants Children',
+  'Does Not Want Children',
+  'Does Not Matter'
 ];
 
 export const PARTNER_CHILDREN_PREF_OPTIONS = [
-  'Has Children',
-  'No Children',
+  'Yes',
+  'No',
   'Does Not Matter'
 ];
 

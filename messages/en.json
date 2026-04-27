@@ -341,10 +341,19 @@
       "Female": "Female"
     },
     "Marital": {
-      "Single": "Single",
+      "Never Married": "Never Married",
       "Divorced": "Divorced",
-      "Widow": "Widow",
-      "Widower": "Widower"
+      "Does Not Matter": "Does Not Matter"
+    },
+    "Children": {
+      "Yes": "Yes, I have children",
+      "No": "No children",
+      "Does Not Matter": "Does Not Matter"
+    },
+    "FutureChildren": {
+      "Wants Children": "Wants Children",
+      "Does Not Want Children": "Does Not Want Children",
+      "Does Not Matter": "Does Not Matter"
     },
     "Finance": {
       "Spender": "Spender",
@@ -364,18 +373,20 @@
       "Silent Treatment": "Silent Treatment",
       "Mediation Required": "Mediation Required"
     },
-    "Marital": {
-      "Never Married": "Never Married",
-      "Divorced": "Divorced"
-    },
-    "Children": {
-      "Has Children": "I have children",
-      "No Children": "No children"
-    },
-    "PartnerChildren": {
-      "Has Children": "Has children",
-      "No Children": "No children",
-      "Does Not Matter": "Does not matter"
+    "Months": {
+      "Meskerem": "Meskerem",
+      "Tikemt": "Tikemt",
+      "Hidar": "Hidar",
+      "Tahsas": "Tahsas",
+      "Tir": "Tir",
+      "Yekatit": "Yekatit",
+      "Megabit": "Megabit",
+      "Miazia": "Miazia",
+      "Genbot": "Genbot",
+      "Sene": "Sene",
+      "Hamle": "Hamle",
+      "Nehase": "Nehase",
+      "Pagume": "Pagume"
     },
     "Locations": {
       "Addis Ababa": "Addis Ababa",
@@ -414,18 +425,6 @@
       "Education Priority": "Education Priority",
       "Financial Stability": "Financial Stability"
     },
-    "Children": {
-      "Yes": "Yes, I have children",
-      "No": "No children"
-    },
-    "PartnerIntent": {
-      "Single and No Children": "Single and No Children",
-      "Single and Has Children": "Single and Has Children",
-      "Divorced and No Children": "Divorced and No Children",
-      "Divorced and Has Children": "Divorced and Has Children",
-      "Wants Children in Future": "Wants Children in Future",
-      "Does Not Want Children": "Does Not Want Children"
-    },
     "Countries": {
       "Ethiopia": "Ethiopia",
       "Germany": "Germany",
@@ -441,7 +440,30 @@
       "South Africa": "South Africa",
       "Australia": "Australia",
       "China": "China",
-      "Japan": "Japan"
+      "Japan": "Japan",
+      "France": "France",
+      "Italy": "Italy",
+      "Russia": "Russia",
+      "Turkey": "Turkey",
+      "Egypt": "Egypt",
+      "Sudan": "Sudan",
+      "South Sudan": "South Sudan",
+      "Eritrea": "Eritrea",
+      "Djibouti": "Djibouti",
+      "Somalia": "Somalia",
+      "Uganda": "Uganda",
+      "Tanzania": "Tanzania",
+      "Switzerland": "Switzerland",
+      "Netherlands": "Netherlands",
+      "Belgium": "Belgium",
+      "Qatar": "Qatar",
+      "Kuwait": "Kuwait",
+      "Bahrain": "Bahrain",
+      "Oman": "Oman",
+      "Lebanon": "Lebanon",
+      "Jordan": "Jordan",
+      "India": "India",
+      "Pakistan": "Pakistan"
     }
   }
 }
