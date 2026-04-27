@@ -242,7 +242,13 @@
       "unknown": "Unknown",
       "abushakirBadge": "Abushakir Engine",
       "country": "Country",
-      "countryPlaceholder": "Select Country"
+      "countryPlaceholder": "Select Country",
+      "hasChildren": "Do you have children?",
+      "partnerPrefs": "Partner Preference",
+      "partnerAge": "Age Range",
+      "partnerCountry": "Partner Location",
+      "partnerReligion": "Partner Religion",
+      "partnerIntent": "Marital Status & Intent"
     },
     "idVerification": {
       "title": "Identity Verification",
@@ -369,6 +375,60 @@
       "Jimma": "Jimma",
       "Jijiga": "Jijiga",
       "Other (International)": "Other (International)"
+    },
+    "Jobs": {
+      "Technology & IT": "Technology & IT",
+      "Healthcare & Medical": "Healthcare & Medical",
+      "Education & Research": "Education & Research",
+      "Business & Finance": "Business & Finance",
+      "Arts & Entertainment": "Arts & Entertainment",
+      "Engineering & Construction": "Engineering & Construction",
+      "Legal & Law Enforcement": "Legal & Law Enforcement",
+      "Service & Hospitality": "Service & Hospitality",
+      "Government & Public Service": "Government & Public Service",
+      "Agriculture & Nature": "Agriculture & Nature",
+      "Other": "Other"
+    },
+    "Requirements": {
+      "Religious Compatibility": "Religious Compatibility",
+      "Family Oriented": "Family Oriented",
+      "Career Focused": "Career Focused",
+      "Traditional Values": "Traditional Values",
+      "Modern Outlook": "Modern Outlook",
+      "Healthy Lifestyle": "Healthy Lifestyle",
+      "Wants Children": "Wants Children",
+      "Travel Lover": "Travel Lover",
+      "Education Priority": "Education Priority",
+      "Financial Stability": "Financial Stability"
+    },
+    "Children": {
+      "Yes": "Yes, I have children",
+      "No": "No children"
+    },
+    "PartnerIntent": {
+      "Single and No Children": "Single and No Children",
+      "Single and Has Children": "Single and Has Children",
+      "Divorced and No Children": "Divorced and No Children",
+      "Divorced and Has Children": "Divorced and Has Children",
+      "Wants Children in Future": "Wants Children in Future",
+      "Does Not Want Children": "Does Not Want Children"
+    },
+    "Countries": {
+      "Ethiopia": "Ethiopia",
+      "Germany": "Germany",
+      "United States": "United States",
+      "Canada": "Canada",
+      "United Kingdom": "United Kingdom",
+      "United Arab Emirates": "UAE",
+      "Saudi Arabia": "Saudi Arabia",
+      "Israel": "Israel",
+      "Norway": "Norway",
+      "Sweden": "Sweden",
+      "Kenya": "Kenya",
+      "South Africa": "South Africa",
+      "Australia": "Australia",
+      "China": "China",
+      "Japan": "Japan"
     }
   }
 }

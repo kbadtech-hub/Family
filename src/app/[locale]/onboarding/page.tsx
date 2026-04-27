@@ -39,7 +39,9 @@ import {
   FINANCE_HABITS,
   CONFLICT_RESOLUTIONS,
   JOB_CATEGORIES,
-  SPOUSE_REQUIREMENTS_TAGS
+  SPOUSE_REQUIREMENTS_TAGS,
+  HAVE_CHILDREN_OPTIONS,
+  PARTNER_INTENT_OPTIONS
 } from '@/lib/constants';
 import { COUNTRIES } from '@/lib/countries';
 import { Mail, Phone, Globe } from 'lucide-react';
@@ -76,6 +78,12 @@ function OnboardingContent() {
     star_sign: '',
     gallery_photos: [] as string[],
     spouse_requirements: [] as string[],
+    has_children: '',
+    partner_countries: [] as string[],
+    partner_age_min: 18,
+    partner_age_max: 50,
+    partner_religion: '',
+    partner_intent: '',
     otp: ''
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -144,7 +152,12 @@ function OnboardingContent() {
         if (!formData.conflict_resolution) return locale === 'am' ? 'እባክዎ የግጭት አፈታት ይምረጡ' : 'Please select conflict resolution style';
         if (!formData.spouse_requirements) return locale === 'am' ? 'እባክዎ የሚያገባውን ሰው መስፈርት ይግለጹ (ግዴታ)' : 'Please describe your spouse requirements';
         break;
-      case 5:
+      case 4:
+        if (!formData.partner_countries.length) return locale === 'am' ? 'እባክዎ ቢያንስ አንድ የሀገር ምርጫ ይምረጡ' : 'Please select at least one partner country';
+        if (!formData.partner_religion) return locale === 'am' ? 'እባክዎ የአጋር ሃይማኖት ይምረጡ' : 'Please select partner religion';
+        if (!formData.partner_intent) return locale === 'am' ? 'እባክዎ የጋብቻ ሁኔታና ፍላጎት ይምረጡ' : 'Please select marital status and intent';
+        break;
+      case 6:
         if (!formData.otp || formData.otp.length !== 6) return locale === 'am' ? 'እባክዎ ባለ 6 ዲጂት ኮድ ያስገቡ' : 'Please enter 6-digit code';
         break;
       default:
@@ -160,7 +173,7 @@ function OnboardingContent() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
-    setStep(s => Math.min(s + 1, 7));
+    setStep(s => Math.min(s + 1, 9));
   };
 
   const prevStep = () => {
@@ -225,13 +238,27 @@ function OnboardingContent() {
 
       if (error) throw error;
       
-      setStep(6); // Move to Gallery
+      setStep(7); // Move to Gallery
     } catch (error: any) {
       setErrorMsg(error.message);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // Auto-check for verification link
+  useEffect(() => {
+    if (step === 6) {
+       const interval = setInterval(async () => {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user?.email_confirmed_at) {
+             setStep(7);
+             clearInterval(interval);
+          }
+       }, 3000);
+       return () => clearInterval(interval);
+    }
+  }, [step]);
 
   const renderStep = () => {
     switch(step) {
@@ -393,7 +420,7 @@ function OnboardingContent() {
                   {userType === 'Local' ? (
                     LOCATIONS.filter(l => l !== 'Other (International)').map(l => <option key={l} value={l}>{t_const(`Locations.${l}`)}</option>)
                   ) : (
-                    COUNTRIES.map(c => <option key={c.iso} value={c.name}>{c.name}</option>)
+                    COUNTRIES.map(c => <option key={c.iso} value={c.name}>{t_const(`Countries.${c.name}`) || c.name}</option>)
                   )}
                 </select>
               </label>
@@ -425,6 +452,20 @@ function OnboardingContent() {
                   {MARITAL_STATUSES.map(s => <option key={s} value={s}>{t_const(`Marital.${s}`)}</option>)}
                 </select>
               </label>
+
+              <label className="block">
+                <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                   <Users size={16} /> {t('fields.hasChildren')}
+                </span>
+                <select 
+                  value={formData.has_children}
+                  onChange={(e) => updateField('has_children', e.target.value)}
+                  className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
+                >
+                  <option value="">{t('fields.genderPlaceholder')}</option>
+                  {HAVE_CHILDREN_OPTIONS.map(o => <option key={o} value={o}>{t_const(`Children.${o}`)}</option>)}
+                </select>
+              </label>
             </div>
           </div>
         );
@@ -443,7 +484,7 @@ function OnboardingContent() {
                   className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
                 >
                   <option value="">{t('fields.jobPlaceholder')}</option>
-                  {JOB_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                  {JOB_CATEGORIES.map(cat => <option key={cat} value={cat}>{t_const(`Jobs.${cat}`)}</option>)}
                 </select>
               </label>
               
@@ -511,7 +552,7 @@ function OnboardingContent() {
                             : 'bg-muted text-gray-400 hover:bg-muted/80'
                         }`}
                       >
-                        {tag}
+                        {t_const(`Requirements.${tag}`)}
                       </button>
                     );
                   })}
@@ -522,6 +563,89 @@ function OnboardingContent() {
           </div>
         );
       case 4:
+        return (
+          <div className="space-y-6 animate-in slide-in-from-right duration-300">
+            <h2 className="text-3xl font-bold text-accent italic">{t('fields.partnerPrefs')}</h2>
+            
+            <div className="space-y-6">
+              {/* Country Multi-select */}
+              <div className="space-y-2">
+                <span className="text-sm font-medium text-gray-700 block">{t('fields.partnerCountry')}</span>
+                <div className="flex flex-wrap gap-2">
+                   {['Ethiopia', 'Germany', 'United States', 'Canada', 'United Kingdom'].map(country => {
+                     const isSelected = formData.partner_countries.includes(country);
+                     return (
+                       <button
+                         key={country}
+                         type="button"
+                         onClick={() => {
+                           const next = isSelected 
+                             ? formData.partner_countries.filter(c => c !== country)
+                             : [...formData.partner_countries, country];
+                           updateField('partner_countries', next);
+                         }}
+                         className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest border transition-all ${isSelected ? 'bg-primary text-white border-primary' : 'bg-muted text-gray-400 border-transparent'}`}
+                       >
+                         {t_const(`Countries.${country}`) || country}
+                       </button>
+                     );
+                   })}
+                </div>
+              </div>
+
+              {/* Age Range Slider (Mocked with inputs for simplicity) */}
+              <div className="space-y-2">
+                <span className="text-sm font-medium text-gray-700 block">{t('fields.partnerAge')}</span>
+                <div className="flex items-center gap-4">
+                  <input 
+                    type="number" 
+                    min={18} max={formData.partner_age_max}
+                    value={formData.partner_age_min}
+                    onChange={(e) => updateField('partner_age_min', parseInt(e.target.value))}
+                    className="w-20 p-3 bg-muted rounded-xl text-center font-bold"
+                  />
+                  <span className="text-gray-300">to</span>
+                  <input 
+                    type="number" 
+                    min={formData.partner_age_min} max={100}
+                    value={formData.partner_age_max}
+                    onChange={(e) => updateField('partner_age_max', parseInt(e.target.value))}
+                    className="w-20 p-3 bg-muted rounded-xl text-center font-bold"
+                  />
+                </div>
+              </div>
+
+              <label className="block">
+                <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                   <BookOpen size={16} /> {t('fields.partnerReligion')}
+                </span>
+                <select 
+                   value={formData.partner_religion}
+                   onChange={(e) => updateField('partner_religion', e.target.value)}
+                   className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
+                >
+                  <option value="">{t('fields.religionPlaceholder')}</option>
+                  {RELIGIONS.map(r => <option key={r} value={r}>{t_const(`Religions.${r}`)}</option>)}
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                   <Heart size={16} /> {t('fields.partnerIntent')}
+                </span>
+                <select 
+                  value={formData.partner_intent}
+                  onChange={(e) => updateField('partner_intent', e.target.value)}
+                  className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
+                >
+                  <option value="">{t('fields.maritalPlaceholder')}</option>
+                  {PARTNER_INTENT_OPTIONS.map(o => <option key={o} value={o}>{t_const(`PartnerIntent.${o}`)}</option>)}
+                </select>
+              </label>
+            </div>
+          </div>
+        );
+      case 5:
         return (
           <div className="space-y-6 animate-in slide-in-from-right duration-300">
             <h2 className="text-3xl font-bold text-accent italic">{t('reviewTitle')}</h2>
@@ -547,13 +671,17 @@ function OnboardingContent() {
                   </div>
                   <div className={`flex justify-between border-b border-muted/50 pb-3 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
                      <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">{t('fields.jobTitle')}</span>
-                     <span className="font-bold text-accent">{formData.job}</span>
+                     <span className="font-bold text-accent">{t_const(`Jobs.${formData.job}`)}</span>
+                  </div>
+                  <div className={`flex justify-between border-b border-muted/50 pb-3 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
+                     <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">{t('fields.hasChildren')}</span>
+                     <span className="font-bold text-accent">{t_const(`Children.${formData.has_children}`)}</span>
                   </div>
                </div>
             </div>
           </div>
         );
-      case 5:
+      case 6:
         return (
           <div className="space-y-6 animate-in slide-in-from-right duration-300">
             <div className="text-center space-y-4">
@@ -587,10 +715,14 @@ function OnboardingContent() {
                >
                  {locale === 'am' ? 'ኮዱ አልደረሰዎትም? እንደገና ላክ' : 'Didn\'t get code? Resend'}
                </button>
+               <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 text-center">
+                  <p className="text-xs text-primary font-bold">{locale === 'am' ? 'ወይም ኢሜልዎ ውስጥ ያለውን ሊንክ ይጫኑ' : 'Or click the link in your email'}</p>
+                  <p className="text-[10px] text-gray-400 mt-1">{locale === 'am' ? 'ሊንኩን ሲጫኑ ይህ ገጽ በራሱ ይዘመናል' : 'This page will auto-update after you click the link'}</p>
+               </div>
             </div>
           </div>
         );
-      case 6:
+      case 7:
         return (
           <div className="space-y-8 animate-in slide-in-from-right duration-300">
              <div className="space-y-4 text-center">
@@ -659,7 +791,7 @@ function OnboardingContent() {
              </div>
           </div>
         );
-      case 7:
+      case 8:
         return userId ? (
           <div className="space-y-6 animate-in slide-in-from-right duration-300">
              <VerificationGate 
@@ -703,12 +835,12 @@ function OnboardingContent() {
     <div className="min-h-screen bg-[var(--secondary)] bg-opacity-10 py-12 px-4 flex items-center justify-center" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       <div className="max-w-xl w-full">
         <div className="mb-8 flex justify-between items-center px-4">
-          {[1,2,3,4,5,6,7,8].map(i => (
+          {[1,2,3,4,5,6,7,8,9].map(i => (
              <React.Fragment key={i}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold transition-all ${step >= i ? 'bg-primary text-white scale-110 shadow-lg' : 'bg-white text-gray-300'}`}>
-                   <span className="text-[10px]">{i}</span>
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold transition-all ${step >= i ? 'bg-primary text-white scale-110 shadow-lg' : 'bg-white text-gray-300'}`}>
+                   <span className="text-[8px]">{i}</span>
                 </div>
-                {i < 8 && <div className={`flex-1 h-1 mx-2 rounded-full ${step > i ? 'bg-primary' : 'bg-white'}`} />}
+                {i < 9 && <div className={`flex-1 h-1 mx-1 rounded-full ${step > i ? 'bg-primary' : 'bg-white'}`} />}
              </React.Fragment>
           ))}
         </div>
@@ -738,7 +870,7 @@ function OnboardingContent() {
                   disabled={isSubmitting}
                   className={`flex-[2] btn-primary flex items-center justify-center gap-2 ${isSubmitting ? 'opacity-50' : ''}`}
                 >
-                  {isSubmitting ? t('nav.processing') : (step === 8 ? t('nav.finish') : t('nav.continue'))} {locale === 'ar' ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+                  {isSubmitting ? t('nav.processing') : (step === 9 ? t('nav.finish') : t('nav.continue'))} {locale === 'ar' ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
                 </button>
               </div>
             )}

@@ -242,7 +242,13 @@
       "unknown": "ያልታወቀ",
       "abushakirBadge": "አቡሻህር",
       "country": "ሀገር",
-      "countryPlaceholder": "ሀገር ይምረጡ"
+      "countryPlaceholder": "ሀገር ይምረጡ",
+      "hasChildren": "ልጅ አለዎት?",
+      "partnerPrefs": "የአጋር ምርጫ",
+      "partnerAge": "የእድሜ ክልል",
+      "partnerCountry": "የአጋር ሀገር",
+      "partnerReligion": "የአጋር ሃይማኖት",
+      "partnerIntent": "የጋብቻ ሁኔታና ፍላጎት"
     },
     "idVerification": {
       "title": "ማንነትን ማረጋገጥ",
@@ -369,6 +375,60 @@
       "Jimma": "ጅማ",
       "Jijiga": "ጅጅጋ",
       "Other (International)": "ከሀገር ውጭ"
+    },
+    "Jobs": {
+      "Technology & IT": "ቴክኖሎጂ እና አይቲ",
+      "Healthcare & Medical": "ጤና እና ህክምና",
+      "Education & Research": "ትምህርት እና ምርምር",
+      "Business & Finance": "ንግድ እና ፋይናንስ",
+      "Arts & Entertainment": "ጥበብ እና መዝናኛ",
+      "Engineering & Construction": "ኢንጂነሪንግ እና ግንባታ",
+      "Legal & Law Enforcement": "ህግ እና ደህንነት",
+      "Service & Hospitality": "አገልግሎት እና ሆስፒታሊቲ",
+      "Government & Public Service": "መንግስት እና የህዝብ አገልግሎት",
+      "Agriculture & Nature": "ግብርና እና ተፈጥሮ",
+      "Other": "ሌላ"
+    },
+    "Requirements": {
+      "Religious Compatibility": "ሃይማኖታዊ ተኳኋኝነት",
+      "Family Oriented": "ቤተሰብ ተኮር",
+      "Career Focused": "ስራ ተኮር",
+      "Traditional Values": "ባህላዊ እሴቶች",
+      "Modern Outlook": "ዘመናዊ አመለካከት",
+      "Healthy Lifestyle": "ጤናማ የአኗኗር ዘይቤ",
+      "Wants Children": "ልጅ የሚፈልግ/ግ",
+      "Travel Lover": "ጉዞ የሚወድ/ድ",
+      "Education Priority": "ለትምህርት ቅድሚያ የሚሰጥ/ጥ",
+      "Financial Stability": "የፋይናንስ መረጋጋት"
+    },
+    "Children": {
+      "Yes": "አለኝ",
+      "No": "የለኝም"
+    },
+    "PartnerIntent": {
+      "Single and No Children": "ያላገባ/ች እና ልጅ የሌለው/ላት",
+      "Single and Has Children": "ያላገባ/ች እና ልጅ ያለው/ላት",
+      "Divorced and No Children": "የተፋታ/ች እና ልጅ የሌለው/ላት",
+      "Divorced and Has Children": "የተፋታ/ች እና ልጅ ያለው/ላት",
+      "Wants Children in Future": "ወደፊት መውለድ የሚፈልግ/ግ",
+      "Does Not Want Children": "መውለድ የማይፈልግ/ግ"
+    },
+    "Countries": {
+      "Ethiopia": "ኢትዮጵያ",
+      "Germany": "ጀርመን",
+      "United States": "አሜሪካ",
+      "Canada": "ካናዳ",
+      "United Kingdom": "እንግሊዝ",
+      "United Arab Emirates": "የተባበሩት አረብ ኤምሬትስ",
+      "Saudi Arabia": "ሳውዲ አረቢያ",
+      "Israel": "እስራኤል",
+      "Norway": "ኖርዌይ",
+      "Sweden": "ስዊድን",
+      "Kenya": "ኬንያ",
+      "South Africa": "ደቡብ አፍሪካ",
+      "Australia": "አውስትራሊያ",
+      "China": "ቻይና",
+      "Japan": "ጃፓን"
     }
   }
 }

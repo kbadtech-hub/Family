@@ -26,6 +26,11 @@ export const MARITAL_STATUSES = [
   'Widower'
 ];
 
+export const HAVE_CHILDREN_OPTIONS = [
+  'Yes',
+  'No'
+];
+
 export const LIVING_ARRANGEMENTS = [
   'Alone',
   'With Family',
@@ -99,4 +104,13 @@ export const SPOUSE_REQUIREMENTS_TAGS = [
   'Travel Lover',
   'Education Priority',
   'Financial Stability'
+];
+
+export const PARTNER_INTENT_OPTIONS = [
+  'Single and No Children',
+  'Single and Has Children',
+  'Divorced and No Children',
+  'Divorced and Has Children',
+  'Wants Children in Future',
+  'Does Not Want Children'
 ];
