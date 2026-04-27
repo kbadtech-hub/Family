@@ -119,7 +119,6 @@ export default function CommunityView({
           .order('created_at', { ascending: false });
         if (data) setPosts(data as any[]);
       }
-    }
     setIsSubmitting(false);
   };
 
@@ -129,7 +128,7 @@ export default function CommunityView({
     <div className="max-w-4xl mx-auto space-y-8 pb-20">
       <div className="flex justify-between items-center bg-card p-6 rounded-[2.5rem] border border-border shadow-sm">
          <div className="flex items-center gap-4">
-            <h2 className="text-2xl font-black text-foreground tracking-tighter uppercase italic">{t('communityTitle')}</h2>
+             <h2 className="text-2xl font-black text-foreground tracking-tighter uppercase italic">{t('title')}</h2>
             <div className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-black rounded-full uppercase tracking-widest flex items-center gap-1">
                <ShieldCheck size={12} /> {t('moderated')}
             </div>

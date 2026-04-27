@@ -25,7 +25,6 @@ import {
   BookOpen,
   FileText,
   Trash2,
-  Edit
   Edit,
   Sparkles,
   GraduationCap

@@ -39,9 +39,8 @@ export async function middleware(request: NextRequest) {
   const locale = routing.locales.includes(segments[1] as any) ? segments[1] : routing.defaultLocale;
   
   // Route definitions
-  const isDashboardRoute = segments.includes('dashboard') || segments.includes('community') || segments.includes('chat') || segments.includes('admin');
+  const isDashboardRoute = segments.includes('dashboard') || segments.includes('community') || segments.includes('chat');
   const isLoginRoute = segments.includes('login');
-  const isAdminRoute = segments.includes('admin'); // Legacy /admin
   const isAdminSecureRoute = segments.includes('secure-beteseb-admin');
   
   if (isAdminSecureRoute) {
@@ -88,11 +87,6 @@ export async function middleware(request: NextRequest) {
     // Check for staff status (Admin/Super Admin)
     const isStaff = profile?.role === 'admin' || profile?.role === 'super_admin';
     
-    // Legacy Admin route protection (redirect to dashboard if someone tries /admin)
-    if (isAdminRoute) {
-      return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
-    }
-
     // Bypass onboarding/verification for staff
     if (isStaff) {
       return response;

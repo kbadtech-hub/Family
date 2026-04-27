@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useTranslations, useLocale } from 'next-intl';
-import { CreditCard, Check, Sparkles, Zap, ShieldCheck, Wallet, Loader2, Star } from 'lucide-react';
 import { CreditCard, Check, Sparkles, Zap, ShieldCheck, Wallet, Loader2, Star, Image as ImageIcon } from 'lucide-react';
 
 interface PricingPlan {
