@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import Image from 'next/image';
 import { useRouter, usePathname } from '@/i18n/routing';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import {
   Home,
@@ -13,6 +14,7 @@ import {
   Heart,
   CheckCircle2,
   ArrowUpRight,
+  ShieldCheck,
   GraduationCap,
   Globe,
   ChevronDown,
@@ -33,6 +35,7 @@ export default function DashboardPage() {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isLangOpen, setIsLangOpen] = useState(false);
