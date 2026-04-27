@@ -31,11 +31,7 @@ export default function Footer() {
         <div className="space-y-8 flex-1">
           <div>
              <Link href="/">
-                {cmsContent.logo_url ? (
-                   <img src={cmsContent.logo_url} alt="Logo" className="h-16 object-contain opacity-90 hover:opacity-100 transition-opacity" />
-                ) : (
-                   <img src="/logo.png" alt="Beteseb Logo" className="h-16 invert opacity-90 hover:opacity-100 transition-opacity" />
-                )}
+                <img src="/logo.png" alt="Beteseb Logo" className="h-20 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity duration-500" />
              </Link>
              <p className="text-white/40 mt-4 text-xs font-bold uppercase tracking-widest leading-loose">
                {t('tagline')}

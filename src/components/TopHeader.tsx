@@ -92,14 +92,11 @@ export default function TopHeader() {
       )}
 
       {/* Social Links / Mini Nav */}
-      <div className="flex items-center gap-4 opacity-60 hidden md:flex">
-         <a href="#" className="hover:text-primary transition-colors uppercase">TikTok</a>
-         <a href="#" className="hover:text-primary transition-colors uppercase">Telegram</a>
-         {settings?.contact_info?.website_url && (
-           <a href={settings.contact_info.website_url} target="_blank" className="hover:text-primary transition-colors uppercase">Website</a>
-         )}
-         <div className="w-px h-3 bg-white/20 mx-2" />
-         <span className="text-primary italic">Beteseb Global</span>
+      <div className="flex items-center gap-6 opacity-80 hidden md:flex">
+         <a href="https://tiktok.com" target="_blank" className="hover:text-primary transition-colors text-[9px]">TIKTOK</a>
+         <a href="https://t.me" target="_blank" className="hover:text-primary transition-colors text-[9px]">TELEGRAM</a>
+         <div className="w-px h-3 bg-white/10 mx-2" />
+         <span className="text-primary italic tracking-tight font-black">Beteseb Official</span>
       </div>
     </div>
   );

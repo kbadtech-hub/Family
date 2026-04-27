@@ -47,16 +47,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-6 flex justify-between items-center text-foreground">
         
         <Link href="/" className="flex items-center gap-3 group decoration-transparent">
-          {settings?.cms_content?.logo_url ? (
-             <img src={settings.cms_content.logo_url} alt="Logo" className="h-10 object-contain group-hover:scale-105 transition-transform" />
-          ) : (
-             <>
-               <Heart size={32} className="text-primary fill-primary/10 group-hover:fill-primary transition-all duration-300" />
-               <span className="text-2xl font-black tracking-tighter uppercase italic">
-                 {locale === 'am' ? 'ቤተሰብ' : locale === 'ar' ? 'بيتسب' : 'BETESEB'}
-               </span>
-             </>
-          )}
+          <img src="/logo.png" alt="Beteseb Logo" className="h-12 w-auto object-contain group-hover:scale-105 transition-transform duration-500" />
         </Link>
 
         {/* Desktop Nav */}
