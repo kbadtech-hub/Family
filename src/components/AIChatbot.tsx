@@ -12,10 +12,11 @@ export default function AIChatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [messages, setMessages] = useState<{ role: 'user' | 'bot'; text: string }[]>([
+  const [messages, setMessages] = useState<{ role: 'user' | 'bot' | 'system'; text: string }[]>([
     { role: 'bot', text: t('welcome') }
   ]);
   const [input, setInput] = useState('');
+  const [isEscalated, setIsEscalated] = useState(false);
 
   React.useEffect(() => {
     const checkVerification = async () => {
@@ -50,15 +51,40 @@ export default function AIChatbot() {
     setMessages(newMessages);
     setInput('');
 
-    setTimeout(() => {
-      let response = FAQ_RESPONSES['default'];
-      if (userMsg.includes('abushakir') || userMsg.includes('matching')) response = FAQ_RESPONSES['abushakir'];
-      else if (userMsg.includes('price') || userMsg.includes('cost') || userMsg.includes('sub')) response = FAQ_RESPONSES['pricing'];
-      else if (userMsg.includes('verify') || userMsg.includes('id') || userMsg.includes('security')) response = FAQ_RESPONSES['verified'];
-      else if (userMsg.includes('hello') || userMsg.includes('hi')) response = FAQ_RESPONSES['hello'];
+    setTimeout(async () => {
+      try {
+        const res = await fetch('/api/ai/chat', {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({ message: trimmedInput, locale })
+        });
+        const data = await res.json();
+        setMessages(prev => [...prev, { role: 'bot' as const, text: data.text || FAQ_RESPONSES['default'] }]);
+      } catch (err) {
+        setMessages(prev => [...prev, { role: 'bot' as const, text: FAQ_RESPONSES['default'] }]);
+      }
+    }, 800);
+  };
 
-      setMessages(prev => [...prev, { role: 'bot' as const, text: response }]);
-    }, 600);
+  const handleEscalate = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    setIsLoading(true);
+    const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.text || 'Request for support';
+
+    const { error } = await supabase.from('support_tickets').insert([{
+       user_id: user.id,
+       subject: 'AI Escalation',
+       message: lastUserMessage,
+       status: 'open'
+    }]);
+
+    if (!error) {
+       setMessages(prev => [...prev, { role: 'system' as const, text: locale === 'am' ? 'ጥያቄዎ ወደ አድሚን ተልኳል! በቅርቡ ምላሽ ያገኛሉ።' : 'Ticket sent to Admin! You will get a reply soon.' }]);
+       setIsEscalated(true);
+    }
+    setIsLoading(false);
   };
 
   if (isLoading || !isVerified) return null;
@@ -103,12 +129,24 @@ export default function AIChatbot() {
                    <div className={`max-w-[85%] p-4 rounded-3xl text-sm leading-relaxed shadow-sm ${
                       m.role === 'user' 
                          ? 'bg-primary text-white ' + (locale === 'ar' ? 'rounded-tl-none' : 'rounded-tr-none')
+                         : m.role === 'system'
+                         ? 'bg-accent/10 text-accent font-bold text-center w-full'
                          : 'bg-white text-accent ' + (locale === 'ar' ? 'rounded-tr-none' : 'rounded-tl-none') + ' border border-gray-50'
                    }`}>
                       {m.text}
                    </div>
                 </div>
              ))}
+             {messages.length > 3 && !isEscalated && (
+                <div className="flex justify-center pt-2">
+                   <button 
+                      onClick={handleEscalate}
+                      className="text-[10px] font-black text-primary uppercase tracking-[0.2em] bg-primary/5 px-6 py-3 rounded-2xl border border-primary/20 hover:bg-primary hover:text-white transition-all shadow-sm"
+                   >
+                      Speak to Human / ለአድሚን ይላኩ
+                   </button>
+                </div>
+             )}
           </div>
 
           {/* Quick Buttons */}

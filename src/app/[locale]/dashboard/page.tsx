@@ -268,7 +268,21 @@ export default function DashboardPage() {
                   {showPayment && profile ? (
                     <div className="col-span-full">
                       <button onClick={() => setShowPayment(false)} className="mb-6 text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">← {t('backToDash')}</button>
-                      <PaymentPortal profile={profile} onPaymentStarted={() => setShowPayment(false)} />
+                      {paymentStatus === 'pending' ? (
+                         <div className="bg-white p-20 rounded-[4rem] border border-primary/20 text-center space-y-6 shadow-2xl shadow-primary/5">
+                            <div className="w-24 h-24 bg-primary/10 text-primary rounded-[2.5rem] flex items-center justify-center mx-auto animate-bounce">
+                               <ShieldCheck size={48} />
+                            </div>
+                            <h3 className="text-3xl font-black text-accent italic">Payment Under Review</h3>
+                            <p className="text-gray-500 max-w-md mx-auto font-medium">We have received your screenshot. Our team is verifying the transfer. This usually takes a few hours.</p>
+                            <button onClick={() => setShowPayment(false)} className="btn-secondary px-8 py-3 rounded-xl font-bold uppercase text-[10px] tracking-widest">Return to Dashboard</button>
+                         </div>
+                      ) : (
+                         <PaymentPortal profile={profile} onPaymentStarted={() => {
+                            setShowPayment(false);
+                            setPaymentStatus('pending');
+                         }} />
+                      )}
                     </div>
                   ) : isTrialExpired && paymentStatus !== 'approved' ? (
                     <div className="col-span-full bg-white p-12 rounded-[3rem] border border-red-100 text-center space-y-6">
@@ -307,6 +321,16 @@ export default function DashboardPage() {
                   <div className="p-5 bg-green-500/5 border border-green-500/20 rounded-[1.5rem] flex items-center justify-center gap-3">
                     <CheckCircle2 className="text-green-500" size={20} />
                     <p className="font-bold text-xs uppercase tracking-widest text-green-700">{t('premium.active')}</p>
+                  </div>
+                ) : paymentStatus === 'pending' ? (
+                  <div className="p-8 bg-primary/5 border border-primary/20 rounded-[2.5rem] space-y-4">
+                    <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mx-auto animate-pulse">
+                       <ShieldCheck size={24} />
+                    </div>
+                    <div>
+                       <p className="font-black text-xs uppercase tracking-widest text-primary">Review Pending</p>
+                       <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-tighter">Your payment screenshot is being reviewed.</p>
+                    </div>
                   </div>
                 ) : verificationStatus === 'verified' && !isTrialExpired ? (
                   <div className="space-y-4">

@@ -26,6 +26,9 @@ import {
   FileText,
   Trash2,
   Edit
+  Edit,
+  Sparkles,
+  GraduationCap
 } from 'lucide-react';
 
 export default function AdminPortal() {
@@ -33,6 +36,8 @@ export default function AdminPortal() {
   const [settings, setSettings] = useState<any>(null);
   const [verifications, setVerifications] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
+  const [lessons, setLessons] = useState<any[]>([]);
+  const [supportTickets, setSupportTickets] = useState<any[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [password, setPassword] = useState('');
@@ -63,7 +68,6 @@ export default function AdminPortal() {
   });
 
   // Lessons State
-  const [lessons, setLessons] = useState<any[]>([]);
   const [isEditingLesson, setIsEditingLesson] = useState(false);
   const [currentLesson, setCurrentLesson] = useState<any>({
     title: '',
@@ -203,8 +207,8 @@ export default function AdminPortal() {
               { bank_name: '', account_number: '', account_holder: '' },
               { bank_name: '', account_number: '', account_holder: '' }
             ],
-            pricing_usd: data.pricing_usd || { "1m": 50, "3m": 120, "6m": 200, "12m": 350, "class": 25 },
-            pricing_etb: data.pricing_etb || { "1m": 500, "3m": 1200, "6m": 2000, "12m": 3500, "class": 250 }
+            pricing_usd: data.pricing_usd || { "1m": 50, "3m": 120, "6m": 200, "12m": 350, "class": 25, "lifetime": 999, "discount": 0 },
+            pricing_etb: data.pricing_etb || { "1m": 500, "3m": 1200, "6m": 2000, "12m": 3500, "class": 250, "lifetime": 9999, "discount": 0 }
           });
         }
       } else if (activeTab === 'pricing') {
@@ -213,8 +217,8 @@ export default function AdminPortal() {
           setSettings(data);
           setCmsForm({
             ...cmsForm, // Keep other fields
-            pricing_usd: data.pricing_usd || { "1m": 50, "3m": 120, "6m": 200, "12m": 350, "class": 25 },
-            pricing_etb: data.pricing_etb || { "1m": 500, "3m": 1200, "6m": 2000, "12m": 3500, "class": 250 }
+            pricing_usd: data.pricing_usd || { "1m": 50, "3m": 120, "6m": 200, "12m": 350, "class": 25, "lifetime": 999, "discount": 0 },
+            pricing_etb: data.pricing_etb || { "1m": 500, "3m": 1200, "6m": 2000, "12m": 3500, "class": 250, "lifetime": 9999, "discount": 0 }
           });
         }
       } else if (activeTab === 'verification') {
@@ -238,6 +242,9 @@ export default function AdminPortal() {
       } else if (activeTab === 'matches') {
         const { data } = await supabase.from('profiles').select('id, full_name, avatar_url, star_sign').limit(100);
         if (data) setUsers(data);
+      } else if (activeTab === 'support') {
+        const { data } = await supabase.from('support_tickets').select('*, profiles(full_name)').order('created_at', { ascending: false });
+        if (data) setSupportTickets(data);
       }
     };
     fetchAdminData();
@@ -340,6 +347,30 @@ export default function AdminPortal() {
     setIsSaving(false);
   };
 
+  const handleUpdatePayment = async (id: string, status: string, userId?: string, planType?: string) => {
+    setIsSaving(true);
+    const { error } = await supabase.from('payments').update({ status }).eq('id', id);
+    
+    if (!error && status === 'approved' && userId && planType) {
+       // Calculate trial end date based on plan
+       let days = 30;
+       if (planType === '3m') days = 90;
+       if (planType === '6m') days = 180;
+       if (planType === '12m') days = 365;
+       if (planType === 'lifetime') days = 36500; // ~100 years
+
+       const trialEndsAt = new Date();
+       trialEndsAt.setDate(trialEndsAt.getDate() + days);
+
+       await supabase.from('profiles').update({ 
+          trial_ends_at: trialEndsAt.toISOString() 
+       }).eq('id', userId);
+    }
+
+    setPayments(prev => prev.map(p => p.id === id ? { ...p, status } : p));
+    setIsSaving(false);
+  };
+
   const handleSaveLesson = async () => {
     setIsSaving(true);
     try {
@@ -371,6 +402,21 @@ export default function AdminPortal() {
     const { error } = await supabase.from('lessons').delete().eq('id', id);
     if (error) alert('Error deleting lesson: ' + error.message);
     else setLessons(prev => prev.filter(l => l.id !== id));
+  };
+
+  const handleUpdateTicket = async (id: string, response: string) => {
+    setIsSaving(true);
+    const { error } = await supabase.from('support_tickets').update({ 
+       response, 
+       status: 'closed' 
+    }).eq('id', id);
+    
+    if (error) alert(error.message);
+    else {
+       setSupportTickets(prev => prev.map(t => t.id === id ? { ...t, response, status: 'closed' } : t));
+       alert('Response sent!');
+    }
+    setIsSaving(false);
   };
 
   const handleBroadcast = async () => {
@@ -536,15 +582,13 @@ export default function AdminPortal() {
             { id: 'stats', icon: BarChart3, label: 'Analytics' },
             { id: 'cms', icon: Layout, label: 'Standard CMS' },
             { id: 'business', icon: SettingsIcon, label: 'Business Settings' },
-            { id: 'social_feed', icon: Globe, label: 'Social Presence' },
             { id: 'verification', icon: ShieldCheck, label: 'Verifications' },
             { id: 'payments', icon: Heart, label: 'Payment Review' },
             { id: 'messaging', icon: MessageSquare, label: 'Communication' },
             { id: 'posts', icon: Film, label: 'Articles & News' },
-            { id: 'lessons', icon: GraduationCap, label: 'Academy Lessons' },
-            { id: 'community', icon: Sparkles, label: 'Social Hub' },
-            { id: 'pricing', icon: CreditCard, label: 'Pricing & Trial' },
-            { id: 'matches', icon: Heart, label: 'Manual Matches' },
+            { id: 'lessons', icon: Video, label: 'Lessons' },
+            { id: 'support', icon: MessageSquare, label: 'Support' },
+            { id: 'matches', icon: Heart, label: 'Matches' },
             { id: 'staff', icon: Users, label: 'Manage Staff' },
             { id: 'security', icon: ShieldAlert, label: 'Access Control' },
           ].map(item => (
@@ -870,7 +914,8 @@ export default function AdminPortal() {
                <button onClick={handleSaveCMS} className="btn-primary">Deploy Updates</button>
              </header>
 
-             <div className="grid grid-cols-1 lg:grid               <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5">
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+               <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5">
                  <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6">Discount & Logic</h3>
                  <div className="space-y-6">
                     <label className="block">
@@ -942,7 +987,6 @@ export default function AdminPortal() {
                     ))}
                  </div>
                </div>
-         </div>
              </div>
            </div>
          )}
@@ -990,8 +1034,8 @@ export default function AdminPortal() {
                                <div className="flex gap-2 justify-center">
                                   {req.status === 'pending' && (
                                     <>
-                                       <button onClick={() => handleUpdateVerification(req.id, 'verified')} className="p-3 bg-green-500/10 text-green-600 rounded-xl hover:bg-green-500 hover:text-white transition-all shadow-sm"><Check size={18} /></button>
-                                       <button onClick={() => handleUpdateVerification(req.id, 'rejected')} className="p-3 bg-red-500/10 text-red-600 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-sm"><X size={18} /></button>
+                                       <button onClick={() => handleUpdateVerification(req.id, 'verified', req.user_id)} className="p-3 bg-green-500/10 text-green-600 rounded-xl hover:bg-green-500 hover:text-white transition-all shadow-sm"><Check size={18} /></button>
+                                       <button onClick={() => handleUpdateVerification(req.id, 'rejected', req.user_id)} className="p-3 bg-red-500/10 text-red-600 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-sm"><X size={18} /></button>
                                     </>
                                   )}
                                   <button className="p-3 bg-accent/10 text-accent rounded-xl hover:bg-accent hover:text-white transition-all shadow-sm"><Search size={18} /></button>
@@ -1017,6 +1061,7 @@ export default function AdminPortal() {
                     <thead>
                        <tr className="bg-muted/50 border-b border-gray-100">
                           <th className="p-6 text-xs font-bold text-gray-400 uppercase">User</th>
+                          <th className="p-6 text-xs font-bold text-gray-400 uppercase">Plan & Amount</th>
                           <th className="p-6 text-xs font-bold text-gray-400 uppercase">Receipt</th>
                           <th className="p-6 text-xs font-bold text-gray-400 uppercase">Status</th>
                           <th className="p-6 text-xs font-bold text-gray-400 uppercase text-center">Actions</th>
@@ -1024,27 +1069,57 @@ export default function AdminPortal() {
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                        {payments.length === 0 ? (
-                         <tr><td colSpan={4} className="p-10 text-center text-gray-400 italic">No payment requests found.</td></tr>
+                         <tr><td colSpan={5} className="p-10 text-center text-gray-400 italic">No payment requests found.</td></tr>
                        ) : (
                          payments.map((p) => (
                            <tr key={p.id} className="hover:bg-gray-50/50 transition-colors">
-                              <td className="p-6 font-bold text-accent">{p.profiles?.full_name}</td>
                               <td className="p-6">
-                                 <a href={p.receipt_url} target="_blank" className="text-primary font-semibold flex items-center gap-1 hover:underline">
-                                    <Video size={14} /> View Receipt
-                                 </a>
+                                 <div className="font-bold text-accent">{p.profiles?.full_name}</div>
+                                 <div className="text-[10px] text-gray-400 font-bold uppercase">{p.user_id?.substring(0, 8)}...</div>
                               </td>
                               <td className="p-6">
-                                 <span className={`font-bold text-sm ${p.status === 'approved' ? 'text-green-500' : p.status === 'rejected' ? 'text-red-500' : 'text-primary'}`}>
-                                    {p.status.toUpperCase()}
+                                 <div className="flex flex-col">
+                                    <span className="text-xs font-black uppercase tracking-widest text-primary">{p.plan_type}</span>
+                                    <span className="text-lg font-black italic">{p.currency === 'ETB' ? 'ብር ' : '$'}{p.amount}</span>
+                                 </div>
+                              </td>
+                              <td className="p-6">
+                                 <div className="relative group cursor-pointer" onClick={() => window.open(p.receipt_url, '_blank')}>
+                                    <div className="w-16 h-12 bg-muted rounded-lg overflow-hidden border border-gray-200">
+                                       <img src={p.receipt_url} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                                    </div>
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                       <Search size={14} className="text-accent" />
+                                    </div>
+                                 </div>
+                              </td>
+                              <td className="p-6">
+                                 <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter border ${
+                                    p.status === 'approved' ? 'bg-green-500/10 text-green-600 border-green-200' : 
+                                    p.status === 'rejected' ? 'bg-red-500/10 text-red-600 border-red-200' : 
+                                    'bg-primary/10 text-primary border-primary/20 animate-pulse'
+                                 }`}>
+                                    {p.status}
                                  </span>
                               </td>
                               <td className="p-6">
                                  <div className="flex gap-2 justify-center">
                                     {p.status === 'pending' && (
                                        <>
-                                          <button onClick={() => handleUpdatePayment(p.id, 'approved')} className="p-3 bg-green-500/10 text-green-600 rounded-xl hover:bg-green-500 hover:text-white transition-all shadow-sm"><Check size={18} /></button>
-                                          <button onClick={() => handleUpdatePayment(p.id, 'rejected')} className="p-3 bg-red-500/10 text-red-600 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-sm"><X size={18} /></button>
+                                          <button 
+                                            onClick={() => handleUpdatePayment(p.id, 'approved', p.user_id, p.plan_type)} 
+                                            disabled={isSaving}
+                                            className="p-3 bg-green-500/10 text-green-600 rounded-xl hover:bg-green-500 hover:text-white transition-all shadow-sm disabled:opacity-30"
+                                          >
+                                             <Check size={18} />
+                                          </button>
+                                          <button 
+                                            onClick={() => handleUpdatePayment(p.id, 'rejected')} 
+                                            disabled={isSaving}
+                                            className="p-3 bg-red-500/10 text-red-600 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-sm disabled:opacity-30"
+                                          >
+                                             <X size={18} />
+                                          </button>
                                        </>
                                     )}
                                  </div>
@@ -1382,6 +1457,73 @@ export default function AdminPortal() {
                      {isSaving ? 'Updating...' : 'Confirm New System Key'}
                    </button>
                 </div>
+             </div>
+           </div>
+         )}
+         {activeTab === 'support' && (
+           <div className="space-y-8 animate-in fade-in duration-500">
+             <header>
+               <h2 className="text-3xl font-bold text-accent italic">Support Center</h2>
+               <p className="text-gray-500">Manage user escalations and AI-to-human ticket transfers.</p>
+             </header>
+
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {supportTickets.length === 0 ? (
+                   <div className="col-span-full p-20 text-center text-gray-400 bg-white rounded-[3rem] border border-gray-100 italic">No support tickets at this time.</div>
+                ) : (
+                   supportTickets.map((ticket) => (
+                      <div key={ticket.id} className="bg-white p-8 rounded-[3rem] shadow-sm border border-gray-100 flex flex-col gap-6 relative overflow-hidden">
+                         {ticket.status === 'open' && (
+                            <div className="absolute top-0 right-0 w-2 h-full bg-primary animate-pulse" />
+                         )}
+                         <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-4">
+                               <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center text-primary font-bold shadow-sm text-xl uppercase italic">
+                                  {ticket.profiles?.full_name?.charAt(0)}
+                               </div>
+                               <div>
+                                  <h4 className="font-bold text-accent">{ticket.profiles?.full_name}</h4>
+                                  <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{new Date(ticket.created_at).toLocaleString()}</p>
+                               </div>
+                            </div>
+                            <span className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter border ${
+                               ticket.status === 'open' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-green-500/10 text-green-600 border-green-200'
+                            }`}>
+                               {ticket.status}
+                            </span>
+                         </div>
+
+                         <div className="p-6 bg-muted/30 rounded-2xl border border-muted italic text-sm text-accent leading-relaxed">
+                            "{ticket.message}"
+                         </div>
+
+                         {ticket.status === 'open' ? (
+                            <div className="space-y-4">
+                               <textarea 
+                                 id={`reply-${ticket.id}`}
+                                 placeholder="Type your response to the user..."
+                                 className="w-full p-4 bg-muted rounded-2xl h-32 resize-none border-transparent focus:ring-primary focus:bg-white transition-all shadow-inner"
+                               />
+                               <button 
+                                 onClick={() => {
+                                    const reply = (document.getElementById(`reply-${ticket.id}`) as HTMLTextAreaElement).value;
+                                    if (reply) handleUpdateTicket(ticket.id, reply);
+                                 }}
+                                 disabled={isSaving}
+                                 className="w-full btn-primary py-4 rounded-xl font-bold uppercase tracking-widest flex items-center justify-center gap-2"
+                               >
+                                  {isSaving ? 'Sending...' : <><Send size={16} /> Send Reply & Close</>}
+                               </button>
+                            </div>
+                         ) : (
+                            <div className="space-y-2 p-6 bg-green-500/5 rounded-2xl border border-green-200/20">
+                               <p className="text-[10px] font-black text-green-600 uppercase tracking-widest">Admin Response:</p>
+                               <p className="text-sm font-medium text-green-800">{ticket.response}</p>
+                            </div>
+                         )}
+                      </div>
+                   ))
+                )}
              </div>
            </div>
          )}
