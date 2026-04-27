@@ -79,13 +79,77 @@ interface Lesson {
   is_premium_only: boolean;
 }
 
+interface SystemSettings {
+  id: string;
+  cms_content: {
+    logo_url?: string;
+    hero_title?: string;
+    hero_subtitle?: string;
+    footer_description?: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    website_url?: string;
+  };
+  contact_info?: {
+    email?: string;
+    phone?: string;
+    address?: string;
+    website_url?: string;
+  };
+  social_links?: {
+    tiktok?: string;
+    telegram?: string;
+    youtube?: string;
+    facebook?: string;
+    whatsapp?: string;
+    instagram?: string;
+    linkedin?: string;
+    twitter?: string;
+  };
+  bank_details?: {
+    etb?: BankDetail[];
+    usd?: BankDetail[];
+  };
+  pricing_usd?: Record<string, number>;
+  pricing_etb?: Record<string, number>;
+  system_access_key?: string;
+}
+
+interface SupportTicket {
+  id: string;
+  user_id: string;
+  subject: string;
+  message: string;
+  status: 'open' | 'closed';
+  created_at: string;
+  response?: string;
+  profiles?: UserProfile;
+}
+
+interface BankDetail {
+  bank_name: string;
+  account_number: string;
+  account_holder: string;
+}
+
+interface ChatMessage {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  created_at: string;
+  profiles?: UserProfile;
+  receiver?: UserProfile;
+}
+
 export default function AdminPortal() {
   const [activeTab, setActiveTab] = useState('cms');
-  const [settings, setSettings] = useState<any>(null);
+  const [settings, setSettings] = useState<SystemSettings | null>(null);
   const [verifications, setVerifications] = useState<VerificationRequest[]>([]);
   const [payments, setPayments] = useState<PaymentRequest[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>([]);
-  const [supportTickets, setSupportTickets] = useState<any[]>([]);
+  const [supportTickets, setSupportTickets] = useState<SupportTicket[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [password, setPassword] = useState('');
@@ -95,7 +159,7 @@ export default function AdminPortal() {
   // Messaging & Staff State
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [broadcastMessage, setBroadcastMessage] = useState('');
-  const [sentMessages, setSentMessages] = useState<any[]>([]);
+  const [sentMessages, setSentMessages] = useState<ChatMessage[]>([]);
   const [newAdminPassword, setNewAdminPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -155,9 +219,10 @@ export default function AdminPortal() {
     instagram: string;
     linkedin: string;
     twitter: string;
-    banks_etb: any[];
-    banks_usd: any[];
+    banks_etb: BankDetail[];
+    banks_usd: BankDetail[];
     pricing_usd: {
+      [key: string]: number | undefined;
       "1m": number;
       "3m": number;
       "6m": number;
@@ -168,6 +233,7 @@ export default function AdminPortal() {
       discount?: number;
     };
     pricing_etb: {
+      [key: string]: number | undefined;
       "1m": number;
       "3m": number;
       "6m": number;
@@ -178,7 +244,7 @@ export default function AdminPortal() {
       discount?: number;
     };
     website_url: string;
-    [key: string]: any; // Allow index access for social links
+    [key: string]: string | BankDetail[] | Record<string, number> | undefined;
   }
 
   // CMS State
@@ -206,8 +272,10 @@ export default function AdminPortal() {
       { bank_name: '', account_number: '', account_holder: '' },
       { bank_name: '', account_number: '', account_holder: '' }
     ],
-    pricing_usd: { "1m": 0, "3m": 0, "6m": 0, "12m": 0, "class": 0, "lifetime": 0, "trial_days": 3, "discount": 0 },
-    pricing_etb: { "1m": 0, "3m": 0, "6m": 0, "12m": 0, "class": 0, "lifetime": 0, "trial_days": 3, "discount": 0 },
+    pricing_usd: {
+      "1m": 0, "3m": 0, "6m": 0, "12m": 0, "class": 0, "lifetime": 0, "trial_days": 3, "discount": 0 },
+    pricing_etb: {
+      "1m": 0, "3m": 0, "6m": 0, "12m": 0, "class": 0, "lifetime": 0, "trial_days": 3, "discount": 0 },
     website_url: ''
   });
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
@@ -336,6 +404,7 @@ export default function AdminPortal() {
   };
 
   const handleSaveCMS = async () => {
+    if (!settings) return;
     setIsSaving(true);
     const { error } = await supabase
       .from('settings')
@@ -376,7 +445,7 @@ export default function AdminPortal() {
     setIsSaving(false);
   };
 
-  const handleUpdateVerification = async (id: string, status: string, userId?: string) => {
+  const handleUpdateVerification = async (id: string, status: 'verified' | 'rejected', userId?: string) => {
     setIsSaving(true);
     const { error } = await supabase.from('verifications').update({ 
       status, 
@@ -393,7 +462,7 @@ export default function AdminPortal() {
     setIsSaving(false);
   };
 
-  const handleUpdatePayment = async (id: string, status: string, userId?: string, planType?: string) => {
+  const handleUpdatePayment = async (id: string, status: 'approved' | 'rejected', userId?: string, planType?: string) => {
     setIsSaving(true);
     const { error } = await supabase.from('payments').update({ status }).eq('id', id);
     
@@ -475,7 +544,7 @@ export default function AdminPortal() {
     
     if (allUsers) {
       const messages = allUsers.map(u => ({
-        sender_id: (supabase as any).auth.user()?.id || settings.admin_id,
+        sender_id: (supabase as any).auth.user()?.id || settings?.id,
         receiver_id: u.id,
         content: `[SYSTEM ANNOUNCEMENT] ${broadcastMessage}`
       }));
@@ -498,6 +567,7 @@ export default function AdminPortal() {
   };
 
   const handleUpdateAdminPassword = async () => {
+    if (!settings) return;
     if (newAdminPassword.length < 8) {
       alert('Password must be at least 8 characters');
       return;
@@ -512,9 +582,9 @@ export default function AdminPortal() {
     setIsSaving(false);
   };
 
-  const MOCK_VERIFICATIONS = [
-    { id: 'mock-1', profiles: { full_name: 'Kidus Yohannes' }, doc_type: 'Passport', status: 'pending' },
-    { id: 'mock-2', profiles: { full_name: 'Hana Belayneh' }, doc_type: 'id', status: 'pending' }
+  const MOCK_VERIFICATIONS: VerificationRequest[] = [
+    { id: 'mock-1', user_id: 'mock-u1', profiles: { id: 'mock-u1', full_name: 'Kidus Yohannes', role: 'user', avatar_url: null }, doc_type: 'Passport', status: 'pending', id_url: '', selfie_url: '' },
+    { id: 'mock-2', user_id: 'mock-u2', profiles: { id: 'mock-u2', full_name: 'Hana Belayneh', role: 'user', avatar_url: null }, doc_type: 'id', status: 'pending', id_url: '', selfie_url: '' }
   ];
 
   const displayVerifications = verifications.length > 0 ? verifications : MOCK_VERIFICATIONS;
@@ -541,8 +611,8 @@ export default function AdminPortal() {
 
       setCmsForm({ ...cmsForm, logo_url: publicUrl });
       alert('Logo uploaded! Click Deploy to save changes.');
-    } catch (err: any) {
-      alert('Upload error: ' + err.message);
+    } catch (err: unknown) {
+      alert('Upload error: ' + (err instanceof Error ? err.message : 'Unknown error'));
     } finally {
       setIsSaving(false);
     }
@@ -576,6 +646,7 @@ export default function AdminPortal() {
                           <button 
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
+                             aria-label={showPassword ? "Hide password" : "Show password"}
                             className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-primary transition-all rounded-xl"
                           >
                             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -607,6 +678,7 @@ export default function AdminPortal() {
          </div>
          <button 
            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            aria-label="Toggle menu"
            className="p-3 bg-primary/10 text-primary rounded-xl"
          >
             {isSidebarOpen ? <X size={24} /> : <Layout size={24} />}
@@ -684,7 +756,7 @@ export default function AdminPortal() {
             {!settings ? (
               <div className="p-20 text-center text-foreground/40 italic">Connecting to system settings...</div>
             ) : (
-              <div key={settings.id} className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div key={settings?.id} className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                  <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5 h-fit">
                     <div className="flex items-center gap-3 mb-10">
                        <Layout className="text-primary" size={24} />
@@ -917,7 +989,7 @@ export default function AdminPortal() {
                                 <input 
                                   type="text" 
                                   placeholder={`https://${social.id}.com/...`}
-                                  value={(cmsForm as any)[social.id]}
+                                  value={(cmsForm[social.id] as string) || ""}
                                   onChange={(e) => setCmsForm({...cmsForm, [social.id]: e.target.value})}
                                   className="input-premium bg-background pl-12"
                                 />
@@ -937,7 +1009,7 @@ export default function AdminPortal() {
                       <p className="text-[10px] text-foreground/40 uppercase mb-8">Generated Footer Icons</p>
                       <div className="flex flex-wrap gap-4">
                          {['facebook', 'youtube', 'tiktok', 'instagram', 'telegram', 'whatsapp', 'linkedin', 'twitter'].map(id => (
-                            (cmsForm as any)[id] && (
+                            (cmsForm[id] as string) && (
                                <div key={id} className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-primary group-hover:bg-primary transition-all">
                                   <Globe size={20} />
                                </div>
@@ -968,11 +1040,13 @@ export default function AdminPortal() {
                        <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest">Free Trial Days</span>
                        <input 
                          type="number" 
-                         value={(cmsForm.pricing_usd as any)?.trial_days || 3}
+                         value={cmsForm.pricing_usd?.trial_days || 3}
                          onChange={(e) => setCmsForm({
                             ...cmsForm, 
-                            pricing_usd: { ...cmsForm.pricing_usd, trial_days: parseInt(e.target.value) },
-                            pricing_etb: { ...cmsForm.pricing_etb, trial_days: parseInt(e.target.value) }
+                            pricing_usd: {
+      [key: string]: number | undefined; ...cmsForm.pricing_usd, trial_days: parseInt(e.target.value) },
+                            pricing_etb: {
+      [key: string]: number | undefined; ...cmsForm.pricing_etb, trial_days: parseInt(e.target.value) }
                          })}
                          className="input-premium bg-background mt-2"
                        />
@@ -981,11 +1055,13 @@ export default function AdminPortal() {
                        <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest text-primary italic">Global Holiday Discount (%)</span>
                        <input 
                          type="number" 
-                         value={(cmsForm.pricing_usd as any)?.discount || 0}
+                         value={cmsForm.pricing_usd?.discount || 0}
                          onChange={(e) => setCmsForm({
                             ...cmsForm, 
-                            pricing_usd: { ...cmsForm.pricing_usd, discount: parseInt(e.target.value) },
-                            pricing_etb: { ...cmsForm.pricing_etb, discount: parseInt(e.target.value) }
+                            pricing_usd: {
+      [key: string]: number | undefined; ...cmsForm.pricing_usd, discount: parseInt(e.target.value) },
+                            pricing_etb: {
+      [key: string]: number | undefined; ...cmsForm.pricing_etb, discount: parseInt(e.target.value) }
                          })}
                          className="input-premium bg-background mt-2 border-primary/30"
                          placeholder="0% - 90%"
@@ -1002,10 +1078,11 @@ export default function AdminPortal() {
                           <span className="text-[10px] w-20 font-bold text-foreground/40 uppercase tracking-widest">{plan === 'lifetime' ? 'Lifetime' : plan}</span>
                           <input 
                             type="number" 
-                            value={(cmsForm.pricing_usd as any)[plan]}
+                            value={cmsForm.pricing_usd?.[plan] ?? 0}
                             onChange={(e) => setCmsForm({
                                ...cmsForm, 
-                               pricing_usd: { ...cmsForm.pricing_usd, [plan]: parseInt(e.target.value) }
+                               pricing_usd: {
+      [key: string]: number | undefined; ...cmsForm.pricing_usd, [plan]: parseInt(e.target.value) }
                             })}
                             className="input-premium bg-background flex-1"
                           />
@@ -1022,10 +1099,11 @@ export default function AdminPortal() {
                           <span className="text-[10px] w-20 font-bold text-foreground/40 uppercase tracking-widest">{plan === 'lifetime' ? 'Lifetime' : plan}</span>
                           <input 
                             type="number" 
-                            value={(cmsForm.pricing_etb as any)[plan]}
+                            value={cmsForm.pricing_etb?.[plan] ?? 0}
                             onChange={(e) => setCmsForm({
                                ...cmsForm, 
-                               pricing_etb: { ...cmsForm.pricing_etb, [plan]: parseInt(e.target.value) }
+                               pricing_etb: {
+      [key: string]: number | undefined; ...cmsForm.pricing_etb, [plan]: parseInt(e.target.value) }
                             })}
                             className="input-premium bg-background flex-1"
                           />
@@ -1277,11 +1355,11 @@ export default function AdminPortal() {
                      <div className="space-y-4">
                         <label className="block">
                            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">YouTube Video URL</span>
-                           <input type="text" value={currentPost.video_url} onChange={(e) => setCurrentPost({...currentPost, video_url: e.target.value})} className="mt-2 block w-full p-4 bg-muted rounded-2xl border-transparent focus:ring-primary focus:bg-white transition-all shadow-inner" placeholder="https://youtube.com/watch?v=..." />
+                           <input type="text" value={currentPost.video_url || ''} onChange={(e) => setCurrentPost({...currentPost, video_url: e.target.value})} className="mt-2 block w-full p-4 bg-muted rounded-2xl border-transparent focus:ring-primary focus:bg-white transition-all shadow-inner" placeholder="https://youtube.com/watch?v=..." />
                         </label>
                         <label className="block">
                            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Featured Image URL</span>
-                           <input type="text" value={currentPost.image_url} onChange={(e) => setCurrentPost({...currentPost, image_url: e.target.value})} className="mt-2 block w-full p-4 bg-muted rounded-2xl border-transparent focus:ring-primary focus:bg-white transition-all shadow-inner" placeholder="https://..." />
+                           <input type="text" value={currentPost.image_url || ''} onChange={(e) => setCurrentPost({...currentPost, image_url: e.target.value})} className="mt-2 block w-full p-4 bg-muted rounded-2xl border-transparent focus:ring-primary focus:bg-white transition-all shadow-inner" placeholder="https://..." />
                         </label>
                         <div className="flex items-center gap-2 pt-8">
                            <input type="checkbox" id="published" checked={currentPost.is_published} onChange={(e) => setCurrentPost({...currentPost, is_published: e.target.checked})} className="w-5 h-5 text-primary rounded" />
@@ -1331,10 +1409,10 @@ export default function AdminPortal() {
                             <div className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{post.category}</div>
                             <h4 className="text-xl font-bold text-accent leading-tight line-clamp-2">{post.title}</h4>
                             <div className="flex gap-2 pt-4 border-t border-muted/50">
-                               <button onClick={() => { setCurrentPost(post); setIsEditingPost(true); }} className="flex-1 p-3 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-2 font-bold text-xs">
+                               <button onClick={() => { setCurrentPost(post); setIsEditingPost(true); }} aria-label="Edit post" className="flex-1 p-3 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-2 font-bold text-xs">
                                   <Edit size={16} /> Edit
                                </button>
-                               <button onClick={() => handleDeletePost(post.id)} aria-label="Delete post" className="p-3 bg-red-500/10 text-red-600 rounded-xl hover:bg-red-500 hover:text-white transition-all">
+                               <button onClick={() => post.id && handleDeletePost(post.id)} aria-label="Delete post" className="p-3 bg-red-500/10 text-red-600 rounded-xl hover:bg-red-500 hover:text-white transition-all">
                                   <Trash2 size={16} />
                                </button>
                             </div>
@@ -1486,6 +1564,7 @@ export default function AdminPortal() {
                          <button 
                            type="button"
                            onClick={() => setShowNewPassword(!showNewPassword)}
+                            aria-label={showNewPassword ? "Hide password" : "Show password"}
                            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-primary transition-all rounded-xl"
                          >
                            {showNewPassword ? <EyeOff size={24} /> : <Eye size={24} />}
@@ -1599,7 +1678,7 @@ export default function AdminPortal() {
                <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-gray-100 max-w-4xl animate-in slide-in-from-bottom-4 duration-500">
                   <div className="flex justify-between items-center mb-8">
                      <h3 className="text-xl font-bold text-accent">{currentLesson.id ? 'Edit' : 'Create'} Lesson</h3>
-                     <button onClick={() => setIsEditingLesson(false)} className="p-2 hover:bg-gray-100 rounded-full"><X size={24} /></button>
+                     <button onClick={() => setIsEditingLesson(false)} aria-label="Close" className="p-2 hover:bg-gray-100 rounded-full"><X size={24} /></button>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1673,7 +1752,7 @@ export default function AdminPortal() {
                                <button onClick={() => { setCurrentLesson(lesson); setIsEditingLesson(true); }} className="flex-1 p-3 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-2 font-bold text-xs">
                                   <Edit size={16} /> Edit
                                 </button>
-                               <button onClick={() => handleDeleteLesson(lesson.id)} className="p-3 bg-red-500/10 text-red-600 rounded-xl hover:bg-red-500 hover:text-white transition-all">
+                               <button onClick={() => lesson.id && handleDeleteLesson(lesson.id)} aria-label="Delete lesson" className="p-3 bg-red-500/10 text-red-600 rounded-xl hover:bg-red-500 hover:text-white transition-all">
                                   <Trash2 size={16} />
                                </button>
                             </div>
@@ -1723,7 +1802,7 @@ export default function AdminPortal() {
                      <Heart size={40} className="text-primary" />
                   </div>
                   <h3 className="text-2xl font-bold italic">Match Forge</h3>
-                  <p className="text-gray-400 max-w-xs mx-auto text-sm">Select two profiles from the left to manually create a "Sacred Union" match. This will prioritize them in each other's feeds.</p>
+                  <p className="text-gray-400 max-w-xs mx-auto text-sm">Select two profiles from the left to manually create a &quot;Sacred Union&quot; match. This will prioritize them in each other&apos;s feeds.</p>
                   <div className="flex gap-4 opacity-30">
                      <div className="w-16 h-16 rounded-2xl bg-muted border-2 border-dashed border-gray-500" />
                      <div className="w-16 h-16 rounded-2xl bg-muted border-2 border-dashed border-gray-500" />

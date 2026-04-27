@@ -438,7 +438,7 @@ export default function CommunityPage() {
                            <span>{opt.label}</span>
                            <span className="text-secondary">{opt.percent}%</span>
                         </div>
-                        <div className="absolute inset-y-0 left-0 bg-secondary/5 transition-all group-hover/opt:bg-secondary/10" style={{ width: `${opt.percent}%` }} />
+                        <div className="absolute inset-y-0 left-0 bg-secondary/5 transition-all group-hover/opt:bg-secondary/10" style={{ '--width': `${opt.percent}%`, width: 'var(--width)' } as React.CSSProperties} />
                      </button>
                   ))}
                </div>
