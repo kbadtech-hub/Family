@@ -48,7 +48,7 @@ import {
 } from '@/lib/constants';
 import { COUNTRIES } from '@/lib/countries';
 import { Mail, Phone, Globe } from 'lucide-react';
-import { EthDateTime } from 'ethiopian-date';
+import ethiopianDate from 'ethiopian-date';
 
 function OnboardingContent() {
   const t = useTranslations('Onboarding');
@@ -107,13 +107,12 @@ function OnboardingContent() {
       if (field.startsWith('eth_') && (locale === 'am' || locale === 'om')) {
         if (next.eth_birth_day && next.eth_birth_month && next.eth_birth_year) {
           try {
-            const ethDate = new EthDateTime(
+            const [gy, gm, gd] = ethiopianDate.toGregorian(
               parseInt(next.eth_birth_year),
               parseInt(next.eth_birth_month),
               parseInt(next.eth_birth_day)
             );
-            const greg = ethDate.toGregorian();
-            next.birth_date = `${greg.year}-${String(greg.month).padStart(2, '0')}-${String(greg.day).padStart(2, '0')}`;
+            next.birth_date = `${gy}-${String(gm).padStart(2, '0')}-${String(gd).padStart(2, '0')}`;
           } catch (e) {
             console.error("Invalid Ethiopian date", e);
           }
