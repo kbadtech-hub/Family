@@ -20,12 +20,8 @@ export default function VerificationGate({ userId, onVerified }: VerificationGat
   const idInputRef = useRef<HTMLInputElement>(null);
   const selfieInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    fetchVerificationStatus();
-  }, [userId]);
-
-  const fetchVerificationStatus = async () => {
-    const { data, error } = await supabase
+  const fetchVerificationStatus = React.useCallback(async () => {
+    const { data } = await supabase
       .from('verifications')
       .select('*')
       .eq('user_id', userId)
@@ -41,7 +37,11 @@ export default function VerificationGate({ userId, onVerified }: VerificationGat
         onVerified();
       }
     }
-  };
+  }, [userId, onVerified]);
+
+  useEffect(() => {
+    fetchVerificationStatus();
+  }, [fetchVerificationStatus]);
 
   const handleUpload = async (file: File, type: 'id' | 'selfie') => {
     setIsUploading(true);
@@ -62,8 +62,8 @@ export default function VerificationGate({ userId, onVerified }: VerificationGat
 
       if (type === 'id') setIdUrl(publicUrl);
       else setSelfieUrl(publicUrl);
-    } catch (error: any) {
-      alert('Upload failed: ' + error.message);
+    } catch (error: unknown) {
+      alert('Upload failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
     } finally {
       setIsUploading(false);
     }
@@ -131,7 +131,7 @@ export default function VerificationGate({ userId, onVerified }: VerificationGat
               onClick={() => idInputRef.current?.click()}
               className={`relative group cursor-pointer border-2 border-dashed rounded-[2.5rem] p-10 flex flex-col items-center gap-4 transition-all duration-500 ${idUrl ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-primary/50 hover:bg-muted'}`}
             >
-              <input type="file" ref={idInputRef} className="hidden" onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0], 'id')} />
+              <input type="file" ref={idInputRef} aria-label="Upload ID document" className="hidden" onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0], 'id')} />
               {idUrl ? (
                 <>
                   <div className="w-16 h-16 bg-primary text-white rounded-2xl flex items-center justify-center">
@@ -157,7 +157,7 @@ export default function VerificationGate({ userId, onVerified }: VerificationGat
               onClick={() => selfieInputRef.current?.click()}
               className={`relative group cursor-pointer border-2 border-dashed rounded-[2.5rem] p-10 flex flex-col items-center gap-4 transition-all duration-500 ${selfieUrl ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-primary/50 hover:bg-muted'}`}
             >
-              <input type="file" ref={selfieInputRef} className="hidden" onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0], 'selfie')} />
+              <input type="file" ref={selfieInputRef} aria-label="Upload selfie" className="hidden" onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0], 'selfie')} />
               {selfieUrl ? (
                 <>
                   <div className="w-16 h-16 bg-primary text-white rounded-2xl flex items-center justify-center">

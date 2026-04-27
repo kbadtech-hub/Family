@@ -17,12 +17,20 @@ import {
 import { supabase } from '@/lib/supabase';
 import { useRouter } from '@/i18n/routing';
 
+interface SystemSettings {
+  cms_content?: {
+    hero_title?: string;
+    hero_subtitle?: string;
+  };
+  system_access_key?: string;
+}
+
 export default function Home() {
   const t = useTranslations('Index');
   const locale = useLocale();
   const router = useRouter();
   
-  const [settings, setSettings] = useState<Record<string, any> | null>(null);
+  const [settings, setSettings] = useState<SystemSettings | null>(null);
   const [showLocationModal, setShowLocationModal] = useState(false);
 
   useEffect(() => {
@@ -117,6 +125,7 @@ export default function Home() {
           <div className="max-w-4xl w-full bg-white rounded-[3rem] p-12 md:p-20 shadow-2xl relative overflow-hidden border border-border">
             <button 
                onClick={() => setShowLocationModal(false)}
+               aria-label="Close modal"
                className="absolute top-10 right-10 p-3 bg-[#F8F4F1] rounded-2xl text-gray-400 hover:text-primary transition-all"
             >
                <X className="w-8 h-8" />

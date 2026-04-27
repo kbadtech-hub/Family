@@ -95,6 +95,7 @@ export default function AIChatbot() {
       {!isOpen && (
         <button 
           onClick={() => setIsOpen(true)}
+          aria-label="Open AI Chat"
           className="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all animate-bounce duration-300 group"
         >
           <MessageSquare className="group-hover:rotate-12 transition-transform" />
@@ -117,7 +118,7 @@ export default function AIChatbot() {
                   <p className="text-[10px] text-white/50 uppercase tracking-widest font-black">{t('status')}</p>
                </div>
             </div>
-            <button onClick={() => setIsOpen(false)} className="relative z-10 p-2 hover:bg-white/10 rounded-full transition-colors">
+            <button onClick={() => setIsOpen(false)} aria-label="Close Chat" className="relative z-10 p-2 hover:bg-white/10 rounded-full transition-colors">
                <X size={20} />
             </button>
           </div>
@@ -178,6 +179,7 @@ export default function AIChatbot() {
              />
              <button 
                 onClick={handleSend}
+                aria-label="Send message"
                 className="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
              >
                 <Send size={18} className={locale === 'ar' ? 'rotate-180' : ''} />

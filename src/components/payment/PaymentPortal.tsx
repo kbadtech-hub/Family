@@ -213,6 +213,7 @@ export default function PaymentPortal({ profile, onPaymentStarted }: { profile: 
                        type="file" 
                        accept="image/*" 
                        className="hidden" 
+                       aria-label="Upload payment screenshot"
                        onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) {
@@ -224,7 +225,7 @@ export default function PaymentPortal({ profile, onPaymentStarted }: { profile: 
                  </label>
                  {screenshotUrl && (
                     <div className="w-16 h-16 rounded-xl border border-white/20 overflow-hidden shrink-0">
-                       <img src={screenshotUrl} className="w-full h-full object-cover" />
+                       <img src={screenshotUrl} className="w-full h-full object-cover" alt="Payment receipt preview" />
                     </div>
                  )}
               </div>

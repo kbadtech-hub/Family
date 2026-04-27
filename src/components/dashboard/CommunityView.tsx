@@ -165,6 +165,7 @@ export default function CommunityView({
                 value={newPostContent}
                 onChange={(e) => setNewPostContent(e.target.value)}
                 placeholder={t('newPostPlaceholder')} 
+                aria-label="Post content"
                 className="w-full bg-background/30 border border-border rounded-[2rem] p-6 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[120px] resize-none text-foreground"
               />
 
@@ -174,6 +175,7 @@ export default function CommunityView({
                   <button 
                     type="button"
                     onClick={() => { setMediaUrl(null); setMediaType('none'); }}
+                    aria-label="Remove media"
                     className="absolute top-4 right-4 bg-red-500 text-white p-2 rounded-xl shadow-lg"
                   >
                     <X size={16} />
@@ -195,6 +197,7 @@ export default function CommunityView({
                       type="file" 
                       ref={fileInputRef} 
                       className="hidden" 
+                      aria-label="Upload photo"
                       accept="image/*"
                       onChange={async (e) => {
                         const file = e.target.files?.[0];

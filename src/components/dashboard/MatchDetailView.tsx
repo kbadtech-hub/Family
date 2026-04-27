@@ -70,6 +70,7 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
       <div className="bg-white w-full max-w-5xl h-full max-h-[90vh] rounded-[3rem] overflow-hidden shadow-2xl flex flex-col md:flex-row relative">
         <button 
           onClick={onClose}
+          aria-label="Close details"
           className="absolute top-6 right-6 z-[110] w-12 h-12 bg-white/20 backdrop-blur-md text-white rounded-2xl flex items-center justify-center hover:bg-white/40 transition-all shadow-xl"
         >
           <X size={24} />
@@ -88,12 +89,12 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
 
            {allPhotos.length > 1 && (
              <>
-               <button onClick={prevPhoto} className="absolute left-4 top-1/2 -translate-y-1/2 p-4 bg-white/10 backdrop-blur-md text-white rounded-2xl hover:bg-white/20 transition-all">
-                 <ChevronLeft size={24} />
-               </button>
-               <button onClick={nextPhoto} className="absolute right-4 top-1/2 -translate-y-1/2 p-4 bg-white/10 backdrop-blur-md text-white rounded-2xl hover:bg-white/20 transition-all">
-                 <ChevronRight size={24} />
-               </button>
+                <button onClick={prevPhoto} aria-label="Previous photo" className="absolute left-4 top-1/2 -translate-y-1/2 p-4 bg-white/10 backdrop-blur-md text-white rounded-2xl hover:bg-white/20 transition-all">
+                  <ChevronLeft size={24} />
+                </button>
+                <button onClick={nextPhoto} aria-label="Next photo" className="absolute right-4 top-1/2 -translate-y-1/2 p-4 bg-white/10 backdrop-blur-md text-white rounded-2xl hover:bg-white/20 transition-all">
+                  <ChevronRight size={24} />
+                </button>
                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-2">
                  {allPhotos.map((_, i) => (
                    <div key={i} className={`h-1.5 rounded-full transition-all ${i === currentPhotoIndex ? 'w-8 bg-primary' : 'w-2 bg-white/30'}`} />

@@ -14,7 +14,6 @@ import {
   X,
   Search,
   Heart,
-  CreditCard,
   Globe,
   Link,
   MessageSquare,
@@ -22,22 +21,69 @@ import {
   Eye,
   EyeOff,
   Film,
-  BookOpen,
   FileText,
   Trash2,
   Edit,
   Sparkles,
-  GraduationCap,
   CheckCircle2,
   Send
 } from 'lucide-react';
 
+interface UserProfile {
+  id: string;
+  full_name: string | null;
+  role: string;
+  avatar_url: string | null;
+}
+
+interface VerificationRequest {
+  id: string;
+  user_id: string;
+  doc_type: string;
+  id_url: string;
+  selfie_url: string;
+  status: 'pending' | 'verified' | 'rejected';
+  profiles?: UserProfile;
+}
+
+interface PaymentRequest {
+  id: string;
+  user_id: string;
+  plan_type: string;
+  amount: number;
+  currency: string;
+  receipt_url: string;
+  status: 'pending' | 'approved' | 'rejected';
+  profiles?: UserProfile;
+}
+
+interface SitePost {
+  id?: string;
+  title: string;
+  slug: string;
+  content: string;
+  video_url: string | null;
+  image_url: string | null;
+  category: string;
+  is_published: boolean;
+}
+
+interface Lesson {
+  id?: string;
+  title: string;
+  description: string;
+  youtube_url: string;
+  instructions: string;
+  category: string;
+  is_premium_only: boolean;
+}
+
 export default function AdminPortal() {
   const [activeTab, setActiveTab] = useState('cms');
   const [settings, setSettings] = useState<any>(null);
-  const [verifications, setVerifications] = useState<any[]>([]);
-  const [payments, setPayments] = useState<any[]>([]);
-  const [lessons, setLessons] = useState<any[]>([]);
+  const [verifications, setVerifications] = useState<VerificationRequest[]>([]);
+  const [payments, setPayments] = useState<PaymentRequest[]>([]);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
   const [supportTickets, setSupportTickets] = useState<any[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(true);
@@ -46,19 +92,18 @@ export default function AdminPortal() {
   const [errorMsg, setErrorMsg] = useState('');
   
   // Messaging & Staff State
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<UserProfile[]>([]);
   const [broadcastMessage, setBroadcastMessage] = useState('');
   const [sentMessages, setSentMessages] = useState<any[]>([]);
   const [newAdminPassword, setNewAdminPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [comparingVerification, setComparingVerification] = useState<any>(null);
 
   // Site Posts State
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<SitePost[]>([]);
   const [isEditingPost, setIsEditingPost] = useState(false);
-  const [currentPost, setCurrentPost] = useState<any>({
+  const [currentPost, setCurrentPost] = useState<SitePost>({
     title: '',
     slug: '',
     content: '',
@@ -70,7 +115,7 @@ export default function AdminPortal() {
 
   // Lessons State
   const [isEditingLesson, setIsEditingLesson] = useState(false);
-  const [currentLesson, setCurrentLesson] = useState<any>({
+  const [currentLesson, setCurrentLesson] = useState<Lesson>({
     title: '',
     description: '',
     youtube_url: '',
@@ -249,7 +294,7 @@ export default function AdminPortal() {
       }
     };
     fetchAdminData();
-  }, [activeTab]);
+  }, [activeTab, cmsForm]);
 
   const handleSavePost = async () => {
     setIsSaving(true);
@@ -344,7 +389,6 @@ export default function AdminPortal() {
     }
     
     setVerifications(prev => prev.map(v => v.id === id ? { ...v, status } : v));
-    setComparingVerification(null);
     setIsSaving(false);
   };
 
@@ -1010,7 +1054,7 @@ export default function AdminPortal() {
                        </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                       {displayVerifications.map((req, i) => (
+                       {displayVerifications.map((req) => (
                          <tr key={req.id} className="hover:bg-gray-50/50 transition-colors">
                             <td className="p-6">
                                <div className="flex items-center gap-4">
@@ -1035,11 +1079,11 @@ export default function AdminPortal() {
                                <div className="flex gap-2 justify-center">
                                   {req.status === 'pending' && (
                                     <>
-                                       <button onClick={() => handleUpdateVerification(req.id, 'verified', req.user_id)} className="p-3 bg-green-500/10 text-green-600 rounded-xl hover:bg-green-500 hover:text-white transition-all shadow-sm"><Check size={18} /></button>
-                                       <button onClick={() => handleUpdateVerification(req.id, 'rejected', req.user_id)} className="p-3 bg-red-500/10 text-red-600 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-sm"><X size={18} /></button>
+                                       <button onClick={() => handleUpdateVerification(req.id, 'verified', req.user_id)} aria-label="Approve verification" className="p-3 bg-green-500/10 text-green-600 rounded-xl hover:bg-green-500 hover:text-white transition-all shadow-sm"><Check size={18} /></button>
+                                       <button onClick={() => handleUpdateVerification(req.id, 'rejected', req.user_id)} aria-label="Reject verification" className="p-3 bg-red-500/10 text-red-600 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-sm"><X size={18} /></button>
                                     </>
                                   )}
-                                  <button className="p-3 bg-accent/10 text-accent rounded-xl hover:bg-accent hover:text-white transition-all shadow-sm"><Search size={18} /></button>
+                                  <button aria-label="View details" className="p-3 bg-accent/10 text-accent rounded-xl hover:bg-accent hover:text-white transition-all shadow-sm"><Search size={18} /></button>
                                </div>
                             </td>
                          </tr>
@@ -1087,7 +1131,7 @@ export default function AdminPortal() {
                               <td className="p-6">
                                  <div className="relative group cursor-pointer" onClick={() => window.open(p.receipt_url, '_blank')}>
                                     <div className="w-16 h-12 bg-muted rounded-lg overflow-hidden border border-gray-200">
-                                       <img src={p.receipt_url} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                                       <img src={p.receipt_url} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" alt="Payment receipt" />
                                     </div>
                                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                        <Search size={14} className="text-accent" />
@@ -1110,6 +1154,7 @@ export default function AdminPortal() {
                                           <button 
                                             onClick={() => handleUpdatePayment(p.id, 'approved', p.user_id, p.plan_type)} 
                                             disabled={isSaving}
+                                            aria-label="Approve payment"
                                             className="p-3 bg-green-500/10 text-green-600 rounded-xl hover:bg-green-500 hover:text-white transition-all shadow-sm disabled:opacity-30"
                                           >
                                              <Check size={18} />
@@ -1117,6 +1162,7 @@ export default function AdminPortal() {
                                           <button 
                                             onClick={() => handleUpdatePayment(p.id, 'rejected')} 
                                             disabled={isSaving}
+                                            aria-label="Reject payment"
                                             className="p-3 bg-red-500/10 text-red-600 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-sm disabled:opacity-30"
                                           >
                                              <X size={18} />
@@ -1203,7 +1249,7 @@ export default function AdminPortal() {
                <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-gray-100 max-w-4xl animate-in slide-in-from-bottom-4 duration-500">
                   <div className="flex justify-between items-center mb-8">
                      <h3 className="text-xl font-bold text-accent">{currentPost.id ? 'Edit' : 'Create'} Post</h3>
-                     <button onClick={() => setIsEditingPost(false)} className="p-2 hover:bg-gray-100 rounded-full"><X size={24} /></button>
+                     <button onClick={() => setIsEditingPost(false)} aria-label="Close editor" className="p-2 hover:bg-gray-100 rounded-full"><X size={24} /></button>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1287,7 +1333,7 @@ export default function AdminPortal() {
                                <button onClick={() => { setCurrentPost(post); setIsEditingPost(true); }} className="flex-1 p-3 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-2 font-bold text-xs">
                                   <Edit size={16} /> Edit
                                </button>
-                               <button onClick={() => handleDeletePost(post.id)} className="p-3 bg-red-500/10 text-red-600 rounded-xl hover:bg-red-500 hover:text-white transition-all">
+                               <button onClick={() => handleDeletePost(post.id)} aria-label="Delete post" className="p-3 bg-red-500/10 text-red-600 rounded-xl hover:bg-red-500 hover:text-white transition-all">
                                   <Trash2 size={16} />
                                </button>
                             </div>
@@ -1495,7 +1541,7 @@ export default function AdminPortal() {
                          </div>
 
                          <div className="p-6 bg-muted/30 rounded-2xl border border-muted italic text-sm text-accent leading-relaxed">
-                            "{ticket.message}"
+                            &quot;{ticket.message}&quot;
                          </div>
 
                          {ticket.status === 'open' ? (
@@ -1658,7 +1704,7 @@ export default function AdminPortal() {
                         <div key={user.id} className="flex items-center justify-between p-4 bg-background rounded-2xl border border-white/5 group hover:border-primary/30 transition-all">
                            <div className="flex items-center gap-4">
                               <div className="w-12 h-12 rounded-xl bg-secondary border border-primary overflow-hidden">
-                                 {user.avatar_url ? <img src={user.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-primary font-bold">{user.full_name?.charAt(0)}</div>}
+                                 {user.avatar_url ? <img src={user.avatar_url} className="w-full h-full object-cover" alt={user.full_name || 'User'} /> : <div className="w-full h-full flex items-center justify-center text-primary font-bold">{user.full_name?.charAt(0)}</div>}
                               </div>
                               <div>
                                  <p className="font-bold text-sm">{user.full_name}</p>
