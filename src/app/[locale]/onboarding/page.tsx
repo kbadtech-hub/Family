@@ -115,10 +115,56 @@ function OnboardingContent() {
     }
   }, [searchParams]);
 
-  const nextStep = () => setStep(s => Math.min(s + 1, 7));
-  const prevStep = () => setStep(s => Math.max(s - 1, 1));
+  const validateStep = (currentStep: number) => {
+    setErrorMsg('');
+    switch (currentStep) {
+      case 1:
+        if (authMode === 'email' && !formData.email) return locale === 'am' ? 'እባክዎ ኢሜልዎን ያስገቡ' : 'Please enter your email';
+        if (authMode === 'phone' && !formData.phone) return locale === 'am' ? 'እባክዎ ስልክ ቁጥርዎን ያስገቡ' : 'Please enter your phone number';
+        if (!formData.password || formData.password.length < 6) return locale === 'am' ? 'የይለፍ ቃል ቢያንስ 6 ቁምፊ መሆን አለበት' : 'Password must be at least 6 characters';
+        if (!formData.full_name) return locale === 'am' ? 'እባክዎ ሙሉ ስምዎን ያስገቡ' : 'Please enter your full name';
+        if (!formData.birth_date) return locale === 'am' ? 'እባክዎ የልደት ቀንዎን ያስገቡ' : 'Please enter your birth date';
+        break;
+      case 2:
+        if (!formData.gender) return locale === 'am' ? 'እባክዎ ጾታ ይምረጡ' : 'Please select gender';
+        if (!formData.location) return locale === 'am' ? 'እባክዎ ቦታ/ሀገር ይምረጡ' : 'Please select location';
+        if (!formData.religion) return locale === 'am' ? 'እባክዎ ሃይማኖት ይምረጡ' : 'Please select religion';
+        if (!formData.marital_status) return locale === 'am' ? 'እባክዎ የጋብቻ ሁኔታ ይምረጡ' : 'Please select marital status';
+        break;
+      case 3:
+        if (!formData.job) return locale === 'am' ? 'እባክዎ የሥራ መደብ ይምረጡ' : 'Please select job title';
+        if (!formData.finance_habit) return locale === 'am' ? 'እባክዎ የገንዘብ አያያዝ ይምረጡ' : 'Please select finance habit';
+        if (!formData.family_value) return locale === 'am' ? 'እባክዎ የቤተሰብ እሴት ይምረጡ' : 'Please select family value';
+        if (!formData.conflict_resolution) return locale === 'am' ? 'እባክዎ የግጭት አፈታት ይምረጡ' : 'Please select conflict resolution style';
+        if (!formData.spouse_requirements) return locale === 'am' ? 'እባክዎ የሚያገባውን ሰው መስፈርት ይግለጹ (ግዴታ)' : 'Please describe your spouse requirements';
+        break;
+      default:
+        return null;
+    }
+    return null;
+  };
+
+  const nextStep = () => {
+    const error = validateStep(step);
+    if (error) {
+      setErrorMsg(error);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    setStep(s => Math.min(s + 1, 7));
+  };
+
+  const prevStep = () => {
+    setErrorMsg('');
+    setStep(s => Math.max(s - 1, 1));
+  };
 
   const handleFinish = async () => {
+    const error = validateStep(4); // Review step is basically valid if previous were, but good to check
+    if (error) {
+      setErrorMsg(error);
+      return;
+    }
     setIsSubmitting(true);
     setErrorMsg('');
     try {
@@ -618,10 +664,6 @@ function OnboardingContent() {
                 )}
                 <button 
                   onClick={() => {
-                    if (step === 3 && !formData.spouse_requirements) {
-                      alert(locale === 'am' ? 'እባክዎ የሚያገባውን ሰው መስፈርት ይግለጹ (ግዴታ)' : 'Please fill in Spouse Requirements (Mandatory)');
-                      return;
-                    }
                     if (step === 4) handleFinish();
                     else nextStep();
                   }}

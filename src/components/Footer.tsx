@@ -93,7 +93,7 @@ export default function Footer() {
             <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{t('connect')}</h3>
             <div className="space-y-4 text-white/50 text-sm font-medium">
               <div className="flex items-center gap-3 hover:text-white transition-colors cursor-pointer">
-                <Mail size={16} /> {contactInfo.email || 'contact@beteseb.com'}
+                <Mail size={16} /> {contactInfo.email || 'contact@beteseb1.online'}
               </div>
               <div className="flex items-center gap-3 hover:text-white transition-colors cursor-pointer">
                 <Phone size={16} /> {contactInfo.phone || '+49 (0) 123 456 789'}

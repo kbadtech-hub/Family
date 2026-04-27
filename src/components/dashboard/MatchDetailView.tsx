@@ -122,15 +122,18 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
 
            <div className="space-y-4">
               <h3 className="text-sm font-black text-accent uppercase tracking-widest border-b border-muted pb-2">About</h3>
-              <p className="text-gray-500 leading-relaxed italic text-lg font-medium">
+              <p className={`text-gray-500 leading-relaxed italic text-lg font-medium ${!isPremium ? 'blur-sm select-none' : ''}`}>
                 &quot;{profile?.bio || 'No bio available yet.'}&quot;
               </p>
+              {!isPremium && (
+                <p className="text-[10px] font-black text-primary uppercase tracking-widest italic text-center pt-2">Upgrade to Premium to read full bio</p>
+              )}
            </div>
 
            {profile?.interests && (
              <div className="space-y-4">
                 <h3 className="text-sm font-black text-accent uppercase tracking-widest border-b border-muted pb-2">Interests</h3>
-                <div className="flex flex-wrap gap-2">
+                <div className={`flex flex-wrap gap-2 ${!isPremium ? 'blur-md select-none pointer-events-none' : ''}`}>
                    {profile.interests.split(',').map((interest: string) => (
                      <span key={interest} className="px-5 py-2.5 bg-muted text-accent text-[10px] font-black rounded-2xl uppercase tracking-widest">
                         {interest.trim()}
@@ -139,6 +142,23 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
                 </div>
              </div>
            )}
+
+           <div className="space-y-4">
+              <h3 className="text-sm font-black text-accent uppercase tracking-widest border-b border-muted pb-2">Contact Info</h3>
+              <div className="bg-muted/30 p-6 rounded-[2rem] border border-gray-100 flex justify-between items-center">
+                 <div className="space-y-1">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Direct Email</p>
+                    <p className={`text-sm font-bold text-accent ${!isPremium ? 'blur-md select-none' : ''}`}>
+                       {isPremium ? profile?.email : '••••••••@••••.com'}
+                    </p>
+                 </div>
+                 {!isPremium && (
+                    <div className="px-3 py-1 bg-primary/10 text-primary text-[8px] font-black rounded-full uppercase tracking-tighter">
+                       Premium Only
+                    </div>
+                 )}
+              </div>
+           </div>
 
            <div className="pt-10">
               {isPremium ? (

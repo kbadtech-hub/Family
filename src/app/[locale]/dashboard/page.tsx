@@ -16,7 +16,8 @@ import {
   GraduationCap,
   Globe,
   ChevronDown,
-  AlertCircle
+  AlertCircle,
+  LogOut
 } from 'lucide-react';
 import CommunityView from '@/components/dashboard/CommunityView';
 import VerificationGate from '@/components/dashboard/VerificationGate';
@@ -24,6 +25,7 @@ import PaymentPortal from '@/components/payment/PaymentPortal';
 import ChatView from '@/components/dashboard/ChatView';
 import ProfileView from '@/components/dashboard/ProfileView';
 import MatchDetailView from '@/components/dashboard/MatchDetailView';
+import LessonsView from '@/components/dashboard/LessonsView';
 
 export default function DashboardPage() {
   const t = useTranslations('Dashboard');
@@ -70,6 +72,21 @@ export default function DashboardPage() {
     router.replace(pathname, { locale: newLocale });
     setIsLangOpen(false);
   };
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (!error) {
+       router.push('/');
+    }
+  };
+
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'payment') {
+       setShowPayment(true);
+       setActiveTab('dashboard');
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -174,7 +191,24 @@ export default function DashboardPage() {
               <span className="hidden md:block font-bold text-[10px] uppercase tracking-widest">{item.label}</span>
             </button>
           ))}
+          <button
+             onClick={handleLogout}
+             className="md:hidden flex-1 flex items-center justify-center p-4 rounded-[1.5rem] text-red-400 hover:bg-red-400/10 transition-all"
+           >
+              <LogOut size={22} />
+           </button>
         </nav>
+
+        {/* Logout at bottom */}
+        <div className="mt-auto pt-8 border-t border-white/5 hidden md:block">
+           <button 
+             onClick={handleLogout}
+             className="w-full flex items-center gap-4 p-4 rounded-[1.5rem] text-red-400 hover:bg-red-400/10 transition-all duration-300"
+           >
+              <LogOut size={22} />
+              <span className="font-bold text-[10px] uppercase tracking-widest">{n('logout')}</span>
+           </button>
+        </div>
       </aside>
 
       {/* Main Content */}
@@ -302,8 +336,8 @@ export default function DashboardPage() {
         )}
 
         {activeTab === 'workshops' && (
-           <div className="flex items-center justify-center h-64 bg-white rounded-[3rem] border border-gray-100 mt-10">
-              <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">Workshops Feature Coming Soon</p>
+           <div className="mt-10">
+              <LessonsView isPremium={isPremium} />
            </div>
         )}
 

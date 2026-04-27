@@ -38,6 +38,7 @@ export default function CommunityPage() {
   const [commentingOn, setCommentingOn] = useState<string | null>(null);
   const [commentText, setCommentText] = useState('');
   const [highlightedPost, setHighlightedPost] = useState<string | null>(null);
+  const [aiTopic, setAiTopic] = useState<string | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -72,6 +73,7 @@ export default function CommunityPage() {
          setCurrentUser({ ...user, profile });
       }
       fetchPosts();
+      fetchAiTopic();
     };
     initPage();
   }, [activeCategory]);
@@ -97,6 +99,20 @@ export default function CommunityPage() {
     const { data, error } = await query;
     if (data) {
       setPosts(data);
+    }
+  };
+
+  const fetchAiTopic = async () => {
+    const { data, error } = await supabase
+      .from('community_posts')
+      .select('content')
+      .eq('is_ai_generated', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+    
+    if (data) {
+      setAiTopic(data.content);
     }
   };
 
@@ -227,7 +243,7 @@ export default function CommunityPage() {
                      <Sparkles size={18} />
                      <span className="font-black text-xs uppercase tracking-widest">AI Topic of Day</span>
                   </div>
-                  <p className="text-sm font-bold text-accent italic">"How can traditional Abushakir logic solve modern dating burnout?"</p>
+                  <p className="text-sm font-bold text-accent italic">"{aiTopic || "How can traditional Abushakir logic solve modern dating burnout?"}"</p>
                </div>
             </div>
          </aside>
@@ -264,10 +280,12 @@ export default function CommunityPage() {
                         <ImageIcon size={20} />
                         <input type="file" accept="image/*" className="hidden" onChange={handleMediaSelect} />
                      </label>
-                     <label className="p-3 bg-muted rounded-xl hover:bg-primary/10 hover:text-primary transition-all cursor-pointer">
-                        <Video size={20} />
-                        <input type="file" accept="video/*" className="hidden" onChange={handleMediaSelect} />
-                     </label>
+                     {['admin', 'expert', 'super_admin'].includes(currentUser?.profile?.role) && (
+                        <label className="p-3 bg-muted rounded-xl hover:bg-primary/10 hover:text-primary transition-all cursor-pointer">
+                           <Video size={20} />
+                           <input type="file" accept="video/*" className="hidden" onChange={handleMediaSelect} />
+                        </label>
+                     )}
                      <select 
                         value={postCategory} 
                         onChange={(e) => setPostCategory(e.target.value)}
