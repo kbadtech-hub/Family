@@ -160,6 +160,7 @@ function LoginContent() {
                       <select 
                         value={countryCode}
                         onChange={(e) => setCountryCode(e.target.value)}
+                        aria-label="Select country code"
                         className="w-full pl-10 pr-4 py-4 bg-[#F8F4F1] border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none appearance-none transition-all font-bold text-accent text-sm"
                       >
                         {COUNTRIES.map(c => <option key={c.iso} value={c.code}>{c.iso} {c.code}</option>)}

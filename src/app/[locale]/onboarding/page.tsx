@@ -25,7 +25,8 @@ import {
   EyeOff,
   Camera,
   Loader2,
-  Sparkles
+  Sparkles,
+  X
 } from 'lucide-react';
 import VerificationGate from '@/components/dashboard/VerificationGate';
 import { calculateStarSign, StarSignLabels } from '@/lib/abushakir';
@@ -74,6 +75,7 @@ function OnboardingContent() {
     family_value: '',
     star_sign: '',
     gallery_photos: [] as string[],
+    spouse_requirements: [] as string[],
     otp: ''
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -81,7 +83,7 @@ function OnboardingContent() {
 
   const searchParams = useSearchParams();
 
-  const updateField = (field: string, value: string) => {
+  const updateField = (field: string, value: any) => {
     setFormData(prev => {
       const next = { ...prev, [field]: value };
       if (field === 'birth_date' || field === 'birth_time') {
@@ -276,6 +278,7 @@ function OnboardingContent() {
                     <select
                       value={formData.country_code}
                       onChange={(e) => updateField('country_code', e.target.value)}
+                      aria-label="Select country code"
                       className="block w-32 rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted font-bold text-sm"
                     >
                       {COUNTRIES.map(c => <option key={c.iso} value={c.code}>{c.iso} {c.code}</option>)}
@@ -490,17 +493,17 @@ function OnboardingContent() {
                 </span>
                 <div className="flex flex-wrap gap-3">
                   {SPOUSE_REQUIREMENTS_TAGS.map(tag => {
-                    const isSelected = formData.spouse_requirements.split(', ').includes(tag);
+                    const isSelected = formData.spouse_requirements.includes(tag);
                     return (
                       <button
                         key={tag}
                         type="button"
                         onClick={() => {
-                          const currentTags = formData.spouse_requirements ? formData.spouse_requirements.split(', ') : [];
+                          const currentTags = formData.spouse_requirements;
                           const nextTags = isSelected 
                             ? currentTags.filter(t => t !== tag)
-                            : [...currentTags, tag].filter(Boolean);
-                          updateField('spouse_requirements', nextTags.join(', '));
+                            : [...currentTags, tag];
+                          updateField('spouse_requirements', nextTags as any);
                         }}
                         className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
                           isSelected 
@@ -604,6 +607,7 @@ function OnboardingContent() {
                          const next = formData.gallery_photos.filter((_, idx) => idx !== i);
                          setFormData({ ...formData, gallery_photos: next });
                        }}
+                       aria-label="Remove photo"
                        className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                      >
                        <X size={14} />

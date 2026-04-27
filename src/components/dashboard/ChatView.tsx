@@ -17,7 +17,8 @@ import {
   Languages,
   Eye,
   EyeOff,
-  CheckCircle2
+  CheckCircle2,
+  MessageCircle
 } from 'lucide-react';
 import Image from 'next/image';
 import { User as SupabaseUser } from '@supabase/supabase-js';

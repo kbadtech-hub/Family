@@ -267,9 +267,13 @@ export default function CommunityPage() {
                            ) : (
                               <img src={mediaPreview} className="w-full h-auto object-cover" alt="Preview" />
                            )}
-                           <button onClick={() => { setMediaFile(null); setMediaPreview(null); }} className="absolute top-2 right-2 p-2 bg-black/50 text-white rounded-full hover:bg-red-500 transition-colors">
-                              <X size={16} />
-                           </button>
+                           <button 
+                               onClick={() => { setMediaFile(null); setMediaPreview(null); }} 
+                               aria-label="Remove media"
+                               className="absolute top-2 right-2 p-2 bg-black/50 text-white rounded-full hover:bg-red-500 transition-colors"
+                            >
+                               <X size={16} />
+                            </button>
                         </div>
                      )}
                   </div>
@@ -278,17 +282,20 @@ export default function CommunityPage() {
                   <div className="flex gap-2">
                      <label className="p-3 bg-muted rounded-xl hover:bg-primary/10 hover:text-primary transition-all cursor-pointer">
                         <ImageIcon size={20} />
-                        <input type="file" accept="image/*" className="hidden" onChange={handleMediaSelect} />
+                        <span className="sr-only">Upload Image</span>
+                        <input type="file" accept="image/*" className="hidden" aria-label="Upload image" onChange={handleMediaSelect} />
                      </label>
                      {['admin', 'expert', 'super_admin'].includes(currentUser?.profile?.role) && (
                         <label className="p-3 bg-muted rounded-xl hover:bg-primary/10 hover:text-primary transition-all cursor-pointer">
                            <Video size={20} />
-                           <input type="file" accept="video/*" className="hidden" onChange={handleMediaSelect} />
+                           <span className="sr-only">Upload Video</span>
+                           <input type="file" accept="video/*" className="hidden" aria-label="Upload video" onChange={handleMediaSelect} />
                         </label>
                      )}
                      <select 
                         value={postCategory} 
                         onChange={(e) => setPostCategory(e.target.value)}
+                        aria-label="Select post category"
                         className="bg-muted text-xs font-black uppercase tracking-widest border-none rounded-xl focus:ring-primary"
                      >
                         <option value="general">General</option>
@@ -319,7 +326,7 @@ export default function CommunityPage() {
                      <div className="p-8">
                         <div className="flex justify-between items-start mb-6">
                            <div className="flex gap-4 items-center">
-                              <img src={post.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop'} alt="Avatar" className="w-14 h-14 rounded-2xl object-cover shadow-lg" />
+                              <img src={post.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop'} alt={`${post.profiles?.full_name || 'User'}'s avatar`} className="w-14 h-14 rounded-2xl object-cover shadow-lg" />
                               <div>
                                  <div className="flex items-center gap-2">
                                     <p className="font-black text-accent">{post.profiles?.full_name}</p>
@@ -332,7 +339,7 @@ export default function CommunityPage() {
                                  <p className="text-xs text-gray-400 font-medium">{new Date(post.created_at).toLocaleDateString()}</p>
                               </div>
                            </div>
-                           <button className="p-3 text-gray-300 hover:text-accent transition-colors"><MoreHorizontal size={20} /></button>
+                           <button aria-label="Post options" className="p-3 text-gray-300 hover:text-accent transition-colors"><MoreHorizontal size={20} /></button>
                         </div>
                         <div className="space-y-4 mb-6">
                            <span className="inline-block text-[10px] font-black bg-primary/5 text-primary px-3 py-1 rounded-full uppercase tracking-widest border border-primary/10">
@@ -345,7 +352,7 @@ export default function CommunityPage() {
                               {post.media_type === 'video' ? (
                                  <video src={post.media_url} controls className="w-full h-auto" />
                               ) : (
-                                 <img src={post.media_url} className="w-full h-auto object-cover hover:scale-105 transition-transform duration-700" alt="Post media" />
+                                 <img src={post.media_url} className="w-full h-auto object-cover hover:scale-105 transition-transform duration-700" alt="Post content" />
                               )}
                            </div>
                         )}
@@ -353,6 +360,7 @@ export default function CommunityPage() {
                            <div className="flex items-center gap-6">
                               <button 
                                  onClick={() => handleLike(post.id)}
+                                 aria-label="Like post"
                                  className="flex items-center gap-2 text-gray-400 hover:text-red-500 transition-colors group/like"
                               >
                                  <Heart size={20} className="group-hover/like:fill-red-500 transition-all" /> 
@@ -360,6 +368,7 @@ export default function CommunityPage() {
                               </button>
                               <button 
                                  onClick={() => setCommentingOn(commentingOn === post.id ? null : post.id)}
+                                 aria-label="Comment on post"
                                  className="flex items-center gap-2 text-gray-400 hover:text-primary transition-colors"
                               >
                                  <MessageCircle size={20} /> 
@@ -384,6 +393,7 @@ export default function CommunityPage() {
                                  />
                                  <button 
                                     onClick={() => handleComment(post.id)}
+                                    aria-label="Send comment"
                                     className="p-3 bg-primary text-white rounded-2xl hover:scale-105 transition-all shadow-lg shadow-primary/20"
                                  >
                                     <Send size={20} />
@@ -392,7 +402,7 @@ export default function CommunityPage() {
                               <div className="space-y-4">
                                  {post.post_comments?.map((comment: any) => (
                                     <div key={comment.id} className="flex gap-4 group/comment">
-                                       <img src={comment.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop'} className="w-10 h-10 rounded-xl object-cover shadow-sm" />
+                                       <img src={comment.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop'} alt={`${comment.profiles?.full_name || 'User'}'s avatar`} className="w-10 h-10 rounded-xl object-cover shadow-sm" />
                                        <div className="flex-1 bg-muted/30 p-4 rounded-[1.5rem] relative">
                                           <p className="text-xs font-black text-accent mb-1">{comment.profiles?.full_name}</p>
                                           <p className="text-sm text-gray-600 font-medium">{comment.content}</p>

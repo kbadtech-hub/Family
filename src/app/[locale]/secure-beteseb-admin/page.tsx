@@ -27,7 +27,9 @@ import {
   Trash2,
   Edit,
   Sparkles,
-  GraduationCap
+  GraduationCap,
+  CheckCircle2,
+  Send
 } from 'lucide-react';
 
 export default function AdminPortal() {

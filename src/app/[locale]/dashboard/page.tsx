@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import Image from 'next/image';
 import { useRouter, usePathname } from '@/i18n/routing';
@@ -22,14 +22,13 @@ import {
   LogOut
 } from 'lucide-react';
 import CommunityView from '@/components/dashboard/CommunityView';
-import VerificationGate from '@/components/dashboard/VerificationGate';
 import PaymentPortal from '@/components/payment/PaymentPortal';
 import ChatView from '@/components/dashboard/ChatView';
 import ProfileView from '@/components/dashboard/ProfileView';
 import MatchDetailView from '@/components/dashboard/MatchDetailView';
 import LessonsView from '@/components/dashboard/LessonsView';
 
-export default function DashboardPage() {
+function DashboardContent() {
   const t = useTranslations('Dashboard');
   const n = useTranslations('Nav');
   const locale = useLocale();
@@ -131,7 +130,7 @@ export default function DashboardPage() {
         .limit(1)
         .single();
 
-      let currentPaymentApproved = paymentData?.status === 'approved';
+      const currentPaymentApproved = paymentData?.status === 'approved';
       if (paymentData) setPaymentStatus(paymentData.status);
 
       // 4. Calculate Premium Status
@@ -163,8 +162,8 @@ export default function DashboardPage() {
 
   const isPremium = profile?.trial_ends_at && new Date(profile.trial_ends_at) > new Date() || 
                     paymentStatus === 'approved' || 
-                    ['admin', 'super_admin', 'expert'].includes((profile as any)?.role);
-  const isAdmin = ['admin', 'super_admin'].includes((profile as any)?.role);
+                    ['admin', 'super_admin', 'expert'].includes((profile as any).role);
+  const isAdmin = ['admin', 'super_admin'].includes((profile as any).role);
 
   return (
     <div className="min-h-screen bg-[#FDFBF9] flex flex-col md:flex-row" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
@@ -197,6 +196,7 @@ export default function DashboardPage() {
           ))}
           <button
              onClick={handleLogout}
+             aria-label="Logout"
              className="md:hidden flex-1 flex items-center justify-center p-4 rounded-[1.5rem] text-red-400 hover:bg-red-400/10 transition-all"
            >
               <LogOut size={22} />
@@ -391,7 +391,7 @@ export default function DashboardPage() {
             matchId={selectedMatchId} 
             isPremium={isPremium}
             onClose={() => setSelectedMatchId(null)} 
-            onStartChat={(id) => {
+            onStartChat={() => {
               setSelectedMatchId(null);
               setActiveTab('chat');
             }}
@@ -399,5 +399,13 @@ export default function DashboardPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="p-20 text-center font-bold text-primary animate-pulse">Loading Beteseb Dashboard...</div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }
