@@ -42,7 +42,7 @@ export async function middleware(request: NextRequest) {
   const isDashboardRoute = segments.includes('dashboard') || segments.includes('community') || segments.includes('chat') || segments.includes('admin');
   const isLoginRoute = segments.includes('login');
   const isAdminRoute = segments.includes('admin'); // Legacy /admin
-  const isAdminSecureRoute = segments.includes('admin-secure-portal');
+  const isAdminSecureRoute = segments.includes('secure-beteseb-admin');
   
   if (isAdminSecureRoute) {
     const authHeader = request.headers.get('authorization');
@@ -50,8 +50,8 @@ export async function middleware(request: NextRequest) {
       const authValue = authHeader.split(' ')[1];
       const [user, pwd] = atob(authValue).split(':');
 
-      // SECRET CREDENTIALS
-      if (user === 'beteseb_admin_2026' && pwd === 'S3cure_#Beteseb_!Shield_99') {
+      // NEW SECRET CREDENTIALS
+      if (user === 'Beteseb_Shield_Admin' && pwd === 'K0m-Secure-2026-!@#') {
         return response;
       }
     }
@@ -64,14 +64,21 @@ export async function middleware(request: NextRequest) {
     });
   }
 
+  // Redirect old secure path if someone tries it
+  if (segments.includes('admin-secure-portal')) {
+     return NextResponse.redirect(new URL(`/${locale}/secure-beteseb-admin`, request.url));
+  }
+
   // 4. Regular Dashboard/Auth Protection
   if (isDashboardRoute) {
     if (!user) {
       return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
     }
 
-    // Check if email is confirmed
-    if (!user.email_confirmed_at) {
+    // Check if email is confirmed (Bypass for OTP step 5)
+    const isOTPStep = segments.includes('onboarding') && request.nextUrl.searchParams.get('step') === '5';
+
+    if (!user.email_confirmed_at && !isOTPStep) {
       return NextResponse.redirect(new URL(`/${locale}/login?error=unconfirmed`, request.url));
     }
 

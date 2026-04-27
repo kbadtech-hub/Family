@@ -9,7 +9,11 @@ import {
   User,
   ShieldCheck,
   Sparkles,
-  CheckCircle2
+  CheckCircle2,
+  Image as ImageIcon,
+  Link as LinkIcon,
+  X,
+  Camera
 } from 'lucide-react';
 
 interface Post {
@@ -18,30 +22,45 @@ interface Post {
   content: string;
   is_approved: boolean;
   created_at: string;
+  media_url: string | null;
+  media_type: 'image' | 'video' | 'link' | 'none';
   profiles: {
     full_name: string;
     avatar_url: string;
     star_sign: string;
     is_verified: boolean;
+    role: string;
   } | null;
 }
 
-export default function CommunityView({ isVerified = false, isPremium = false }: { isVerified?: boolean, isPremium?: boolean }) {
+export default function CommunityView({ 
+  isVerified = false, 
+  isPremium = false,
+  isAdmin = false 
+}: { 
+  isVerified?: boolean, 
+  isPremium?: boolean,
+  isAdmin?: boolean 
+}) {
   const t = useTranslations('Community');
   const locale = useLocale();
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPostContent, setNewPostContent] = useState('');
+  const [mediaUrl, setMediaUrl] = useState<string | null>(null);
+  const [mediaType, setMediaType] = useState<'image' | 'none'>('none');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [loading, setLoading] = useState(true);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetchPosts = async () => {
       const { data } = await supabase
         .from('community_posts')
-        .select('*, profiles(full_name, avatar_url, star_sign, is_verified)')
+        .select('*, profiles(full_name, avatar_url, star_sign, is_verified, role)')
         .order('created_at', { ascending: false });
       
-      if (data) setPosts(data as Post[]);
+      if (data) setPosts(data as any[]);
       setLoading(false);
     };
 
@@ -52,8 +71,17 @@ export default function CommunityView({ isVerified = false, isPremium = false }:
     e.preventDefault();
     if (!newPostContent.trim()) return;
 
-    if (!isPremium) {
+    if (!isPremium && !isAdmin) {
        alert(locale === 'am' ? "ይህ ፊቸር ለፕሪሚየም አባላት ብቻ ነው" : "This feature is for premium members only");
+       return;
+    }
+
+    // Link Restriction Check
+    const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9-]+\.[a-z]{2,})/gi;
+    const hasLinks = urlRegex.test(newPostContent);
+
+    if (hasLinks && !isAdmin) {
+       alert(locale === 'am' ? "ሊንክ መጫን ለአድሚን ብቻ የተፈቀደ ነው" : "Posting links is allowed for Admins only");
        return;
     }
 
@@ -69,23 +97,27 @@ export default function CommunityView({ isVerified = false, isPremium = false }:
       return;
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (user) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
       const { error } = await supabase.from('community_posts').insert({
         author_id: user.id,
         content: newPostContent.trim(),
-        is_approved: true // Auto-approving if "AI" check passes
+        media_url: mediaUrl,
+        media_type: mediaType === 'none' && hasLinks ? 'link' : mediaType,
+        is_approved: true
       });
 
       if (!error) {
         setNewPostContent('');
+        setMediaUrl(null);
+        setMediaType('none');
         // Re-fetch posts
         const { data } = await supabase
           .from('community_posts')
-          .select('*, profiles(full_name, avatar_url, star_sign, is_verified)')
+          .select('*, profiles(full_name, avatar_url, star_sign, is_verified, role)')
           .order('created_at', { ascending: false });
-        if (data) setPosts(data as Post[]);
+        if (data) setPosts(data as any[]);
       }
     }
     setIsSubmitting(false);
@@ -136,13 +168,60 @@ export default function CommunityView({ isVerified = false, isPremium = false }:
                 placeholder={t('newPostPlaceholder')} 
                 className="w-full bg-background/30 border border-border rounded-[2rem] p-6 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[120px] resize-none text-foreground"
               />
+
+              {mediaUrl && (
+                <div className="relative w-full aspect-video rounded-3xl overflow-hidden border border-border">
+                  <img src={mediaUrl} className="w-full h-full object-cover" alt="Preview" />
+                  <button 
+                    type="button"
+                    onClick={() => { setMediaUrl(null); setMediaType('none'); }}
+                    className="absolute top-4 right-4 bg-red-500 text-white p-2 rounded-xl shadow-lg"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              )}
+
               <div className="flex justify-between items-center">
-                 <div className="flex items-center gap-2 text-[10px] text-primary font-black uppercase tracking-widest">
-                    <Sparkles size={12} className="animate-pulse" /> {t('aiFilter')}
+                 <div className="flex items-center gap-4">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="p-3 bg-muted rounded-xl text-primary hover:bg-primary/10 transition-colors flex items-center gap-2"
+                    >
+                      <Camera size={18} />
+                      <span className="text-[10px] font-black uppercase tracking-widest hidden md:block">Photo</span>
+                    </button>
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      className="hidden" 
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setIsUploading(true);
+                        const { data: { user } } = await supabase.auth.getUser();
+                        if (user) {
+                           const ext = file.name.split('.').pop();
+                           const path = `community/${user.id}-${Date.now()}.${ext}`;
+                           const { error } = await supabase.storage.from('user_photos').upload(path, file);
+                           if (!error) {
+                              const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(path);
+                              setMediaUrl(publicUrl);
+                              setMediaType('image');
+                           }
+                        }
+                        setIsUploading(false);
+                      }}
+                    />
+                    <div className="flex items-center gap-2 text-[10px] text-primary font-black uppercase tracking-widest">
+                       <Sparkles size={12} className="animate-pulse" /> {t('aiFilter')}
+                    </div>
                  </div>
                  <button 
                   type="submit"
-                  disabled={isSubmitting || !newPostContent.trim()}
+                  disabled={isSubmitting || isUploading || (!newPostContent.trim() && !mediaUrl)}
                   className="btn-primary py-3 px-8 text-xs flex items-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50"
                  >
                   <Send size={16} /> {isSubmitting ? t('checking') : t('postButton')}
@@ -192,6 +271,26 @@ export default function CommunityView({ isVerified = false, isPremium = false }:
                  &quot;{post.content}&quot;
                </p>
             </div>
+
+            {post.media_url && post.media_type === 'image' && (
+               <div className="mb-6 rounded-3xl overflow-hidden border border-border shadow-lg">
+                  <img src={post.media_url} className="w-full h-auto object-cover max-h-[500px]" alt="Post Media" />
+               </div>
+            )}
+
+            {post.media_url && post.media_type === 'link' && (
+               <div className="mb-6 p-6 bg-muted rounded-3xl border border-primary/10 flex items-center gap-4">
+                  <div className="p-3 bg-primary/10 text-primary rounded-xl">
+                     <LinkIcon size={20} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                     <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Shared Link</p>
+                     <a href={post.media_url} target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-accent hover:underline truncate block">
+                        {post.media_url}
+                     </a>
+                  </div>
+               </div>
+            )}
           </article>
         ))}
       </div>

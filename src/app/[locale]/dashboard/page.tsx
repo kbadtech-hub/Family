@@ -161,6 +161,7 @@ export default function DashboardPage() {
   const isPremium = profile?.trial_ends_at && new Date(profile.trial_ends_at) > new Date() || 
                     paymentStatus === 'approved' || 
                     ['admin', 'super_admin', 'expert'].includes((profile as any)?.role);
+  const isAdmin = ['admin', 'super_admin'].includes((profile as any)?.role);
 
   return (
     <div className="min-h-screen bg-[#FDFBF9] flex flex-col md:flex-row" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
@@ -341,7 +342,7 @@ export default function DashboardPage() {
            </div>
         )}
 
-        {activeTab === 'community' && <CommunityView isVerified={verificationStatus === 'verified'} isPremium={isPremium} />}
+        {activeTab === 'community' && <CommunityView isVerified={verificationStatus === 'verified'} isPremium={isPremium} isAdmin={isAdmin} />}
 
         {activeTab === 'profile' && profile && (
           <ProfileView 

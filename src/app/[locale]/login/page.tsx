@@ -25,7 +25,7 @@ function LoginContent() {
   useEffect(() => {
     const errorParam = new URLSearchParams(window.location.search).get('error');
     if (errorParam === 'unconfirmed') {
-      setError(locale === 'am' ? 'እባክዎ መጀመሪያ ኢሜልዎን ያረጋግጡ። የላክንልዎትን ሊንክ በኢንቦክስዎ ይፈልጉ።' : 'Please confirm your email first. Check your inbox for the verification link.');
+      router.push('/onboarding?step=5');
     }
   }, [locale]);
 
@@ -46,7 +46,7 @@ function LoginContent() {
 
       if (authError) {
         if (authError.message.toLowerCase().includes('email not confirmed')) {
-          setError(locale === 'am' ? 'እባክዎ መጀመሪያ ኢሜልዎን ያረጋግጡ። የላክንልዎትን ሊንክ በኢንቦክስዎ ይፈልጉ።' : 'Please confirm your email first. Check your inbox for the verification link.');
+          router.push(`/onboarding?step=5&email=${encodeURIComponent(authMode === 'email' ? email : phone)}`);
         } else {
           throw authError;
         }

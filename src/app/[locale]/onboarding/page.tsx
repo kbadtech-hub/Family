@@ -72,9 +72,9 @@ function OnboardingContent() {
     finance_habit: '',
     conflict_resolution: '',
     family_value: '',
-    spouse_requirements: '',
     star_sign: '',
-    gallery_photos: [] as string[]
+    gallery_photos: [] as string[],
+    otp: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const idFileInputRef = React.useRef<HTMLInputElement>(null);
@@ -113,6 +113,10 @@ function OnboardingContent() {
         if (user) setUserId(user.id);
       });
     }
+    const emailParam = searchParams.get('email');
+    if (emailParam) {
+      updateField('email', emailParam);
+    }
   }, [searchParams]);
 
   const validateStep = (currentStep: number) => {
@@ -137,6 +141,9 @@ function OnboardingContent() {
         if (!formData.family_value) return locale === 'am' ? 'እባክዎ የቤተሰብ እሴት ይምረጡ' : 'Please select family value';
         if (!formData.conflict_resolution) return locale === 'am' ? 'እባክዎ የግጭት አፈታት ይምረጡ' : 'Please select conflict resolution style';
         if (!formData.spouse_requirements) return locale === 'am' ? 'እባክዎ የሚያገባውን ሰው መስፈርት ይግለጹ (ግዴታ)' : 'Please describe your spouse requirements';
+        break;
+      case 5:
+        if (!formData.otp || formData.otp.length !== 6) return locale === 'am' ? 'እባክዎ ባለ 6 ዲጂት ኮድ ያስገቡ' : 'Please enter 6-digit code';
         break;
       default:
         return null;
@@ -195,10 +202,30 @@ function OnboardingContent() {
       if (data.user) {
         setUserId(data.user.id);
       }
-      setStep(5); // Move to Gallery
+      setStep(5); // Move to OTP Verification
     } catch (error: any) {
       setErrorMsg(error.message);
-      setStep(1);
+      // setStep(1); // Don't reset to step 1, stay on review
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleVerifyOTP = async () => {
+    setIsSubmitting(true);
+    setErrorMsg('');
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email: formData.email,
+        token: formData.otp,
+        type: 'signup'
+      });
+
+      if (error) throw error;
+      
+      setStep(6); // Move to Gallery
+    } catch (error: any) {
+      setErrorMsg(error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -525,6 +552,43 @@ function OnboardingContent() {
         );
       case 5:
         return (
+          <div className="space-y-6 animate-in slide-in-from-right duration-300">
+            <div className="text-center space-y-4">
+              <div className="w-20 h-20 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mx-auto">
+                 <Mail size={40} className="text-primary" />
+              </div>
+              <h2 className="text-3xl font-black text-accent italic">{locale === 'am' ? 'ኢሜልዎን ያረጋግጡ' : 'Verify Email'}</h2>
+              <p className="text-gray-500">{locale === 'am' ? `ወደ ${formData.email} የላክነውን ባለ 6 ዲጂት ኮድ ያስገቡ` : `Enter the 6-digit code we sent to ${formData.email}`}</p>
+            </div>
+
+            <div className="space-y-4">
+               <input 
+                 type="text" 
+                 maxLength={6}
+                 value={formData.otp}
+                 onChange={(e) => updateField('otp', e.target.value.replace(/\D/g, ''))}
+                 className="w-full bg-muted border-none rounded-[2rem] p-6 text-center text-4xl font-black tracking-[0.5em] focus:ring-2 focus:ring-primary/20 transition-all text-accent"
+                 placeholder="000000"
+               />
+               {errorMsg && <p className="text-red-500 text-center text-xs font-bold">{errorMsg}</p>}
+               <button 
+                 onClick={handleVerifyOTP}
+                 disabled={isSubmitting || formData.otp.length !== 6}
+                 className="w-full btn-primary py-5 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-primary/20 disabled:opacity-50"
+               >
+                 {isSubmitting ? t('nav.processing') : (locale === 'am' ? 'አረጋግጥ' : 'Verify & Continue')}
+               </button>
+               <button 
+                 onClick={handleFinish} // Resend logic
+                 className="w-full text-xs font-bold text-primary uppercase tracking-widest mt-4"
+               >
+                 {locale === 'am' ? 'ኮዱ አልደረሰዎትም? እንደገና ላክ' : 'Didn\'t get code? Resend'}
+               </button>
+            </div>
+          </div>
+        );
+      case 6:
+        return (
           <div className="space-y-8 animate-in slide-in-from-right duration-300">
              <div className="space-y-4 text-center">
                 <h2 className="text-3xl font-black text-accent italic">{t('gallery')}</h2>
@@ -591,14 +655,14 @@ function OnboardingContent() {
              </div>
           </div>
         );
-      case 6:
+      case 7:
         return userId ? (
           <div className="space-y-6 animate-in slide-in-from-right duration-300">
              <VerificationGate 
                userId={userId} 
                onVerified={() => {
                  setVerificationStatus('verified');
-                 setStep(7);
+                 setStep(8);
                  setTimeout(() => router.push('/dashboard'), 2000);
                }} 
              />
@@ -609,7 +673,7 @@ function OnboardingContent() {
              <p className="mt-4 font-bold text-accent italic">Preparing Verification...</p>
           </div>
         );
-      case 7:
+      case 8:
         return (
           <div className="space-y-8 text-center animate-in zoom-in duration-500">
              <div className="mx-auto w-24 h-24 bg-green-100 rounded-full flex items-center justify-center shadow-xl shadow-green-500/10">
@@ -635,12 +699,12 @@ function OnboardingContent() {
     <div className="min-h-screen bg-[var(--secondary)] bg-opacity-10 py-12 px-4 flex items-center justify-center" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       <div className="max-w-xl w-full">
         <div className="mb-8 flex justify-between items-center px-4">
-          {[1,2,3,4,5,6,7].map(i => (
+          {[1,2,3,4,5,6,7,8].map(i => (
              <React.Fragment key={i}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold transition-all ${step >= i ? 'bg-primary text-white scale-110 shadow-lg' : 'bg-white text-gray-300'}`}>
                    <span className="text-[10px]">{i}</span>
                 </div>
-                {i < 7 && <div className={`flex-1 h-1 mx-2 rounded-full ${step > i ? 'bg-primary' : 'bg-white'}`} />}
+                {i < 8 && <div className={`flex-1 h-1 mx-2 rounded-full ${step > i ? 'bg-primary' : 'bg-white'}`} />}
              </React.Fragment>
           ))}
         </div>
@@ -652,7 +716,7 @@ function OnboardingContent() {
           <div className="relative">
             {renderStep()}
 
-            {step < 6 && (
+            {step < 7 && (
               <div className={`mt-12 flex justify-between gap-4 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
                 {step > 1 && (
                   <button 
@@ -670,7 +734,7 @@ function OnboardingContent() {
                   disabled={isSubmitting}
                   className={`flex-[2] btn-primary flex items-center justify-center gap-2 ${isSubmitting ? 'opacity-50' : ''}`}
                 >
-                  {isSubmitting ? t('nav.processing') : (step === 7 ? t('nav.finish') : t('nav.continue'))} {locale === 'ar' ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+                  {isSubmitting ? t('nav.processing') : (step === 8 ? t('nav.finish') : t('nav.continue'))} {locale === 'ar' ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
                 </button>
               </div>
             )}

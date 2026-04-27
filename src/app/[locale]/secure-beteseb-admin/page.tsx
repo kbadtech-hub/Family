@@ -62,6 +62,18 @@ export default function AdminPortal() {
     is_published: false
   });
 
+  // Lessons State
+  const [lessons, setLessons] = useState<any[]>([]);
+  const [isEditingLesson, setIsEditingLesson] = useState(false);
+  const [currentLesson, setCurrentLesson] = useState<any>({
+    title: '',
+    description: '',
+    youtube_url: '',
+    instructions: '',
+    category: 'Relationship',
+    is_premium_only: true
+  });
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     // Fetch system key from DB
@@ -100,7 +112,9 @@ export default function AdminPortal() {
       "6m": number;
       "12m": number;
       "class": number;
+      lifetime: number;
       trial_days?: number;
+      discount?: number;
     };
     pricing_etb: {
       "1m": number;
@@ -108,7 +122,9 @@ export default function AdminPortal() {
       "6m": number;
       "12m": number;
       "class": number;
+      lifetime: number;
       trial_days?: number;
+      discount?: number;
     };
     website_url: string;
     [key: string]: any; // Allow index access for social links
@@ -139,8 +155,8 @@ export default function AdminPortal() {
       { bank_name: '', account_number: '', account_holder: '' },
       { bank_name: '', account_number: '', account_holder: '' }
     ],
-    pricing_usd: { "1m": 0, "3m": 0, "6m": 0, "12m": 0, "class": 0, "trial_days": 3 },
-    pricing_etb: { "1m": 0, "3m": 0, "6m": 0, "12m": 0, "class": 0, "trial_days": 3 },
+    pricing_usd: { "1m": 0, "3m": 0, "6m": 0, "12m": 0, "class": 0, "lifetime": 0, "trial_days": 3, "discount": 0 },
+    pricing_etb: { "1m": 0, "3m": 0, "6m": 0, "12m": 0, "class": 0, "lifetime": 0, "trial_days": 3, "discount": 0 },
     website_url: ''
   });
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
@@ -216,6 +232,9 @@ export default function AdminPortal() {
       } else if (activeTab === 'posts') {
         const { data } = await supabase.from('site_posts').select('*').order('created_at', { ascending: false });
         if (data) setPosts(data);
+      } else if (activeTab === 'lessons') {
+        const { data } = await supabase.from('lessons').select('*').order('created_at', { ascending: false });
+        if (data) setLessons(data);
       } else if (activeTab === 'matches') {
         const { data } = await supabase.from('profiles').select('id, full_name, avatar_url, star_sign').limit(100);
         if (data) setUsers(data);
@@ -321,9 +340,37 @@ export default function AdminPortal() {
     setIsSaving(false);
   };
 
-  const handleUpdatePayment = async (id: string, status: string) => {
-    await supabase.from('payments').update({ status }).eq('id', id);
-    setPayments(prev => prev.map(p => p.id === id ? { ...p, status } : p));
+  const handleSaveLesson = async () => {
+    setIsSaving(true);
+    try {
+      let error;
+      if (currentLesson.id) {
+        const { error: err } = await supabase.from('lessons').update(currentLesson).eq('id', currentLesson.id);
+        error = err;
+      } else {
+        const { error: err } = await supabase.from('lessons').insert([currentLesson]);
+        error = err;
+      }
+
+      if (error) throw error;
+      
+      alert('Lesson saved successfully!');
+      setIsEditingLesson(false);
+      // Refresh lessons
+      const { data } = await supabase.from('lessons').select('*').order('created_at', { ascending: false });
+      if (data) setLessons(data);
+    } catch (err: any) {
+      alert('Error saving lesson: ' + err.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteLesson = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this lesson?')) return;
+    const { error } = await supabase.from('lessons').delete().eq('id', id);
+    if (error) alert('Error deleting lesson: ' + error.message);
+    else setLessons(prev => prev.filter(l => l.id !== id));
   };
 
   const handleBroadcast = async () => {
@@ -494,6 +541,7 @@ export default function AdminPortal() {
             { id: 'payments', icon: Heart, label: 'Payment Review' },
             { id: 'messaging', icon: MessageSquare, label: 'Communication' },
             { id: 'posts', icon: Film, label: 'Articles & News' },
+            { id: 'lessons', icon: GraduationCap, label: 'Academy Lessons' },
             { id: 'community', icon: Sparkles, label: 'Social Hub' },
             { id: 'pricing', icon: CreditCard, label: 'Pricing & Trial' },
             { id: 'matches', icon: Heart, label: 'Manual Matches' },
@@ -822,30 +870,45 @@ export default function AdminPortal() {
                <button onClick={handleSaveCMS} className="btn-primary">Deploy Updates</button>
              </header>
 
-             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-               <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5">
-                 <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6">Trial Logic</h3>
-                 <label className="block">
-                    <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest">Free Trial Days</span>
-                    <input 
-                      type="number" 
-                      value={(cmsForm.pricing_usd as any)?.trial_days || 3}
-                      onChange={(e) => setCmsForm({
-                         ...cmsForm, 
-                         pricing_usd: { ...cmsForm.pricing_usd, trial_days: parseInt(e.target.value) },
-                         pricing_etb: { ...cmsForm.pricing_etb, trial_days: parseInt(e.target.value) }
-                      })}
-                      className="input-premium bg-background mt-2"
-                    />
-                 </label>
+             <div className="grid grid-cols-1 lg:grid               <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5">
+                 <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6">Discount & Logic</h3>
+                 <div className="space-y-6">
+                    <label className="block">
+                       <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest">Free Trial Days</span>
+                       <input 
+                         type="number" 
+                         value={(cmsForm.pricing_usd as any)?.trial_days || 3}
+                         onChange={(e) => setCmsForm({
+                            ...cmsForm, 
+                            pricing_usd: { ...cmsForm.pricing_usd, trial_days: parseInt(e.target.value) },
+                            pricing_etb: { ...cmsForm.pricing_etb, trial_days: parseInt(e.target.value) }
+                         })}
+                         className="input-premium bg-background mt-2"
+                       />
+                    </label>
+                    <label className="block">
+                       <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest text-primary italic">Global Holiday Discount (%)</span>
+                       <input 
+                         type="number" 
+                         value={(cmsForm.pricing_usd as any)?.discount || 0}
+                         onChange={(e) => setCmsForm({
+                            ...cmsForm, 
+                            pricing_usd: { ...cmsForm.pricing_usd, discount: parseInt(e.target.value) },
+                            pricing_etb: { ...cmsForm.pricing_etb, discount: parseInt(e.target.value) }
+                         })}
+                         className="input-premium bg-background mt-2 border-primary/30"
+                         placeholder="0% - 90%"
+                       />
+                    </label>
+                 </div>
                </div>
 
                <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5">
                  <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6">USD Pricing ($)</h3>
                  <div className="space-y-4">
-                    {['1m', '3m', '6m', '12m'].map(plan => (
+                    {['1m', '3m', '6m', '12m', 'lifetime'].map(plan => (
                        <label key={plan} className="flex items-center gap-4">
-                          <span className="text-[10px] w-12 font-bold text-foreground/40 uppercase tracking-widest">{plan}</span>
+                          <span className="text-[10px] w-20 font-bold text-foreground/40 uppercase tracking-widest">{plan === 'lifetime' ? 'Lifetime' : plan}</span>
                           <input 
                             type="number" 
                             value={(cmsForm.pricing_usd as any)[plan]}
@@ -859,6 +922,27 @@ export default function AdminPortal() {
                     ))}
                  </div>
                </div>
+
+               <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5">
+                 <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6">ETB Pricing (ብር)</h3>
+                 <div className="space-y-4">
+                    {['1m', '3m', '6m', '12m', 'lifetime'].map(plan => (
+                       <label key={plan} className="flex items-center gap-4">
+                          <span className="text-[10px] w-20 font-bold text-foreground/40 uppercase tracking-widest">{plan === 'lifetime' ? 'Lifetime' : plan}</span>
+                          <input 
+                            type="number" 
+                            value={(cmsForm.pricing_etb as any)[plan]}
+                            onChange={(e) => setCmsForm({
+                               ...cmsForm, 
+                               pricing_etb: { ...cmsForm.pricing_etb, [plan]: parseInt(e.target.value) }
+                            })}
+                            className="input-premium bg-background flex-1"
+                          />
+                       </label>
+                    ))}
+                 </div>
+               </div>
+         </div>
              </div>
            </div>
          )}
@@ -1299,6 +1383,116 @@ export default function AdminPortal() {
                    </button>
                 </div>
              </div>
+           </div>
+         )}
+         {activeTab === 'lessons' && (
+           <div className="space-y-8 animate-in fade-in duration-500">
+             <header className="flex justify-between items-end">
+               <div>
+                 <h2 className="text-3xl font-bold text-accent italic">Academy Lessons</h2>
+                 <p className="text-gray-500 mt-1">Add educational video links and instructions for students.</p>
+               </div>
+               {!isEditingLesson && (
+                 <button 
+                    onClick={() => {
+                      setCurrentLesson({ title: '', description: '', youtube_url: '', instructions: '', category: 'Relationship', is_premium_only: true });
+                      setIsEditingLesson(true);
+                    }} 
+                    className="btn-primary flex items-center gap-2 shadow-lg shadow-primary/20"
+                 >
+                   <Plus size={20} /> Create New Lesson
+                 </button>
+               )}
+             </header>
+
+             {isEditingLesson ? (
+               <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-gray-100 max-w-4xl animate-in slide-in-from-bottom-4 duration-500">
+                  <div className="flex justify-between items-center mb-8">
+                     <h3 className="text-xl font-bold text-accent">{currentLesson.id ? 'Edit' : 'Create'} Lesson</h3>
+                     <button onClick={() => setIsEditingLesson(false)} className="p-2 hover:bg-gray-100 rounded-full"><X size={24} /></button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div className="space-y-4">
+                        <label className="block">
+                           <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Lesson Title</span>
+                           <input type="text" value={currentLesson.title} onChange={(e) => setCurrentLesson({...currentLesson, title: e.target.value})} className="mt-2 block w-full p-4 bg-muted rounded-2xl border-transparent focus:ring-primary focus:bg-white transition-all shadow-inner" placeholder="e.g. Building Trust" />
+                        </label>
+                        <label className="block">
+                           <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Category</span>
+                           <select value={currentLesson.category} onChange={(e) => setCurrentLesson({...currentLesson, category: e.target.value})} className="mt-2 block w-full p-4 bg-muted rounded-2xl border-transparent focus:ring-primary focus:bg-white transition-all shadow-inner">
+                              <option value="Relationship">Relationship</option>
+                              <option value="Family">Family</option>
+                              <option value="Culture">Culture</option>
+                              <option value="Finance">Finance</option>
+                           </select>
+                        </label>
+                        <div className="flex items-center gap-2 pt-4">
+                           <input type="checkbox" id="premium_only" checked={currentLesson.is_premium_only} onChange={(e) => setCurrentLesson({...currentLesson, is_premium_only: e.target.checked})} className="w-5 h-5 text-primary rounded" />
+                           <label htmlFor="premium_only" className="text-sm font-bold text-accent">Premium Members Only</label>
+                        </div>
+                     </div>
+
+                     <div className="space-y-4">
+                        <label className="block">
+                           <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">YouTube URL (Admins Only)</span>
+                           <input type="text" value={currentLesson.youtube_url} onChange={(e) => setCurrentLesson({...currentLesson, youtube_url: e.target.value})} className="mt-2 block w-full p-4 bg-muted rounded-2xl border-transparent focus:ring-primary focus:bg-white transition-all shadow-inner" placeholder="https://youtube.com/watch?v=..." />
+                        </label>
+                        <label className="block">
+                           <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Brief Description</span>
+                           <textarea rows={3} value={currentLesson.description} onChange={(e) => setCurrentLesson({...currentLesson, description: e.target.value})} className="mt-2 block w-full p-4 bg-muted rounded-2xl border-transparent focus:ring-primary focus:bg-white transition-all shadow-inner resize-none" placeholder="What is this lesson about?" />
+                        </label>
+                     </div>
+
+                     <div className="col-span-full space-y-2">
+                        <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Detailed Instructions (Actionable Steps)</span>
+                        <textarea rows={6} value={currentLesson.instructions} onChange={(e) => setCurrentLesson({...currentLesson, instructions: e.target.value})} className="mt-2 block w-full p-6 bg-muted rounded-[2rem] border-transparent focus:ring-primary focus:bg-white transition-all shadow-inner resize-none" placeholder="Step 1: ... Step 2: ..." />
+                     </div>
+                  </div>
+
+                  <div className="mt-10 flex gap-4">
+                     <button onClick={handleSaveLesson} disabled={isSaving} className="flex-1 btn-primary py-5 rounded-2xl font-bold uppercase tracking-widest shadow-xl shadow-primary/20">
+                        {isSaving ? 'Saving...' : 'Deploy Academy Lesson'}
+                     </button>
+                     <button onClick={() => setIsEditingLesson(false)} className="px-10 py-5 bg-gray-100 text-gray-500 rounded-2xl font-bold uppercase tracking-widest hover:bg-gray-200 transition-all">
+                        Cancel
+                     </button>
+                  </div>
+               </div>
+             ) : (
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {lessons.length === 0 ? (
+                    <div className="col-span-full p-20 text-center text-gray-400 italic bg-white rounded-[3rem] border border-gray-100">No lessons found.</div>
+                  ) : (
+                    lessons.map((lesson) => (
+                      <div key={lesson.id} className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-500 group">
+                         <div className="h-48 bg-muted relative flex items-center justify-center">
+                            <Video size={48} className="text-primary/20" />
+                            <div className="absolute top-4 left-4">
+                               <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter border ${
+                                  lesson.is_premium_only ? 'bg-amber-500/10 text-amber-600 border-amber-200' : 'bg-green-500/10 text-green-600 border-green-200'
+                               }`}>
+                                  {lesson.is_premium_only ? 'Premium' : 'Free'}
+                               </span>
+                            </div>
+                         </div>
+                         <div className="p-8 space-y-4">
+                            <div className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{lesson.category}</div>
+                            <h4 className="text-xl font-bold text-accent leading-tight line-clamp-2">{lesson.title}</h4>
+                            <div className="flex gap-2 pt-4 border-t border-muted/50">
+                               <button onClick={() => { setCurrentLesson(lesson); setIsEditingLesson(true); }} className="flex-1 p-3 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-2 font-bold text-xs">
+                                  <Edit size={16} /> Edit
+                                </button>
+                               <button onClick={() => handleDeleteLesson(lesson.id)} className="p-3 bg-red-500/10 text-red-600 rounded-xl hover:bg-red-500 hover:text-white transition-all">
+                                  <Trash2 size={16} />
+                               </button>
+                            </div>
+                         </div>
+                      </div>
+                    ))
+                  )}
+               </div>
+             )}
            </div>
          )}
         {activeTab === 'matches' && (
