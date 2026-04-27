@@ -34,6 +34,7 @@ interface UserProfile {
   full_name: string | null;
   role: string;
   avatar_url: string | null;
+  star_sign?: string;
 }
 
 interface VerificationRequest {
@@ -261,11 +262,11 @@ export default function AdminPortal() {
         const { data } = await supabase.from('settings').select('*').limit(1).single();
         if (data) {
           setSettings(data);
-          setCmsForm({
-            ...cmsForm, // Keep other fields
+          setCmsForm(prev => ({
+            ...prev,
             pricing_usd: data.pricing_usd || { "1m": 50, "3m": 120, "6m": 200, "12m": 350, "class": 25, "lifetime": 999, "discount": 0 },
             pricing_etb: data.pricing_etb || { "1m": 500, "3m": 1200, "6m": 2000, "12m": 3500, "class": 250, "lifetime": 9999, "discount": 0 }
-          });
+          }));
         }
       } else if (activeTab === 'verification') {
         const { data } = await supabase.from('verifications').select(`*, profiles(full_name)`);
@@ -286,7 +287,7 @@ export default function AdminPortal() {
         const { data } = await supabase.from('lessons').select('*').order('created_at', { ascending: false });
         if (data) setLessons(data);
       } else if (activeTab === 'matches') {
-        const { data } = await supabase.from('profiles').select('id, full_name, avatar_url, star_sign').limit(100);
+        const { data } = await supabase.from('profiles').select('id, full_name, avatar_url, star_sign, role').limit(100);
         if (data) setUsers(data);
       } else if (activeTab === 'support') {
         const { data } = await supabase.from('support_tickets').select('*, profiles(full_name)').order('created_at', { ascending: false });
@@ -294,7 +295,7 @@ export default function AdminPortal() {
       }
     };
     fetchAdminData();
-  }, [activeTab, cmsForm]);
+  }, [activeTab]);
 
   const handleSavePost = async () => {
     setIsSaving(true);
