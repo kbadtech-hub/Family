@@ -131,6 +131,16 @@ export default function CommunityPage() {
       }
     }
 
+    const isPremium = currentUser.profile?.is_premium || 
+                     (currentUser.profile?.trial_ends_at && new Date(currentUser.profile.trial_ends_at) > new Date()) ||
+                     ['admin', 'super_admin', 'expert'].includes(currentUser.profile?.role);
+
+    if (!isPremium) {
+       alert(locale === 'am' ? "ይህ ፊቸር ለፕሪሚየም አባላት ብቻ ነው" : "This feature is for premium members only");
+       setIsSubmitting(false);
+       return;
+    }
+
     const { error } = await supabase.from('community_posts').insert({
        author_id: currentUser.id,
        content: newPost.trim(),
@@ -145,6 +155,8 @@ export default function CommunityPage() {
        setMediaFile(null);
        setMediaPreview(null);
        fetchPosts();
+    } else {
+       alert(error.message);
     }
     setIsSubmitting(false);
   };

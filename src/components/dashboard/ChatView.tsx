@@ -40,7 +40,7 @@ interface Profile {
   is_verified: boolean;
 }
 
-export default function ChatView() {
+export default function ChatView({ isPremium = false }: { isPremium?: boolean }) {
   const t = useTranslations('Community');
   const locale = useLocale();
   const [matches, setMatches] = useState<Profile[]>([]);
@@ -56,20 +56,20 @@ export default function ChatView() {
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUser(user);
 
-      if (user) {
+      if (user && isPremium) {
         // Fetch potential matches (for now, other users)
         const { data: profiles } = await supabase
           .from('profiles')
           .select('*')
           .neq('id', user.id)
-          .limit(10);
+          .limit(20);
         
         if (profiles) setMatches(profiles);
       }
       setLoading(false);
     };
     init();
-  }, []);
+  }, [isPremium]);
 
   useEffect(() => {
     if (!selectedMatch || !currentUser) return;
@@ -182,6 +182,28 @@ export default function ChatView() {
   };
 
   if (loading) return <div className="flex-1 flex items-center justify-center">Loading family chat...</div>;
+
+  if (!isPremium) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center bg-white rounded-[2.5rem] border border-muted shadow-2xl p-12 text-center space-y-8">
+        <div className="w-24 h-24 bg-primary/10 rounded-[2.5rem] flex items-center justify-center">
+          <MessageCircle size={48} className="text-primary fill-primary/10" />
+        </div>
+        <div className="max-w-md space-y-4">
+          <h2 className="text-3xl font-black text-accent italic tracking-tighter">Premium Chat Feature</h2>
+          <p className="text-gray-500 leading-relaxed">
+            {locale === 'am' ? "ይህ ፊቸር ለፕሪሚየም አባላት ብቻ ነው" : "Messaging and private chat are exclusive to our premium members. Upgrade your account to start connecting with your matches."}
+          </p>
+        </div>
+        <button 
+           className="bg-primary text-white px-10 py-4 rounded-2xl font-bold uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 transition-all"
+           onClick={() => window.location.reload()} 
+        >
+          {locale === 'am' ? "ፕሪሚየም ይሁኑ" : "Upgrade Now"}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-[calc(100vh-200px)] bg-white rounded-[2.5rem] overflow-hidden border border-muted shadow-2xl">

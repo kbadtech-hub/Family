@@ -19,11 +19,12 @@ import Image from 'next/image';
 
 interface MatchDetailProps {
   matchId: string;
+  isPremium?: boolean;
   onClose: () => void;
   onStartChat: (id: string) => void;
 }
 
-export default function MatchDetailView({ matchId, onClose, onStartChat }: MatchDetailProps) {
+export default function MatchDetailView({ matchId, isPremium = false, onClose, onStartChat }: MatchDetailProps) {
   const [profile, setProfile] = useState<any>(null);
   const [photos, setPhotos] = useState<any[]>([]);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
@@ -140,13 +141,27 @@ export default function MatchDetailView({ matchId, onClose, onStartChat }: Match
            )}
 
            <div className="pt-10">
-              <button 
-                onClick={() => onStartChat(matchId)}
-                className="w-full bg-primary text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4"
-              >
-                 <MessageCircle size={24} />
-                 Start Connection
-              </button>
+              {isPremium ? (
+                <button 
+                  onClick={() => onStartChat(matchId)}
+                  className="w-full bg-primary text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4"
+                >
+                   <MessageCircle size={24} />
+                   Start Connection
+                </button>
+              ) : (
+                <div className="p-8 bg-muted rounded-[2.5rem] border border-primary/20 text-center space-y-4">
+                   <ShieldCheck className="mx-auto text-primary" size={32} />
+                   <p className="text-xs font-black text-accent uppercase tracking-widest">Premium Feature</p>
+                   <p className="text-[10px] text-gray-500">Upgrade to Premium to view full details and start a conversation.</p>
+                   <button 
+                      onClick={() => window.location.reload()}
+                      className="text-primary font-black text-[10px] uppercase tracking-[0.2em] underline"
+                   >
+                      Upgrade Now
+                   </button>
+                </div>
+              )}
            </div>
         </div>
       </div>

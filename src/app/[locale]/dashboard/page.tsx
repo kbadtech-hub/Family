@@ -114,12 +114,19 @@ export default function DashboardPage() {
       let currentPaymentApproved = paymentData?.status === 'approved';
       if (paymentData) setPaymentStatus(paymentData.status);
 
-      // 4. Fetch Matches (only if verified AND trial active/premium)
-      if (currentVerifyStatus === 'verified' && (!currentTrialExpired || currentPaymentApproved)) {
+      // 4. Calculate Premium Status
+      const isPremium = currentPaymentApproved || 
+                       (profileData?.trial_ends_at && new Date(profileData.trial_ends_at) > new Date()) ||
+                       ['admin', 'super_admin', 'expert'].includes(profileData?.role);
+      
+      setProfile(prev => prev ? { ...prev, is_premium: isPremium } : null);
+
+      // 5. Fetch Matches (only if verified AND trial active/premium)
+      if (currentVerifyStatus === 'verified' && isPremium) {
         const { data: profiles } = await supabase.from('profiles')
           .select('*')
           .neq('id', user.id)
-          .limit(3);
+          .limit(10);
 
         if (profiles) {
           setMatches(profiles.map(p => ({
@@ -133,6 +140,10 @@ export default function DashboardPage() {
     };
     fetchData();
   }, []);
+
+  const isPremium = profile?.trial_ends_at && new Date(profile.trial_ends_at) > new Date() || 
+                    paymentStatus === 'approved' || 
+                    ['admin', 'super_admin', 'expert'].includes((profile as any)?.role);
 
   return (
     <div className="min-h-screen bg-[#FDFBF9] flex flex-col md:flex-row" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
@@ -286,7 +297,7 @@ export default function DashboardPage() {
 
         {activeTab === 'chat' && (
            <div className="mt-10 h-[calc(100vh-200px)]">
-              <ChatView />
+              <ChatView isPremium={isPremium} />
            </div>
         )}
 
@@ -296,7 +307,7 @@ export default function DashboardPage() {
            </div>
         )}
 
-        {activeTab === 'community' && <CommunityView isVerified={true} />}
+        {activeTab === 'community' && <CommunityView isVerified={verificationStatus === 'verified'} isPremium={isPremium} />}
 
         {activeTab === 'profile' && profile && (
           <ProfileView 
@@ -316,6 +327,7 @@ export default function DashboardPage() {
         {selectedMatchId && (
           <MatchDetailView 
             matchId={selectedMatchId} 
+            isPremium={isPremium}
             onClose={() => setSelectedMatchId(null)} 
             onStartChat={(id) => {
               setSelectedMatchId(null);

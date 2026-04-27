@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
 import { 
@@ -26,8 +26,9 @@ interface Post {
   } | null;
 }
 
-export default function CommunityView({ isVerified = false }: { isVerified?: boolean }) {
-  const t = useTranslations('community');
+export default function CommunityView({ isVerified = false, isPremium = false }: { isVerified?: boolean, isPremium?: boolean }) {
+  const t = useTranslations('Community');
+  const locale = useLocale();
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPostContent, setNewPostContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,6 +52,11 @@ export default function CommunityView({ isVerified = false }: { isVerified?: boo
     e.preventDefault();
     if (!newPostContent.trim()) return;
 
+    if (!isPremium) {
+       alert(locale === 'am' ? "ይህ ፊቸር ለፕሪሚየም አባላት ብቻ ነው" : "This feature is for premium members only");
+       return;
+    }
+
     setIsSubmitting(true);
     
     // AI Moderation Simulation
@@ -58,7 +64,7 @@ export default function CommunityView({ isVerified = false }: { isVerified?: boo
     const isUnsafe = forbiddenWords.some(word => newPostContent.toLowerCase().includes(word));
     
     if (isUnsafe) {
-      alert(t('safetyAlert'));
+      alert(t('safetyAlert') || "Your post contains unsafe content.");
       setIsSubmitting(false);
       return;
     }
@@ -74,8 +80,12 @@ export default function CommunityView({ isVerified = false }: { isVerified?: boo
 
       if (!error) {
         setNewPostContent('');
-        // Re-fetch using a separate function or just reload page
-        window.location.reload(); 
+        // Re-fetch posts
+        const { data } = await supabase
+          .from('community_posts')
+          .select('*, profiles(full_name, avatar_url, star_sign, is_verified)')
+          .order('created_at', { ascending: false });
+        if (data) setPosts(data as Post[]);
       }
     }
     setIsSubmitting(false);
