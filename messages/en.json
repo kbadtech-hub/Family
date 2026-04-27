@@ -118,7 +118,30 @@
     "verifyToPostSub": "You can read community posts, but you need to verify your identity to join the discussion.",
     "memberBadge": "Beteseb Member",
     "loadingFeed": "Loading Family Feed...",
-    "safetyAlert": "Your post contains content that does not align with our family-oriented community values. Please keep it respectful."
+    "safetyAlert": "Your post contains content that does not align with our family-oriented community values. Please keep it respectful.",
+    "categories": {
+      "all": "All Posts",
+      "success_story": "Success Stories",
+      "lesson_learned": "Lessons Learned",
+      "expert_class": "Expert Classes"
+    },
+    "poll": {
+      "vote": "Vote",
+      "voted": "Voted",
+      "total": "{count} votes"
+    },
+    "interactions": {
+      "reply": "Reply",
+      "share": "Share",
+      "showReplies": "Show {count} replies",
+      "writeComment": "Write a comment...",
+      "expertBadge": "Verified Expert",
+      "linkCopied": "Link copied to clipboard!"
+    },
+    "media": {
+      "uploadPhoto": "Add Photo",
+      "uploadVideo": "Add Video"
+    }
   },
   "About": {
     "tagline": "Our Vision for the Ethiopian Heart.",
@@ -178,6 +201,10 @@
     "personalSubtitle": "Let's start with the basics for your profile.",
     "demographics": "Demographics",
     "career": "Career & Psychology",
+    "gallery": "Photo Gallery",
+    "gallerySubtitle": "Add up to 5 photos to showcase your lifestyle and personality.",
+    "galleryUpload": "Upload Photos",
+    "galleryLimit": "Maximum 5 photos",
     "reviewTitle": "Review Profile",
     "reviewSubtitle": "Please confirm your details are correct before finalizing.",
     "finishTitle": "You're All Set!",

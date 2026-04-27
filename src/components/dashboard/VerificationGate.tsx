@@ -82,38 +82,11 @@ export default function VerificationGate({ userId, onVerified }: VerificationGat
 
     if (!error) {
       setStatus('pending');
-      // Trigger AI verification simulation
-      setTimeout(simulateAIVerification, 4000);
     } else {
       alert('Submit failed: ' + error.message);
     }
   };
 
-  const simulateAIVerification = async () => {
-    // Phase 1: Face Matching
-    console.log('AI: Starting Face Match...');
-    
-    // Phase 2: Info Extraction & Comparison
-    console.log('AI: Comparing Name and Age with Profile...');
-
-    const { error } = await supabase
-      .from('verifications')
-      .update({ status: 'approved', verified_at: new Date().toISOString() })
-      .eq('user_id', userId);
-
-    if (!error) {
-       // Update profile status
-       await supabase.from('profiles').update({
-         is_verified: true
-       }).eq('id', userId);
-
-       setStatus('verified');
-       onVerified();
-       
-       // Note: Redirection is handled in the parent component OnboardingPage 
-       // but we ensure it happens by calling onVerified().
-    }
-  };
 
   if (status === 'pending') {
     return (
@@ -122,10 +95,16 @@ export default function VerificationGate({ userId, onVerified }: VerificationGat
           <Loader2 size={80} className="text-primary animate-spin" />
           <Sparkles className="absolute -top-2 -right-2 text-primary animate-pulse" size={24} />
         </div>
-        <h2 className="text-4xl font-black text-accent italic">Verification in Progress</h2>
+        <h2 className="text-4xl font-black text-accent italic">Verification Pending</h2>
         <p className="text-gray-500 max-w-md">
-          Our AI engine is currently analyzing your documents to ensure a safe community for everyone. This usually takes less than a minute.
+          Our team is currently reviewing your documents to ensure a safe community. You will be notified once your profile is verified.
         </p>
+        <button 
+           onClick={() => onVerified()} 
+           className="px-8 py-3 bg-muted text-accent font-bold rounded-2xl hover:bg-muted/80 transition-all"
+        >
+           Continue to Dashboard
+        </button>
       </div>
     );
   }

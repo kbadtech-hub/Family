@@ -46,6 +46,8 @@ export default function AdminPortal() {
   const [newAdminPassword, setNewAdminPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [comparingVerification, setComparingVerification] = useState<any>(null);
 
   // Site Posts State
   const [posts, setPosts] = useState<any[]>([]);
@@ -141,6 +143,7 @@ export default function AdminPortal() {
     pricing_etb: { "1m": 0, "3m": 0, "6m": 0, "12m": 0, "class": 0, "trial_days": 3 },
     website_url: ''
   });
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -300,9 +303,22 @@ export default function AdminPortal() {
     setIsSaving(false);
   };
 
-  const handleUpdateVerification = async (id: string, status: string) => {
-    await supabase.from('verifications').update({ status }).eq('id', id);
+  const handleUpdateVerification = async (id: string, status: string, userId?: string) => {
+    setIsSaving(true);
+    const { error } = await supabase.from('verifications').update({ 
+      status, 
+      verified_at: status === 'verified' ? new Date().toISOString() : null 
+    }).eq('id', id);
+    
+    if (!error && status === 'verified' && userId) {
+      await supabase.from('profiles').update({ is_verified: true }).eq('id', userId);
+    } else if (!error && status === 'rejected' && userId) {
+      await supabase.from('profiles').update({ is_verified: false }).eq('id', userId);
+    }
+    
     setVerifications(prev => prev.map(v => v.id === id ? { ...v, status } : v));
+    setComparingVerification(null);
+    setIsSaving(false);
   };
 
   const handleUpdatePayment = async (id: string, status: string) => {
@@ -443,9 +459,23 @@ export default function AdminPortal() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex admin-dark">
+    <div className="min-h-screen bg-background text-foreground flex admin-dark relative">
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-20 bg-card border-b border-border z-[60] flex items-center justify-between px-6">
+         <div className="flex items-center gap-2 text-primary">
+            <Heart size={24} className="fill-primary" />
+            <span className="text-xl font-bold tracking-tighter uppercase">BETESEB</span>
+         </div>
+         <button 
+           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+           className="p-3 bg-primary/10 text-primary rounded-xl"
+         >
+            {isSidebarOpen ? <X size={24} /> : <Layout size={24} />}
+         </button>
+      </div>
+
       {/* Admin Sidebar */}
-      <aside className="w-64 bg-card text-card-foreground flex flex-col p-6 shadow-2xl border-r border-border">
+      <aside className={`fixed inset-y-0 left-0 w-72 bg-card text-card-foreground flex flex-col p-8 shadow-2xl border-r border-border z-[70] transition-transform duration-500 lg:relative lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="mb-12">
           <Link href="/" className="flex items-center gap-2 text-primary group decoration-transparent">
              <Heart size={24} className="fill-primary group-hover:scale-110 transition-transform" />
@@ -464,6 +494,7 @@ export default function AdminPortal() {
             { id: 'payments', icon: Heart, label: 'Payment Review' },
             { id: 'messaging', icon: MessageSquare, label: 'Communication' },
             { id: 'posts', icon: Film, label: 'Articles & News' },
+            { id: 'community', icon: Sparkles, label: 'Social Hub' },
             { id: 'pricing', icon: CreditCard, label: 'Pricing & Trial' },
             { id: 'matches', icon: Heart, label: 'Manual Matches' },
             { id: 'staff', icon: Users, label: 'Manage Staff' },
@@ -471,7 +502,10 @@ export default function AdminPortal() {
           ].map(item => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => {
+                setActiveTab(item.id);
+                setIsSidebarOpen(false);
+              }}
               className={`w-full flex items-center gap-3 p-4 rounded-2xl transition-all duration-300 ${
                 activeTab === item.id ? 'bg-primary text-white shadow-xl shadow-primary/20 scale-105' : 'text-foreground/40 hover:bg-white/5'
               }`}
@@ -483,8 +517,16 @@ export default function AdminPortal() {
         </nav>
       </aside>
 
+      {/* Overlay for mobile */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[65] lg:hidden" 
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Admin Content Area */}
-      <main className="flex-1 p-10 overflow-y-auto">
+      <main className="flex-1 p-6 md:p-10 overflow-y-auto pt-28 lg:pt-10">
         {activeTab === 'cms' && (
           <div className="space-y-8 animate-in fade-in duration-500">
             <header className="flex justify-between items-end">
@@ -1130,7 +1172,7 @@ export default function AdminPortal() {
                            <td className="p-6">
                               <div className="flex gap-2 justify-center">
                                  <button onClick={() => handleUpdateRole(user.id, 'user')} className="text-[10px] font-bold px-3 py-1 bg-muted rounded-lg hover:bg-gray-200">User</button>
-                                 <button onClick={() => handleUpdateRole(user.id, 'moderator')} className="text-[10px] font-bold px-3 py-1 bg-blue-500/10 text-blue-500 rounded-lg hover:bg-blue-500 hover:text-white">Moderator</button>
+                                 <button onClick={() => handleUpdateRole(user.id, 'expert')} className="text-[10px] font-bold px-3 py-1 bg-purple-500/10 text-purple-500 rounded-lg hover:bg-purple-500 hover:text-white">Expert</button>
                                  <button onClick={() => handleUpdateRole(user.id, 'admin')} className="text-[10px] font-bold px-3 py-1 bg-primary/10 text-primary rounded-lg hover:bg-primary hover:text-white">Admin</button>
                               </div>
                            </td>
@@ -1141,6 +1183,69 @@ export default function AdminPortal() {
              </div>
            </div>
          )}
+
+         {activeTab === 'community' && (
+            <div className="space-y-8 animate-in fade-in duration-500">
+               <header className="flex justify-between items-center">
+                 <div>
+                    <h2 className="text-3xl font-bold text-accent italic">Social Hub Management</h2>
+                    <p className="text-gray-500">Generate AI topics, manage polls, and moderate posts.</p>
+                 </div>
+                 <button 
+                  onClick={async () => {
+                     setIsGeneratingAI(true);
+                     // Simulate AI Generation
+                     await new Promise(r => setTimeout(r, 2000));
+                     const topics = [
+                        "Traditional vs Modern Dowry: Where do we stand?",
+                        "The role of elders in conflict resolution.",
+                        "Abushakir Calendar: Planning your wedding season."
+                     ];
+                     const randomTopic = topics[Math.floor(Math.random() * topics.length)];
+                     
+                     const { data: { user } } = await supabase.auth.getUser();
+                     await supabase.from('community_posts').insert({
+                        content: randomTopic,
+                        category: 'general',
+                        is_ai_generated: true,
+                        is_approved: true,
+                        author_id: user?.id
+                     });
+                     setIsGeneratingAI(false);
+                     alert("AI Topic Generated Successfully!");
+                  }}
+                  disabled={isGeneratingAI}
+                  className="btn-primary flex items-center gap-2"
+                 >
+                    <Sparkles size={18} /> {isGeneratingAI ? 'Generating...' : 'Generate AI Weekly Topic'}
+                 </button>
+               </header>
+
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 text-center">
+                     <div className="w-16 h-16 bg-blue-500/10 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <BarChart3 size={32} />
+                     </div>
+                     <h4 className="text-2xl font-black text-accent">1.2k</h4>
+                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Total Posts</p>
+                  </div>
+                  <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 text-center">
+                     <div className="w-16 h-16 bg-green-500/10 text-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <Heart size={32} />
+                     </div>
+                     <h4 className="text-2xl font-black text-accent">8.4k</h4>
+                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Total Reactions</p>
+                  </div>
+                  <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 text-center">
+                     <div className="w-16 h-16 bg-purple-500/10 text-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <CheckCircle2 size={32} />
+                     </div>
+                     <h4 className="text-2xl font-black text-accent">24</h4>
+                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Verified Experts</p>
+                  </div>
+               </div>
+            </div>
+          )}
 
          {activeTab === 'security' && (
            <div className="space-y-8 animate-in fade-in duration-500 max-w-2xl">

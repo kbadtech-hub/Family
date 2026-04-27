@@ -118,7 +118,30 @@
     "verifyToPostSub": "ውይይቶችን ማንበብ ይችላሉ፣ ነገር ግን ለመሳተፍ ማንነትዎን ማረጋገጥ አለብዎት።",
     "memberBadge": "የቤተሰብ አባል",
     "loadingFeed": "መረጃው እየተጫነ ነው...",
-    "safetyAlert": "መልእክትዎ ከቤተሰባችን እሴቶች ጋር የማይጣጣም ይዘት ይዟል። እባክዎን በትህትና ይግለጹ።"
+    "safetyAlert": "መልእክትዎ ከቤተሰባችን እሴቶች ጋር የማይጣጣም ይዘት ይዟል። እባክዎን በትህትና ይግለጹ።",
+    "categories": {
+      "all": "ሁሉንም",
+      "success_story": "የተሳካላቸው ተሞክሮዎች",
+      "lesson_learned": "ከስህተት የተማርናቸው",
+      "expert_class": "የባለሙያ ትምህርቶች"
+    },
+    "poll": {
+      "vote": "ምረጥ",
+      "voted": "መርጠሃል",
+      "total": "{count} ምርጫዎች"
+    },
+    "interactions": {
+      "reply": "መልስ",
+      "share": "አጋራ",
+      "showReplies": "{count} መልሶችን አሳይ",
+      "writeComment": "አስተያየት ይፃፉ...",
+      "expertBadge": "የተረጋገጠ ባለሙያ",
+      "linkCopied": "ሊንኩ ተገልብጧል!"
+    },
+    "media": {
+      "uploadPhoto": "ፎቶ ጨምር",
+      "uploadVideo": "ቪዲዮ ጨምር"
+    }
   },
   "About": {
     "tagline": "ለኢትዮጵያዊ ልብ",
@@ -178,6 +201,10 @@
     "personalSubtitle": "መሰረታዊ ነገሮችን እንጀምር",
     "demographics": "ስነ-ህዝባዊ",
     "career": "ሙያ",
+    "gallery": "የፎቶ ማዕከለ-ስዕላት",
+    "gallerySubtitle": "የእርስዎን የአኗኗር ዘይቤ እና ስብዕና ለማሳየት እስከ 5 ፎቶዎችን ያክሉ።",
+    "galleryUpload": "ፎቶዎችን ይጫኑ",
+    "galleryLimit": "ቢበዛ 5 ፎቶዎች",
     "reviewTitle": "መገለጫውን ይገምግሙ",
     "reviewSubtitle": "ያረጋግጡ",
     "finishTitle": "ተጠናቋል!",

@@ -73,7 +73,8 @@ function OnboardingContent() {
     conflict_resolution: '',
     family_value: '',
     spouse_requirements: '',
-    star_sign: ''
+    star_sign: '',
+    gallery_photos: [] as string[]
   });
   const [showPassword, setShowPassword] = useState(false);
   const idFileInputRef = React.useRef<HTMLInputElement>(null);
@@ -114,7 +115,7 @@ function OnboardingContent() {
     }
   }, [searchParams]);
 
-  const nextStep = () => setStep(s => Math.min(s + 1, 6));
+  const nextStep = () => setStep(s => Math.min(s + 1, 7));
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
 
   const handleFinish = async () => {
@@ -148,7 +149,7 @@ function OnboardingContent() {
       if (data.user) {
         setUserId(data.user.id);
       }
-      setStep(5);
+      setStep(5); // Move to Gallery
     } catch (error: any) {
       setErrorMsg(error.message);
       setStep(1);
@@ -477,13 +478,81 @@ function OnboardingContent() {
           </div>
         );
       case 5:
+        return (
+          <div className="space-y-8 animate-in slide-in-from-right duration-300">
+             <div className="space-y-4 text-center">
+                <h2 className="text-3xl font-black text-accent italic">{t('gallery')}</h2>
+                <p className="text-gray-500">{t('gallerySubtitle')}</p>
+             </div>
+
+             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {formData.gallery_photos.map((url, i) => (
+                  <div key={i} className="relative aspect-[3/4] rounded-2xl overflow-hidden group border border-muted shadow-lg">
+                     <img src={url} className="w-full h-full object-cover group-hover:scale-110 transition-all duration-500" alt="Gallery" />
+                     <button 
+                       onClick={() => {
+                         const next = formData.gallery_photos.filter((_, idx) => idx !== i);
+                         setFormData({ ...formData, gallery_photos: next });
+                       }}
+                       className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                     >
+                       <X size={14} />
+                     </button>
+                  </div>
+                ))}
+                {formData.gallery_photos.length < 5 && (
+                  <label className="aspect-[3/4] rounded-2xl border-2 border-dashed border-muted flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-muted/30 transition-all group">
+                     <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                        <Camera size={24} />
+                     </div>
+                     <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t('galleryUpload')}</span>
+                     <input 
+                       type="file" 
+                       multiple 
+                       className="hidden" 
+                       accept="image/*"
+                       onChange={async (e) => {
+                         const files = Array.from(e.target.files || []);
+                         if (!files.length || !userId) return;
+                         
+                         setIsSubmitting(true);
+                         const uploadedUrls = [...formData.gallery_photos];
+                         
+                         for (const file of files) {
+                           if (uploadedUrls.length >= 5) break;
+                           const fileExt = file.name.split('.').pop();
+                           const fileName = `${userId}/onboarding-${Date.now()}-${Math.random()}.${fileExt}`;
+                           
+                           const { error } = await supabase.storage.from('user_photos').upload(fileName, file);
+                           if (!error) {
+                             const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(fileName);
+                             uploadedUrls.push(publicUrl);
+                           }
+                         }
+                         
+                         // Sync with DB
+                         await supabase.from('profiles').update({ gallery_photos: uploadedUrls }).eq('id', userId);
+                         setFormData({ ...formData, gallery_photos: uploadedUrls });
+                         setIsSubmitting(false);
+                       }}
+                     />
+                  </label>
+                )}
+             </div>
+
+             <div className="text-center">
+                <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">{t('galleryLimit')} ( {formData.gallery_photos.length} / 5 )</p>
+             </div>
+          </div>
+        );
+      case 6:
         return userId ? (
           <div className="space-y-6 animate-in slide-in-from-right duration-300">
              <VerificationGate 
                userId={userId} 
                onVerified={() => {
                  setVerificationStatus('verified');
-                 setStep(6);
+                 setStep(7);
                  setTimeout(() => router.push('/dashboard'), 2000);
                }} 
              />
@@ -494,7 +563,7 @@ function OnboardingContent() {
              <p className="mt-4 font-bold text-accent italic">Preparing Verification...</p>
           </div>
         );
-      case 6:
+      case 7:
         return (
           <div className="space-y-8 text-center animate-in zoom-in duration-500">
              <div className="mx-auto w-24 h-24 bg-green-100 rounded-full flex items-center justify-center shadow-xl shadow-green-500/10">
@@ -520,12 +589,12 @@ function OnboardingContent() {
     <div className="min-h-screen bg-[var(--secondary)] bg-opacity-10 py-12 px-4 flex items-center justify-center" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       <div className="max-w-xl w-full">
         <div className="mb-8 flex justify-between items-center px-4">
-          {[1,2,3,4,5,6].map(i => (
+          {[1,2,3,4,5,6,7].map(i => (
              <React.Fragment key={i}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold transition-all ${step >= i ? 'bg-primary text-white scale-110 shadow-lg' : 'bg-white text-gray-300'}`}>
                    <span className="text-[10px]">{i}</span>
                 </div>
-                {i < 6 && <div className={`flex-1 h-1 mx-2 rounded-full ${step > i ? 'bg-primary' : 'bg-white'}`} />}
+                {i < 7 && <div className={`flex-1 h-1 mx-2 rounded-full ${step > i ? 'bg-primary' : 'bg-white'}`} />}
              </React.Fragment>
           ))}
         </div>
@@ -537,7 +606,7 @@ function OnboardingContent() {
           <div className="relative">
             {renderStep()}
 
-            {step < 5 && (
+            {step < 6 && (
               <div className={`mt-12 flex justify-between gap-4 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
                 {step > 1 && (
                   <button 
@@ -559,7 +628,7 @@ function OnboardingContent() {
                   disabled={isSubmitting}
                   className={`flex-[2] btn-primary flex items-center justify-center gap-2 ${isSubmitting ? 'opacity-50' : ''}`}
                 >
-                  {isSubmitting ? t('nav.processing') : (step === 6 ? t('nav.finish') : t('nav.continue'))} {locale === 'ar' ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+                  {isSubmitting ? t('nav.processing') : (step === 7 ? t('nav.finish') : t('nav.continue'))} {locale === 'ar' ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
                 </button>
               </div>
             )}
