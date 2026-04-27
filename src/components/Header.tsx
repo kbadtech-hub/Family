@@ -7,6 +7,12 @@ import { Menu, X, Globe, ChevronDown, Heart } from 'lucide-react';
 import { useUI } from '@/context/UIContext';
 import { supabase } from '@/lib/supabase';
 
+interface SystemSettings {
+  social_links?: Record<string, string>;
+  cms_content?: Record<string, string>;
+  contact_info?: Record<string, string>;
+}
+
 export default function Header() {
   const t = useTranslations('Nav');
   const locale = useLocale();
@@ -16,7 +22,7 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
-  const [settings, setSettings] = useState<any>(null);
+  const [settings, setSettings] = useState<SystemSettings | null>(null);
 
   useEffect(() => {
     const fetchSettings = async () => {

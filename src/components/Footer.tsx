@@ -2,13 +2,39 @@
 
 import React, { useEffect, useState } from 'react';
 import { Link } from '@/i18n/routing';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Mail, Phone, MapPin, Facebook, Instagram, Twitter, Linkedin, Youtube, Send, Globe } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
+interface SocialLinks {
+  facebook?: string;
+  instagram?: string;
+  tiktok?: string;
+  telegram?: string;
+  youtube?: string;
+  twitter?: string;
+  linkedin?: string;
+  whatsapp?: string;
+}
+
+interface CmsContent {
+  footer_description?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  website_url?: string;
+}
+
+interface SystemSettings {
+  social_links?: SocialLinks;
+  cms_content?: CmsContent;
+  contact_info?: CmsContent;
+}
+
 export default function Footer() {
   const t = useTranslations('Footer');
-  const [settings, setSettings] = useState<any>(null);
+  const locale = useLocale();
+  const [settings, setSettings] = useState<SystemSettings | null>(null);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -18,9 +44,9 @@ export default function Footer() {
     fetchSettings();
   }, []);
 
-  const socialLinks = settings?.social_links || {};
-  const cmsContent = settings?.cms_content || {};
-  const contactInfo = settings?.contact_info || cmsContent;
+  const socialLinks: SocialLinks = (settings?.social_links as SocialLinks) || {};
+  const cmsContent: CmsContent = (settings?.cms_content as CmsContent) || {};
+  const contactInfo: CmsContent = (settings?.contact_info as CmsContent) || cmsContent;
 
   return (
     <footer className="bg-accent text-white py-24 px-8 mt-auto relative overflow-hidden">
