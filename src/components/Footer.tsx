@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { Link } from '@/i18n/routing';
-import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
 import { Mail, Phone, MapPin, Facebook, Instagram, Twitter, Linkedin, Youtube, Send, Globe } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
@@ -58,13 +57,7 @@ export default function Footer() {
         <div className="space-y-8 flex-1">
           <div>
              <Link href="/" className="inline-block">
-                <Image 
-                  src="/logo.png" 
-                  alt="Beteseb" 
-                  width={140} 
-                  height={36} 
-                  className="h-9 w-auto object-contain brightness-0 invert"
-                />
+                <span className="text-2xl font-black tracking-tighter uppercase italic text-white">{locale === 'am' ? 'ቤተሰብ' : 'BETESEB'}</span>
              </Link>
              <p className="text-white/40 mt-4 text-xs font-bold uppercase tracking-widest leading-loose">
                {t('tagline')}
