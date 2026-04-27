@@ -89,8 +89,6 @@ function OnboardingContent() {
     partner_religion: '',
     partner_intent: '',
     partner_children_pref: '',
-    partner_intent: '',
-    partner_children_pref: '',
     eth_birth_day: '',
     eth_birth_month: '',
     eth_birth_year: '',
