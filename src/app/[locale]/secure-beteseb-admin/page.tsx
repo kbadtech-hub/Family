@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import Image from 'next/image';
 import { 
   BarChart3, 
   Users, 
@@ -203,6 +204,18 @@ export default function AdminPortal() {
     }
   };
 
+  interface PricingPlan {
+    [key: string]: number | undefined;
+    "1m": number;
+    "3m": number;
+    "6m": number;
+    "12m": number;
+    "class": number;
+    lifetime: number;
+    trial_days?: number;
+    discount?: number;
+  }
+
   interface CMSForm {
     logo_url: string;
     hero_title: string;
@@ -221,30 +234,10 @@ export default function AdminPortal() {
     twitter: string;
     banks_etb: BankDetail[];
     banks_usd: BankDetail[];
-    pricing_usd: {
-      [key: string]: number | undefined;
-      "1m": number;
-      "3m": number;
-      "6m": number;
-      "12m": number;
-      "class": number;
-      lifetime: number;
-      trial_days?: number;
-      discount?: number;
-    };
-    pricing_etb: {
-      [key: string]: number | undefined;
-      "1m": number;
-      "3m": number;
-      "6m": number;
-      "12m": number;
-      "class": number;
-      lifetime: number;
-      trial_days?: number;
-      discount?: number;
-    };
+    pricing_usd: PricingPlan;
+    pricing_etb: PricingPlan;
     website_url: string;
-    [key: string]: string | BankDetail[] | Record<string, number> | undefined;
+    [key: string]: string | BankDetail[] | PricingPlan | undefined;
   }
 
   // CMS State
@@ -389,8 +382,8 @@ export default function AdminPortal() {
       // Refresh posts
       const { data } = await supabase.from('site_posts').select('*').order('created_at', { ascending: false });
       if (data) setPosts(data);
-    } catch (err: any) {
-      alert('Error saving post: ' + err.message);
+    } catch (err: unknown) {
+      alert('Error saving post: ' + (err instanceof Error ? err.message : String(err)));
     } finally {
       setIsSaving(false);
     }
@@ -505,8 +498,8 @@ export default function AdminPortal() {
       // Refresh lessons
       const { data } = await supabase.from('lessons').select('*').order('created_at', { ascending: false });
       if (data) setLessons(data);
-    } catch (err: any) {
-      alert('Error saving lesson: ' + err.message);
+    } catch (err: unknown) {
+      alert('Error saving lesson: ' + (err instanceof Error ? err.message : String(err)));
     } finally {
       setIsSaving(false);
     }
@@ -543,8 +536,11 @@ export default function AdminPortal() {
     const { data: allUsers } = await supabase.from('profiles').select('id').limit(100);
     
     if (allUsers) {
+      const { data: { user } } = await supabase.auth.getUser();
+      const sender_id = user?.id || settings?.id;
+
       const messages = allUsers.map(u => ({
-        sender_id: (supabase as any).auth.user()?.id || settings?.id,
+        sender_id,
         receiver_id: u.id,
         content: `[SYSTEM ANNOUNCEMENT] ${broadcastMessage}`
       }));
@@ -620,7 +616,14 @@ export default function AdminPortal() {
 
   if (!isAuthenticated) {
      return (
-        <div className="min-h-screen bg-accent flex items-center justify-center p-6 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1518112166137-85899e9000ab?auto=format&fit=crop&q=80&w=2000")' }}>
+        <div className="min-h-screen bg-accent flex items-center justify-center p-6 relative overflow-hidden">
+           <Image 
+             src="https://images.unsplash.com/photo-1518112166137-85899e9000ab?auto=format&fit=crop&q=80&w=2000"
+             alt="Background"
+             fill
+             className="object-cover opacity-10"
+             priority
+           />
            <div className="absolute inset-0 bg-accent/90 backdrop-blur-sm" />
            <div className="w-full max-w-md relative z-10 animate-in zoom-in-95 duration-500">
               <div className="bg-white rounded-[3rem] p-12 shadow-2xl border border-white/20">
@@ -660,7 +663,7 @@ export default function AdminPortal() {
                  </form>
                  
                  <div className="mt-10 pt-8 border-t border-muted/50 flex justify-center">
-                    <img src="/logo.png" alt="Beteseb Logo" className="h-10 opacity-30 grayscale" />
+                    <Image src="/logo.png" alt="Beteseb Logo" width={100} height={40} className="h-10 w-auto opacity-30 grayscale" />
                  </div>
               </div>
            </div>
@@ -767,7 +770,7 @@ export default function AdminPortal() {
                           <label className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Global Logo</label>
                           <div className="flex items-center gap-6 p-6 bg-background rounded-3xl border border-white/5">
                              {cmsForm.logo_url ? (
-                                <img src={cmsForm.logo_url} className="h-12 object-contain" alt="Logo" />
+                                <Image src={cmsForm.logo_url} width={200} height={48} className="h-12 w-auto object-contain" alt="Logo" />
                              ) : (
                                 <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center text-foreground/20 italic text-[10px]">No Logo</div>
                              )}
@@ -1044,9 +1047,9 @@ export default function AdminPortal() {
                          onChange={(e) => setCmsForm({
                             ...cmsForm, 
                             pricing_usd: {
-      [key: string]: number | undefined; ...cmsForm.pricing_usd, trial_days: parseInt(e.target.value) },
+                                ...cmsForm.pricing_usd, trial_days: parseInt(e.target.value) },
                             pricing_etb: {
-      [key: string]: number | undefined; ...cmsForm.pricing_etb, trial_days: parseInt(e.target.value) }
+                                ...cmsForm.pricing_etb, trial_days: parseInt(e.target.value) }
                          })}
                          className="input-premium bg-background mt-2"
                        />
@@ -1059,9 +1062,9 @@ export default function AdminPortal() {
                          onChange={(e) => setCmsForm({
                             ...cmsForm, 
                             pricing_usd: {
-      [key: string]: number | undefined; ...cmsForm.pricing_usd, discount: parseInt(e.target.value) },
+                                ...cmsForm.pricing_usd, discount: parseInt(e.target.value) },
                             pricing_etb: {
-      [key: string]: number | undefined; ...cmsForm.pricing_etb, discount: parseInt(e.target.value) }
+                                ...cmsForm.pricing_etb, discount: parseInt(e.target.value) }
                          })}
                          className="input-premium bg-background mt-2 border-primary/30"
                          placeholder="0% - 90%"
@@ -1082,7 +1085,7 @@ export default function AdminPortal() {
                             onChange={(e) => setCmsForm({
                                ...cmsForm, 
                                pricing_usd: {
-      [key: string]: number | undefined; ...cmsForm.pricing_usd, [plan]: parseInt(e.target.value) }
+                                ...cmsForm.pricing_usd, [plan]: parseInt(e.target.value) }
                             })}
                             className="input-premium bg-background flex-1"
                           />
@@ -1103,7 +1106,7 @@ export default function AdminPortal() {
                             onChange={(e) => setCmsForm({
                                ...cmsForm, 
                                pricing_etb: {
-      [key: string]: number | undefined; ...cmsForm.pricing_etb, [plan]: parseInt(e.target.value) }
+                                ...cmsForm.pricing_etb, [plan]: parseInt(e.target.value) }
                             })}
                             className="input-premium bg-background flex-1"
                           />
@@ -1210,7 +1213,7 @@ export default function AdminPortal() {
                               <td className="p-6">
                                  <div className="relative group cursor-pointer" onClick={() => window.open(p.receipt_url, '_blank')}>
                                     <div className="w-16 h-12 bg-muted rounded-lg overflow-hidden border border-gray-200">
-                                       <img src={p.receipt_url} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" alt="Payment receipt" />
+                                       <Image src={p.receipt_url} fill className="object-cover opacity-60 group-hover:opacity-100 transition-opacity" alt="Payment receipt" />
                                     </div>
                                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                        <Search size={14} className="text-accent" />
@@ -1391,7 +1394,7 @@ export default function AdminPortal() {
                       <div key={post.id} className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-500 group">
                          <div className="h-48 bg-muted relative">
                             {post.image_url ? (
-                               <img src={post.image_url} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                               <Image src={post.image_url} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
                             ) : (
                                <div className="w-full h-full flex items-center justify-center text-gray-300">
                                   {post.category === 'education' ? <Film size={48} /> : <FileText size={48} />}
@@ -1784,7 +1787,7 @@ export default function AdminPortal() {
                         <div key={user.id} className="flex items-center justify-between p-4 bg-background rounded-2xl border border-white/5 group hover:border-primary/30 transition-all">
                            <div className="flex items-center gap-4">
                               <div className="w-12 h-12 rounded-xl bg-secondary border border-primary overflow-hidden">
-                                 {user.avatar_url ? <img src={user.avatar_url} className="w-full h-full object-cover" alt={user.full_name || 'User'} /> : <div className="w-full h-full flex items-center justify-center text-primary font-bold">{user.full_name?.charAt(0)}</div>}
+                                 {user.avatar_url ? <Image src={user.avatar_url} width={40} height={40} className="w-full h-full object-cover" alt={user.full_name || 'User'} /> : <div className="w-full h-full flex items-center justify-center text-primary font-bold">{user.full_name?.charAt(0)}</div>}
                               </div>
                               <div>
                                  <p className="font-bold text-sm">{user.full_name}</p>

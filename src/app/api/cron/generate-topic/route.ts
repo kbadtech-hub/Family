@@ -21,8 +21,8 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json({ success: true, message: 'AI topic generated successfully' });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Unexpected error:', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 });
   }
 }

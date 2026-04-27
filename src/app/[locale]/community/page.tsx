@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
+import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
-import { useRouter, Link } from '@/i18n/routing';
+import { useSearchParams } from 'next/navigation';
+import { Link } from '@/i18n/routing';
 import { 
   MessageCircle, 
   Heart, 
-  ShieldAlert, 
   Send,
   Image as ImageIcon,
   Video,
@@ -16,41 +17,75 @@ import {
   CheckCircle2,
   Sparkles,
   BarChart2,
-  Trash2,
-  ChevronDown,
-  X,
-  Layout
+  X
 } from 'lucide-react';
+
+interface Profile {
+  full_name: string | null;
+  avatar_url: string | null;
+  role: string;
+  is_premium?: boolean;
+  trial_ends_at?: string;
+}
+
+interface PostComment {
+  id: string;
+  post_id: string;
+  user_id: string;
+  parent_id: string | null;
+  content: string;
+  created_at: string;
+  profiles: Profile;
+}
+
+interface CommunityPost {
+  id: string;
+  author_id: string;
+  content: string;
+  category: string;
+  media_url: string | null;
+  media_type: string;
+  created_at: string;
+  is_approved: boolean;
+  is_ai_generated: boolean;
+  profiles: Profile;
+  post_likes: { count: number }[];
+  post_comments: PostComment[];
+}
+
+interface CommunityUser {
+  id: string;
+  email?: string;
+  profile: Profile;
+}
 
 export default function CommunityPage() {
   const t = useTranslations('Community');
   const locale = useLocale();
-  const router = useRouter();
   
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [newPost, setNewPost] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<CommunityUser | null>(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [postCategory, setPostCategory] = useState('general');
   const [commentingOn, setCommentingOn] = useState<string | null>(null);
   const [commentText, setCommentText] = useState('');
-  const [highlightedPost, setHighlightedPost] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const [highlightedPost, setHighlightedPost] = useState<string | null>(searchParams.get('post'));
   const [aiTopic, setAiTopic] = useState<string | null>(null);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const postId = params.get('post');
+    const postId = searchParams.get('post');
     if (postId) {
-      setHighlightedPost(postId);
       // Optional: scroll to post
       setTimeout(() => {
         document.getElementById(`post-${postId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 1000);
     }
-  }, []);
+  }, [searchParams]);
 
   const handleShare = (postId: string) => {
     const url = `${window.location.origin}${window.location.pathname}?post=${postId}`;
@@ -65,20 +100,7 @@ export default function CommunityPage() {
     { id: 'expert_class', label: t('categories.expert_class'), icon: CheckCircle2 },
   ];
 
-  useEffect(() => {
-    const initPage = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-         const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-         setCurrentUser({ ...user, profile });
-      }
-      fetchPosts();
-      fetchAiTopic();
-    };
-    initPage();
-  }, [activeCategory]);
-
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     let query = supabase
       .from('community_posts')
       .select(`
@@ -96,14 +118,14 @@ export default function CommunityPage() {
       query = query.eq('category', activeCategory);
     }
 
-    const { data, error } = await query;
+    const { data } = await query;
     if (data) {
-      setPosts(data);
+      setPosts(data as unknown as CommunityPost[]);
     }
-  };
+  }, [activeCategory]);
 
-  const fetchAiTopic = async () => {
-    const { data, error } = await supabase
+  const fetchAiTopic = useCallback(async () => {
+    const { data } = await supabase
       .from('community_posts')
       .select('content')
       .eq('is_ai_generated', true)
@@ -114,7 +136,20 @@ export default function CommunityPage() {
     if (data) {
       setAiTopic(data.content);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const initPage = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+         const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+         setCurrentUser({ ...user, profile: profile as Profile });
+      }
+      fetchPosts();
+      fetchAiTopic();
+    };
+    initPage();
+  }, [fetchPosts, fetchAiTopic]);
 
   const handleMediaSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -205,6 +240,21 @@ export default function CommunityPage() {
     }
   };
 
+  const pollRef = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    const pollOptions = [
+      { label: "Daily Video Chat", percent: 45 },
+      { label: "Trust & Transparency", percent: 82 },
+      { label: "Future Plan", percent: 34 }
+    ];
+    pollOptions.forEach((opt, i) => {
+      if (pollRef.current[i]) {
+        pollRef.current[i]!.style.width = `${opt.percent}%`;
+      }
+    });
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#F8F9FA]" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       <header className="bg-primary text-white p-6 md:px-12 flex justify-between items-center shadow-lg sticky top-0 z-50">
@@ -243,7 +293,7 @@ export default function CommunityPage() {
                      <Sparkles size={18} />
                      <span className="font-black text-xs uppercase tracking-widest">AI Topic of Day</span>
                   </div>
-                  <p className="text-sm font-bold text-accent italic">"{aiTopic || "How can traditional Abushakir logic solve modern dating burnout?"}"</p>
+                  <p className="text-sm font-bold text-accent italic">&quot;{aiTopic || "How can traditional Abushakir logic solve modern dating burnout?"}&quot;</p>
                </div>
             </div>
          </aside>
@@ -265,7 +315,7 @@ export default function CommunityPage() {
                            {mediaFile?.type.startsWith('video') ? (
                               <video src={mediaPreview} controls className="w-full h-auto" />
                            ) : (
-                              <img src={mediaPreview} className="w-full h-auto object-cover" alt="Preview" />
+                              <Image src={mediaPreview} width={800} height={450} className="w-full h-auto object-cover" alt="Preview" />
                            )}
                            <button 
                                onClick={() => { setMediaFile(null); setMediaPreview(null); }} 
@@ -285,7 +335,7 @@ export default function CommunityPage() {
                         <span className="sr-only">Upload Image</span>
                         <input type="file" accept="image/*" className="hidden" aria-label="Upload image" onChange={handleMediaSelect} />
                      </label>
-                     {['admin', 'expert', 'super_admin'].includes(currentUser?.profile?.role) && (
+                     {currentUser?.profile?.role && ['admin', 'expert', 'super_admin'].includes(currentUser.profile.role) && (
                         <label className="p-3 bg-muted rounded-xl hover:bg-primary/10 hover:text-primary transition-all cursor-pointer">
                            <Video size={20} />
                            <span className="sr-only">Upload Video</span>
@@ -326,7 +376,7 @@ export default function CommunityPage() {
                      <div className="p-8">
                         <div className="flex justify-between items-start mb-6">
                            <div className="flex gap-4 items-center">
-                              <img src={post.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop'} alt={`${post.profiles?.full_name || 'User'}'s avatar`} className="w-14 h-14 rounded-2xl object-cover shadow-lg" />
+                              <Image src={post.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop'} alt={`${post.profiles?.full_name || 'User'}'s avatar`} width={56} height={56} className="w-14 h-14 rounded-2xl object-cover shadow-lg" />
                               <div>
                                  <div className="flex items-center gap-2">
                                     <p className="font-black text-accent">{post.profiles?.full_name}</p>
@@ -352,7 +402,7 @@ export default function CommunityPage() {
                               {post.media_type === 'video' ? (
                                  <video src={post.media_url} controls className="w-full h-auto" />
                               ) : (
-                                 <img src={post.media_url} className="w-full h-auto object-cover hover:scale-105 transition-transform duration-700" alt="Post content" />
+                                 <Image src={post.media_url} width={800} height={450} className="w-full h-auto object-cover hover:scale-105 transition-transform duration-700" alt="Post content" />
                               )}
                            </div>
                         )}
@@ -400,9 +450,9 @@ export default function CommunityPage() {
                                  </button>
                               </div>
                               <div className="space-y-4">
-                                 {post.post_comments?.map((comment: any) => (
+                                 {post.post_comments?.map((comment: PostComment) => (
                                     <div key={comment.id} className="flex gap-4 group/comment">
-                                       <img src={comment.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop'} alt={`${comment.profiles?.full_name || 'User'}'s avatar`} className="w-10 h-10 rounded-xl object-cover shadow-sm" />
+                                       <Image src={comment.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop'} alt={`${comment.profiles?.full_name || 'User'}'s avatar`} width={40} height={40} className="w-10 h-10 rounded-xl object-cover shadow-sm" />
                                        <div className="flex-1 bg-muted/30 p-4 rounded-[1.5rem] relative">
                                           <p className="text-xs font-black text-accent mb-1">{comment.profiles?.full_name}</p>
                                           <p className="text-sm text-gray-600 font-medium">{comment.content}</p>
@@ -426,7 +476,7 @@ export default function CommunityPage() {
                   <BarChart2 className="text-secondary" />
                   <h4 className="text-lg font-black text-accent italic">Family Poll</h4>
                </div>
-               <p className="font-bold text-accent mb-6 leading-relaxed">"What is the most important trait for a long-distance relationship?"</p>
+               <p className="font-bold text-accent mb-6 leading-relaxed">&quot;What is the most important trait for a long-distance relationship?&quot;</p>
                <div className="space-y-3">
                   {[
                      { label: "Daily Video Chat", percent: 45 },
@@ -438,7 +488,10 @@ export default function CommunityPage() {
                            <span>{opt.label}</span>
                            <span className="text-secondary">{opt.percent}%</span>
                         </div>
-                        <div className="absolute inset-y-0 left-0 bg-secondary/5 transition-all group-hover/opt:bg-secondary/10" style={{ '--width': `${opt.percent}%`, width: 'var(--width)' } as React.CSSProperties} />
+                        <div 
+                          ref={el => { pollRef.current[i] = el; }}
+                          className="absolute inset-y-0 left-0 bg-secondary/5 transition-all group-hover/opt:bg-secondary/10" 
+                        />
                      </button>
                   ))}
                </div>

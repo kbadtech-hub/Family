@@ -9,7 +9,6 @@ import { COUNTRIES } from '@/lib/countries';
 
 function LoginContent() {
   const t = useTranslations('Auth');
-  const t_nav = useTranslations('Nav');
   const locale = useLocale();
   const router = useRouter();
   
@@ -27,7 +26,7 @@ function LoginContent() {
     if (errorParam === 'unconfirmed') {
       router.push('/onboarding?step=5');
     }
-  }, [locale]);
+  }, [locale, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,12 +34,9 @@ function LoginContent() {
     setError('');
 
     try {
-      let loginParams: any = { password };
-      if (authMode === 'email') {
-        loginParams.email = email;
-      } else {
-        loginParams.phone = `${countryCode}${phone}`;
-      }
+      const loginParams = authMode === 'email' 
+        ? { email, password } 
+        : { phone: `${countryCode}${phone}`, password };
 
       const { data, error: authError } = await supabase.auth.signInWithPassword(loginParams);
 
@@ -80,8 +76,8 @@ function LoginContent() {
           router.push('/onboarding');
         }
       }
-    } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Login failed. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }
