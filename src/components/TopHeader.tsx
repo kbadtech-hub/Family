@@ -85,7 +85,7 @@ export default function TopHeader() {
           >
             {t('switchBtn')} <ChevronRight size={12} className="group-hover:translate-x-1 transition-transform" />
           </button>
-          <button onClick={handleDismiss} className="ml-1 opacity-40 hover:opacity-100">
+          <button onClick={handleDismiss} className="ml-1 opacity-40 hover:opacity-100" aria-label="Dismiss language suggestion">
             <X size={12} />
           </button>
         </div>
@@ -93,8 +93,8 @@ export default function TopHeader() {
 
       {/* Social Links / Mini Nav */}
       <div className="flex items-center gap-6 opacity-80 hidden md:flex">
-         <a href="https://tiktok.com" target="_blank" className="hover:text-primary transition-colors text-[9px]">TIKTOK</a>
-         <a href="https://t.me" target="_blank" className="hover:text-primary transition-colors text-[9px]">TELEGRAM</a>
+         <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors text-[9px]">TIKTOK</a>
+         <a href="https://t.me" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors text-[9px]">TELEGRAM</a>
          <div className="w-px h-3 bg-white/10 mx-2" />
          <span className="text-primary italic tracking-tight font-black">Beteseb Official</span>
       </div>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter } from '@/i18n/routing';
+import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { supabase } from '@/lib/supabase';
@@ -20,12 +21,10 @@ import {
   Users,
   Handshake,
   BookOpen,
-  UploadCloud,
   Eye,
   EyeOff,
   Camera,
   Loader2,
-  Sparkles,
   X
 } from 'lucide-react';
 import VerificationGate from '@/components/dashboard/VerificationGate';
@@ -47,7 +46,7 @@ import {
   PARTNER_CHILDREN_PREF_OPTIONS
 } from '@/lib/constants';
 import { COUNTRIES } from '@/lib/countries';
-import { Mail, Phone, Globe } from 'lucide-react';
+import { Mail, Phone } from 'lucide-react';
 import ethiopianDate from 'ethiopian-date';
 
 function OnboardingContent() {
@@ -58,7 +57,6 @@ function OnboardingContent() {
   const [step, setStep] = useState(1);
   const [userType, setUserType] = useState<'Local' | 'Diaspora' | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [verificationStatus, setVerificationStatus] = useState<'none' | 'pending' | 'verified' | 'rejected'>('none');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [authMode, setAuthMode] = useState<'email' | 'phone'>('email');
@@ -95,11 +93,11 @@ function OnboardingContent() {
     otp: ''
   });
   const [showPassword, setShowPassword] = useState(false);
-  const idFileInputRef = React.useRef<HTMLInputElement>(null);
+
 
   const searchParams = useSearchParams();
 
-  const updateField = (field: string, value: any) => {
+  const updateField = React.useCallback((field: string, value: string | number | string[]) => {
     setFormData(prev => {
       const next = { ...prev, [field]: value };
       
@@ -127,7 +125,7 @@ function OnboardingContent() {
       }
       return next;
     });
-  }
+  }, [locale]);
 
   useEffect(() => {
     const pref = searchParams.get('pref_location') as 'Local' | 'Diaspora' | null;
@@ -152,7 +150,7 @@ function OnboardingContent() {
     if (emailParam) {
       updateField('email', emailParam);
     }
-  }, [searchParams]);
+  }, [searchParams, updateField]);
 
   const validateStep = (currentStep: number) => {
     setErrorMsg('');
@@ -217,7 +215,15 @@ function OnboardingContent() {
     try {
       const currency = userType === 'Diaspora' ? 'USD' : 'ETB';
 
-      const signUpOptions: any = {
+      const signUpOptions: {
+        email?: string;
+        phone?: string;
+        password: string;
+        options: {
+          emailRedirectTo: string;
+          data: Record<string, unknown>;
+        }
+      } = {
         password: formData.password,
         options: {
           emailRedirectTo: `${window.location.origin}/auth/confirm`,
@@ -236,7 +242,11 @@ function OnboardingContent() {
         signUpOptions.phone = `${formData.country_code}${formData.phone}`;
       }
 
-      const { data, error: authError } = await supabase.auth.signUp(signUpOptions);
+      const { data, error: authError } = await supabase.auth.signUp(
+        authMode === 'email' 
+          ? { email: formData.email, password: formData.password, options: signUpOptions.options }
+          : { phone: `${formData.country_code}${formData.phone}`, password: formData.password, options: signUpOptions.options }
+      );
 
       if (authError) throw authError;
 
@@ -259,8 +269,8 @@ function OnboardingContent() {
       });
       if (error) throw error;
       setErrorMsg(locale === 'am' ? 'ኮዱ እንደገና ተልኳል' : 'Code resent successfully');
-    } catch (error: any) {
-      setErrorMsg(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) setErrorMsg(error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -279,8 +289,8 @@ function OnboardingContent() {
       if (error) throw error;
       
       setStep(7); // Move to Gallery
-    } catch (error: any) {
-      setErrorMsg(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) setErrorMsg(error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -393,6 +403,7 @@ function OnboardingContent() {
                          value={formData.eth_birth_month}
                          onChange={(e) => updateField('eth_birth_month', e.target.value)}
                          className="p-3 bg-muted rounded-xl"
+                         aria-label="Month"
                        >
                          <option value="">Month</option>
                          {['Meskerem', 'Tikemt', 'Hidar', 'Tahsas', 'Tir', 'Yekatit', 'Megabit', 'Miazia', 'Genbot', 'Sene', 'Hamle', 'Nehase', 'Pagume'].map((m, i) => (
@@ -438,7 +449,7 @@ function OnboardingContent() {
                   <ShieldCheck className="text-primary" />
                   <div>
                     <p className="text-[10px] text-primary font-black uppercase tracking-wider">{t('fields.abushakirBadge')}</p>
-                    <p className="text-accent font-bold">{(StarSignLabels as any)[formData.star_sign]}</p>
+                    <p className="text-accent font-bold">{(StarSignLabels as Record<string, string>)[formData.star_sign]}</p>
                   </div>
                 </div>
               )}
@@ -604,7 +615,7 @@ function OnboardingContent() {
                           const nextTags = isSelected 
                             ? currentTags.filter(t => t !== tag)
                             : [...currentTags, tag];
-                          updateField('spouse_requirements', nextTags as any);
+                          updateField('spouse_requirements', nextTags);
                         }}
                         className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
                           isSelected 
@@ -675,6 +686,7 @@ function OnboardingContent() {
                     value={formData.partner_age_min}
                     onChange={(e) => updateField('partner_age_min', parseInt(e.target.value))}
                     className="w-20 p-3 bg-muted rounded-xl text-center font-bold"
+                    aria-label="Minimum Age"
                   />
                   <span className="text-gray-300">to</span>
                   <input 
@@ -682,6 +694,7 @@ function OnboardingContent() {
                     value={formData.partner_age_max}
                     onChange={(e) => updateField('partner_age_max', parseInt(e.target.value))}
                     className="w-20 p-3 bg-muted rounded-xl text-center font-bold"
+                    aria-label="Maximum Age"
                   />
                 </div>
               </div>
@@ -744,7 +757,7 @@ function OnboardingContent() {
                   </div>
                   <div className={`flex justify-between border-b border-muted/50 pb-3 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
                      <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">{t('fields.starSign')}</span>
-                     <span className="font-bold text-primary">{(StarSignLabels as any)[formData.star_sign] || t('fields.unknown')}</span>
+                     <span className="font-bold text-primary">{(StarSignLabels as Record<string, string>)[formData.star_sign] || t('fields.unknown')}</span>
                   </div>
                   <div className={`flex justify-between border-b border-muted/50 pb-3 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
                      <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">{userType === 'Local' ? t('fields.location') : t('fields.country')}</span>
@@ -819,7 +832,7 @@ function OnboardingContent() {
              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {formData.gallery_photos.map((url, i) => (
                   <div key={i} className="relative aspect-[3/4] rounded-2xl overflow-hidden group border border-muted shadow-lg">
-                     <img src={url} className="w-full h-full object-cover group-hover:scale-110 transition-all duration-500" alt="Gallery" />
+                     <Image src={url} fill className="object-cover group-hover:scale-110 transition-all duration-500" alt="Gallery" />
                      <button 
                        onClick={() => {
                          const next = formData.gallery_photos.filter((_, idx) => idx !== i);
@@ -883,8 +896,8 @@ function OnboardingContent() {
              <VerificationGate 
                userId={userId} 
                onVerified={() => {
-                 setVerificationStatus('verified');
-                 setStep(8);
+
+                 setStep(9);
                  setTimeout(() => router.push('/dashboard'), 2000);
                }} 
              />
@@ -895,7 +908,7 @@ function OnboardingContent() {
              <p className="mt-4 font-bold text-accent italic">Preparing Verification...</p>
           </div>
         );
-      case 8:
+      case 9:
         return (
           <div className="space-y-8 text-center animate-in zoom-in duration-500">
              <div className="mx-auto w-24 h-24 bg-green-100 rounded-full flex items-center justify-center shadow-xl shadow-green-500/10">
