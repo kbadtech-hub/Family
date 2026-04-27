@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
@@ -59,7 +59,7 @@ interface CommunityUser {
   profile: Profile;
 }
 
-export default function CommunityPage() {
+function CommunityContent() {
   const t = useTranslations('Community');
   const locale = useLocale();
   
@@ -508,5 +508,13 @@ export default function CommunityPage() {
          </aside>
       </div>
     </div>
+   );
+}
+
+export default function CommunityPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center font-bold text-primary animate-pulse">Loading Beteseb Community...</div>}>
+      <CommunityContent />
+    </Suspense>
   );
 }
