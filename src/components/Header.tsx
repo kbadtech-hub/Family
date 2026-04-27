@@ -46,8 +46,8 @@ export default function Header() {
     <header className={`sticky top-0 left-0 w-full z-[100] transition-all duration-300 ${isScrolled ? 'bg-white/90 backdrop-blur-md shadow-sm py-5 border-b border-border' : 'bg-[#FDFBF9]/50 backdrop-blur-sm py-8'}`}>
       <div className="max-w-7xl mx-auto px-6 flex justify-between items-center text-foreground">
         
-        <Link href="/" className="group decoration-transparent">
-          <span className="text-2xl font-black tracking-tighter uppercase italic text-accent">{locale === 'am' ? 'ቤተሰብ' : 'BETESEB'}</span>
+        <Link href="/" className="flex items-center gap-3 group decoration-transparent">
+          <img src="/logo.png" alt="Beteseb Logo" className="h-12 w-auto object-contain group-hover:scale-105 transition-transform duration-500" />
         </Link>
 
         {/* Desktop Nav */}

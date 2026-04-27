@@ -167,8 +167,10 @@ export default function Home() {
           </div>
         </div>
       )}
-      <div className="mt-12 text-center flex flex-col items-center gap-4 py-12 border-t border-muted/20">
-        <span className="text-xl font-black tracking-tighter uppercase italic text-accent/20">{locale === 'am' ? 'ቤተሰብ' : 'BETESEB'}</span>
+      <div className="mt-12 text-center flex flex-col items-center gap-4 py-12">
+        <Link href="/" className="group">
+          <img src="/logo.png" alt="Beteseb Logo" className="h-16 w-auto object-contain transition-transform duration-500 group-hover:scale-105" />
+        </Link>
       </div>
     </div>
   );

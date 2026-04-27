@@ -243,7 +243,7 @@
       "abushakirBadge": "አቡሻህር",
       "country": "ሀገር",
       "countryPlaceholder": "ሀገር ይምረጡ",
-      "hasChildren": "ልጅ አለዎት?",
+      "hasChildren": "የልጅ ሁኔታ",
       "partnerPrefs": "የአጋር ምርጫ",
       "partnerAge": "የእድሜ ክልል",
       "partnerCountry": "የአጋር ሀገር",
@@ -363,6 +363,34 @@
       "Indirect / Subtle": "በተዘዋዋሪ",
       "Silent Treatment": "ዝምታ",
       "Mediation Required": "ሽምግልና"
+    },
+    "Months": {
+      "Meskerem": "መስከረም",
+      "Tikemt": "ጥቅምት",
+      "Hidar": "ህዳር",
+      "Tahsas": "ታህሳስ",
+      "Tir": "ጥር",
+      "Yekatit": "የካቲት",
+      "Megabit": "መጋቢት",
+      "Miazia": "ሚያዝያ",
+      "Genbot": "ግንቦት",
+      "Sene": "ሰኔ",
+      "Hamle": "ሐምሌ",
+      "Nehase": "ነሐሴ",
+      "Pagume": "ጳጉሜ"
+    },
+    "Marital": {
+      "Never Married": "ከዚህ በፊት ያላገባ/ች",
+      "Divorced": "ከዚህ በፊት አግብቶ/ታ የፈታ/ች"
+    },
+    "Children": {
+      "Has Children": "ልጅ ያለኝ",
+      "No Children": "ልጅ የሌለኝ"
+    },
+    "PartnerChildren": {
+      "Has Children": "ልጅ ያለው/ላት",
+      "No Children": "ልጅ የሌለው/ላት",
+      "Does Not Matter": "ልጅ ቢኖረውም ባይኖረውም ችግር የለውም"
     },
     "Locations": {
       "Addis Ababa": "አዲስ አበባ",

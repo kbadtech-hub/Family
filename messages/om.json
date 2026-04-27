@@ -236,7 +236,13 @@
       "unknown": "Unknown",
       "abushakirBadge": "Injiinii Abushaakir",
       "country": "Biyya",
-      "countryPlaceholder": "Biyya Filadhu"
+      "countryPlaceholder": "Biyya Filadhu",
+      "hasChildren": "Haala Ijoollee",
+      "partnerPrefs": "Filannoo Hiriyyaa",
+      "partnerAge": "Umrii Hiriyyaa",
+      "partnerCountry": "Biyya Hiriyyaa",
+      "partnerReligion": "Amantii Hiriyyaa",
+      "partnerIntent": "Haala Gaa’elaa"
     },
     "loading": "Beteseb | Loading Family Portal...",
     "footerTagline": "Bringing Ethiopian Families Together Globally"
@@ -335,11 +341,33 @@
       "Male": "Dhiira",
       "Female": "Dhalaa"
     },
+    "Months": {
+      "Meskerem": "Fuulbaana",
+      "Tikemt": "Onkololeessa",
+      "Hidar": "Sadaasa",
+      "Tahsas": "Muddee",
+      "Tir": "Amajjii",
+      "Yekatit": "Gurraandhala",
+      "Megabit": "Bitootessa",
+      "Miazia": "Eebila",
+      "Genbot": "Caamsaa",
+      "Sene": "Waxabajjii",
+      "Hamle": "Adoolessa",
+      "Nehase": "Hagayya",
+      "Pagume": "Qaammee"
+    },
     "Marital": {
-      "Single": "Hin fuune/hin heerumne",
-      "Divorced": "Kan hiike/hiikte",
-      "Widow": "Haadha manaa kan irraa du’e",
-      "Widower": "Abbaa manaa kan irraa du’e"
+      "Never Married": "Kanaan dura kan hin fuune/hin heerumne",
+      "Divorced": "Kanaan dura kan hiike/hiikte"
+    },
+    "Children": {
+      "Has Children": "Ijoollee nan qaba",
+      "No Children": "Ijoollee hin qabu"
+    },
+    "PartnerChildren": {
+      "Has Children": "Ijoollee kan qabu/qabdu",
+      "No Children": "Ijoollee kan hin qabne",
+      "Does Not Matter": "Ijoollee qabaatus qabaachuu baatus rakkoo hin qabu"
     },
     "Finance": {
       "Spender": "Baasii baasaa",

@@ -30,8 +30,8 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-16 relative z-10">
         <div className="space-y-8 flex-1">
           <div>
-             <Link href="/" className="inline-block">
-                <span className="text-2xl font-black tracking-tighter uppercase italic text-white">{locale === 'am' ? 'ቤተሰብ' : 'BETESEB'}</span>
+             <Link href="/">
+                <img src="/logo.png" alt="Beteseb Logo" className="h-20 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity duration-500" />
              </Link>
              <p className="text-white/40 mt-4 text-xs font-bold uppercase tracking-widest leading-loose">
                {t('tagline')}

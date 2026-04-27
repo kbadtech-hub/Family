@@ -19,16 +19,25 @@ export const EDUCATION_LEVELS = [
   'Other'
 ];
 
-export const MARITAL_STATUSES = [
-  'Single',
-  'Divorced',
-  'Widow',
-  'Widower'
+export const MARITAL_STATUS_MALE = [
+  'Never Married',
+  'Divorced'
+];
+
+export const MARITAL_STATUS_FEMALE = [
+  'Never Married',
+  'Divorced'
 ];
 
 export const HAVE_CHILDREN_OPTIONS = [
-  'Yes',
-  'No'
+  'Has Children',
+  'No Children'
+];
+
+export const PARTNER_CHILDREN_PREF_OPTIONS = [
+  'Has Children',
+  'No Children',
+  'Does Not Matter'
 ];
 
 export const LIVING_ARRANGEMENTS = [

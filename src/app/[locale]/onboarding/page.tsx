@@ -41,10 +41,14 @@ import {
   JOB_CATEGORIES,
   SPOUSE_REQUIREMENTS_TAGS,
   HAVE_CHILDREN_OPTIONS,
-  PARTNER_INTENT_OPTIONS
+  PARTNER_INTENT_OPTIONS,
+  MARITAL_STATUS_MALE,
+  MARITAL_STATUS_FEMALE,
+  PARTNER_CHILDREN_PREF_OPTIONS
 } from '@/lib/constants';
 import { COUNTRIES } from '@/lib/countries';
 import { Mail, Phone, Globe } from 'lucide-react';
+import { EthDateTime } from 'ethiopian-date';
 
 function OnboardingContent() {
   const t = useTranslations('Onboarding');
@@ -84,6 +88,10 @@ function OnboardingContent() {
     partner_age_max: 50,
     partner_religion: '',
     partner_intent: '',
+    partner_children_pref: '',
+    eth_birth_day: '',
+    eth_birth_month: '',
+    eth_birth_year: '',
     otp: ''
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -94,6 +102,24 @@ function OnboardingContent() {
   const updateField = (field: string, value: any) => {
     setFormData(prev => {
       const next = { ...prev, [field]: value };
+      
+      // Handle Ethiopian Date Conversion
+      if (field.startsWith('eth_') && (locale === 'am' || locale === 'om')) {
+        if (next.eth_birth_day && next.eth_birth_month && next.eth_birth_year) {
+          try {
+            const ethDate = new EthDateTime(
+              parseInt(next.eth_birth_year),
+              parseInt(next.eth_birth_month),
+              parseInt(next.eth_birth_day)
+            );
+            const greg = ethDate.toGregorian();
+            next.birth_date = `${greg.year}-${String(greg.month).padStart(2, '0')}-${String(greg.day).padStart(2, '0')}`;
+          } catch (e) {
+            console.error("Invalid Ethiopian date", e);
+          }
+        }
+      }
+
       if (field === 'birth_date' || field === 'birth_time') {
         if (next.birth_date) {
             const date = new Date(next.birth_date);
@@ -195,6 +221,7 @@ function OnboardingContent() {
       const signUpOptions: any = {
         password: formData.password,
         options: {
+          emailRedirectTo: `${window.location.origin}/auth/confirm`,
           data: { 
             ...formData,
             currency_locked: currency,
@@ -218,9 +245,23 @@ function OnboardingContent() {
         setUserId(data.user.id);
       }
       setStep(5); // Move to OTP Verification
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    setIsSubmitting(true);
+    setErrorMsg('');
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: formData.email,
+      });
+      if (error) throw error;
+      setErrorMsg(locale === 'am' ? 'ኮዱ እንደገና ተልኳል' : 'Code resent successfully');
     } catch (error: any) {
       setErrorMsg(error.message);
-      // setStep(1); // Don't reset to step 1, stay on review
     } finally {
       setIsSubmitting(false);
     }
@@ -336,18 +377,50 @@ function OnboardingContent() {
                 />
               </label>
 
-              <div className="grid grid-cols-2 gap-4">
-                <label className="block">
-                  <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                    <Calendar size={16} /> {t('fields.birthDate')}
-                  </span>
-                  <input 
-                    type="date" 
-                    value={formData.birth_date}
-                    onChange={(e) => updateField('birth_date', e.target.value)}
-                    className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted" 
-                  />
-                </label>
+              <div className="grid grid-cols-1 gap-4">
+                {(locale === 'am' || locale === 'om') ? (
+                  <div className="space-y-2">
+                    <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      <Calendar size={16} /> {t('fields.birthDate')} (Ethiopian)
+                    </span>
+                    <div className="grid grid-cols-3 gap-2">
+                       <input 
+                         type="number" placeholder="Day" min={1} max={30}
+                         value={formData.eth_birth_day}
+                         onChange={(e) => updateField('eth_birth_day', e.target.value)}
+                         className="p-3 bg-muted rounded-xl text-center"
+                       />
+                       <select 
+                         value={formData.eth_birth_month}
+                         onChange={(e) => updateField('eth_birth_month', e.target.value)}
+                         className="p-3 bg-muted rounded-xl"
+                       >
+                         <option value="">Month</option>
+                         {['Meskerem', 'Tikemt', 'Hidar', 'Tahsas', 'Tir', 'Yekatit', 'Megabit', 'Miazia', 'Genbot', 'Sene', 'Hamle', 'Nehase', 'Pagume'].map((m, i) => (
+                           <option key={m} value={i + 1}>{t_const(`Months.${m}`)}</option>
+                         ))}
+                       </select>
+                       <input 
+                         type="number" placeholder="Year" min={1900} max={2017}
+                         value={formData.eth_birth_year}
+                         onChange={(e) => updateField('eth_birth_year', e.target.value)}
+                         className="p-3 bg-muted rounded-xl text-center"
+                       />
+                    </div>
+                  </div>
+                ) : (
+                  <label className="block">
+                    <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      <Calendar size={16} /> {t('fields.birthDate')}
+                    </span>
+                    <input 
+                      type="date" 
+                      value={formData.birth_date}
+                      onChange={(e) => updateField('birth_date', e.target.value)}
+                      className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted" 
+                    />
+                  </label>
+                )}
                 <label className="block">
                   <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
                     <Clock size={16} /> {t('fields.birthTime')}
@@ -435,7 +508,9 @@ function OnboardingContent() {
                   className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
                 >
                   <option value="">{t('fields.maritalPlaceholder')}</option>
-                  {MARITAL_STATUSES.map(s => <option key={s} value={s}>{t_const(`Marital.${s}`)}</option>)}
+                  {(formData.gender === 'Female' ? MARITAL_STATUS_FEMALE : MARITAL_STATUS_MALE).map(s => (
+                    <option key={s} value={s}>{t_const(`Marital.${s}`)}</option>
+                  ))}
                 </select>
               </label>
 
@@ -558,42 +633,53 @@ function OnboardingContent() {
               <div className="space-y-2">
                 <span className="text-sm font-medium text-gray-700 block">{t('fields.partnerCountry')}</span>
                 <div className="flex flex-wrap gap-2">
-                   {['Ethiopia', 'Germany', 'United States', 'Canada', 'United Kingdom'].map(country => {
-                     const isSelected = formData.partner_countries.includes(country);
+                   {[{ name: 'Anywhere', nameAm: 'ከየትኛውም ሀገር' }, ...COUNTRIES.sort((a, b) => {
+                     const nameA = locale === 'am' ? a.nameAm : a.name;
+                     const nameB = locale === 'am' ? b.nameAm : b.name;
+                     return nameA.localeCompare(nameB, locale === 'am' ? 'am' : 'en');
+                   })].map(country => {
+                     const isSelected = formData.partner_countries.includes(country.name);
                      return (
                        <button
-                         key={country}
+                         key={country.name}
                          type="button"
                          onClick={() => {
-                           const next = isSelected 
-                             ? formData.partner_countries.filter(c => c !== country)
-                             : [...formData.partner_countries, country];
+                           if (country.name === 'Anywhere') {
+                             updateField('partner_countries', ['Anywhere']);
+                             return;
+                           }
+                           let next = formData.partner_countries.filter(c => c !== 'Anywhere');
+                           if (isSelected) {
+                             next = next.filter(c => c !== country.name);
+                           } else {
+                             if (next.length >= 5) return;
+                             next = [...next, country.name];
+                           }
                            updateField('partner_countries', next);
                          }}
                          className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest border transition-all ${isSelected ? 'bg-primary text-white border-primary' : 'bg-muted text-gray-400 border-transparent'}`}
                        >
-                         {t_const(`Countries.${country}`) || country}
+                         {locale === 'am' ? country.nameAm : country.name}
                        </button>
                      );
                    })}
                 </div>
+                <p className="text-[10px] text-gray-400 italic">Max 5 countries</p>
               </div>
 
-              {/* Age Range Slider (Mocked with inputs for simplicity) */}
+              {/* Age Range Slider */}
               <div className="space-y-2">
                 <span className="text-sm font-medium text-gray-700 block">{t('fields.partnerAge')}</span>
                 <div className="flex items-center gap-4">
                   <input 
-                    type="number" 
-                    min={18} max={formData.partner_age_max}
+                    type="number" min={18} max={formData.partner_age_max}
                     value={formData.partner_age_min}
                     onChange={(e) => updateField('partner_age_min', parseInt(e.target.value))}
                     className="w-20 p-3 bg-muted rounded-xl text-center font-bold"
                   />
                   <span className="text-gray-300">to</span>
                   <input 
-                    type="number" 
-                    min={formData.partner_age_min} max={100}
+                    type="number" min={formData.partner_age_min} max={100}
                     value={formData.partner_age_max}
                     onChange={(e) => updateField('partner_age_max', parseInt(e.target.value))}
                     className="w-20 p-3 bg-muted rounded-xl text-center font-bold"
@@ -626,6 +712,20 @@ function OnboardingContent() {
                 >
                   <option value="">{t('fields.maritalPlaceholder')}</option>
                   {PARTNER_INTENT_OPTIONS.map(o => <option key={o} value={o}>{t_const(`PartnerIntent.${o}`)}</option>)}
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                   <Users size={16} /> Partner Children Preference
+                </span>
+                <select 
+                  value={formData.partner_children_pref}
+                  onChange={(e) => updateField('partner_children_pref', e.target.value)}
+                  className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted"
+                >
+                  <option value="">Select preference</option>
+                  {PARTNER_CHILDREN_PREF_OPTIONS.map(o => <option key={o} value={o}>{t_const(`PartnerChildren.${o}`)}</option>)}
                 </select>
               </label>
             </div>
@@ -696,8 +796,9 @@ function OnboardingContent() {
                  {isSubmitting ? t('nav.processing') : (locale === 'am' ? 'አረጋግጥ' : 'Verify & Continue')}
                </button>
                <button 
-                 onClick={handleFinish} // Resend logic
-                 className="w-full text-xs font-bold text-primary uppercase tracking-widest mt-4"
+                 onClick={handleResendOTP}
+                 disabled={isSubmitting}
+                 className="w-full text-xs font-bold text-primary uppercase tracking-widest mt-4 disabled:opacity-50"
                >
                  {locale === 'am' ? 'ኮዱ አልደረሰዎትም? እንደገና ላክ' : 'Didn\'t get code? Resend'}
                </button>
@@ -864,6 +965,7 @@ function OnboardingContent() {
         </div>
 
         <div className="mt-12 text-center text-accent/40 flex flex-col items-center gap-4">
+           <Heart size={24} className="fill-primary text-primary" />
            <p className="font-bold text-lg tracking-widest uppercase">{locale === 'am' ? 'ቤተሰብ' : 'Beteseb'}</p>
            <p className="text-sm">{t('footerTagline')}</p>
         </div>

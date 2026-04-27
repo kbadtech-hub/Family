@@ -364,6 +364,19 @@
       "Silent Treatment": "Silent Treatment",
       "Mediation Required": "Mediation Required"
     },
+    "Marital": {
+      "Never Married": "Never Married",
+      "Divorced": "Divorced"
+    },
+    "Children": {
+      "Has Children": "I have children",
+      "No Children": "No children"
+    },
+    "PartnerChildren": {
+      "Has Children": "Has children",
+      "No Children": "No children",
+      "Does Not Matter": "Does not matter"
+    },
     "Locations": {
       "Addis Ababa": "Addis Ababa",
       "Dire Dawa": "Dire Dawa",
