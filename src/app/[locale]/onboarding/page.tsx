@@ -89,9 +89,12 @@ function OnboardingContent() {
     partner_religion: '',
     partner_intent: '',
     partner_children_pref: '',
+    partner_intent: '',
+    partner_children_pref: '',
     eth_birth_day: '',
     eth_birth_month: '',
     eth_birth_year: '',
+    calendar_type: (locale === 'am' || locale === 'om') ? 'ethiopian' : 'gregorian',
     future_children: '',
     otp: ''
   });
@@ -159,32 +162,32 @@ function OnboardingContent() {
     setErrorMsg('');
     switch (currentStep) {
       case 1:
-        if (authMode === 'email' && !formData.email) return locale === 'am' ? 'እባክዎ ኢሜልዎን ያስገቡ' : 'Please enter your email';
-        if (authMode === 'phone' && !formData.phone) return locale === 'am' ? 'እባክዎ ስልክ ቁጥርዎን ያስገቡ' : 'Please enter your phone number';
-        if (!formData.password || formData.password.length < 6) return locale === 'am' ? 'የይለፍ ቃል ቢያንስ 6 ቁምፊ መሆን አለበት' : 'Password must be at least 6 characters';
-        if (!formData.full_name) return locale === 'am' ? 'እባክዎ ሙሉ ስምዎን ያስገቡ' : 'Please enter your full name';
-        if (!formData.birth_date) return locale === 'am' ? 'እባክዎ የልደት ቀንዎን ያስገቡ' : 'Please enter your birth date';
+        if (authMode === 'email' && !formData.email) return t('errors.emailRequired');
+        if (authMode === 'phone' && !formData.phone) return t('errors.phoneRequired');
+        if (!formData.password || formData.password.length < 6) return t('errors.passwordLength');
+        if (!formData.full_name) return t('errors.fullNameRequired');
+        if (!formData.birth_date) return t('errors.birthDateRequired');
         break;
       case 2:
-        if (!formData.gender) return locale === 'am' ? 'እባክዎ ጾታ ይምረጡ' : 'Please select gender';
-        if (!formData.location) return locale === 'am' ? 'እባክዎ ቦታ/ሀገር ይምረጡ' : 'Please select location';
-        if (!formData.religion) return locale === 'am' ? 'እባክዎ ሃይማኖት ይምረጡ' : 'Please select religion';
-        if (!formData.marital_status) return locale === 'am' ? 'እባክዎ የጋብቻ ሁኔታ ይምረጡ' : 'Please select marital status';
+        if (!formData.gender) return t('errors.genderRequired');
+        if (!formData.location) return t('errors.locationRequired');
+        if (!formData.religion) return t('errors.religionRequired');
+        if (!formData.marital_status) return t('errors.maritalRequired');
         break;
       case 3:
-        if (!formData.job) return locale === 'am' ? 'እባክዎ የሥራ መደብ ይምረጡ' : 'Please select job title';
-        if (!formData.finance_habit) return locale === 'am' ? 'እባክዎ የገንዘብ አያያዝ ይምረጡ' : 'Please select finance habit';
-        if (!formData.family_value) return locale === 'am' ? 'እባክዎ የቤተሰብ እሴት ይምረጡ' : 'Please select family value';
-        if (!formData.conflict_resolution) return locale === 'am' ? 'እባክዎ የግጭት አፈታት ይምረጡ' : 'Please select conflict resolution style';
-        if (!formData.spouse_requirements) return locale === 'am' ? 'እባክዎ የሚያገባውን ሰው መስፈርት ይግለጹ (ግዴታ)' : 'Please describe your spouse requirements';
+        if (!formData.job) return t('errors.jobRequired');
+        if (!formData.finance_habit) return t('errors.financeRequired');
+        if (!formData.family_value) return t('errors.valuesRequired');
+        if (!formData.conflict_resolution) return t('errors.conflictRequired');
+        if (!formData.spouse_requirements) return t('errors.requirementsRequired');
         break;
       case 4:
-        if (!formData.partner_countries.length) return locale === 'am' ? 'እባክዎ ቢያንስ አንድ የሀገር ምርጫ ይምረጡ' : 'Please select at least one partner country';
-        if (!formData.partner_religion) return locale === 'am' ? 'እባክዎ የአጋር ሃይማኖት ይምረጡ' : 'Please select partner religion';
-        if (!formData.partner_intent) return locale === 'am' ? 'እባክዎ የጋብቻ ሁኔታና ፍላጎት ይምረጡ' : 'Please select marital status and intent';
+        if (!formData.partner_countries.length) return t('errors.partnerCountryRequired');
+        if (!formData.partner_religion) return t('errors.partnerReligionRequired');
+        if (!formData.partner_intent) return t('errors.partnerIntentRequired');
         break;
       case 6:
-        if (!formData.otp || formData.otp.length !== 6) return locale === 'am' ? 'እባክዎ ባለ 6 ዲጂት ኮድ ያስገቡ' : 'Please enter 6-digit code';
+        if (!formData.otp || formData.otp.length !== 6) return t('errors.otpRequired');
         break;
       default:
         return null;
@@ -390,14 +393,31 @@ function OnboardingContent() {
               </label>
 
               <div className="grid grid-cols-1 gap-4">
-                {(locale === 'am' || locale === 'om') ? (
+                <div className="flex gap-2 p-1 bg-muted rounded-2xl w-fit">
+                   <button 
+                     type="button"
+                     onClick={() => updateField('calendar_type', 'gregorian')}
+                     className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${formData.calendar_type === 'gregorian' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'}`}
+                   >
+                     {t('calendar.gregorian')}
+                   </button>
+                   <button 
+                     type="button"
+                     onClick={() => updateField('calendar_type', 'ethiopian')}
+                     className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${formData.calendar_type === 'ethiopian' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'}`}
+                   >
+                     {t('calendar.ethiopian')}
+                   </button>
+                </div>
+
+                {formData.calendar_type === 'ethiopian' ? (
                   <div className="space-y-2">
                     <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                      <Calendar size={16} /> {t('fields.birthDate')} (Ethiopian)
+                      <Calendar size={16} /> {t('fields.birthDate')}
                     </span>
                     <div className="grid grid-cols-3 gap-2">
                        <input 
-                         type="number" placeholder="Day" min={1} max={30}
+                         type="number" placeholder={t('calendar.day')} min={1} max={30}
                          value={formData.eth_birth_day}
                          onChange={(e) => updateField('eth_birth_day', e.target.value)}
                          className="p-3 bg-muted rounded-xl text-center"
@@ -408,13 +428,13 @@ function OnboardingContent() {
                          className="p-3 bg-muted rounded-xl"
                          aria-label="Month"
                        >
-                         <option value="">Month</option>
+                         <option value="">{t('calendar.month')}</option>
                          {['Meskerem', 'Tikemt', 'Hidar', 'Tahsas', 'Tir', 'Yekatit', 'Megabit', 'Miazia', 'Genbot', 'Sene', 'Hamle', 'Nehase', 'Pagume'].map((m, i) => (
                            <option key={m} value={i + 1}>{t_const(`Months.${m}`)}</option>
                          ))}
                        </select>
                        <input 
-                         type="number" placeholder="Year" min={1900} max={2017}
+                         type="number" placeholder={t('calendar.year')} min={1900} max={2017}
                          value={formData.eth_birth_year}
                          onChange={(e) => updateField('eth_birth_year', e.target.value)}
                          className="p-3 bg-muted rounded-xl text-center"
@@ -662,11 +682,11 @@ function OnboardingContent() {
               <div className="space-y-2">
                 <span className="text-sm font-medium text-gray-700 block">{t('fields.partnerCountry')}</span>
                 <div className="flex flex-wrap gap-2">
-                   {[{ name: 'Anywhere', nameAm: 'ከየትኛውም ሀገር' }, ...COUNTRIES.sort((a, b) => {
-                     const nameA = locale === 'am' ? a.nameAm : a.name;
-                     const nameB = locale === 'am' ? b.nameAm : b.name;
-                     return nameA.localeCompare(nameB, locale === 'am' ? 'am' : 'en');
-                   })].map(country => {
+                   {[{ name: 'Anywhere' }, ...COUNTRIES].sort((a, b) => {
+                     const nameA = a.name === 'Anywhere' ? (locale === 'am' ? 'ከየትኛውም ሀገር' : locale === 'ar' ? 'من أي مكان' : locale === 'om' ? 'Eessaayyuu' : 'Anywhere') : t_const(`Countries.${a.name}`);
+                     const nameB = b.name === 'Anywhere' ? (locale === 'am' ? 'ከየትኛውም ሀገር' : locale === 'ar' ? 'من أي مكان' : locale === 'om' ? 'Eessaayyuu' : 'Anywhere') : t_const(`Countries.${b.name}`);
+                     return nameA.localeCompare(nameB, locale);
+                   }).map(country => {
                      const isSelected = formData.partner_countries.includes(country.name);
                      return (
                        <button
@@ -688,7 +708,7 @@ function OnboardingContent() {
                          }}
                          className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest border transition-all ${isSelected ? 'bg-primary text-white border-primary' : 'bg-muted text-gray-400 border-transparent'}`}
                        >
-                         {country.name === 'Anywhere' ? (locale === 'am' ? 'ከየትኛውም ሀገር' : 'Anywhere') : t_const(`Countries.${country.name}`)}
+                         {country.name === 'Anywhere' ? (locale === 'am' ? 'ከየትኛውም ሀገር' : locale === 'ar' ? 'من أي مكان' : locale === 'om' ? 'Eessaayyuu' : 'Anywhere') : t_const(`Countries.${country.name}`)}
                        </button>
                      );
                    })}

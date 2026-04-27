@@ -38,6 +38,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.font-arabic {
+  font-family: var(--font-noto-arabic), sans-serif;
+}
+
 /* Minimalism: Lighter Weights for a Professional Feel */
 h1 {
   @apply font-semibold tracking-tighter text-4xl md:text-5xl lg:text-6xl leading-tight;

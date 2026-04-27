@@ -272,7 +272,34 @@
       "processing": "Processing..."
     },
     "loading": "Beteseb | Loading Family Portal...",
-    "footerTagline": "Bringing Ethiopian Families Together Globally"
+    "footerTagline": "Bringing Ethiopian Families Together Globally",
+    "calendar": {
+      "ethiopian": "Ethiopian Calendar",
+      "gregorian": "Gregorian Calendar",
+      "day": "Day",
+      "month": "Month",
+      "year": "Year"
+    },
+    "errors": {
+      "emailRequired": "Please enter your email",
+      "phoneRequired": "Please enter your phone number",
+      "passwordLength": "Password must be at least 6 characters",
+      "fullNameRequired": "Please enter your full name",
+      "birthDateRequired": "Please enter your birth date",
+      "genderRequired": "Please select gender",
+      "locationRequired": "Please select location",
+      "religionRequired": "Please select religion",
+      "maritalRequired": "Please select marital status",
+      "jobRequired": "Please select job title",
+      "financeRequired": "Please select finance habit",
+      "valuesRequired": "Please select family value",
+      "conflictRequired": "Please select conflict resolution style",
+      "requirementsRequired": "Please describe your spouse requirements",
+      "partnerCountryRequired": "Please select at least one partner country",
+      "partnerReligionRequired": "Please select partner religion",
+      "partnerIntentRequired": "Please select marital status and intent",
+      "otpRequired": "Please enter 6-digit code"
+    }
   },
   "Classes": {
     "hero": {

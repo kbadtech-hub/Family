@@ -239,7 +239,34 @@
       "processing": "معالجة..."
     },
     "loading": "جاري التحميل...",
-    "footerTagline": "جمع العائلات الإثيوبية معًا"
+    "footerTagline": "جمع العائلات الإثيوبية معًا",
+    "calendar": {
+      "ethiopian": "التقويم الإثيوبي",
+      "gregorian": "التقويم الغريغوري",
+      "day": "يوم",
+      "month": "شهر",
+      "year": "سنة"
+    },
+    "errors": {
+      "emailRequired": "يرجى إدخال بريدك الإلكتروني",
+      "phoneRequired": "يرجى إدخال رقم هاتفك",
+      "passwordLength": "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
+      "fullNameRequired": "يرجى إدخال اسمك الكامل",
+      "birthDateRequired": "يرجى إدخال تاريخ ميلادك",
+      "genderRequired": "يرجى اختيار الجنس",
+      "locationRequired": "يرجى اختيار الموقع",
+      "religionRequired": "يرجى اختيار الدين",
+      "maritalRequired": "يرجى اختيار الحالة الاجتماعية",
+      "jobRequired": "يرجى اختيار المسمى الوظيفي",
+      "financeRequired": "يرجى اختيار العادة المالية",
+      "valuesRequired": "يرجى اختيار القيم العائلية",
+      "conflictRequired": "يرجى اختيار أسلوب حل النزاعات",
+      "requirementsRequired": "يرجى وصف متطلبات الزوج",
+      "partnerCountryRequired": "يرجى اختيار بلد شريك واحد على الأقل",
+      "partnerReligionRequired": "يرجى اختيار دين الشريك",
+      "partnerIntentRequired": "يرجى اختيار الحالة الاجتماعية والقصد",
+      "otpRequired": "يرجى إدخال كود من 6 أرقام"
+    }
   },
   "Classes": {
     "hero": {
@@ -308,10 +335,24 @@
       "Female": "أنثى"
     },
     "Marital": {
-      "Single": "أعزب",
+      "Never Married": "لم يسبق له الزواج",
       "Divorced": "مطلق",
-      "Widow": "أرملة",
-      "Widower": "أرمل"
+      "Does Not Matter": "لا يهم"
+    },
+    "Children": {
+      "Yes": "لدي أطفال",
+      "No": "ليس لدي أطفال",
+      "Does Not Matter": "لا يهم"
+    },
+    "FutureChildren": {
+      "Wants Children": "يريد أطفالاً",
+      "Does Not Want Children": "لا يريد أطفالاً",
+      "Does Not Matter": "لا يهم"
+    },
+    "PartnerChildren": {
+      "Yes": "لديه أطفال",
+      "No": "ليس لديه أطفال",
+      "Does Not Matter": "لا يهم"
     },
     "Finance": {
       "Spender": "منفق",
@@ -342,6 +383,71 @@
       "Jimma": "جيما",
       "Jijiga": "جيجيجا",
       "Other (International)": "دولي"
+    },
+    "Jobs": {
+      "Technology & IT": "التكنولوجيا وتكنولوجيا المعلومات",
+      "Healthcare & Medical": "الرعاية الصحية والطبية",
+      "Education & Research": "التعليم والبحث",
+      "Business & Finance": "الأعمال والتمويل",
+      "Arts & Entertainment": "الفنون والترفيه",
+      "Engineering & Construction": "الهندسة والبناء",
+      "Legal & Law Enforcement": "القانون وإنفاذ القانون",
+      "Service & Hospitality": "الخدمة والضيافة",
+      "Government & Public Service": "الحكومة والخدمة العامة",
+      "Agriculture & Nature": "الزراعة والطبيعة",
+      "Other": "أخرى"
+    },
+    "Requirements": {
+      "Religious Compatibility": "التوافق الديني",
+      "Family Oriented": "موجه نحو الأسرة",
+      "Career Focused": "مركّز على الحياة المهنية",
+      "Traditional Values": "القيم التقليدية",
+      "Modern Outlook": "نظرة حديثة",
+      "Healthy Lifestyle": "نمط حياة صحي",
+      "Wants Children": "يريد أطفالاً",
+      "Travel Lover": "محب للسفر",
+      "Education Priority": "أولوية التعليم",
+      "Financial Stability": "الاستقرار المالي"
+    },
+    "Countries": {
+      "Ethiopia": "إثيوبيا",
+      "Germany": "ألمانيا",
+      "United States": "الولايات المتحدة",
+      "Canada": "كندا",
+      "United Kingdom": "المملكة المتحدة",
+      "United Arab Emirates": "الإمارات",
+      "Saudi Arabia": "السعودية",
+      "Israel": "إسرائيل",
+      "Norway": "النرويج",
+      "Sweden": "السويد",
+      "Kenya": "كينيا",
+      "South Africa": "جنوب أفريقيا",
+      "Australia": "أستراليا",
+      "China": "الصين",
+      "Japan": "اليابان",
+      "France": "فرنسا",
+      "Italy": "إيطاليا",
+      "Russia": "روسيا",
+      "Turkey": "تركيا",
+      "Egypt": "مصر",
+      "Sudan": "السودان",
+      "South Sudan": "جنوب السودان",
+      "Eritrea": "إريتريا",
+      "Djibouti": "جيبوتي",
+      "Somalia": "الصومال",
+      "Uganda": "أوغندا",
+      "Tanzania": "تنزانيا",
+      "Switzerland": "سويسرا",
+      "Netherlands": "هولندا",
+      "Belgium": "بلجيكا",
+      "Qatar": "قطر",
+      "Kuwait": "الكويت",
+      "Bahrain": "البحرين",
+      "Oman": "عمان",
+      "Lebanon": "لبنان",
+      "Jordan": "الأردن",
+      "India": "الهند",
+      "Pakistan": "باكستان"
     }
   }
 }

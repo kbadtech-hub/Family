@@ -272,7 +272,34 @@
       "processing": "እየተከናወነ ነው..."
     },
     "loading": "እየተጫነ ነው...",
-    "footerTagline": "የኢትዮጵያ ቤተሰቦችን በመላው ዓለም ማገናኘት"
+    "footerTagline": "የኢትዮጵያ ቤተሰቦችን በመላው ዓለም ማገናኘት",
+    "calendar": {
+      "ethiopian": "የኢትዮጵያ ካላንደር",
+      "gregorian": "የአውሮፓ ካላንደር",
+      "day": "ቀን",
+      "month": "ወር",
+      "year": "ዓመት"
+    },
+    "errors": {
+      "emailRequired": "እባክዎ ኢሜልዎን ያስገቡ",
+      "phoneRequired": "እባክዎ ስልክ ቁጥርዎን ያስገቡ",
+      "passwordLength": "የይለፍ ቃል ቢያንስ 6 ቁምፊ መሆን አለበት",
+      "fullNameRequired": "እባክዎ ሙሉ ስምዎን ያስገቡ",
+      "birthDateRequired": "እባክዎ የልደት ቀንዎን ያስገቡ",
+      "genderRequired": "እባክዎ ጾታ ይምረጡ",
+      "locationRequired": "እባክዎ ቦታ/ሀገር ይምረጡ",
+      "religionRequired": "እባክዎ ሃይማኖት ይምረጡ",
+      "maritalRequired": "እባክዎ የጋብቻ ሁኔታ ይምረጡ",
+      "jobRequired": "እባክዎ የሥራ መደብ ይምረጡ",
+      "financeRequired": "እባክዎ የገንዘብ አያያዝ ይምረጡ",
+      "valuesRequired": "እባክዎ የቤተሰብ እሴት ይምረጡ",
+      "conflictRequired": "እባክዎ የግጭት አፈታት ይምረጡ",
+      "requirementsRequired": "እባክዎ የሚያገባውን ሰው መስፈርት ይግለጹ",
+      "partnerCountryRequired": "እባክዎ ቢያንስ አንድ የሀገር ምርጫ ይምረጡ",
+      "partnerReligionRequired": "እባክዎ የአጋር ሃይማኖት ይምረጡ",
+      "partnerIntentRequired": "እባክዎ የጋብቻ ሁኔታና ፍላጎት ይምረጡ",
+      "otpRequired": "እባክዎ ባለ 6 ዲጂት ኮድ ያስገቡ"
+    }
   },
   "Classes": {
     "hero": {
