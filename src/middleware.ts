@@ -38,17 +38,33 @@ export async function middleware(request: NextRequest) {
   const segments = pathname.split('/');
   const locale = routing.locales.includes(segments[1] as any) ? segments[1] : routing.defaultLocale;
   
-  // Routes that require verification
+  // Route definitions
   const isDashboardRoute = segments.includes('dashboard') || segments.includes('community') || segments.includes('chat') || segments.includes('admin');
-  const isOnboardingRoute = segments.includes('onboarding');
   const isLoginRoute = segments.includes('login');
-  const isAdminRoute = segments.includes('admin');
+  const isAdminRoute = segments.includes('admin'); // Legacy /admin
+  const isAdminSecureRoute = segments.includes('admin-secure-portal');
+  
+  if (isAdminSecureRoute) {
+    const authHeader = request.headers.get('authorization');
+    if (authHeader) {
+      const authValue = authHeader.split(' ')[1];
+      const [user, pwd] = atob(authValue).split(':');
 
-  // 3. Bypass for Admin Development (Primary Dev Email)
-  if (isAdminRoute && user?.email === 'kalidseid111@gmail.com') {
-    return response;
+      // SECRET CREDENTIALS
+      if (user === 'beteseb_admin_2026' && pwd === 'S3cure_#Beteseb_!Shield_99') {
+        return response;
+      }
+    }
+
+    return new NextResponse('Authentication Required', {
+      status: 401,
+      headers: {
+        'WWW-Authenticate': 'Basic realm="Admin Secure Portal"',
+      },
+    });
   }
 
+  // 4. Regular Dashboard/Auth Protection
   if (isDashboardRoute) {
     if (!user) {
       return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
@@ -63,10 +79,10 @@ export async function middleware(request: NextRequest) {
     const { data: profile } = await supabase.from('profiles').select('is_onboarded, is_verified, role').eq('id', user.id).single();
     
     // Check for staff status (Admin/Super Admin)
-    const isStaff = profile?.role === 'admin' || profile?.role === 'super_admin' || user.email === 'kalidseid111@gmail.com';
+    const isStaff = profile?.role === 'admin' || profile?.role === 'super_admin';
     
-    // Admin route protection
-    if (isAdminRoute && !isStaff) {
+    // Legacy Admin route protection (redirect to dashboard if someone tries /admin)
+    if (isAdminRoute) {
       return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
     }
 

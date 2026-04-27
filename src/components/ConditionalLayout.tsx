@@ -9,7 +9,7 @@ import AIChatbot from './AIChatbot';
 
 export default function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isInternalPage = pathname?.startsWith('/dashboard') || pathname?.startsWith('/admin') || pathname?.startsWith('/onboarding');
+  const isInternalPage = pathname?.includes('/dashboard') || pathname?.includes('/admin') || pathname?.includes('/onboarding') || pathname?.includes('/admin-secure-portal');
 
   return (
     <>

@@ -124,7 +124,6 @@ export default function Footer() {
             <div className="flex flex-col gap-4 text-white/50 text-sm font-medium">
               <Link href="#" className="hover:text-white transition-colors">{t('terms')}</Link>
               <Link href="#" className="hover:text-white transition-colors">{t('privacy')}</Link>
-              <Link href="/admin" className="hover:text-white transition-colors border-t border-white/10 pt-4 mt-2">{t('admin')}</Link>
             </div>
           </div>
         </div>
