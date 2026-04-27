@@ -195,7 +195,7 @@ export default function CommunityPage() {
     const { error } = await supabase.from('post_comments').insert({
       post_id: postId,
       user_id: currentUser.id,
-      parent_id: parent_id,
+      parent_id: parentId,
       content: commentText.trim()
     });
     if (!error) {
