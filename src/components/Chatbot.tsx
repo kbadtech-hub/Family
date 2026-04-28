@@ -119,6 +119,8 @@ export default function Chatbot() {
           setIsOpen(!isOpen);
           setUnreadReplies(0); // Clear on open
         }}
+        aria-label={isOpen ? "Close Chat" : "Open Chat"}
+        title={isOpen ? "Close Chat" : "Open Chat"}
         className={`w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-all duration-500 hover:scale-110 active:scale-95 ${
           isOpen ? 'bg-white text-accent' : 'bg-primary text-white'
         }`}
@@ -149,7 +151,12 @@ export default function Chatbot() {
                 </div>
               </div>
             </div>
-            <button onClick={() => setIsOpen(false)} className="opacity-60 hover:opacity-100 transition-opacity p-2">
+            <button 
+              onClick={() => setIsOpen(false)} 
+              aria-label="Close Chat"
+              title="Close Chat"
+              className="opacity-60 hover:opacity-100 transition-opacity p-2"
+            >
               <X size={20} />
             </button>
           </div>
@@ -264,6 +271,8 @@ export default function Chatbot() {
                 />
                 <button
                   onClick={handleSend}
+                  aria-label="Send Message"
+                  title="Send Message"
                   className="absolute right-2 p-3 bg-primary text-white rounded-full hover:scale-110 active:scale-95 transition-all shadow-lg"
                 >
                   <Send size={18} />
