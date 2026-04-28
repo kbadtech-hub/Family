@@ -1,459 +1,151 @@
 {
   "Index": {
     "Hero": {
-      "tagline": "الدفء التقليدي المطابقة الحديثة",
-      "title1": "زيجات قوية",
-      "title2": "عائلة لأجيال",
-      "subtitle": "المنصة العالمية الأولى المخصصة لبناء منازل إثيوبية مستدامة من خلال المطابقة التي تركز على التراث والاستشارات المدعومة بالذكاء الاصطناعي.",
+      "tagline": "دفء التقاليد، بلمسة عصرية",
+      "title1": "وعد صادق",
+      "title2": "لعائلة تدوم",
+      "subtitle": "المنصة العالمية الأولى لمطابقة العائلات الإثيوبية والإريترية، مبنية على التقاليد ومدعومة بمشورة الخبراء.",
       "cta1": "إنشاء حساب",
       "cta2": "رؤيتنا",
-      "verify1": "جواز سفر تم التحقق منه",
-      "verify2": "هوية مضمونة",
+      "verify1": "تم التحقق",
+      "verify2": "عن طريق الهوية",
       "verify3": "محرك أبو شاكر"
     },
     "Vision": {
-      "tagline": "تراثنا",
-      "title": "الحفاظ على الأسرة في عالم رقمي",
-      "subtitle": "في قلب رؤية بيتسب تكمن حكمة أبو شاكر. نمزج قرونًا من منطق التوفيق الإثيوبي مع التشفير السلوكي الحديث لإنشاء نقابات مقدسة تم التحقق منها.",
-      "cta": "اكتشف رؤيتنا",
-      "stat": "دقة المطابقة"
+      "tagline": "الإرث",
+      "title": "العائلة في العالم الرقمي",
+      "subtitle": "في قلب رؤية بتسب يكمن منطق أبو شاكر. نحن نعمل على بناء زيجات قوية من خلال دمج الحكمة التقليدية مع التكنولوجيا الحديثة.",
+      "cta": "تعرف على المزيد",
+      "stat": "معدل المطابقة"
     },
     "modal": {
-      "step1": "الخطوة 1: الأمان والتسعير",
+      "step1": "الدفع",
       "where": "أين تقع؟",
-      "currencyNote": "نحن نستخدم موقعك لإظهار الأسعار بعملتك المحلية وحماية خصوصيتك.",
-      "localTitle": "داخل إثيوبيا",
-      "localSub": "المدفوعات بالبر",
-      "globalTitle": "الشتات العالمي",
-      "globalSub": "المدفوعات بالدولار"
+      "currencyNote": "سنعرض لك الأسعار بناءً على موقعك الحالي.",
+      "localTitle": "داخل البلاد",
+      "localSub": "بالبر",
+      "globalTitle": "خارج البلاد",
+      "globalSub": "بالدولار"
     }
   },
   "Nav": {
     "home": "الرئيسية",
-    "about": "معلومات عنا",
-    "classes": "فصول",
+    "about": "حول",
+    "classes": "دروس",
     "signIn": "تسجيل الدخول",
-    "signUp": "انضم الآن",
-    "login": "الدخول / إنشاء حساب",
-    "logout": "تسجيل خروج",
+    "signUp": "إنشاء حساب",
+    "login": "دخول / تسجيل",
+    "logout": "خروج",
     "settings": "إعدادات",
-    "dashboard": "لوحة القيادة",
+    "dashboard": "لوحة التحكم",
     "chat": "دردشة",
     "community": "مجتمع",
     "workshops": "ورش عمل",
     "profile": "الملف الشخصي"
   },
   "Dashboard": {
-    "welcome": "مرحباً بعودتك",
-    "subtitle": "ابحث عن شريكك المثالي",
+    "welcome": "أهلاً بك",
+    "subtitle": "ابحث عن شريك حياتك",
     "premium": {
       "active": "بريميوم نشط",
-      "pending": "قيد المراجعة",
+      "pending": "قيد التحقق",
       "expired": "انتهت الفترة التجريبية",
-      "unlock": "افتح بريميوم"
+      "unlock": "فتح بريميوم"
     },
     "matching": {
-      "title": "أعلى المطابقات",
+      "title": "المطابقات",
       "viewAll": "عرض الكل",
-      "percent": "تطابق"
+      "percent": "مطابقة"
     },
     "trialExpired": "انتهت الفترة التجريبية",
-    "trialEnded": "لقد انتهت الفترة التجريبية التي تبلغ 3 أيام. يرجى الاشتراك لمواصلة العثور على شريكك المثالي.",
-    "upgradeNow": "قم بالترقية الآن",
-    "backToDash": "العودة إلى لوحة القيادة",
-    "subscription": "الاشتراك",
-    "verifyBannerTitle": "تحقق من حسابك لاستخدام الخدمة",
-    "verifyBannerSub": "للحصول على خدمة كاملة والتعرف على الناس، يرجى ملء بعض المعلومات.",
-    "verifyNow": "تحقق الآن",
-    "matchingLocked": "المطابقة مقفلة",
-    "matchingLockedSub": "يرجى إكمال التحقق من ملفك الشخصي لرؤية مطابقاتك المحتملة.",
-    "completeOnboarding": "إكمال التحقق"
+    "trialEnded": "انتهت فترتك التجريبية لمدة 3 أيام. يرجى الاشتراك للمتابعة.",
+    "upgradeNow": "ترقية الآن",
+    "backToDash": "العودة للوحة التحكم",
+    "subscription": "الاشتراك"
   },
   "Footer": {
-    "tagline": "بيتسب | المطابقة الإثيوبية",
-    "description": "جمع العائلات معًا في جميع أنحاء العالم بالتقاليد والتكنولوجيا.",
-    "connect": "تواصل",
-    "platform": "منصة",
+    "tagline": "بتسب | عائلة",
+    "description": "العائلة بالتقاليد، وبالتكنولوجيا.",
+    "connect": "اتصل بنا",
+    "platform": "المنصة",
     "legal": "قانوني",
-    "vision": "رؤيتنا",
-    "classes": "فصول المطابقة",
-    "start": "ابدأ المطابقة",
-    "terms": "شروط الخدمة",
-    "privacy": "سياسة الخصوصية",
-    "admin": "بوابة الإدارة",
-    "copyright": "© 2026 بيتسب.",
-    "address": "هرر، إثيوبيا",
-    "community": "تغذية المجتمع"
+    "vision": "الرؤية",
+    "classes": "دروس",
+    "start": "ابدأ",
+    "terms": "شروط الاستخدام",
+    "privacy": "الخصوصية",
+    "admin": "مسؤول",
+    "copyright": "© 2026 بتسب.",
+    "address": "هرر",
+    "community": "مجتمع"
   },
   "Auth": {
-    "signIn": "تسجيل الدخول",
-    "signUp": "إنشاء حساب",
+    "signIn": "دخول",
+    "signUp": "تسجيل",
     "email": "البريد الإلكتروني",
     "phone": "رقم الهاتف",
     "password": "كلمة المرور",
-    "forgot": "هل نسيت كلمة المرور؟",
+    "forgot": "نسيت كلمة المرور؟",
     "noAccount": "ليس لديك حساب؟",
     "haveAccount": "هل لديك حساب؟",
     "phoneTab": "هاتف",
     "countryCode": "كود البلد",
-    "processing": "جاري المعالجة..."
+    "processing": "جاري المعالجة...",
+    "errors": {
+      "passwordTooShort": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.",
+      "passwordTooWeak": "يجب أن تتضمن كلمة المرور رقمًا واحدًا على الأقل ورمزًا خاصًا واحدًا (@، #، $).",
+      "passwordCommon": "يرجى استخدام كلمة مرور أقوى. هذه الكلمة شائعة جدًا."
+    }
   },
   "Community": {
     "title": "الاستشارة الأسرية والمجتمع",
-    "subtitle": "ناقش القيم التقليدية للزواج والمواضيع الثقافية",
-    "newPostPlaceholder": "شارك أفكارك...",
+    "subtitle": "ناقش القيم التقليدية، نصائح الزواج، والمواضيع الثقافية مع عائلة بتسب.",
+    "newPostPlaceholder": "شارك أفكارك أو اطلب النصيحة...",
     "postButton": "نشر في المجتمع",
     "feedTitle": "المناقشات الأخيرة",
-    "adminApprovalNote": "تتم مراجعة المشاركات من قبل المشرفين",
+    "adminApprovalNote": "يتم مراجعة المنشورات من قبل المشرفين للحفاظ على القيم العائلية.",
     "authorFormat": "نشر بواسطة",
     "pending": "في انتظار الموافقة",
     "languageToggle": "تغيير اللغة",
     "anonymousUser": "مستخدم مجهول",
-    "noPosts": "لا توجد مشاركات حتى الآن.",
-    "like": "إعجاب",
+    "noPosts": "لا توجد منشورات متاحة بعد. كن أول من يبدأ مناقشة!",
+    "like": "أعجبني",
     "reply": "رد",
-    "loginRequired": "يرجى التسجيل للنشر",
-    "moderated": "مراقب",
+    "loginRequired": "يرجى التسجيل/الدخول للنشر",
+    "moderated": "تمت مراجعته",
     "topicDay": "موضوع اليوم",
     "topicQuestion": "\"ما هي القيم الثلاث الأساسية التي تعتقد أنها ضرورية لزواج دائم في العصر الرقمي؟\"",
-    "topicJoin": "انضم إلى المناقشة مع أكثر من 1200 فرد من عائلة بيتسب. صوتك مهم.",
+    "topicJoin": "انضم إلى المناقشة مع أكثر من 1200 عضو من عائلة بتسب. صوتك مهم.",
     "joinBtn": "انضم للمناقشة",
-    "aiFilter": "مرشح أمان الذكاء الاصطناعي نشط",
+    "aiFilter": "فلتر الأمان بالذكاء الاصطناعي نشط",
     "checking": "جاري التحقق...",
-    "verifyToPostTitle": "مطلوب التحقق للنشر",
-    "verifyToPostSub": "يمكنك قراءة المنشورات، لكنك تحتاج إلى التحقق من هويتك للانضمام إلى المناقشة.",
-    "memberBadge": "عضو بيتسب",
-    "loadingFeed": "جاري تحميل التغذية...",
-    "safetyAlert": "يحتوي منشورك على محتوى لا يتوافق مع قيم مجتمعنا. يرجى الحفاظ على الاحترام."
-  },
-  "About": {
-    "tagline": "رؤيتنا",
-    "subtitle": "بيتسب أكثر من مجرد منصة",
-    "missionTitle": "المهمة",
-    "missionDesc": "نحن نهدف إلى إزالة حواجز المسافة...",
-    "mission1": "التحقق الإلزامي من الهوية",
-    "mission2": "دمج منطق التوافق أبو شاكر",
-    "mission3": "استشارات ما قبل الزواج",
-    "mission4": "الاعتدال المجتمعي للخصوصية",
-    "principlesTag": "المبادئ الأساسية",
-    "principlesTitle": "التقاليد والثقة",
-    "value1Title": "الأسرة أولا",
-    "value1Desc": "كل ما نقوم به يركز على الأسرة",
-    "value2Title": "الشرف الثقافي",
-    "value2Desc": "نحن نحترم التقاليد",
-    "value3Title": "الأمان المطلق",
-    "value3Desc": "سياسة عدم التسامح",
-    "ctaTitle": "كن جزءًا من الإرث",
-    "ctaButton": "انضم إلى بيتسب اليوم",
-    "ourStory": "قصتنا",
-    "joinStats": "انضم إلى أكثر من 1000 عائلة سعيدة"
-  },
-  "Resources": {
-    "learningHub": "مركز التعلم",
-    "heroTitle": "المعرفة من أجل {betterLife}",
-    "betterLife": "حياة أفضل",
-    "searchPlaceholder": "البحث في الموارد...",
-    "noMatch": "لا توجد موارد مطابقة",
-    "noMatchSubtitle": "حاول تعديل البحث",
-    "readCollection": "قراءة المجموعة",
-    "deepLearn": "هل تريد أن تتعلم {deeply}؟",
-    "deeply": "بعمق أكبر؟",
-    "joinDesc": "انضم إلى مجتمعنا للوصول الحصري"
-  },
-  "Chatbot": {
-    "welcome": "مرحبًا بك في بيتسب!",
-    "faq": {
-      "abushakir": "يعتمد محرك التوافق لدينا على أبو شاكر",
-      "pricing": "نحن نقدم أسعار متدرجة",
-      "verified": "التحقق إلزامي",
-      "hello": "مرحبا! أنا مساعدك",
-      "default": "أنا متخصص في شرح نظامنا"
+    "verifyToPostTitle": "التحقق مطلوب للنشر",
+    "verifyToPostSub": "يمكنك قراءة منشورات المجتمع، ولكنك تحتاج إلى التحقق من هويتك للانضمام إلى المناقشة.",
+    "memberBadge": "عضو بتسب",
+    "loadingFeed": "جاري تحميل خلاصة العائلة...",
+    "safetyAlert": "يحتوي منشورك على محتوى لا يتوافق مع قيمنا المجتمعية الموجهة نحو الأسرة. يرجى الحفاظ على الاحترام.",
+    "categories": {
+      "all": "كل المنشورات",
+      "success_story": "قصص نجاح",
+      "lesson_learned": "دروس مستفادة",
+      "expert_class": "دروس الخبراء"
     },
-    "placeholder": "اسألني أي شيء...",
-    "status": "مساعد عبر الإنترنت",
-    "btn": {
-      "abushakir": "أبو شاكر",
-      "pricing": "التسعير",
-      "verified": "التحقق"
+    "poll": {
+      "vote": "تصويت",
+      "voted": "تم التصويت",
+      "total": "{count} أصوات"
     },
-    "botName": "بيتسب AI"
-  },
-  "Onboarding": {
-    "title": "بوابة العائلة",
-    "personalDetails": "تـفاصيل شخصية",
-    "personalSubtitle": "لنبدأ بالأساسيات",
-    "demographics": "التركيبة السكانية",
-    "career": "الوظيفة وعلم النفس",
-    "reviewTitle": "مراجعة الملف الشخصي",
-    "reviewSubtitle": "يرجى تأكيد بياناتك",
-    "finishTitle": "أنت جاهز!",
-    "finishSubtitle": "جاري مراجعة ملفك",
-    "finishCTA": "أدخل لوحة القيادة",
-    "fields": {
-      "email": "البريد الإلكتروني",
-      "password": "كلمة المرور",
-      "passwordHint": "الحد الأدنى 6 أحرف",
-      "fullName": "الاسم الكامل",
-      "fullNamePlaceholder": "أبيبي",
-      "birthDate": "تاريخ الميلاد",
-      "birthTime": "وقت الميلاد",
-      "gender": "الجنس",
-      "genderPlaceholder": "اختر الجنس",
-      "location": "الموقع",
-      "locationPlaceholder": "اختر الموقع",
-      "religion": "الدين",
-      "religionPlaceholder": "اختر الدين",
-      "maritalStatus": "الحالة الاجتماعية",
-      "maritalPlaceholder": "اختر الحالة",
-      "jobTitle": "المسمى الوظيفي",
-      "jobPlaceholder": "مهندس",
-      "financeHabit": "العادة المالية",
-      "financePlaceholder": "اختر",
-      "familyValues": "القيم العائلية",
-      "familyPlaceholder": "اختر",
-      "conflictResolution": "حل النزاعات",
-      "conflictPlaceholder": "اختر",
-      "spouseRequirements": "مواصفات الشريك",
-      "spousePlaceholder": "وصف...",
-      "phone": "رقم الهاتف",
-      "phoneTab": "هاتف",
-      "starSign": "برج النجم",
-      "unknown": "غير معروف",
-      "abushakirBadge": "محرك أبوشاكر",
-      "country": "البلد",
-      "countryPlaceholder": "اختر البلد"
+    "interactions": {
+      "reply": "رد",
+      "share": "مشاركة",
+      "showReplies": "عرض {count} ردود",
+      "writeComment": "اكتب تعليقاً...",
+      "expertBadge": "خبير معتمد",
+      "linkCopied": "تم نسخ الرابط!"
     },
-    "idVerification": {
-      "title": "التحقق من الهوية",
-      "subtitle": "الهوية الرسمية مطلوبة",
-      "uploadClick": "انقر للتحميل {type}",
-      "uploadHint": "PNG, JPG",
-      "uploaded": "تم الرفع!",
-      "doc": "تحميل المستند",
-      "idType": "بطاقة هوية أو جواز سفر",
-      "idCaptured": "تم التقاط الهوية",
-      "takeSelfie": "التقط صورة ذاتية",
-      "livePhoto": "صورة حية",
-      "selfieCaptured": "تم التقاط صورة ذاتية",
-      "submitAI": "إرسال للتحقق من الذكاء الاصطناعي",
-      "rejected": "تم رفض التحقق. يرجى التأكد من وضوح الصورة."
-    },
-    "nav": {
-      "back": "خلف",
-      "continue": "يتابع",
-      "finish": "إنهاء",
-      "processing": "معالجة..."
-    },
-    "loading": "جاري التحميل...",
-    "footerTagline": "جمع العائلات الإثيوبية معًا",
-    "calendar": {
-      "ethiopian": "التقويم الإثيوبي",
-      "gregorian": "التقويم الغريغوري",
-      "day": "يوم",
-      "month": "شهر",
-      "year": "سنة"
-    },
-    "errors": {
-      "emailRequired": "يرجى إدخال بريدك الإلكتروني",
-      "phoneRequired": "يرجى إدخال رقم هاتفك",
-      "passwordLength": "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
-      "fullNameRequired": "يرجى إدخال اسمك الكامل",
-      "birthDateRequired": "يرجى إدخال تاريخ ميلادك",
-      "genderRequired": "يرجى اختيار الجنس",
-      "locationRequired": "يرجى اختيار الموقع",
-      "religionRequired": "يرجى اختيار الدين",
-      "maritalRequired": "يرجى اختيار الحالة الاجتماعية",
-      "jobRequired": "يرجى اختيار المسمى الوظيفي",
-      "financeRequired": "يرجى اختيار العادة المالية",
-      "valuesRequired": "يرجى اختيار القيم العائلية",
-      "conflictRequired": "يرجى اختيار أسلوب حل النزاعات",
-      "requirementsRequired": "يرجى وصف متطلبات الزوج",
-      "partnerCountryRequired": "يرجى اختيار بلد شريك واحد على الأقل",
-      "partnerReligionRequired": "يرجى اختيار دين الشريك",
-      "partnerIntentRequired": "يرجى اختيار الحالة الاجتماعية والقصد",
-      "otpRequired": "يرجى إدخال كود من 6 أرقام"
-    }
-  },
-  "Classes": {
-    "hero": {
-      "tagline": "رحلة موجهة",
-      "title1": "أكثر من المطابقة.",
-      "title2": "حكمة العمر.",
-      "subtitle": "انضم إلى ورش العمل",
-      "cta": "سجل الان"
-    },
-    "list": {
-      "class1": {
-        "title": "فهم أبو شاكر",
-        "desc": "غوص عميق...",
-        "date": "كل جمعة",
-        "badge": "مجانا"
-      },
-      "class2": {
-        "title": "القيم التقليدية",
-        "desc": "الزواج الحديث...",
-        "date": "كل خميس",
-        "badge": "شائع"
-      },
-      "class3": {
-        "title": "الرحلة المتحقق منها",
-        "desc": "كيفية إعداد ملفك...",
-        "date": "السبت",
-        "badge": "دخول"
-      }
-    },
-    "counseling": {
-      "tagline": "دعم فردي",
-      "title1": "خبراء.",
-      "title2": "تحت تصرفك.",
-      "subtitle": "مستشارونا يقدمون جلسات خاصة",
-      "stat1Value": "500+",
-      "stat1Label": "مستشارون",
-      "stat2Value": "100%",
-      "stat2Label": "سري",
-      "curriculumTitle": "المنهج الدراسي",
-      "topics": {
-        "t1": "التفاعل الثقافي",
-        "t2": "حل النزاعات",
-        "t3": "الإشراف المالي",
-        "t4": "الأدوار التقليدية والحديثة"
-      }
-    },
-    "footerMeta": "تمكين الشتات",
-    "footerCTA": "ابدأ ديسكفري"
-  },
-  "TopHeader": {
-    "email": "contact@beteseb.com",
-    "phone": "+49 123 456 789",
-    "suggestion": "تفضل {lang}؟",
-    "switchBtn": "بدل الآن"
-  },
-  "Constants": {
-    "Religions": {
-      "Orthodox": "أرثوذكسي",
-      "Protestant": "بروتستانتي",
-      "Catholic": "كاثوليكي",
-      "Muslim": "مسلم",
-      "Other": "أخرى"
-    },
-    "Genders": {
-      "Male": "ذكر",
-      "Female": "أنثى"
-    },
-    "Marital": {
-      "Never Married": "لم يسبق له الزواج",
-      "Divorced": "مطلق",
-      "Does Not Matter": "لا يهم"
-    },
-    "Children": {
-      "Yes": "لدي أطفال",
-      "No": "ليس لدي أطفال",
-      "Does Not Matter": "لا يهم"
-    },
-    "FutureChildren": {
-      "Wants Children": "يريد أطفالاً",
-      "Does Not Want Children": "لا يريد أطفالاً",
-      "Does Not Matter": "لا يهم"
-    },
-    "PartnerChildren": {
-      "Yes": "لديه أطفال",
-      "No": "ليس لديه أطفال",
-      "Does Not Matter": "لا يهم"
-    },
-    "Finance": {
-      "Spender": "منفق",
-      "Saver": "موفر",
-      "Balanced": "متوازن",
-      "Frugal": "مقتصد"
-    },
-    "Values": {
-      "Traditional": "تقليدي",
-      "Modern": "حديث",
-      "Liberal": "ليبرالي",
-      "Religious-Centric": "ديني"
-    },
-    "Conflict": {
-      "Direct Discussion": "مناقشة مباشرة",
-      "Indirect / Subtle": "غير مباشر",
-      "Silent Treatment": "صمت",
-      "Mediation Required": "يتطلب وساطة"
-    },
-    "Locations": {
-      "Addis Ababa": "أديس أبابا",
-      "Dire Dawa": "دير داوا",
-      "Mekelle": "ميكيلي",
-      "Adama": "أداما",
-      "Bahir Dar": "بحر دار",
-      "Gondar": "جوندار",
-      "Hawassa": "هواسا",
-      "Jimma": "جيما",
-      "Jijiga": "جيجيجا",
-      "Other (International)": "دولي"
-    },
-    "Jobs": {
-      "Technology & IT": "التكنولوجيا وتكنولوجيا المعلومات",
-      "Healthcare & Medical": "الرعاية الصحية والطبية",
-      "Education & Research": "التعليم والبحث",
-      "Business & Finance": "الأعمال والتمويل",
-      "Arts & Entertainment": "الفنون والترفيه",
-      "Engineering & Construction": "الهندسة والبناء",
-      "Legal & Law Enforcement": "القانون وإنفاذ القانون",
-      "Service & Hospitality": "الخدمة والضيافة",
-      "Government & Public Service": "الحكومة والخدمة العامة",
-      "Agriculture & Nature": "الزراعة والطبيعة",
-      "Other": "أخرى"
-    },
-    "Requirements": {
-      "Religious Compatibility": "التوافق الديني",
-      "Family Oriented": "موجه نحو الأسرة",
-      "Career Focused": "مركّز على الحياة المهنية",
-      "Traditional Values": "القيم التقليدية",
-      "Modern Outlook": "نظرة حديثة",
-      "Healthy Lifestyle": "نمط حياة صحي",
-      "Wants Children": "يريد أطفالاً",
-      "Travel Lover": "محب للسفر",
-      "Education Priority": "أولوية التعليم",
-      "Financial Stability": "الاستقرار المالي"
-    },
-    "Countries": {
-      "Ethiopia": "إثيوبيا",
-      "Germany": "ألمانيا",
-      "United States": "الولايات المتحدة",
-      "Canada": "كندا",
-      "United Kingdom": "المملكة المتحدة",
-      "United Arab Emirates": "الإمارات",
-      "Saudi Arabia": "السعودية",
-      "Israel": "إسرائيل",
-      "Norway": "النرويج",
-      "Sweden": "السويد",
-      "Kenya": "كينيا",
-      "South Africa": "جنوب أفريقيا",
-      "Australia": "أستراليا",
-      "China": "الصين",
-      "Japan": "اليابان",
-      "France": "فرنسا",
-      "Italy": "إيطاليا",
-      "Russia": "روسيا",
-      "Turkey": "تركيا",
-      "Egypt": "مصر",
-      "Sudan": "السودان",
-      "South Sudan": "جنوب السودان",
-      "Eritrea": "إريتريا",
-      "Djibouti": "جيبوتي",
-      "Somalia": "الصومال",
-      "Uganda": "أوغندا",
-      "Tanzania": "تنزانيا",
-      "Switzerland": "سويسرا",
-      "Netherlands": "هولندا",
-      "Belgium": "بلجيكا",
-      "Qatar": "قطر",
-      "Kuwait": "الكويت",
-      "Bahrain": "البحرين",
-      "Oman": "عمان",
-      "Lebanon": "لبنان",
-      "Jordan": "الأردن",
-      "India": "الهند",
-      "Pakistan": "باكستان"
+    "media": {
+      "uploadPhoto": "إضافة صورة",
+      "uploadVideo": "إضافة فيديو"
     }
   }
 }

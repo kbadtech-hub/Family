@@ -71,7 +71,7 @@ function OnboardingContent() {
     eth_birth_day: '',
     eth_birth_month: '',
     eth_birth_year: '',
-    calendar_type: (locale === 'am' || locale === 'om' || locale === 'ti') ? 'ethiopian' : 'gregorian',
+    calendar_type: (locale === 'am' || locale === 'om' || locale === 'ti' || locale === 'so') ? 'ethiopian' : 'gregorian',
     future_children: '',
     id_photo: '',
     selfie_photo: ''
@@ -84,7 +84,7 @@ function OnboardingContent() {
       const next = { ...prev, [field]: value };
       
       // Handle Ethiopian Date Conversion
-      if (field.startsWith('eth_') && (locale === 'am' || locale === 'om' || locale === 'ti')) {
+      if (field.startsWith('eth_') && (locale === 'am' || locale === 'om' || locale === 'ti' || locale === 'so')) {
         if (next.eth_birth_day && next.eth_birth_month && next.eth_birth_year) {
           try {
             const [gy, gm, gd] = ethiopianDate.toGregorian(

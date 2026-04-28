@@ -42,7 +42,8 @@ export default function Home() {
   }, []);
 
   const handleStartTrial = (location: 'Local' | 'Diaspora') => {
-    router.push(`/onboarding?pref_location=${location}`);
+    // Redirect only to signup as the entry point
+    router.push(`/signup?pref_location=${location}`);
   };
 
   return (

@@ -11,7 +11,8 @@ const languages = [
   { id: 'am', label: 'አማርኛ', match: ['am'] },
   { id: 'om', label: 'Oromoo', match: ['om'] },
   { id: 'ar', label: 'العربية', match: ['ar'] },
-  { id: 'ti', label: 'ትግርኛ', match: ['ti'] }
+  { id: 'ti', label: 'ትግርኛ', match: ['ti'] },
+  { id: 'so', label: 'Soomaali', match: ['so'] }
 ];
 
 export default function TopHeader() {

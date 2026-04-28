@@ -6,6 +6,7 @@ import { useRouter } from '@/i18n/routing';
 import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
 import { Mail, Lock, ChevronRight, AlertCircle, Loader2, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
+import { validatePassword } from '@/lib/password-validator';
 
 function SignupContent() {
   const t = useTranslations('Auth');
@@ -27,6 +28,13 @@ function SignupContent() {
 
     if (password !== confirmPassword) {
       setError(locale === 'am' ? 'የይለፍ ቃል አይመሳሰልም' : locale === 'ti' ? 'መሕለፊ ቃል አይሰማማዕን' : 'Passwords do not match');
+      setIsLoading(false);
+      return;
+    }
+
+    const { isValid, errorKey } = validatePassword(password);
+    if (!isValid) {
+      setError(t(`errors.${errorKey}`));
       setIsLoading(false);
       return;
     }

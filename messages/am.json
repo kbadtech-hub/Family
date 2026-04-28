@@ -96,7 +96,12 @@
     "haveAccount": "አካውንት አለዎት?",
     "phoneTab": "ስልክ",
     "countryCode": "ሀገር",
-    "processing": "እየተከናወነ ነው..."
+    "processing": "እየተከናወነ ነው...",
+    "errors": {
+      "passwordTooShort": "የይለፍ ቃል ቢያንስ 8 ፊደላት መሆን አለበት።",
+      "passwordTooWeak": "የይለፍ ቃል ቢያንስ አንድ ቁጥር እና አንድ ልዩ ምልክት (@, #, $) መያዝ አለበት።",
+      "passwordCommon": "እባክዎን ጠንካራ የይለፍ ቃል ይጠቀሙ። ይህ በጣም ቀላል ነው።"
+    }
   },
   "Community": {
     "title": "የቤተሰብ ምክክር",

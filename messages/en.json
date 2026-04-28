@@ -96,7 +96,12 @@
     "haveAccount": "Already have an account?",
     "phoneTab": "Phone",
     "countryCode": "Country Code",
-    "processing": "Processing..."
+    "processing": "Processing...",
+    "errors": {
+      "passwordTooShort": "Password must be at least 8 characters long.",
+      "passwordTooWeak": "Password must include at least one number and one special character (@, #, $).",
+      "passwordCommon": "Please use a stronger password. This one is too common."
+    }
   },
   "Community": {
     "title": "Family Counseling & Community",
@@ -276,6 +281,11 @@
       "continue": "Continue",
       "finish": "Confirm & Finish",
       "processing": "Processing..."
+    },
+    "errors": {
+      "passwordTooShort": "Password must be at least 8 characters long.",
+      "passwordTooWeak": "Password must include at least one number and one special character (@, #, $).",
+      "passwordCommon": "Please use a stronger password. This one is too common."
     },
     "loading": "Beteseb | Loading Family Portal...",
     "footerTagline": "Bringing Ethiopian Families Together Globally",

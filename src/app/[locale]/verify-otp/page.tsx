@@ -14,6 +14,7 @@ function VerifyOtpContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get('email') || '';
+  const type = (searchParams.get('type') || 'signup') as 'signup' | 'recovery';
 
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,15 +31,19 @@ function VerifyOtpContent() {
       const { error } = await supabase.auth.verifyOtp({
         email,
         token: otp,
-        type: 'signup'
+        type: type
       });
 
       if (error) throw error;
       
       setIsSuccess(true);
-      // Redirect to dashboard after 2 seconds
+      // Redirect based on type
       setTimeout(() => {
-        router.push('/dashboard');
+        if (type === 'recovery') {
+          router.push(`/reset-password?email=${encodeURIComponent(email)}`);
+        } else {
+          router.push('/dashboard');
+        }
       }, 2000);
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -131,7 +136,7 @@ function VerifyOtpContent() {
             </form>
 
             <button 
-              onClick={() => router.push('/signup')}
+              onClick={() => router.push(type === 'recovery' ? '/forgot-password' : '/signup')}
               className="text-gray-400 text-[10px] font-black uppercase tracking-widest hover:text-primary transition-colors"
             >
               {locale === 'am' ? 'ተመለስ' : locale === 'ti' ? 'ተመለሱ' : 'Go Back'}

@@ -96,7 +96,12 @@
     "haveAccount": "አካውንት አለኩም?",
     "phoneTab": "ስልኪ",
     "countryCode": "ሃገር",
-    "processing": "ይስራሕ አሎ..."
+    "processing": "ይስራሕ አሎ...",
+    "errors": {
+      "passwordTooShort": "መሕለፊ ቃል እንተወሓደ 8 ፊደላት ክኸውን ኣለዎ።",
+      "passwordTooWeak": "መሕለፊ ቃል እንተወሓደ ሓደ ቁጽሪን ሓደ ፍሉይ ምልክትን (@, #, $) ክህልዎ ኣለዎ።",
+      "passwordCommon": "በጃኹም ዝሓየለ መሕለፊ ቃል ተጠቐሙ። እዚ ልሙድ እዩ።"
+    }
   },
   "Community": {
     "title": "ምኽሪ ስድራቤትን ማሕበረሰብን",

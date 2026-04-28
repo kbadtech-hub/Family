@@ -71,7 +71,8 @@ function DashboardContent() {
     { id: 'am', label: 'አማርኛ' },
     { id: 'om', label: 'Oromoo' },
     { id: 'ar', label: 'العربية' },
-    { id: 'ti', label: 'ትግርኛ' }
+    { id: 'ti', label: 'ትግርኛ' },
+    { id: 'so', label: 'Soomaali' }
   ];
 
   const handleLanguageChange = (newLocale: string) => {

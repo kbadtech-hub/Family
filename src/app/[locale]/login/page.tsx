@@ -183,7 +183,7 @@ function LoginContent() {
               <div className="space-y-2">
                 <div className="flex justify-between items-center ml-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t('password')}</label>
-                  <button type="button" className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">{t('forgot')}</button>
+                  <button type="button" onClick={() => router.push('/forgot-password')} className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">{t('forgot')}</button>
                 </div>
                 <div className="relative group">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-primary transition-colors" size={20} />
