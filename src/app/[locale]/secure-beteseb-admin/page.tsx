@@ -1472,6 +1472,7 @@ export default function AdminPortal() {
                   )}
                </div>
              )}
+          )}
 
 
          {activeTab === 'staff' && (
