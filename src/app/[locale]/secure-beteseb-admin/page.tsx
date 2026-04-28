@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { translator } from '@/lib/translator';
 import Image from 'next/image';
 import { 
   BarChart3, 
@@ -27,7 +28,8 @@ import {
   Edit,
   Sparkles,
   CheckCircle2,
-  Send
+  Send,
+  Languages
 } from 'lucide-react';
 
 interface UserProfile {
