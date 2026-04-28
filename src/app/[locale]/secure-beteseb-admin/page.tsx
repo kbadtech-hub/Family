@@ -121,13 +121,16 @@ interface SystemSettings {
 
 interface SupportTicket {
   id: string;
-  user_id: string;
+  user_id: string | null;
+  guest_email?: string;
   subject: string;
   message: string;
-  status: 'open' | 'closed';
+  status: 'pending' | 'in_progress' | 'resolved';
+  priority: 'low' | 'normal' | 'high' | 'urgent';
+  language: string;
   created_at: string;
-  response?: string;
   profiles?: UserProfile;
+  support_replies?: any[];
 }
 
 interface BankDetail {
@@ -149,10 +152,10 @@ interface ChatMessage {
 export default function AdminPortal() {
   const [activeTab, setActiveTab] = useState('cms');
   const [settings, setSettings] = useState<SystemSettings | null>(null);
+  const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [verifications, setVerifications] = useState<VerificationRequest[]>([]);
   const [payments, setPayments] = useState<PaymentRequest[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>([]);
-  const [supportTickets, setSupportTickets] = useState<SupportTicket[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [password, setPassword] = useState('');
@@ -370,7 +373,7 @@ export default function AdminPortal() {
         if (data) setUsers(data);
       } else if (activeTab === 'support') {
         const { data } = await supabase.from('support_tickets').select('*, profiles(full_name)').order('created_at', { ascending: false });
-        if (data) setSupportTickets(data);
+        if (data) setTickets(data);
       }
     };
     fetchAdminData();
@@ -530,19 +533,33 @@ export default function AdminPortal() {
     else setLessons(prev => prev.filter(l => l.id !== id));
   };
 
-  const handleUpdateTicket = async (id: string, response: string) => {
+  const handleUpdateTicket = async (id: string, message: string) => {
     setIsSaving(true);
-    const { error } = await supabase.from('support_tickets').update({ 
-       response, 
-       status: 'closed' 
-    }).eq('id', id);
-    
-    if (error) alert(error.message);
-    else {
-       setSupportTickets(prev => prev.map(t => t.id === id ? { ...t, response, status: 'closed' } : t));
-       alert('Response sent!');
+    try {
+      // 1. Mark ticket as in_progress or resolved
+      const { error: ticketErr } = await supabase.from('support_tickets').update({ 
+         status: 'resolved' 
+      }).eq('id', id);
+      
+      if (ticketErr) throw ticketErr;
+
+      // 2. Add reply
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error: replyErr } = await supabase.from('support_replies').insert([{
+         ticket_id: id,
+         admin_id: user?.id,
+         message: message
+      }]);
+
+      if (replyErr) throw replyErr;
+
+      setTickets(prev => prev.map(t => t.id === id ? { ...t, status: 'resolved' } : t));
+      alert('Response sent successfully!');
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setIsSaving(false);
     }
-    setIsSaving(false);
   };
 
   const handleBroadcast = async () => {
@@ -1455,8 +1472,71 @@ export default function AdminPortal() {
                   )}
                </div>
              )}
-          </div>
-        )}
+         {activeTab === 'support' && (
+            <div className="space-y-8 animate-in fade-in duration-500">
+               <header className="flex justify-between items-center">
+                  <div>
+                     <h2 className="text-3xl font-bold text-accent italic uppercase tracking-tighter">Support Requests</h2>
+                     <p className="text-gray-500 mt-1">Review and respond to AI-escalated user tickets from all 6 languages.</p>
+                  </div>
+               </header>
+
+               <div className="bg-white rounded-[3rem] shadow-sm border border-gray-100 overflow-hidden">
+                  <table className="w-full text-left">
+                     <thead className="bg-muted/50 border-b border-gray-100">
+                        <tr>
+                           <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">User / Email</th>
+                           <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Subject & Message</th>
+                           <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Language</th>
+                           <th className="p-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Action</th>
+                        </tr>
+                     </thead>
+                     <tbody className="divide-y divide-gray-100">
+                        {tickets.length === 0 ? (
+                           <tr>
+                              <td colSpan={4} className="p-20 text-center text-gray-400 italic">No pending support requests.</td>
+                           </tr>
+                        ) : (
+                           tickets.map(ticket => (
+                              <tr key={ticket.id} className="hover:bg-gray-50/50 transition-colors">
+                                 <td className="p-6">
+                                    <div className="font-bold text-accent">{ticket.profiles?.full_name || 'Guest'}</div>
+                                    <div className="text-[10px] text-gray-400">{ticket.guest_email || 'Verified User'}</div>
+                                 </td>
+                                 <td className="p-6 max-w-md">
+                                    <div className="font-bold text-xs uppercase tracking-wider text-primary mb-1">{ticket.subject}</div>
+                                    <div className="text-sm line-clamp-2 text-gray-600">{ticket.message}</div>
+                                 </td>
+                                 <td className="p-6">
+                                    <span className="text-[10px] font-black px-3 py-1 bg-muted rounded-full uppercase tracking-tighter border border-gray-200">
+                                       {ticket.language}
+                                    </span>
+                                 </td>
+                                 <td className="p-6">
+                                    <div className="flex gap-2 justify-center">
+                                       {ticket.status === 'pending' ? (
+                                          <button 
+                                             onClick={() => {
+                                                const response = prompt('Enter your response:');
+                                                if (response) handleUpdateTicket(ticket.id, response);
+                                             }}
+                                             className="text-[10px] font-black px-4 py-2 bg-primary text-white rounded-xl hover:scale-105 transition-transform"
+                                          >
+                                             RESPOND
+                                          </button>
+                                       ) : (
+                                          <span className="text-[10px] font-bold text-green-500 uppercase">RESOLVED</span>
+                                       )}
+                                    </div>
+                                 </td>
+                              </tr>
+                           ))
+                        )}
+                     </tbody>
+                  </table>
+               </div>
+            </div>
+         )}
 
          {activeTab === 'staff' && (
            <div className="space-y-8 animate-in fade-in duration-500">
