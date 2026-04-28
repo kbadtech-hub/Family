@@ -70,7 +70,8 @@ function DashboardContent() {
     { id: 'en', label: 'English' },
     { id: 'am', label: 'አማርኛ' },
     { id: 'om', label: 'Oromoo' },
-    { id: 'ar', label: 'العربية' }
+    { id: 'ar', label: 'العربية' },
+    { id: 'ti', label: 'ትግርኛ' }
   ];
 
   const handleLanguageChange = (newLocale: string) => {

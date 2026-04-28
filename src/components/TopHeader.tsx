@@ -10,7 +10,8 @@ const languages = [
   { id: 'en', label: 'English', match: ['en'] },
   { id: 'am', label: 'አማርኛ', match: ['am'] },
   { id: 'om', label: 'Oromoo', match: ['om'] },
-  { id: 'ar', label: 'العربية', match: ['ar'] }
+  { id: 'ar', label: 'العربية', match: ['ar'] },
+  { id: 'ti', label: 'ትግርኛ', match: ['ti'] }
 ];
 
 export default function TopHeader() {

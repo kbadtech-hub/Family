@@ -44,9 +44,9 @@ function VerifyOtpContent() {
       if (error instanceof Error) {
         // Simple Amharic translation for common error
         if (error.message.includes('Token has expired')) {
-          setErrorMsg(locale === 'am' ? 'ኮዱ ጊዜው አልፎበታል' : 'Code has expired');
+          setErrorMsg(locale === 'am' ? 'ኮዱ ጊዜው አልፎበታል' : locale === 'ti' ? 'ኮድ ግዚኡ ሓሊፉ አሎ' : 'Code has expired');
         } else {
-          setErrorMsg(locale === 'am' ? 'የተሳሳተ ኮድ' : 'Invalid code');
+          setErrorMsg(locale === 'am' ? 'የተሳሳተ ኮድ' : locale === 'ti' ? 'ጌጋ ኮድ' : 'Invalid code');
         }
       }
     } finally {
@@ -62,10 +62,10 @@ function VerifyOtpContent() {
             <CheckCircle2 size={40} />
           </div>
           <h2 className="text-2xl font-bold text-accent mb-4 italic">
-            {locale === 'am' ? 'ተረጋግጧል!' : 'Verified!'}
+            {locale === 'am' ? 'ተረጋግጧል!' : locale === 'ti' ? 'ተረጋጊጹ!' : 'Verified!'}
           </h2>
           <p className="text-gray-500 mb-8 font-medium">
-            {locale === 'am' ? 'በተሳካ ሁኔታ ገብተዋል:: ወደ ዳሽቦርድ በመውሰድ ላይ...' : 'You have successfully signed in. Redirecting to dashboard...'}
+            {locale === 'am' ? 'በተሳካ ሁኔታ ገብተዋል:: ወደ ዳሽቦርድ በመውሰድ ላይ...' : locale === 'ti' ? 'ብዝተዓወተ መንገዲ አቲኹም አለኹም። ናብ ዳሽቦርድ ይወስደኩም አሎ...' : 'You have successfully signed in. Redirecting to dashboard...'}
           </p>
           <Loader2 className="animate-spin text-primary mx-auto" size={24} />
         </div>
@@ -95,11 +95,11 @@ function VerifyOtpContent() {
             </div>
             
             <h2 className="text-3xl font-black text-accent italic">
-              {locale === 'am' ? 'ኢሜልዎን ያረጋግጡ' : locale === 'ar' ? 'تحقق من البريد الإلكتروني' : locale === 'om' ? 'Imeelii keessan mirkaneessaa' : 'Verify Email'}
+              {locale === 'am' ? 'ኢሜልዎን ያረጋግጡ' : locale === 'ar' ? 'تحقق من البريد الإلكتروني' : locale === 'om' ? 'Imeelii keessan mirkaneessaa' : locale === 'ti' ? 'ኢሜልኩም አረጋግጹ' : 'Verify Email'}
             </h2>
             
             <p className="text-gray-500 font-medium">
-              {locale === 'am' ? `ወደ ${email} የላክነውን ባለ 6 ዲጂት ኮድ ያስገቡ` : `Enter the 6-digit code we sent to ${email}`}
+              {locale === 'am' ? `ወደ ${email} የላክነውን ባለ 6 ዲጂት ኮድ ያስገቡ` : locale === 'ti' ? `ናብ ${email} ዝሰደድናዮ 6 ቁጽሪ ዘለዎ ኮድ አእትዉ` : `Enter the 6-digit code we sent to ${email}`}
             </p>
 
             <form onSubmit={handleVerifyOTP} className="space-y-6">
@@ -125,7 +125,7 @@ function VerifyOtpContent() {
                 {isSubmitting ? (
                    <Loader2 className="animate-spin" size={20} />
                 ) : (
-                   <>{locale === 'am' ? 'አረጋግጥ' : 'Verify & Continue'} <ChevronRight size={18} /></>
+                   <>{locale === 'am' ? 'አረጋግጥ' : locale === 'ti' ? 'አረጋግጥ' : 'Verify & Continue'} <ChevronRight size={18} /></>
                 )}
               </button>
             </form>
@@ -134,7 +134,7 @@ function VerifyOtpContent() {
               onClick={() => router.push('/signup')}
               className="text-gray-400 text-[10px] font-black uppercase tracking-widest hover:text-primary transition-colors"
             >
-              {locale === 'am' ? 'ተመለስ' : 'Go Back'}
+              {locale === 'am' ? 'ተመለስ' : locale === 'ti' ? 'ተመለሱ' : 'Go Back'}
             </button>
           </div>
         </div>

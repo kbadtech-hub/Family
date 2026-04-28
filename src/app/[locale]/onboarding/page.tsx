@@ -71,7 +71,7 @@ function OnboardingContent() {
     eth_birth_day: '',
     eth_birth_month: '',
     eth_birth_year: '',
-    calendar_type: (locale === 'am' || locale === 'om') ? 'ethiopian' : 'gregorian',
+    calendar_type: (locale === 'am' || locale === 'om' || locale === 'ti') ? 'ethiopian' : 'gregorian',
     future_children: '',
     id_photo: '',
     selfie_photo: ''
@@ -84,7 +84,7 @@ function OnboardingContent() {
       const next = { ...prev, [field]: value };
       
       // Handle Ethiopian Date Conversion
-      if (field.startsWith('eth_') && (locale === 'am' || locale === 'om')) {
+      if (field.startsWith('eth_') && (locale === 'am' || locale === 'om' || locale === 'ti')) {
         if (next.eth_birth_day && next.eth_birth_month && next.eth_birth_year) {
           try {
             const [gy, gm, gd] = ethiopianDate.toGregorian(
@@ -170,10 +170,10 @@ function OnboardingContent() {
         if (!formData.partner_intent) return t('errors.partnerIntentRequired');
         break;
       case 4: // ID Upload
-        if (!formData.id_photo) return locale === 'am' ? 'እባክዎ መታወቂያዎን ያስገቡ' : 'Please upload your ID';
+        if (!formData.id_photo) return t('idVerification.doc');
         break;
       case 5: // Selfie
-        if (!formData.selfie_photo) return locale === 'am' ? 'እባክዎ ሰልፊ ፎቶዎን ያስገቡ' : 'Please take a selfie';
+        if (!formData.selfie_photo) return t('idVerification.takeSelfie');
         break;
       default:
         return null;
@@ -287,7 +287,7 @@ function OnboardingContent() {
 
                 <select value={formData.location} aria-label={t('fields.location')} onChange={(e) => updateField('location', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
                   <option value="">{t('fields.location')}</option>
-                  {COUNTRIES.map(c => <option key={c.iso} value={c.name}>{t_const(`Countries.${c.name}`) || c.name}</option>)}
+                  {[...COUNTRIES].sort((a, b) => (t_const(`Countries.${a.name}`) || a.name).localeCompare(t_const(`Countries.${b.name}`) || b.name, locale)).map(c => <option key={c.iso} value={c.name}>{t_const(`Countries.${c.name}`) || c.name}</option>)}
                 </select>
 
                 <select value={formData.religion} aria-label={t('fields.religion')} onChange={(e) => updateField('religion', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
@@ -305,8 +305,8 @@ function OnboardingContent() {
                   {HAVE_CHILDREN_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`Children.${o}`)}</option>)}
                 </select>
 
-                <select value={formData.future_children} aria-label={locale === 'am' ? 'የልጅ እቅድ' : 'Future Children'} onChange={(e) => updateField('future_children', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
-                  <option value="">{locale === 'am' ? 'የልጅ እቅድ' : 'Future Children'}</option>
+                <select value={formData.future_children} aria-label={t('fields.futureChildren') || t('fields.partnerIntent')} onChange={(e) => updateField('future_children', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                  <option value="">{t('fields.futureChildren') || t('fields.partnerIntent')}</option>
                   {FUTURE_CHILDREN_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`FutureChildren.${o}`)}</option>)}
                 </select>
               </div>
@@ -358,7 +358,7 @@ function OnboardingContent() {
                <div className="space-y-2">
                   <span className="text-sm font-bold text-gray-700">{t('fields.partnerCountry')}</span>
                   <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 bg-muted/50 rounded-xl">
-                    {[{name:'Anywhere'}, ...COUNTRIES].map(c => (
+                    {[{name:'Anywhere'}, ...[...COUNTRIES].sort((a, b) => (t_const(`Countries.${a.name}`) || a.name).localeCompare(t_const(`Countries.${b.name}`) || b.name, locale))].map(c => (
                       <button key={c.name} type="button" aria-label={c.name === 'Anywhere' ? 'Anywhere' : t_const(`Countries.${c.name}`) || c.name} onClick={() => {
                         if (c.name === 'Anywhere') return updateField('partner_countries', ['Anywhere']);
                         const next = formData.partner_countries.filter(pc => pc !== 'Anywhere');
@@ -389,8 +389,8 @@ function OnboardingContent() {
               <div className="w-20 h-20 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mx-auto">
                  <Upload size={40} className="text-primary" />
               </div>
-              <h2 className="text-3xl font-black text-accent italic">{locale === 'am' ? 'መታወቂያዎን ያስገቡ' : 'Upload ID'}</h2>
-              <p className="text-gray-500 max-w-sm mx-auto">{locale === 'am' ? 'እባክዎ ትክክለኛ መታወቂያዎን ወይም ፓስፖርትዎን ፎቶ ያንሱ ወይም ያስገቡ' : 'Please upload a clear photo of your ID Card or Passport.'}</p>
+              <h2 className="text-3xl font-black text-accent italic">{t('idVerification.title')}</h2>
+              <p className="text-gray-500 max-w-sm mx-auto">{t('idVerification.subtitle')}</p>
             </div>
 
             <label className="block w-full aspect-video rounded-[2.5rem] border-2 border-dashed border-primary/20 bg-muted/30 hover:bg-primary/5 transition-all cursor-pointer relative overflow-hidden group">
@@ -401,13 +401,13 @@ function OnboardingContent() {
                     <div className="w-12 h-12 bg-white rounded-2xl shadow-lg flex items-center justify-center text-primary group-hover:scale-110 transition-all">
                        <Camera size={24} />
                     </div>
-                    <span className="text-xs font-black uppercase tracking-widest text-gray-400">{locale === 'am' ? 'ፎቶ ለማንሳት እዚህ ይጫኑ' : 'Click to Upload / Capture'}</span>
+                    <span className="text-xs font-black uppercase tracking-widest text-gray-400">{t('idVerification.uploadClick').replace('{type}', '')}</span>
                  </div>
                )}
                <input 
                  type="file" 
                  accept="image/*" 
-                 aria-label={locale === 'am' ? 'መታወቂያ ያስገቡ' : 'Upload ID'}
+                 aria-label={t('idVerification.doc')}
                  className="hidden" 
                  onChange={async (e) => {
                    const file = e.target.files?.[0];
@@ -432,8 +432,8 @@ function OnboardingContent() {
               <div className="w-20 h-20 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mx-auto">
                  <User size={40} className="text-primary" />
               </div>
-              <h2 className="text-3xl font-black text-accent italic">{locale === 'am' ? 'ሰልፊ ይነሱ' : 'Take a Selfie'}</h2>
-              <p className="text-gray-500 max-w-sm mx-auto">{locale === 'am' ? 'ፊቱ በግልጽ የሚታይ አሁናዊ የሰልፊ ፎቶ ይነሱ' : 'Take a clear live selfie to match with your ID.'}</p>
+              <h2 className="text-3xl font-black text-accent italic">{t('idVerification.takeSelfie')}</h2>
+              <p className="text-gray-500 max-w-sm mx-auto">{t('idVerification.livePhoto')}</p>
             </div>
 
             <label className="block w-64 h-64 mx-auto rounded-full border-4 border-dashed border-primary/20 bg-muted/30 hover:bg-primary/5 transition-all cursor-pointer relative overflow-hidden group">
@@ -442,13 +442,13 @@ function OnboardingContent() {
                ) : (
                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
                     <Camera size={32} className="text-primary group-hover:scale-110 transition-all" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{locale === 'am' ? 'ሰልፊ ይነሱ' : 'Capture Selfie'}</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t('idVerification.takeSelfie')}</span>
                  </div>
                )}
                <input 
                  type="file" 
                  accept="image/*" 
-                 aria-label={locale === 'am' ? 'ሰልፊ ይነሱ' : 'Take Selfie'}
+                 aria-label={t('idVerification.takeSelfie')}
                  className="hidden" 
                  onChange={async (e) => {
                    const file = e.target.files?.[0];
@@ -483,7 +483,7 @@ function OnboardingContent() {
                            verification_status: 'verified'
                          }).eq('id', userId);
                        } else {
-                         setErrorMsg(locale === 'am' ? 'ማረጋገጫ አልተሳካም: ' + result.reason : 'Verification Failed: ' + result.reason);
+                         setErrorMsg(t('idVerification.rejected') + ": " + result.reason);
                        }
                      });
                    }
@@ -496,14 +496,14 @@ function OnboardingContent() {
               <div className="bg-primary/5 p-6 rounded-[2rem] border border-primary/10">
                  {isVerifying ? (
                    <p className="text-xs font-bold text-primary uppercase tracking-widest flex items-center justify-center gap-2 animate-pulse">
-                     <Loader2 className="animate-spin" size={14} /> {locale === 'am' ? 'መረጃዎችዎን እያመሳከርን ነው...' : 'Verifying Identity Match...'}
+                     <Loader2 className="animate-spin" size={14} /> {locale === 'am' || locale === 'ti' ? (locale === 'am' ? 'መረጃዎችዎን እያመሳከርን ነው...' : 'ሓበሬታታትኩም ነረጋግጽ ኣለና...') : 'Verifying Identity Match...'}
                    </p>
                  ) : (
                    <div className="flex flex-col items-center gap-2">
                       <div className="flex items-center gap-2 text-green-600 font-bold uppercase tracking-widest text-[10px]">
-                         <CheckCircle2 size={16} /> {locale === 'am' ? 'ተረጋግጧል' : 'Verified'}
+                         <CheckCircle2 size={16} /> {t('idVerification.uploaded')}
                       </div>
-                      <p className="text-[10px] text-gray-400">{locale === 'am' ? 'መታወቂያዎ እና ሰልፊዎ ተመሳስለዋል' : 'ID and Selfie matched successfully'}</p>
+                      <p className="text-[10px] text-gray-400">{t('idVerification.idCaptured')}</p>
                    </div>
                  )}
               </div>
@@ -521,7 +521,7 @@ function OnboardingContent() {
                 {formData.gallery_photos.map((url, i) => (
                    <div key={i} className="relative aspect-[3/4] rounded-2xl overflow-hidden group">
                       <Image src={url} fill className="object-cover" alt="Gallery" />
-                      <button type="button" aria-label={locale === 'am' ? 'ፎቶ አስወግድ' : 'Remove Photo'} onClick={() => updateField('gallery_photos', formData.gallery_photos.filter((_, idx) => idx !== i))} className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"><X size={12} /></button>
+                      <button type="button" aria-label={t('Nav.about')} onClick={() => updateField('gallery_photos', formData.gallery_photos.filter((_, idx) => idx !== i))} className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"><X size={12} /></button>
                    </div>
                 ))}
                 {formData.gallery_photos.length < 5 && (
