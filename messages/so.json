@@ -62,7 +62,26 @@
     "subscription": "Diiwaangelinta Lacagta",
     "verifyBannerTitle": "Xaqiijin ayaa loo baahan yahay",
     "verifyBannerSub": "Profile-kaaga weli ma dhammaystirna. Fadlan xaqiiji macluumaadkaaga si aad u bilowdo raadinta lammaanahaaga.",
-    "verifyNow": "Hadda xaqiiji"
+    "verifyNow": "Hadda xaqiiji",
+    "matchingLocked": "Ciyaaraha waa la xiray",
+    "matchingLockedSub": "Fadlan dhamaystir xaqiijintaada si aad u aragto lammaanahaaga.",
+    "completeOnboarding": "Dhamaystir Onboarding"
+  },
+  "Footer": {
+    "tagline": "ቤተሰብ | Beteseb - Isku xirka Qoysaska Habesha ee Caalamka",
+    "description": "Isku keenida qoysaska Itoobiya ee caalamka oo dhan iyadoo la adeegsanayo dhaqanka, tignoolajiyada, iyo diirimaad aan shuruud lahayn.",
+    "connect": "Ku xirnow",
+    "platform": "Barxadda",
+    "legal": "Sharci",
+    "vision": "Aragtidayada",
+    "classes": "Xiisadaha Is-waafajinta",
+    "start": "Bilow Is-waafajinta",
+    "terms": "Shuruudaha Adeegga",
+    "privacy": "Siyaasadda Khaaska ah",
+    "admin": "Albaabka Amniga Admin",
+    "copyright": "© 2026 Beteseb (ቤተሰብ). Isku keenida Habesha.",
+    "address": "Harar, Itoobiya",
+    "community": "Wararka Bulshada"
   },
   "Auth": {
     "signIn": "Soo gal",
@@ -81,6 +100,109 @@
       "passwordTooWeak": "Erayga sirta ah waa inuu ku jiraa ugu yaraan hal lambar iyo hal calaamad gaar ah (@, #, $).",
       "passwordCommon": "Fadlan isticmaal eray sir ah oo xoog badan. Kan waa mid aad caadi u ah."
     }
+  },
+  "Community": {
+    "title": "La-talinta Qoyska & Bulshada",
+    "subtitle": "Kala hadal qiyamka dhaqanka, talooyinka guurka, iyo mawduucyada dhaqanka qoyska Beteseb.",
+    "newPostPlaceholder": "La wadaag fikradahaaga ama weydiiso talo...",
+    "postButton": "Ku dheji Bulshada",
+    "feedTitle": "Wadahadalladii u dambeeyay",
+    "adminApprovalNote": "Qoraallada waxaa dib u eega dhexdhexaadiyeyaasha si loo ilaaliyo qiyamka qoyska.",
+    "authorFormat": "Waxaa soo dhigay",
+    "pending": "Ansixin ayaa la sugayaa",
+    "languageToggle": "Beddel Luqadda",
+    "anonymousUser": "Isticmaale aan la aqoon",
+    "noPosts": "Ma jiraan qoraallo weli. Noqo qofka ugu horreeya ee bilaaba wadahadalka!",
+    "like": "Jeclow",
+    "reply": "U jawaab",
+    "loginRequired": "Fadlan isdiiwaangeli/soo gal si aad wax u soo dhigto",
+    "moderated": "La dhexdhexaadiyay",
+    "topicDay": "Mawduuca Maalinta",
+    "topicQuestion": "\"Waa maxay saddexda qiyam ee muhiimka ah ee aad u malaynayso inay lagama maarmaan u yihiin guur waara xilligan dhijitaalka ah?\"",
+    "topicJoin": "Ku biir wadahadalka adiga iyo 1,200+ xubnood oo qoyska Beteseb ah. Codkaagu waa muhiim.",
+    "joinBtn": "Ku biir Wadahadalka",
+    "aiFilter": "AI Filter-ka Amniga waa Firfircoon yahay",
+    "checking": "Hubinta...",
+    "verifyToPostTitle": "Xaqiijin ayaa looga baahan yahay in wax la soo dhigo",
+    "verifyToPostSub": "Waad akhrin kartaa qoraallada bulshada, laakiin waxaad u baahan tahay inaad xaqiijiso aqoonsigaaga si aad ugu biirto wadahadalka.",
+    "memberBadge": "Xubinta Beteseb",
+    "loadingFeed": "Soo rarida Wararka Qoyska...",
+    "safetyAlert": "Qoraalkaagu wuxuu ka kooban yahay waxyaabo aan waafaqsanayn qiyamka bulshada ee qoyska. Fadlan ixtiraam u muuji.",
+    "categories": {
+      "all": "Dhammaan Qoraallada",
+      "success_story": "Sheekooyinka Guusha",
+      "lesson_learned": "Casharrada la Bartay",
+      "expert_class": "Xiisadaha Khuburada"
+    },
+    "poll": {
+      "vote": "Codee",
+      "voted": "Waa la codeeyay",
+      "total": "{count} codad"
+    },
+    "interactions": {
+      "reply": "U jawaab",
+      "share": "La wadaag",
+      "showReplies": "Muuji {count} jawaabood",
+      "writeComment": "Qor faallo...",
+      "expertBadge": "Khabiir La Hubiyay",
+      "linkCopied": "Xiriirka waa la koobiyeeyay!"
+    },
+    "media": {
+      "uploadPhoto": "Ku dar Sawir",
+      "uploadVideo": "Ku dar Muuqaal"
+    }
+  },
+  "About": {
+    "tagline": "Aragtidayada Wadnaha Itoobiya.",
+    "subtitle": "Beteseb waa ka badan baraha is-waafajinta. Waa ilaalinta dhijitaalka ah ee dhaqanka...",
+    "missionTitle": "Hadafka",
+    "missionDesc": "Waxaan hiigsaneynaa inaan meesha ka saarno caqabadaha fogaanta...",
+    "mission1": "Xaqiijinta aqoonsiga ee khasabka ah dhammaan xubnaha.",
+    "mission2": "Isku-dhafka caqliga is-waafajinta ee Abushakir.",
+    "mission3": "La-talinta qoyska guurka ka hor oo ay hogaaminayaan khubaro.",
+    "mission4": "Dhexdhexaadin bulshadu hogaaminayso oo loogu talagalay sirta.",
+    "principlesTag": "Mabaadi'da Muhiimka ah",
+    "principlesTitle": "Dhaqanka. Kalsoonida. Tignoolajiyada.",
+    "value1Title": "Qoyska ayaa Horreeya",
+    "value1Desc": "Wax kasta oo aan sameyno waxay diiradda saaraan cimriga dhererka qoyska...",
+    "value2Title": "Sharafta Dhaqanka",
+    "value2Desc": "Waan ixtiraameynaa oo aan ilaalineynaa hiddaha...",
+    "value3Title": "Amniga Absolute",
+    "value3Desc": "Siyaasad dulqaad eber ah oo ka dhan ah dhaqan xumada...",
+    "ctaTitle": "Noqo mid ka mid ah dhaxalka.",
+    "ctaButton": "Ku biir Beteseb Maanta",
+    "ourStory": "Sheekadeena",
+    "joinStats": "Ku biir 1,000+ Qoysas Faraxsan"
+  },
+  "Resources": {
+    "learningHub": "Xarunta Waxbarashada",
+    "heroTitle": "Aqoon u leh {betterLife}",
+    "betterLife": "Nolol ka wanaagsan.",
+    "searchPlaceholder": "Raadi agabka...",
+    "noMatch": "Ma jiraan agab u dhigma",
+    "noMatchSubtitle": "Isku day inaad hagaajiso filtarradaada ama ereyada raadinta.",
+    "readCollection": "Akhri Ururinta",
+    "deepLearn": "Ma rabtaa inaad wax u barato {deeply}?",
+    "deeply": "si qoto dheer?",
+    "joinDesc": "Ku biir bulshadayada si aad u hesho aqoon-is-weydaarsiyo gaar ah..."
+  },
+  "Chatbot": {
+    "welcome": "Ku soo dhowow Beteseb! Sideen kaaga caawin karaa inaad hesho lammaanahaaga saxda ah maanta?",
+    "faq": {
+      "abushakir": "Matoorkayaga is-waafajinta ee gaarka ah wuxuu ku salaysan yahay Abushakir...",
+      "pricing": "Waxaan bixinaa qiime kala duwan oo ku habboon goobtaada...",
+      "verified": "Xaqiijintu waa khasab si qoyskeena looga ilaaliyo khatarta...",
+      "hello": "Hallow! Waxaan ahay Kaaliyaha AI ee Beteseb...",
+      "default": "Waxaan ku takhasusay sharaxaadda nidaamkayaga is-waafajinta..."
+    },
+    "placeholder": "Wax i weydii...",
+    "status": "Kaaliyaha Online-ka ah",
+    "btn": {
+      "abushakir": "Abushakir",
+      "pricing": "Qiimaha",
+      "verified": "Xaqiijinta"
+    },
+    "botName": "Beteseb AI"
   },
   "Onboarding": {
     "title": "Albaabka Qoyska",
@@ -128,102 +250,211 @@
       "starSign": "Calaamadda Xiddigga",
       "unknown": "Lama yaqaan",
       "abushakirBadge": "Matoorka Abushakir",
-      "country": "Dalka"
+      "country": "Dalka",
+      "countryPlaceholder": "Dooro Dalka",
+      "hasChildren": "Caruur ma leedahay?",
+      "partnerPrefs": "Doorbidka Lammaanaha",
+      "partnerAge": "Dhowr sano (Age Range)",
+      "partnerCountry": "Goobta Lammaanaha",
+      "partnerReligion": "Diinta Lammaanaha",
+      "partnerIntent": "Xaaladda Guurka & Ujeedada"
     },
-    "errors": {
-      "required": "Goobtan waa qasab",
-      "emailInvalid": "Iimaylku ma saxna",
-      "passwordShort": "Erayga sirta ah waa mid aad u gaaban (min 8)",
+    "idVerification": {
+      "title": "Xaqiijinta Aqoonsiga",
+      "subtitle": "Naga caawi inaan Beteseb ka dhigno meel ammaan ah. Aqoonsiga rasmiga ah ayaa loo baahan yahay.",
+      "uploadClick": "Guji si aad u soo rarto {type}",
+      "uploadHint": "PNG, JPG, ama PDF (max. 10MB)",
+      "uploaded": "Dukumeentiga waa la soo raray!",
+      "doc": "Soo rar Dukumeentiga",
+      "idType": "Kaarka Aqoonsiga ama Baasaboor",
+      "idCaptured": "ID waa la qabtay",
+      "takeSelfie": "Qaado Selfie",
+      "livePhoto": "Sawir toos ah oo iswaafaqsan",
+      "selfieCaptured": "Selfie waa la qabtay",
+      "submitAI": "U gudbi Xaqiijinta AI",
+      "rejected": "Xaqiijinta waa la diiday. Fadlan hubi in sawiradaadu cad yihiin oo isku day markale."
+    },
+    "nav": {
+      "back": "Dib u laabo",
+      "continue": "Sii wad",
       "finish": "Xaqiiji & Dhammee",
-      "processing": "Waa socotaa...",
-      "locationMismatch": "Goobta aad dooratay inaad ka soo gashid iyo dalka aad profile-kaaga ku buuxisay isma laha. Fadlan sax."
+      "processing": "Waa socotaa..."
     },
     "loading": "Beteseb | Soo rarida Albaabka Qoyska...",
-    "footerTagline": "Isku keenida qoysaska Itoobiya ee caalamka",
+    "footerTagline": "Isku keenida Qoysaska Itoobiya ee Caalamka",
     "calendar": {
-      "label": "Nooca Kalandarka",
       "ethiopian": "Kalandarka Itoobiya",
-      "gregorian": "Kalandarka Gregorian (Yurub)",
-      "day": "Maalinta",
-      "month": "Bisha",
-      "year": "Sanadka"
+      "gregorian": "Kalandarka Miilaadiga",
+      "day": "Maalin",
+      "month": "Bil",
+      "year": "Sanad"
+    },
+    "errors": {
+      "emailRequired": "Fadlan geli iimaylkaaga",
+      "phoneRequired": "Fadlan geli nambarkaaga taleefanka",
+      "passwordLength": "Erayga sirta ah waa inuu ahaadaa ugu yaraan 6 xaraf",
+      "fullNameRequired": "Fadlan geli magacaaga oo buuxa",
+      "birthDateRequired": "Fadlan geli taariikhda dhalashadaada",
+      "genderRequired": "Fadlan dooro jinsigaaga",
+      "locationRequired": "Fadlan dooro goobtaada",
+      "religionRequired": "Fadlan dooro diintaada",
+      "maritalRequired": "Fadlan dooro heerka guurkaaga",
+      "jobRequired": "Fadlan dooro shaqadaada",
+      "financeRequired": "Fadlan dooro caadooyinka dhaqaalaha",
+      "valuesRequired": "Fadlan dooro qiyamka qoyska",
+      "conflictRequired": "Fadlan dooro qaabka xallinta khilaafaadka",
+      "requirementsRequired": "Fadlan qeex shuruudahaaga lammaanaha",
+      "partnerCountryRequired": "Fadlan dooro ugu yaraan hal waddan oo lammaane ah",
+      "partnerReligionRequired": "Fadlan dooro diinta lammaanaha",
+      "partnerIntentRequired": "Fadlan dooro heerka guurka iyo ujeedada",
+      "otpRequired": "Fadlan geli koodka 6-da god ah",
+      "locationMismatch": "Goobta aad dooratay inaad ka soo gashid iyo dalka aad profile-kaaga ku buuxisay isma laha. Fadlan sax."
     }
+  },
+  "Classes": {
+    "hero": {
+      "tagline": "Safarka Isu-hagaajinta ee Haggaasan",
+      "title1": "In ka badan Is-waafajin.",
+      "title2": "Xikmad Nololeed.",
+      "subtitle": "Ku biir aqoon-is-weydaarsiyadayada iyo xiisadaha guurka ka hor...",
+      "cta": "Isku diwaangeli Helitaanka aan xadidnayn"
+    },
+    "list": {
+      "class1": {
+        "title": "Fahamka Abushakir",
+        "desc": "Falanqayn qoto dheer oo ku saabsan sida ay u shaqeyso caqliga is-waafajinta Itoobiya ee hore...",
+        "date": "Talaado kasta @ 7 PM (CET)",
+        "badge": "BILAASH AH XUBNAHA"
+      },
+      "class2": {
+        "title": "Qiyamka Qoyska ee Dhaqanka",
+        "desc": "Maareynta guurka casriga ah iyadoo la haysto tiirarka dhaqanka Itoobiya...",
+        "date": "Khamiis kasta @ 6 PM (CET)",
+        "badge": "LOO JECEL YAHAY"
+      },
+      "class3": {
+        "title": "Safarka La Hubiyay",
+        "desc": "Sida saxda ah ee loo diyaariyo profile-kaaga...",
+        "date": "Sabti kasta @ 11 AM (CET)",
+        "badge": "BILOWGA"
+      }
+    },
+    "counseling": {
+      "tagline": "Taageero Shakhsi ah",
+      "title1": "Khubaro Caalami ah.",
+      "title2": "Adeeggaaga.",
+      "subtitle": "La-taliyayaashayada takhasuska leh waxay bixiyaan fadhiyo gaar ah...",
+      "stat1Value": "500+",
+      "stat1Label": "La-taliyayaal Firfircoon",
+      "stat2Value": "100%",
+      "stat2Label": "Sir Ah",
+      "curriculumTitle": "Xuddunta Manhajka",
+      "topics": {
+        "t1": "Dhaqdhaqaaqa Dhaqamada Kala Duwan",
+        "t2": "Xallinta Khilaafaadka",
+        "t3": "Maareynta Maaliyadda",
+        "t4": "Doorarka Dhaqanka & Xaqiiqooyinka Casriga ah"
+      }
+    },
+    "footerMeta": "Awood-siinta Qurba-joogta",
+    "footerCTA": "Bilow Helitaanka Qoyskaaga Premium"
   },
   "Constants": {
     "Religions": {
-      "orthodox": "Kirishtaan Orthodox",
-      "protestant": "Kirishtaan Protestant",
-      "catholic": "Kirishtaan Kaatoolig ah",
-      "muslim": "Muslim",
-      "other": "Ku kale"
+      "Orthodox": "Ortodoks",
+      "Protestant": "Borotestaanka",
+      "Catholic": "Kaatooligga",
+      "Muslim": "Muslim",
+      "Other": "Kuwo kale"
     },
     "Genders": {
-      "male": "Lab",
-      "female": "Dheddig"
+      "Male": "Lab",
+      "Female": "Dheddig"
     },
     "Marital": {
-      "single": "Keligiis",
-      "divorced": "La furay",
-      "widowed": "Carmal",
-      "Single": "Keligiis",
+      "Never Married": "Waligii ma guursan",
       "Divorced": "La furay",
-      "Widowed": "Carmal"
+      "Does Not Matter": "Ma quseeyo"
     },
-    "Jobs": {
-      "professional": "Xirfadle",
-      "business": "Ganacsi",
-      "student": "Arday",
-      "other": "Ku kale",
-      "Technology & IT": "Tignoolajiyada",
-      "Healthcare & Medical": "Caafimaadka",
-      "Education & Research": "Waxbarashada",
-      "Business & Finance": "Ganacsiga",
-      "Arts & Entertainment": "Fanka",
-      "Engineering & Construction": "Injineernimada",
-      "Legal & Law Enforcement": "Sharciga",
-      "Service & Hospitality": "Adeegga",
-      "Government & Public Service": "Dawladda",
-      "Agriculture & Nature": "Beeraha",
-      "Other": "Ku kale"
+    "Children": {
+      "Yes": "Haa, caruur baan leeyahay",
+      "No": "Caruur ma lihi",
+      "Does Not Matter": "Ma quseeyo"
     },
-    "Values": {
-      "traditional": "Dhaqan",
-      "modern": "Casri ah",
-      "religious": "Diini ah",
-      "Traditional": "Dhaqan",
-      "Modern": "Casri ah",
-      "Liberal": "Xorriyad",
-      "Religious-Centric": "Diini ah"
+    "FutureChildren": {
+      "Wants Children": "Wuxuu rabaa caruur",
+      "Does Not Want Children": "Ma rabo caruur",
+      "Does Not Matter": "Ma quseeyo"
     },
     "Finance": {
-      "saver": "Keydiye",
-      "spender": "Kharash gareeye",
-      "balanced": "Isku dheelitiran",
-      "Saver": "Keydiye",
       "Spender": "Kharash gareeye",
-      "Balanced": "Isku dheelitiran",
-      "Frugal": "Keydiye"
+      "Saver": "Kaydiye",
+      "Balanced": "Dhexdhexaad",
+      "Frugal": "Dhaqaale-yaqe"
+    },
+    "Values": {
+      "Traditional": "Dhaqan",
+      "Modern": "Casri",
+      "Liberal": "Liberal",
+      "Religious-Centric": "Diin-u-dhaxeeya"
     },
     "Conflict": {
-      "talk": "Wadahadal",
-      "space": "Boos sii",
-      "expert": "Talo khabiir",
       "Direct Discussion": "Wadahadal toos ah",
-      "Indirect / Subtle": "Aamusnaan",
+      "Indirect / Subtle": "Dadban / Khafiif ah",
       "Silent Treatment": "Aamusnaan",
-      "Mediation Required": "Talo khabiir"
+      "Mediation Required": "Dhexdhexaadin ayaa loo baahan yahay"
+    },
+    "Months": {
+      "Meskerem": "Meskerem",
+      "Tikemt": "Tikemt",
+      "Hidar": "Hidar",
+      "Tahsas": "Tahsas",
+      "Tir": "Tir",
+      "Yekatit": "Yekatit",
+      "Megabit": "Megabit",
+      "Miazia": "Miazia",
+      "Genbot": "Genbot",
+      "Sene": "Sene",
+      "Hamle": "Hamle",
+      "Nehase": "Nehase",
+      "Pagume": "Pagume"
+    },
+    "Locations": {
+      "Addis Ababa": "Addis Ababa",
+      "Dire Dawa": "Dire Dawa",
+      "Mekelle": "Mekelle",
+      "Adama": "Adama",
+      "Bahir Dar": "Bahir Dar",
+      "Gondar": "Gondar",
+      "Hawassa": "Hawassa",
+      "Jimma": "Jimma",
+      "Jijiga": "Jijiga",
+      "Other (International)": "Kuwo kale (Caalami)"
+    },
+    "Jobs": {
+      "Technology & IT": "Tiknoolajiyadda & IT",
+      "Healthcare & Medical": "Daryeelka Caafimaadka & Caafimaadka",
+      "Education & Research": "Waxbarashada & Cilmi-baarista",
+      "Business & Finance": "Ganacsiga & Maaliyadda",
+      "Arts & Entertainment": "Farshaxanka & Madadaalada",
+      "Engineering & Construction": "Injineernimada & Dhismaha",
+      "Legal & Law Enforcement": "Sharciga & Fulinta Sharciga",
+      "Service & Hospitality": "Adeegga & Martigelinta",
+      "Government & Public Service": "Dawladda & Adeegga Dadweynaha",
+      "Agriculture & Nature": "Beeraha & dabeecadda",
+      "Other": "Kuwo kale"
     },
     "Requirements": {
-      "Religious Compatibility": "Isku habboonaanta diinta",
-      "Family Oriented": "Dhinaca qoyska u janjeera",
-      "Career Focused": "Dhinaca shaqada u janjeera",
-      "Traditional Values": "Qiimaha dhaqanka",
-      "Modern Outlook": "Aragti casri ah",
-      "Healthy Lifestyle": "Hab-nololeed caafimaad leh",
+      "Religious Compatibility": "Is-waafajinta Diinta",
+      "Family Oriented": "Qoyska u janjeera",
+      "Career Focused": "Shaqada xoogga saara",
+      "Traditional Values": "Qiyamka Dhaqanka",
+      "Modern Outlook": "Aragti Casri ah",
+      "Healthy Lifestyle": "Hab-nololeed Caafimaad leh",
       "Wants Children": "Wuxuu rabaa caruur",
-      "Travel Lover": "Jecel socdaalka",
-      "Education Priority": "Mudnaanta waxbarashada",
-      "Financial Stability": "Xasiloonida maaliyadeed"
+      "Travel Lover": "Jecel Socdaalka",
+      "Education Priority": "Ahmiyadda Waxbarashada",
+      "Financial Stability": "Deganaanshaha Maaliyadda"
     },
     "Countries": {
       "Ethiopia": "Itoobiya",
@@ -248,37 +479,22 @@
       "Egypt": "Masar",
       "Sudan": "Suudaan",
       "South Sudan": "Koonfurta Suudaan",
-      "Eritrea": "Ereteriya",
+      "Eritrea": "Ereeteriya",
       "Djibouti": "Jabuuti",
       "Somalia": "Soomaaliya",
-      "Uganda": "Ugaandha",
+      "Uganda": "Ugaandhaa",
       "Tanzania": "Tansaaniya",
       "Switzerland": "Iswisarland",
-      "Netherlands": "Nederland"
-    },
-    "Months": {
-      "Meskerem": "Meskerem",
-      "Tikemt": "Tikemt",
-      "Hidar": "Hidar",
-      "Tahsas": "Tahsas",
-      "Tir": "Tir",
-      "Yekatit": "Yekatit",
-      "Megabit": "Megabit",
-      "Miazia": "Miazia",
-      "Genbot": "Genbot",
-      "Sene": "Sene",
-      "Hamle": "Hamle",
-      "Nehase": "Nehase",
-      "Pagume": "Pagume"
-    },
-    "Children": {
-      "Yes": "Haa",
-      "No": "Maya"
-    },
-    "FutureChildren": {
-      "Yes": "Haa",
-      "No": "Maya",
-      "Maybe": "Laga yaabaa"
+      "Netherlands": "Nederland",
+      "Belgium": "Biljam",
+      "Qatar": "Qatar",
+      "Kuwait": "Kuweyt",
+      "Bahrain": "Baxreyn",
+      "Oman": "Cumaan",
+      "Lebanon": "Lubnaan",
+      "Jordan": "Urdun",
+      "India": "Hindiya",
+      "Pakistan": "Bakistaan"
     }
   }
 }

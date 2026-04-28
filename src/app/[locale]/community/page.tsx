@@ -17,8 +17,10 @@ import {
   CheckCircle2,
   Sparkles,
   BarChart2,
-  X
+  X,
+  Languages
 } from 'lucide-react';
+import { translator, SupportedLocale } from '@/lib/translator';
 
 interface Profile {
   full_name: string | null;
@@ -240,6 +242,35 @@ function CommunityContent() {
     }
   };
 
+  const translatePost = async (post: CommunityPost) => {
+    const translated = await translator.getOrTranslate(
+      'community_posts',
+      post.id,
+      post.content,
+      locale as SupportedLocale
+    );
+    
+    setPosts(prev => prev.map(p => 
+      p.id === post.id ? { ...p, content: translated } : p
+    ));
+  };
+
+  const translateComment = async (comment: PostComment) => {
+    const translated = await translator.getOrTranslate(
+      'post_comments',
+      comment.id,
+      comment.content,
+      locale as SupportedLocale
+    );
+    
+    setPosts(prev => prev.map(p => ({
+      ...p,
+      post_comments: p.post_comments?.map(c => 
+        c.id === comment.id ? { ...c, content: translated } : c
+      )
+    })));
+  };
+
   const pollRef = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
@@ -396,6 +427,12 @@ function CommunityContent() {
                               #{post.category?.replace('_', ' ') || 'general'}
                            </span>
                            <p className="text-gray-700 leading-relaxed text-lg font-medium">{post.content}</p>
+                           <button 
+                              onClick={() => translatePost(post)}
+                              className="flex items-center gap-1.5 text-[10px] font-black text-primary uppercase tracking-widest bg-primary/5 px-3 py-1 rounded-full hover:bg-primary hover:text-white transition-all mt-2"
+                           >
+                              <Languages size={12} /> {locale === 'am' ? 'ተርጉም' : 'Translate'}
+                           </button>
                         </div>
                         {post.media_url && (
                            <div className="mb-6 rounded-[2rem] overflow-hidden border-4 border-muted shadow-inner">
@@ -456,7 +493,15 @@ function CommunityContent() {
                                        <div className="flex-1 bg-muted/30 p-4 rounded-[1.5rem] relative">
                                           <p className="text-xs font-black text-accent mb-1">{comment.profiles?.full_name}</p>
                                           <p className="text-sm text-gray-600 font-medium">{comment.content}</p>
-                                          <button className="mt-2 text-[10px] font-black text-primary uppercase tracking-widest hover:underline">{t('interactions.reply')}</button>
+                                          <div className="flex gap-4 mt-2">
+                                             <button className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">{t('interactions.reply')}</button>
+                                             <button 
+                                                onClick={() => translateComment(comment)}
+                                                className="text-[10px] font-black text-secondary uppercase tracking-widest hover:underline flex items-center gap-1"
+                                             >
+                                                <Languages size={10} /> {locale === 'am' ? 'ተርጉም' : 'Translate'}
+                                             </button>
+                                          </div>
                                        </div>
                                     </div>
                                  ))}
