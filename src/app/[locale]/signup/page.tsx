@@ -39,6 +39,8 @@ function SignupContent() {
       return;
     }
 
+    const prefLocation = searchParams.get('pref_location');
+ 
     try {
       const { data, error: authError } = await supabase.auth.signUp({
         email,
@@ -47,7 +49,8 @@ function SignupContent() {
           emailRedirectTo: `${window.location.origin}/auth/confirm`,
           data: {
             is_onboarded: false,
-            verification_status: 'unverified'
+            verification_status: 'unverified',
+            pref_location: prefLocation || 'Local'
           }
         }
       });

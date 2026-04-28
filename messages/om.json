@@ -19,13 +19,11 @@
       "stat": "Saffisa wal-simannaa"
     },
     "modal": {
-      "step1": "Kaffaltii",
-      "where": "Eessa jirtu?",
-      "currencyNote": "Akka bakka jirtanitti kaffaltii isiniif agarsiisna.",
-      "localTitle": "Biyya keessa",
-      "localSub": "Birriidhaan",
-      "globalTitle": "Biyya alaa",
-      "globalSub": "Doolaariidhaan"
+      "step1": "Tarkaanfii 1: Bakka Filachuu",
+      "where": "Eessa jiraattu?",
+      "currencyNote": "Akka bakka jirtanitti tajaajila fooyya'aa isiniif kennuuf fayyadamna.",
+      "localTitle": "Itoophiyaa Keessa",
+      "globalTitle": "Itoophiyaan Alatti"
     }
   },
   "Nav": {
@@ -114,5 +112,39 @@
       "verified": "Mirkaneessuu"
     },
     "botName": "Beteseb AI"
+  },
+  "Onboarding": {
+    "title": "Karaa Maatii",
+    "personalDetails": "Ibsa Dhuunfaa",
+    "personalSubtitle": "Piroofayila keetiif waan bu'uuraa irraa haa eegallu.",
+    "demographics": "Haala Ummataa",
+    "career": "Hojii fi Saayikoolojii",
+    "gallery": "Suuraa",
+    "gallerySubtitle": "Haala jireenyaa fi eenyummaa kee agarsiisuuf hanga suuraa 5tti dabali.",
+    "galleryUpload": "Suuraa fe'i",
+    "galleryLimit": "Ol-aanaan suuraa 5",
+    "reviewTitle": "Piroofayila Deebisanii Ilaaluu",
+    "reviewSubtitle": "Maaloo dura ibsi kee sirrii ta'uu isaa mirkaneessi.",
+    "finishTitle": "Hundi isaa qophaa'eera!",
+    "finishSubtitle": "Piroofayilli kee ilaalamaa jira. Har'a wal-simtoota kee barbaaduu eegali.",
+    "finishCTA": "Gara Daashboordii Beteseb Seeni",
+    "fields": {
+      "fullName": "Maqaa Guutuu",
+      "birthDate": "Guyyaa Dhalootaa",
+      "gender": "Saala",
+      "location": "Bakka",
+      "religion": "Amantaa",
+      "maritalStatus": "Haala Guurmaa",
+      "jobTitle": "Hojii",
+      "financeHabit": "Amala Maallaqaa",
+      "familyValues": "Naamusaa Maatii",
+      "conflictResolution": "Hiika Wal-dhabdee",
+      "spouseRequirements": "Ulaagaa Hiriyyaa",
+      "country": "Biyya"
+    },
+    "errors": {
+      "required": "Iddoon kun dirqama",
+      "locationMismatch": "Iddoo galumsaa filattanii fi biyya piroofaayila keessan irratti guuttan waan wal hin simneef maaloo sirreessaa"
+    }
   }
 }

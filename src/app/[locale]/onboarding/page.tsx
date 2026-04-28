@@ -42,6 +42,7 @@ function OnboardingContent() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [userId, setUserId] = useState<string | null>(null);
+  const [prefLocation, setPrefLocation] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
@@ -113,6 +114,7 @@ function OnboardingContent() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
         setUserId(user.id);
+        setPrefLocation(user.user_metadata?.pref_location || null);
         // Pre-fill existing data if any
         supabase.from('profiles').select('*').eq('id', user.id).single().then(({ data }) => {
           if (data) {
@@ -154,6 +156,15 @@ function OnboardingContent() {
         if (!formData.birth_date) return t('errors.birthDateRequired');
         if (!formData.gender) return t('errors.genderRequired');
         if (!formData.location) return t('errors.locationRequired');
+        
+        // Location Integrity Check
+        if (prefLocation === 'Local' && formData.location !== 'Ethiopia') {
+          return t('errors.locationMismatch');
+        }
+        if (prefLocation === 'Diaspora' && formData.location === 'Ethiopia') {
+          return t('errors.locationMismatch');
+        }
+
         if (!formData.religion) return t('errors.religionRequired');
         if (!formData.marital_status) return t('errors.maritalRequired');
         break;

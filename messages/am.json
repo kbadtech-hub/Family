@@ -19,13 +19,11 @@
       "stat": "የትክክለኛነት መጠን"
     },
     "modal": {
-      "step1": "ክፍያ",
-      "where": "የት ነው ያሉት?",
-      "currencyNote": "በምንዛሬ እናሳይዎታለን",
+      "step1": "ደረጃ 1: ቦታ ይምረጡ",
+      "where": "የት ነው የሚኖሩት?",
+      "currencyNote": "ያሉበትን ቦታ መሰረት በማድረግ የተሻለ አገልግሎት እንሰጥዎታለን።",
       "localTitle": "ኢትዮጵያ ውስጥ",
-      "localSub": "በብር",
-      "globalTitle": "በውጭ",
-      "globalSub": "በዶላር"
+      "globalTitle": "ከኢትዮጵያ ውጭ"
     }
   },
   "Nav": {
@@ -309,7 +307,8 @@
       "partnerCountryRequired": "እባክዎ ቢያንስ አንድ የሀገር ምርጫ ይምረጡ",
       "partnerReligionRequired": "እባክዎ የአጋር ሃይማኖት ይምረጡ",
       "partnerIntentRequired": "እባክዎ የጋብቻ ሁኔታና ፍላጎት ይምረጡ",
-      "otpRequired": "እባክዎ ባለ 6 ዲጂት ኮድ ያስገቡ"
+      "otpRequired": "እባክዎ ባለ 6 ዲጂት ኮድ ያስገቡ",
+      "locationMismatch": "የመረጡት የመግቢያ ቦታ እና በፕሮፋይልዎ የሞሉት ሀገር ስለማይጣጣም እባክዎን ያስተካክሉ"
     }
   },
   "Classes": {

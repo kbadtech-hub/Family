@@ -148,7 +148,6 @@ export default function Home() {
                   </div>
                   <div>
                      <p className="text-2xl font-black text-[#0F172A] uppercase tracking-tighter">{t('modal.localTitle')}</p>
-                     <p className="text-[10px] text-gray-400 font-black tracking-widest mt-1 uppercase">{t('modal.localSub')}</p>
                   </div>
                </button>
 
@@ -161,7 +160,6 @@ export default function Home() {
                    </div>
                    <div>
                       <p className="text-2xl font-black text-[#0F172A] uppercase tracking-tighter">{t('modal.globalTitle')}</p>
-                      <p className="text-[10px] text-gray-400 font-black tracking-widest mt-1 uppercase">{t('modal.globalSub')}</p>
                    </div>
                 </button>
             </div>

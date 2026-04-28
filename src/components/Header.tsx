@@ -112,27 +112,43 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile Toggle */}
-        <button className="md:hidden p-2 text-foreground" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-          {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-        </button>
+        {/* Mobile Actions */}
+        <div className="md:hidden flex items-center gap-4">
+           {/* Mobile Language Selector */}
+           <div className="relative">
+              <button 
+                onClick={() => setIsLangOpen(!isLangOpen)}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#F8F4F1] border border-border font-bold text-[10px] uppercase tracking-widest"
+              >
+                <Globe size={14} className="text-primary" />
+                <span>{languages.find(l => l.id === locale)?.id}</span>
+                <ChevronDown size={12} className={`transition-transform duration-300 ${isLangOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isLangOpen && (
+                 <div className="absolute top-full right-0 mt-3 w-40 bg-white border border-border rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 z-[110]">
+                    {languages.map(lang => (
+                       <button 
+                         key={lang.id}
+                         onClick={() => handleLanguageChange(lang.id)}
+                         className={`w-full px-5 py-3 text-left text-xs font-bold hover:bg-[#F8F4F1] hover:text-primary transition-all flex items-center justify-between ${locale === lang.id ? 'bg-[#F8F4F1] text-primary' : 'text-foreground'}`}
+                       >
+                          {lang.label}
+                       </button>
+                    ))}
+                 </div>
+              )}
+           </div>
+
+           <button className="p-2 text-foreground" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+             {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+           </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden absolute top-full left-0 w-full bg-white border-b border-border p-10 space-y-8 flex flex-col items-center animate-in slide-in-from-top-4 duration-300 shadow-2xl">
-           <div className="grid grid-cols-2 gap-3 w-full">
-              {languages.map(lang => (
-                 <button 
-                   key={lang.id} 
-                   onClick={() => handleLanguageChange(lang.id)}
-                   className={`p-4 rounded-[1.2rem] font-bold text-xs uppercase tracking-widest border transition-all ${locale === lang.id ? 'bg-primary text-white border-primary shadow-lg' : 'bg-[#F8F4F1] border-transparent'}`}
-                 >
-                   {lang.label}
-                 </button>
-              ))}
-           </div>
-           
           <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="font-bold uppercase tracking-widest text-sm">{t('home')}</Link>
           <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="font-bold uppercase tracking-widest text-sm">{t('about')}</Link>
           <Link href="/classes" onClick={() => setIsMobileMenuOpen(false)} className="font-bold uppercase tracking-widest text-sm">{t('classes')}</Link>

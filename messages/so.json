@@ -19,13 +19,11 @@
       "stat": "Heerka isku xirka"
     },
     "modal": {
-      "step1": "Lacag bixinta",
-      "where": "Halkee ku taal?",
-      "currencyNote": "Waxaan ku tusi doonaa qiimaha ku salaysan goobtaada hadda.",
-      "localTitle": "Gudaha dalka",
-      "localSub": "Birta Itoobiya",
-      "globalTitle": "Dibadda dalka",
-      "globalSub": "Doolarka Maraykanka"
+      "step1": "Tallaabada 1: Doorashada Goobta",
+      "where": "Halkee ayaad ku nooshahay?",
+      "currencyNote": "Waxaan u isticmaalnaa goobtaada si aan kuu siino adeeg ku habboon.",
+      "localTitle": "Gudaha Itoobiya",
+      "globalTitle": "Dibadda Itoobiya"
     }
   },
   "Nav": {
@@ -137,7 +135,8 @@
       "emailInvalid": "Iimaylku ma saxna",
       "passwordShort": "Erayga sirta ah waa mid aad u gaaban (min 8)",
       "finish": "Xaqiiji & Dhammee",
-      "processing": "Waa socotaa..."
+      "processing": "Waa socotaa...",
+      "locationMismatch": "Goobta aad dooratay inaad ka soo gashid iyo dalka aad profile-kaaga ku buuxisay isma laha. Fadlan sax."
     },
     "loading": "Beteseb | Soo rarida Albaabka Qoyska...",
     "footerTagline": "Isku keenida qoysaska Itoobiya ee caalamka",

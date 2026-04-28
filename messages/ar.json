@@ -19,13 +19,11 @@
       "stat": "معدل المطابقة"
     },
     "modal": {
-      "step1": "الدفع",
-      "where": "أين تقع؟",
-      "currencyNote": "سنعرض لك الأسعار بناءً على موقعك الحالي.",
-      "localTitle": "داخل البلاد",
-      "localSub": "بالبر",
-      "globalTitle": "خارج البلاد",
-      "globalSub": "بالدولار"
+      "step1": "الخطوة 1: اختيار الموقع",
+      "where": "أين تعيش؟",
+      "currencyNote": "نستخدم موقعك لتقديم تجربة مخصصة وحماية خصوصيتك.",
+      "localTitle": "داخل إثيوبيا",
+      "globalTitle": "خارج إثيوبيا"
     }
   },
   "Nav": {
@@ -146,6 +144,40 @@
     "media": {
       "uploadPhoto": "إضافة صورة",
       "uploadVideo": "إضافة فيديو"
+    }
+  },
+  "Onboarding": {
+    "title": "بوابة العائلة",
+    "personalDetails": "التفاصيل الشخصية",
+    "personalSubtitle": "لنبدأ بالأساسيات لملفك الشخصي.",
+    "demographics": "الديموغرافيا",
+    "career": "الوظيفة وعلم النفس",
+    "gallery": "معرض الصور",
+    "gallerySubtitle": "أضف ما يصل إلى 5 صور لعرض أسلوب حياتك وشخصيتك.",
+    "galleryUpload": "تحميل الصور",
+    "galleryLimit": "بحد أقصى 5 صور",
+    "reviewTitle": "مراجعة الملف الشخصي",
+    "reviewSubtitle": "يرجى التأكد من صحة تفاصيلك قبل الإنهاء.",
+    "finishTitle": "كل شيء جاهز!",
+    "finishSubtitle": "ملفك الشخصي قيد المراجعة. ابدأ في استكشاف مطابقاتك اليوم.",
+    "finishCTA": "الدخول إلى لوحة تحكم بتسب",
+    "fields": {
+      "fullName": "الاسم الكامل",
+      "birthDate": "تاريخ الميلاد",
+      "gender": "الجنس",
+      "location": "الموقع",
+      "religion": "الدين",
+      "maritalStatus": "الحالة الاجتماعية",
+      "jobTitle": "المسمى الوظيفي",
+      "financeHabit": "العادة المالية",
+      "familyValues": "القيم العائلية",
+      "conflictResolution": "حل النزاعات",
+      "spouseRequirements": "متطلبات الزوج",
+      "country": "البلد"
+    },
+    "errors": {
+      "required": "هذا الحقل مطلوب",
+      "locationMismatch": "موقع الدخول الذي اخترته والبلد الذي ملأته في ملفك الشخصي غير متطابقين. يرجى تصحيحهما."
     }
   }
 }

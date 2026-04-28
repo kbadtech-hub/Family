@@ -19,13 +19,11 @@
       "stat": "ናይ ትኽክለኛነት መጠን"
     },
     "modal": {
-      "step1": "ክፍሊት",
-      "where": "ኣበይ ኢኹም ዘለኹም?",
-      "currencyNote": "ብመሰረት ዘለኹምዎ ቦታ ክፍሊት ክነርእየኩም ኢና።",
+      "step1": "ደረጃ 1: ቦታ ምረጹ",
+      "where": "ኣበይ ኢኹም ትነብሩ?",
+      "currencyNote": "ብመሰረት ዘለኹምዎ ቦታ ዝሓሸ ኣገልግሎት ክንህበኩም ኢና።",
       "localTitle": "ኣብ ውሽጢ ዓዲ",
-      "localSub": "ብብር",
-      "globalTitle": "ኣብ ወጻኢ ዓዲ",
-      "globalSub": "ብዶላር"
+      "globalTitle": "ኣብ ወጻኢ ዓዲ"
     }
   },
   "Nav": {
@@ -310,7 +308,8 @@
       "partnerCountryRequired": "ብኽብረትኩም እንተወሓደ ሓንቲ ሃገር ምረጹ",
       "partnerReligionRequired": "ብኽብረትኩም ሃይማኖት ኣጋር ምረጹ",
       "partnerIntentRequired": "ብኽብረትኩም ኩነታት ሓዳር ኣጋር ምረጹ",
-      "otpRequired": "ብኽብረትኩም ባለ 6 ዲጂት ኮድ አእትዉ"
+      "otpRequired": "ብኽብረትኩም ባለ 6 ዲጂት ኮድ አእትዉ",
+      "locationMismatch": "ዝመረጽክምዎ ናይ መእተዊ ቦታን ኣብ ፕሮፋይልኩም ዝመልእክምዎ ሃገርን ስለ ዘይሳነዩ ብኽብረትኩም ኣዐርይዎ"
     }
   },
   "TopHeader": {

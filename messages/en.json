@@ -19,13 +19,11 @@
       "stat": "Matching Accuracy"
     },
     "modal": {
-      "step1": "Step 1: Security & Pricing",
+      "step1": "Step 1: Location Selection",
       "where": "Where are you located?",
-      "currencyNote": "We use your location to show pricing in your local currency (ETB or USD) and protect your privacy.",
+      "currencyNote": "We use your location to provide a tailored experience and protect your privacy.",
       "localTitle": "Inside Ethiopia",
-      "localSub": "Payments in ETB",
-      "globalTitle": "Global Diaspora",
-      "globalSub": "Payments in USD"
+      "globalTitle": "Global Diaspora"
     }
   },
   "Nav": {
@@ -314,7 +312,8 @@
       "partnerCountryRequired": "Please select at least one partner country",
       "partnerReligionRequired": "Please select partner religion",
       "partnerIntentRequired": "Please select marital status and intent",
-      "otpRequired": "Please enter 6-digit code"
+      "otpRequired": "Please enter 6-digit code",
+      "locationMismatch": "Your chosen entry location and the country in your profile do not match. Please correct it."
     }
   },
   "Classes": {
