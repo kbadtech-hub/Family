@@ -1471,7 +1471,8 @@ export default function AdminPortal() {
                     ))
                   )}
                </div>
-             )}
+              )}
+            </div>
           )}
 
 
@@ -1650,7 +1651,7 @@ export default function AdminPortal() {
                 ) : (
                    supportTickets.map((ticket) => (
                       <div key={ticket.id} className="bg-white p-8 rounded-[3rem] shadow-sm border border-gray-100 flex flex-col gap-6 relative overflow-hidden">
-                         {ticket.status === 'open' && (
+                         {ticket.status === 'pending' && (
                             <div className="absolute top-0 right-0 w-2 h-full bg-primary animate-pulse" />
                          )}
                          <div className="flex justify-between items-start">
@@ -1664,7 +1665,7 @@ export default function AdminPortal() {
                                </div>
                             </div>
                             <span className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter border ${
-                               ticket.status === 'open' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-green-500/10 text-green-600 border-green-200'
+                               ticket.status === 'pending' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-green-500/10 text-green-600 border-green-200'
                             }`}>
                                {ticket.status}
                             </span>
@@ -1674,7 +1675,7 @@ export default function AdminPortal() {
                             &quot;{ticket.message}&quot;
                          </div>
 
-                         {ticket.status === 'open' ? (
+                         {ticket.status === 'pending' ? (
                             <div className="space-y-4">
                                <textarea 
                                  id={`reply-${ticket.id}`}
@@ -1693,10 +1694,12 @@ export default function AdminPortal() {
                                </button>
                             </div>
                          ) : (
-                            <div className="space-y-2 p-6 bg-green-500/5 rounded-2xl border border-green-200/20">
+                                 <div className="space-y-2 p-6 bg-green-500/5 rounded-2xl border border-green-200/20">
                                <p className="text-[10px] font-black text-green-600 uppercase tracking-widest">Admin Response:</p>
-                               <p className="text-sm font-medium text-green-800">{ticket.response}</p>
-                            </div>
+                               <p className="text-sm font-medium text-green-800">
+                                 {ticket.support_replies?.[0]?.message || 'Resolved'}
+                               </p>
+                             </div>
                          )}
                       </div>
                    ))
