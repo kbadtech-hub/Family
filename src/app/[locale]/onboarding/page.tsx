@@ -14,8 +14,7 @@ import {
   Camera,
   Loader2,
   X,
-  Upload,
-  Mail
+  Upload
 } from 'lucide-react';
 import { calculateStarSign } from '@/lib/abushakir';
 import { simulateIdentityVerification } from '@/lib/verification';
@@ -42,17 +41,11 @@ function OnboardingContent() {
   const locale = useLocale();
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const [userType, setUserType] = useState<'Local' | 'Diaspora' | 'Any'>('Any');
   const [userId, setUserId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [authMode] = useState<'email' | 'phone'>('email');
   const [isVerifying, setIsVerifying] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
-    phone: '',
-    country_code: '+251',
-    password: '',
     full_name: '',
     birth_date: '',
     birth_time: '12:00',
@@ -80,11 +73,9 @@ function OnboardingContent() {
     eth_birth_year: '',
     calendar_type: (locale === 'am' || locale === 'om') ? 'ethiopian' : 'gregorian',
     future_children: '',
-    otp: '',
     id_photo: '',
     selfie_photo: ''
   });
-
 
   const searchParams = useSearchParams();
 
@@ -119,20 +110,33 @@ function OnboardingContent() {
   }, [locale]);
 
   useEffect(() => {
-    const pref = searchParams.get('pref_location') as 'Local' | 'Diaspora' | null;
-    if (pref) {
-      setUserType(pref);
-      if (pref === 'Diaspora') {
-        updateField('location', 'United States'); // Default country for diaspora
-      } else if (pref === 'Local') {
-        updateField('location', 'Addis Ababa'); // Default city for local
-      }
-    }
-
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
         setUserId(user.id);
-        updateField('email', user.email || '');
+        // Pre-fill existing data if any
+        supabase.from('profiles').select('*').eq('id', user.id).single().then(({ data }) => {
+          if (data) {
+            setFormData(prev => ({
+              ...prev,
+              full_name: data.full_name || '',
+              birth_date: data.birth_date || '',
+              gender: data.gender || '',
+              location: data.location || '',
+              religion: data.religion || '',
+              marital_status: data.marital_status || '',
+              has_children: data.has_children || '',
+              future_children: data.future_children || '',
+              job: data.job_title || '',
+              finance_habit: data.finance_habit || '',
+              family_value: data.family_values || '',
+              conflict_resolution: data.conflict_resolution || '',
+              spouse_requirements: data.spouse_requirements || [],
+              gallery_photos: data.gallery_urls || []
+            }));
+          }
+        });
+      } else {
+        router.push('/login');
       }
     });
 
@@ -140,23 +144,12 @@ function OnboardingContent() {
     if (stepParam) {
       setStep(parseInt(stepParam));
     }
-    const emailParam = searchParams.get('email');
-    if (emailParam) {
-      updateField('email', emailParam);
-    }
-  }, [searchParams, updateField]);
+  }, [searchParams, router]);
 
   const validateStep = (currentStep: number) => {
     setErrorMsg('');
     switch (currentStep) {
-      case 1: // Signup (if applicable)
-        if (authMode === 'email' && !formData.email) return t('errors.emailRequired');
-        if (!formData.password || formData.password.length < 6) return t('errors.passwordLength');
-        break;
-      case 2: // OTP
-        if (!formData.otp || formData.otp.length !== 6) return t('errors.otpRequired');
-        break;
-      case 3: // Basic Profile
+      case 1: // Basic Profile
         if (!formData.full_name) return t('errors.fullNameRequired');
         if (!formData.birth_date) return t('errors.birthDateRequired');
         if (!formData.gender) return t('errors.genderRequired');
@@ -164,22 +157,22 @@ function OnboardingContent() {
         if (!formData.religion) return t('errors.religionRequired');
         if (!formData.marital_status) return t('errors.maritalRequired');
         break;
-      case 4: // Career & Psychology
+      case 2: // Career & Psychology
         if (!formData.job) return t('errors.jobRequired');
         if (!formData.finance_habit) return t('errors.financeRequired');
         if (!formData.family_value) return t('errors.valuesRequired');
         if (!formData.conflict_resolution) return t('errors.conflictRequired');
         if (!formData.spouse_requirements.length) return t('errors.requirementsRequired');
         break;
-      case 5: // Partner Prefs
+      case 3: // Partner Prefs
         if (!formData.partner_countries.length) return t('errors.partnerCountryRequired');
         if (!formData.partner_religion) return t('errors.partnerReligionRequired');
         if (!formData.partner_intent) return t('errors.partnerIntentRequired');
         break;
-      case 6: // ID Upload
+      case 4: // ID Upload
         if (!formData.id_photo) return locale === 'am' ? 'እባክዎ መታወቂያዎን ያስገቡ' : 'Please upload your ID';
         break;
-      case 7: // Selfie
+      case 5: // Selfie
         if (!formData.selfie_photo) return locale === 'am' ? 'እባክዎ ሰልፊ ፎቶዎን ያስገቡ' : 'Please take a selfie';
         break;
       default:
@@ -196,15 +189,33 @@ function OnboardingContent() {
       return;
     }
     
-    // Sync progress to DB if logged in
-    if (userId) {
-      await supabase.from('profiles').update({ 
-        onboarding_step: step + 1,
-        ...formData
-      }).eq('id', userId);
+    setIsSubmitting(true);
+    try {
+      if (userId) {
+        await supabase.from('profiles').update({ 
+          full_name: formData.full_name,
+          birth_date: formData.birth_date,
+          gender: formData.gender,
+          location: formData.location,
+          religion: formData.religion,
+          marital_status: formData.marital_status,
+          has_children: formData.has_children,
+          future_children: formData.future_children,
+          job_title: formData.job,
+          finance_habit: formData.finance_habit,
+          family_values: formData.family_value,
+          conflict_resolution: formData.conflict_resolution,
+          spouse_requirements: formData.spouse_requirements,
+          gallery_urls: formData.gallery_photos,
+          star_sign: formData.star_sign
+        }).eq('id', userId);
+      }
+      setStep(s => Math.min(s + 1, 7));
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setStep(s => Math.min(s + 1, 9));
   };
 
   const prevStep = () => {
@@ -213,76 +224,17 @@ function OnboardingContent() {
   };
 
   const handleFinish = async () => {
-    const error = validateStep(1); 
-    if (error) {
-      setErrorMsg(error);
-      return;
-    }
     setIsSubmitting(true);
-    setErrorMsg('');
     try {
-      const currency = userType === 'Diaspora' ? 'USD' : 'ETB';
-
-      const signUpOptions: {
-        email?: string;
-        phone?: string;
-        password: string;
-        options: {
-          emailRedirectTo: string;
-          data: Record<string, unknown>;
-        }
-      } = {
-        password: formData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/confirm`,
-          data: { 
-            ...formData,
-            currency_locked: currency,
-            onboarding_completed: true,
-            birth_date: formData.birth_date || null
-          }
-        }
-      };
-
-      if (authMode === 'email') {
-        signUpOptions.email = formData.email;
-      } else {
-        signUpOptions.phone = `${formData.country_code}${formData.phone}`;
+      if (userId) {
+        await supabase.from('profiles').update({ 
+          onboarding_completed: true,
+          is_onboarded: true 
+        }).eq('id', userId);
+        router.push('/dashboard');
       }
-
-      const { data, error: authError } = await supabase.auth.signUp(
-        authMode === 'email' 
-          ? { email: formData.email, password: formData.password, options: signUpOptions.options }
-          : { phone: `${formData.country_code}${formData.phone}`, password: formData.password, options: signUpOptions.options }
-      );
-
-      if (authError) throw authError;
-
-      if (data.user) {
-        setUserId(data.user.id);
-      }
-      setStep(2); // Move to OTP Verification
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleVerifyOTP = async () => {
-    setIsSubmitting(true);
-    setErrorMsg('');
-    try {
-      const { error } = await supabase.auth.verifyOtp({
-        email: formData.email,
-        token: formData.otp,
-        type: 'signup'
-      });
-
-      if (error) throw error;
-      
-      // Redirect to dashboard after OTP success
-      router.push('/dashboard');
-    } catch (error: unknown) {
-      if (error instanceof Error) setErrorMsg(error.message);
+    } catch (e) {
+      console.error(e);
     } finally {
       setIsSubmitting(false);
     }
@@ -291,77 +243,6 @@ function OnboardingContent() {
   const renderStep = () => {
     switch(step) {
       case 1:
-        return (
-          <div className="space-y-6 animate-in slide-in-from-right duration-300">
-            <h2 className="text-3xl font-bold text-accent italic">{t('signUp')}</h2>
-            <p className="text-gray-500">{t('personalSubtitle')}</p>
-            
-            <div className="space-y-4">
-              <label className="block">
-                <span className="text-sm font-medium text-gray-700">{t('fields.email')}</span>
-                <input 
-                  type="email" 
-                  value={formData.email}
-                  onChange={(e) => updateField('email', e.target.value)}
-                  className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted" 
-                  placeholder="name@example.com"
-                />
-              </label>
-              <label className="block">
-                <span className="text-sm font-medium text-gray-700">{t('fields.password')}</span>
-                <input 
-                   type="password" 
-                   value={formData.password}
-                   onChange={(e) => updateField('password', e.target.value)}
-                   className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-3 bg-muted" 
-                   placeholder={t('fields.passwordHint')}
-                />
-              </label>
-            </div>
-            <div className="pt-4">
-               <button 
-                 onClick={handleFinish}
-                 disabled={isSubmitting}
-                 className="w-full btn-primary py-5 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-primary/20"
-               >
-                 {isSubmitting ? <Loader2 className="animate-spin" /> : <>{t('signUp')} <ChevronRight size={18} /></>}
-               </button>
-            </div>
-          </div>
-        );
-      case 2:
-        return (
-          <div className="space-y-6 animate-in slide-in-from-right duration-300">
-            <div className="text-center space-y-4">
-              <div className="w-20 h-20 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mx-auto">
-                 <Mail size={40} className="text-primary" />
-              </div>
-              <h2 className="text-3xl font-black text-accent italic">{locale === 'am' ? 'ኢሜልዎን ያረጋግጡ' : 'Verify Email'}</h2>
-              <p className="text-gray-500">{locale === 'am' ? `ወደ ${formData.email} የላክነውን ባለ 6 ዲጂት ኮድ ያስገቡ` : `Enter the 6-digit code we sent to ${formData.email}`}</p>
-            </div>
-
-            <div className="space-y-4">
-               <input 
-                 type="text" 
-                 maxLength={6}
-                 value={formData.otp}
-                 aria-label={locale === 'am' ? 'የማረጋገጫ ኮድ' : 'Verification Code'}
-                 onChange={(e) => updateField('otp', e.target.value.replace(/\D/g, ''))}
-                 className="w-full bg-muted border-none rounded-[2rem] p-6 text-center text-4xl font-black tracking-[0.5em] focus:ring-2 focus:ring-primary/20 transition-all text-accent"
-                 placeholder="000000"
-               />
-               {errorMsg && <p className="text-red-500 text-center text-xs font-bold">{errorMsg}</p>}
-               <button 
-                 onClick={handleVerifyOTP}
-                 disabled={isSubmitting || formData.otp.length !== 6}
-                 className="w-full btn-primary py-5 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-primary/20 disabled:opacity-50"
-               >
-                 {isSubmitting ? t('nav.processing') : (locale === 'am' ? 'አረጋግጥ' : 'Verify & Continue')}
-               </button>
-            </div>
-          </div>
-        );
-      case 3:
         return (
           <div className="space-y-6 animate-in slide-in-from-right duration-300">
             <h2 className="text-3xl font-bold text-accent italic">{t('demographics')}</h2>
@@ -432,7 +313,7 @@ function OnboardingContent() {
             </div>
           </div>
         );
-      case 4:
+      case 2:
         return (
           <div className="space-y-6">
             <h2 className="text-3xl font-bold text-accent italic">{t('career')}</h2>
@@ -457,7 +338,7 @@ function OnboardingContent() {
                   <span className="text-sm font-bold text-primary uppercase tracking-widest">{t('fields.spouseRequirements')}</span>
                   <div className="flex flex-wrap gap-2">
                     {SPOUSE_REQUIREMENTS_TAGS.map(tag => (
-                      <button key={tag} type="button" aria-label={t_const(`Requirements.${tag}`)} onClick={() => {
+                       <button key={tag} type="button" aria-label={t_const(`Requirements.${tag}`)} onClick={() => {
                         const next = formData.spouse_requirements.includes(tag) ? formData.spouse_requirements.filter(t => t !== tag) : [...formData.spouse_requirements, tag];
                         updateField('spouse_requirements', next);
                       }} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${formData.spouse_requirements.includes(tag) ? 'bg-primary text-white' : 'bg-muted text-gray-400'}`}>
@@ -469,7 +350,7 @@ function OnboardingContent() {
             </div>
           </div>
         );
-      case 5:
+      case 3:
         return (
           <div className="space-y-6">
             <h2 className="text-3xl font-bold text-accent italic">{t('fields.partnerPrefs')}</h2>
@@ -501,7 +382,7 @@ function OnboardingContent() {
             </div>
           </div>
         );
-      case 6: // ID Upload
+      case 4: // ID Upload
         return (
           <div className="space-y-8 animate-in slide-in-from-right duration-300 text-center">
             <div className="space-y-4">
@@ -544,7 +425,7 @@ function OnboardingContent() {
             </label>
           </div>
         );
-      case 7: // Selfie & Simulation
+      case 5: // Selfie & Simulation
         return (
           <div className="space-y-8 animate-in slide-in-from-right duration-300 text-center">
             <div className="space-y-4">
@@ -629,7 +510,7 @@ function OnboardingContent() {
             )}
           </div>
         );
-      case 8: // Gallery
+      case 6: // Gallery
         return (
           <div className="space-y-8 animate-in slide-in-from-right duration-300 text-center">
              <div className="space-y-2">
@@ -638,10 +519,10 @@ function OnboardingContent() {
              </div>
              <div className="grid grid-cols-3 gap-3">
                 {formData.gallery_photos.map((url, i) => (
-                  <div key={i} className="relative aspect-[3/4] rounded-2xl overflow-hidden group">
-                     <Image src={url} fill className="object-cover" alt="Gallery" />
-                     <button type="button" aria-label={locale === 'am' ? 'ፎቶ አስወግድ' : 'Remove Photo'} onClick={() => updateField('gallery_photos', formData.gallery_photos.filter((_, idx) => idx !== i))} className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"><X size={12} /></button>
-                  </div>
+                   <div key={i} className="relative aspect-[3/4] rounded-2xl overflow-hidden group">
+                      <Image src={url} fill className="object-cover" alt="Gallery" />
+                      <button type="button" aria-label={locale === 'am' ? 'ፎቶ አስወግድ' : 'Remove Photo'} onClick={() => updateField('gallery_photos', formData.gallery_photos.filter((_, idx) => idx !== i))} className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"><X size={12} /></button>
+                   </div>
                 ))}
                 {formData.gallery_photos.length < 5 && (
                   <label className="aspect-[3/4] rounded-2xl border-2 border-dashed border-muted flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-muted">
@@ -668,7 +549,7 @@ function OnboardingContent() {
              </div>
           </div>
         );
-      case 9:
+      case 7:
         return (
           <div className="space-y-8 text-center animate-in zoom-in duration-500">
              <div className="mx-auto w-24 h-24 bg-green-100 rounded-full flex items-center justify-center">
@@ -676,10 +557,9 @@ function OnboardingContent() {
              </div>
              <h2 className="text-4xl font-bold text-accent italic">{t('finishTitle')}</h2>
              <p className="text-lg text-gray-600">{t('finishSubtitle')}</p>
-             <button onClick={() => {
-                // Final submission logic
-                supabase.from('profiles').update({ onboarding_completed: true, verification_status: 'pending' }).eq('id', userId).then(() => router.push('/dashboard'));
-             }} className="w-full btn-primary py-4">{t('finishCTA')}</button>
+             <button onClick={handleFinish} disabled={isSubmitting} className="w-full btn-primary py-4 flex items-center justify-center gap-3">
+                {isSubmitting ? <Loader2 className="animate-spin" /> : t('finishCTA')}
+             </button>
           </div>
         );
       default: return null;
@@ -690,12 +570,12 @@ function OnboardingContent() {
     <div className="min-h-screen bg-[var(--secondary)] bg-opacity-10 py-12 px-4 flex items-center justify-center" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       <div className="max-w-xl w-full">
         <div className="mb-8 flex justify-between items-center px-4">
-          {[1,2,3,4,5,6,7,8,9].map(i => (
+          {[1,2,3,4,5,6,7].map(i => (
              <React.Fragment key={i}>
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold transition-all ${step >= i ? 'bg-primary text-white scale-110 shadow-lg' : 'bg-white text-gray-300'}`}>
                    <span className="text-[8px]">{i}</span>
                 </div>
-                {i < 9 && <div className={`flex-1 h-1 mx-1 rounded-full ${step > i ? 'bg-primary' : 'bg-white'}`} />}
+                {i < 7 && <div className={`flex-1 h-1 mx-1 rounded-full ${step > i ? 'bg-primary' : 'bg-white'}`} />}
              </React.Fragment>
           ))}
         </div>
@@ -707,9 +587,9 @@ function OnboardingContent() {
           <div className="relative">
             {renderStep()}
 
-            {step < 9 && (
+            {step < 7 && (
               <div className={`mt-12 flex justify-between gap-4 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
-                {step > 3 && ( // Only show back after profile starts
+                {step > 1 && (
                   <button 
                     onClick={prevStep}
                     className="flex-1 px-6 py-3 rounded-xl border border-gray-200 text-gray-500 font-semibold hover:bg-gray-50 flex items-center justify-center gap-2"

@@ -19,7 +19,8 @@ import {
   Globe,
   ChevronDown,
   AlertCircle,
-  LogOut
+  LogOut,
+  ChevronRight
 } from 'lucide-react';
 import CommunityView from '@/components/dashboard/CommunityView';
 import PaymentPortal from '@/components/payment/PaymentPortal';
@@ -45,6 +46,8 @@ function DashboardContent() {
     avatar_url: string | null;
     trial_ends_at: string | null;
     currency_locked: 'USD' | 'ETB';
+    onboarding_completed: boolean;
+    role: string;
   }
 
   interface Match {
@@ -140,11 +143,12 @@ function DashboardContent() {
       
       setProfile(prev => prev ? { ...prev, is_premium: isPremium } : null);
 
-      // 5. Fetch Matches (only if verified AND trial active/premium)
-      if (currentVerifyStatus === 'verified' && isPremium) {
+      // 5. Fetch Matches (only if ONBOARDED AND verified AND trial active/premium)
+      if (profileData?.onboarding_completed && currentVerifyStatus === 'verified' && isPremium) {
         const { data: profiles } = await supabase.from('profiles')
           .select('*')
           .neq('id', user.id)
+          .eq('onboarding_completed', true)
           .limit(10);
 
         if (profiles) {
@@ -162,8 +166,8 @@ function DashboardContent() {
 
   const isPremium = profile?.trial_ends_at && new Date(profile.trial_ends_at) > new Date() || 
                     paymentStatus === 'approved' || 
-                    ['admin', 'super_admin', 'expert'].includes((profile as any).role);
-  const isAdmin = ['admin', 'super_admin'].includes((profile as any).role);
+                    ['admin', 'super_admin', 'expert'].includes((profile as any)?.role);
+  const isAdmin = ['admin', 'super_admin'].includes((profile as any)?.role);
 
   return (
     <div className="min-h-screen bg-[#FDFBF9] flex flex-col md:flex-row" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
@@ -203,7 +207,6 @@ function DashboardContent() {
            </button>
         </nav>
 
-        {/* Logout at bottom */}
         <div className="mt-auto pt-8 border-t border-white/5 hidden md:block">
            <button 
              onClick={handleLogout}
@@ -217,23 +220,13 @@ function DashboardContent() {
 
       {/* Main Content */}
       <main className="flex-1 p-8 md:p-16 overflow-y-auto">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-6">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
           <div>
             <h1 className="text-4xl md:text-5xl font-black text-[#0F172A] italic tracking-tighter">{t('welcome')}</h1>
             <p className="text-gray-400 mt-2 font-bold text-xs uppercase tracking-widest">{t('subtitle')}</p>
           </div>
 
           <div className="flex items-center gap-6">
-            {verificationStatus !== 'verified' && (
-              <button 
-                onClick={() => router.push('/onboarding?step=3')}
-                className="bg-primary/10 text-primary border border-primary/20 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-lg shadow-primary/5 flex items-center gap-3 animate-pulse"
-              >
-                <ShieldCheck size={16} />
-                {locale === 'am' ? 'አካውንቶን ያረጋግጡ' : locale === 'ar' ? 'تحقق من حسابك' : locale === 'om' ? 'Eenyummaa keessan mirkaneessaa' : 'Verify Your Account'}
-              </button>
-            )}
-
             {/* Language Switcher */}
             <div className="relative">
               <button
@@ -265,6 +258,32 @@ function DashboardContent() {
             </div>
           </div>
         </header>
+
+        {/* Verification Banner */}
+        {!profile?.onboarding_completed && (
+          <div className="mb-10 bg-gradient-to-r from-primary to-orange-400 p-8 md:p-10 rounded-[3rem] text-white shadow-2xl shadow-primary/20 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:scale-110 transition-transform duration-700" />
+            <div className="relative flex flex-col md:flex-row items-center justify-between gap-8">
+               <div className="space-y-4 text-center md:text-left">
+                  <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/20 rounded-full text-[10px] font-black uppercase tracking-widest">
+                     <ShieldCheck size={14} /> Action Required
+                  </div>
+                  <h2 className="text-3xl font-black italic tracking-tighter">
+                    {t('verifyBannerTitle')}
+                  </h2>
+                  <p className="text-white/80 font-medium max-w-lg">
+                    {t('verifyBannerSub')}
+                  </p>
+               </div>
+               <button 
+                 onClick={() => router.push('/onboarding')}
+                 className="bg-white text-primary px-10 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
+               >
+                  {t('verifyNow')} <ChevronRight size={20} />
+               </button>
+            </div>
+          </div>
+        )}
 
         {activeTab === 'dashboard' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
@@ -306,6 +325,19 @@ function DashboardContent() {
                       <p className="text-gray-500 max-w-sm mx-auto">{t('trialEnded')}</p>
                       <button onClick={() => setShowPayment(true)} className="bg-primary text-white px-10 py-4 rounded-2xl font-bold uppercase tracking-widest shadow-xl shadow-primary/20">{t('upgradeNow')}</button>
                     </div>
+                  ) : !profile?.onboarding_completed ? (
+                    <div className="col-span-full bg-[#F8F4F1] p-16 rounded-[3rem] border border-dashed border-primary/30 text-center space-y-6">
+                       <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto">
+                          <Heart size={40} className="animate-pulse" />
+                       </div>
+                       <h3 className="text-2xl font-black text-accent italic">{t('matchingLocked')}</h3>
+                       <p className="text-gray-400 max-w-sm mx-auto font-medium">{t('matchingLockedSub')}</p>
+                       <button onClick={() => router.push('/onboarding')} className="btn-primary px-10 py-4 rounded-2xl">{t('completeOnboarding')}</button>
+                    </div>
+                  ) : matches.length === 0 ? (
+                    <div className="col-span-full py-20 text-center text-gray-400 font-bold uppercase tracking-widest text-xs">
+                       Searching for your perfect match...
+                    </div>
                   ) : (
                     matches.map(match => (
                       <div 
@@ -345,7 +377,7 @@ function DashboardContent() {
                        <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-tighter">Your payment screenshot is being reviewed.</p>
                     </div>
                   </div>
-                ) : verificationStatus === 'verified' && !isTrialExpired ? (
+                ) : profile?.onboarding_completed && !isTrialExpired ? (
                   <div className="space-y-4">
                     <div className="p-5 bg-primary/5 rounded-[1.5rem]">
                       <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Trial Status</p>
@@ -366,7 +398,6 @@ function DashboardContent() {
         )}
 
         {/* Tab Components */}
-
         {activeTab === 'chat' && (
            <div className="mt-10 h-[calc(100vh-200px)]">
               <ChatView isPremium={isPremium} />

@@ -51,6 +51,12 @@
     "upgradeNow": "Ammuma Fooyyessi",
     "backToDash": "Gara Dasiboordiitti deebi’i",
     "subscription": "Kaffaltii",
+    "verifyBannerTitle": "Tajaajila fayyadamuuf eenyummaa keessan mirkaneessaa",
+    "verifyBannerSub": "Tajaajila guutuu argachuufi namoota waliin wal baruuf maaloo odeeffannoo muraasa guutaa.",
+    "verifyNow": "Ammuma Mirkaneessi",
+    "matchingLocked": "Barbaacha Cufameera",
+    "matchingLockedSub": "Namoota isinitti dhiyaatan arguuf maaloo piroofaayilii keessan mirkaneessaa.",
+    "completeOnboarding": "Mirkaneessa Xumuri",
     "premium": {
       "active": "Piriimiyeemiin hojiirra jira",
       "pending": "Ilaalamaa jira",

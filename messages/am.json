@@ -61,7 +61,13 @@
     "trialEnded": "የ 3 ቀን የሙከራ ጊዜዎ አልቋል። ፍጹም አጋርዎን ማግኘት ለመቀጠል እባክዎ ይመዝገቡ።",
     "upgradeNow": "አሁን ያሻሽሉ",
     "backToDash": "ወደ ማስተዳደሪያ ይመለሱ",
-    "subscription": "ምዝገባ"
+    "subscription": "ምዝገባ",
+    "verifyBannerTitle": "አገልግሎቱን ለመጠቀም አካውንቶን ያረጋግጡ",
+    "verifyBannerSub": "የተሟላ አገልግሎት ለማግኘት እና ከሰዎች ጋር ለመተዋወቅ እባክዎ ጥቂት መረጃዎችን ይሙሉ::",
+    "verifyNow": "አሁን አረጋግጥ",
+    "matchingLocked": "ማዛመድ ተዘግቷል",
+    "matchingLockedSub": "ተዛማጅ ሰዎችን ለማየት እባክዎ መገለጫዎን ያረጋግጡ::",
+    "completeOnboarding": "ማረጋገጫውን ጨርስ"
   },
   "Footer": {
     "tagline": "ቤተሰብ | Beteseb",

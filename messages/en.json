@@ -61,7 +61,13 @@
     "trialEnded": "Your 3-day trial has ended. Please subscribe to continue finding your perfect match.",
     "upgradeNow": "Upgrade Now",
     "backToDash": "Back to Dashboard",
-    "subscription": "Subscription"
+    "subscription": "Subscription",
+    "verifyBannerTitle": "Verify Account to Unlock Features",
+    "verifyBannerSub": "To access all features and start matching, please complete your profile verification.",
+    "verifyNow": "Verify Now",
+    "matchingLocked": "Matching Locked",
+    "matchingLockedSub": "Please complete your onboarding verification to see your potential matches.",
+    "completeOnboarding": "Complete Onboarding"
   },
   "Footer": {
     "tagline": "ቤተሰብ | Beteseb - Global Habesha Marriage Matching",

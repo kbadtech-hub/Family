@@ -38,7 +38,7 @@ function SignupContent() {
         options: {
           emailRedirectTo: `${window.location.origin}/auth/confirm`,
           data: {
-            onboarding_completed: false,
+            is_onboarded: false,
             verification_status: 'unverified'
           }
         }
@@ -50,7 +50,7 @@ function SignupContent() {
         setIsSuccess(true);
         // After 3 seconds, redirect to OTP verification step in onboarding
         setTimeout(() => {
-          router.push(`/onboarding?step=2&email=${encodeURIComponent(email)}`);
+          router.push(`/verify-otp?email=${encodeURIComponent(email)}`);
         }, 3000);
       }
     } catch (err: unknown) {
