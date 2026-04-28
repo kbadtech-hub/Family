@@ -38,7 +38,7 @@ function SignupContent() {
         options: {
           emailRedirectTo: `${window.location.origin}/auth/confirm`,
           data: {
-            is_onboarded: false,
+            onboarding_completed: false,
             verification_status: 'unverified'
           }
         }

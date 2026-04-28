@@ -238,7 +238,7 @@ function OnboardingContent() {
           data: { 
             ...formData,
             currency_locked: currency,
-            is_onboarded: true,
+            onboarding_completed: true,
             birth_date: formData.birth_date || null
           }
         }
@@ -678,7 +678,7 @@ function OnboardingContent() {
              <p className="text-lg text-gray-600">{t('finishSubtitle')}</p>
              <button onClick={() => {
                 // Final submission logic
-                supabase.from('profiles').update({ is_onboarded: true, verification_status: 'pending' }).eq('id', userId).then(() => router.push('/dashboard'));
+                supabase.from('profiles').update({ onboarding_completed: true, verification_status: 'pending' }).eq('id', userId).then(() => router.push('/dashboard'));
              }} className="w-full btn-primary py-4">{t('finishCTA')}</button>
           </div>
         );
