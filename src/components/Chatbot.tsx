@@ -26,6 +26,7 @@ export default function Chatbot() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [unreadReplies, setUnreadReplies] = useState(0);
   
   // Ticket form state
   const [ticketSubject, setTicketSubject] = useState('');
@@ -38,7 +39,18 @@ export default function Chatbot() {
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) setUserId(user.id);
+      if (user) {
+        setUserId(user.id);
+        fetchUnreadReplies(user.id);
+      }
+    };
+    const fetchUnreadReplies = async (uid: string) => {
+      const { data } = await supabase
+        .from('support_replies')
+        .select('*, support_tickets!inner(user_id)')
+        .eq('support_tickets.user_id', uid)
+        .eq('is_read', false);
+      if (data) setUnreadReplies(data.length);
     };
     checkUser();
   }, []);
@@ -103,15 +115,18 @@ export default function Chatbot() {
     <div className="fixed bottom-8 right-8 z-[200]">
       {/* Floating Button */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          setIsOpen(!isOpen);
+          setUnreadReplies(0); // Clear on open
+        }}
         className={`w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-all duration-500 hover:scale-110 active:scale-95 ${
           isOpen ? 'bg-white text-accent' : 'bg-primary text-white'
         }`}
       >
         {isOpen ? <ChevronDown size={28} /> : <MessageSquare size={28} />}
-        {!isOpen && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent text-white text-[10px] rounded-full flex items-center justify-center border-2 border-white animate-bounce">
-            1
+        {!isOpen && unreadReplies > 0 && (
+          <span className="absolute -top-1 -right-1 w-6 h-6 bg-accent text-white text-[10px] rounded-full flex items-center justify-center border-2 border-white animate-bounce font-black">
+            {unreadReplies}
           </span>
         )}
       </button>

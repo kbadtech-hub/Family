@@ -33,14 +33,17 @@ ALTER TABLE support_tickets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE support_replies ENABLE ROW LEVEL SECURITY;
 
 -- Users can see their own tickets
+DROP POLICY IF EXISTS "Users can view their own tickets" ON support_tickets;
 CREATE POLICY "Users can view their own tickets" ON support_tickets
     FOR SELECT USING (auth.uid() = user_id);
 
 -- Users can create tickets
+DROP POLICY IF EXISTS "Users can create tickets" ON support_tickets;
 CREATE POLICY "Users can create tickets" ON support_tickets
     FOR INSERT WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
 
 -- Admins can see all tickets
+DROP POLICY IF EXISTS "Admins can view all tickets" ON support_tickets;
 CREATE POLICY "Admins can view all tickets" ON support_tickets
     FOR ALL USING (
         EXISTS (
@@ -50,6 +53,7 @@ CREATE POLICY "Admins can view all tickets" ON support_tickets
     );
 
 -- Admins can manage replies
+DROP POLICY IF EXISTS "Admins can manage replies" ON support_replies;
 CREATE POLICY "Admins can manage replies" ON support_replies
     FOR ALL USING (
         EXISTS (
@@ -59,6 +63,7 @@ CREATE POLICY "Admins can manage replies" ON support_replies
     );
 
 -- Users can see replies to their tickets
+DROP POLICY IF EXISTS "Users can view replies to their tickets" ON support_replies;
 CREATE POLICY "Users can view replies to their tickets" ON support_replies
     FOR SELECT USING (
         EXISTS (
