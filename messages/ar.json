@@ -448,5 +448,11 @@
       "India": "الهند",
       "Pakistan": "باكستان"
     }
+  },
+  "TopHeader": {
+    "email": "betesebhub@gmail.com",
+    "phone": "+447347663219 / +251946414018",
+    "suggestion": "يبدو أنك تفضل {lang}. تبديل؟",
+    "switchBtn": "تبديل الآن"
   }
 }

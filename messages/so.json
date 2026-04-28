@@ -496,5 +496,11 @@
       "India": "Hindiya",
       "Pakistan": "Bakistaan"
     }
+  },
+  "TopHeader": {
+    "email": "betesebhub@gmail.com",
+    "phone": "+447347663219 / +251946414018",
+    "suggestion": "Waxay u muuqataa inaad doorbidayso {lang}. Beddel?",
+    "switchBtn": "Hadda baddal"
   }
 }
