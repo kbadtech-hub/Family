@@ -6,13 +6,11 @@ import {
   MessageSquare, 
   X, 
   Send, 
-  User, 
   Bot, 
   Sparkles, 
   Headphones, 
   Loader2, 
-  ChevronDown,
-  AlertCircle
+  ChevronDown
 } from 'lucide-react';
 import { aiSupport, ChatMessage } from '@/lib/ai-support';
 import { supabase } from '@/lib/supabase';
@@ -61,7 +59,7 @@ export default function Chatbot() {
         { role: 'assistant', content: t('welcome') }
       ]);
     }
-  }, [isOpen, t]);
+  }, [isOpen, t, messages.length]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -207,7 +205,7 @@ export default function Chatbot() {
                 {ticketSuccess ? (
                   <div className="flex flex-col items-center justify-center h-full text-center py-10 space-y-4">
                     <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
-                      <CheckCircle2 size={32} />
+                      <CheckCircle2 className="w-8 h-8" />
                     </div>
                     <div>
                       <h4 className="font-bold text-accent">Ticket Submitted!</h4>
@@ -291,7 +289,7 @@ export default function Chatbot() {
 }
 
 // Add these to lucide-react if missing above
-function CheckCircle2(props: any) {
+function CheckCircle2(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
