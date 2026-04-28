@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from '@/i18n/routing';
 import Image from 'next/image';
@@ -12,7 +13,7 @@ function SignupContent() {
   const t = useTranslations('Auth');
   const locale = useLocale();
   const router = useRouter();
-  
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
