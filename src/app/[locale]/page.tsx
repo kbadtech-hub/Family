@@ -7,12 +7,9 @@ import {
   Heart, 
   ShieldCheck, 
   ArrowRight, 
-  MapPin, 
-  Globe,
   CheckCircle2,
   Layers,
-  Sparkles,
-  X
+  Sparkles
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from '@/i18n/routing';
@@ -31,7 +28,6 @@ export default function Home() {
   const router = useRouter();
   
   const [settings, setSettings] = useState<SystemSettings | null>(null);
-  const [showLocationModal, setShowLocationModal] = useState(false);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -40,11 +36,6 @@ export default function Home() {
     };
     fetchSettings();
   }, []);
-
-  const handleStartTrial = (location: 'Local' | 'Diaspora') => {
-    // Redirect only to signup as the entry point
-    router.push(`/signup?pref_location=${location}`);
-  };
 
   return (
     <div className="flex flex-col bg-white text-[#0F172A] overflow-hidden min-h-screen" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
@@ -75,12 +66,12 @@ export default function Home() {
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-6">
-            <button 
-               onClick={() => setShowLocationModal(true)}
+            <Link 
+               href="/location-selection"
                className="w-full sm:w-auto bg-primary text-white py-5 px-12 rounded-[2rem] font-bold text-sm uppercase tracking-widest hover:shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3"
             >
               {t('Hero.cta1')} <ArrowRight size={18} className={locale === 'ar' ? 'rotate-180' : ''} />
-            </button>
+            </Link>
             <Link href="/about" className="w-full sm:w-auto px-12 py-5 rounded-[2rem] border-2 border-border text-[#0F172A] font-bold text-sm uppercase tracking-widest hover:bg-[#F8F4F1] transition-all text-center">
                {t('Hero.cta2')}
             </Link>
@@ -120,52 +111,6 @@ export default function Home() {
          </div>
       </section>
 
-      {/* Location Modal */}
-      {showLocationModal && (
-        <div className="fixed inset-0 bg-[#0F172A]/80 backdrop-blur-md z-[300] flex items-center justify-center p-6 animate-in fade-in duration-300">
-          <div className="max-w-4xl w-full bg-white rounded-[3rem] p-12 md:p-20 shadow-2xl relative overflow-hidden border border-border">
-            <button 
-               onClick={() => setShowLocationModal(false)}
-               aria-label="Close modal"
-               className="absolute top-10 right-10 p-3 bg-[#F8F4F1] rounded-2xl text-gray-400 hover:text-primary transition-all"
-            >
-               <X className="w-8 h-8" />
-            </button>
-
-            <div className="text-center mb-16 space-y-4 relative z-10">
-               <h2 className="text-[10px] font-black text-primary uppercase tracking-[0.4em]">{t('modal.step1')}</h2>
-               <h3 className="text-4xl font-black tracking-tighter text-[#0F172A]">{t('modal.where')}</h3>
-               <p className="text-gray-500 text-lg font-medium">{t('modal.currencyNote')}</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
-               <button 
-                  onClick={() => handleStartTrial('Local')}
-                  className="group p-10 rounded-[2.5rem] bg-white border-2 border-border hover:border-primary hover:shadow-xl transition-all text-center space-y-6 duration-300"
-               >
-                  <div className="mx-auto w-20 h-20 bg-[#F8F4F1] rounded-3xl flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                     <MapPin size={40} className="text-primary" />
-                  </div>
-                  <div>
-                     <p className="text-2xl font-black text-[#0F172A] uppercase tracking-tighter">{t('modal.localTitle')}</p>
-                  </div>
-               </button>
-
-               <button 
-                  onClick={() => handleStartTrial('Diaspora')}
-                  className="group p-10 rounded-[2.5rem] bg-white border-2 border-border hover:border-primary hover:shadow-xl transition-all text-center space-y-6 duration-300"
-               >
-                   <div className="mx-auto w-20 h-20 bg-[#F8F4F1] rounded-3xl flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                      {locale === 'ar' ? <Globe size={40} className="text-primary" /> : <Globe size={40} className="text-primary" />}
-                   </div>
-                   <div>
-                      <p className="text-2xl font-black text-[#0F172A] uppercase tracking-tighter">{t('modal.globalTitle')}</p>
-                   </div>
-                </button>
-            </div>
-          </div>
-        </div>
-      )}
       <div className="mt-12 text-center flex flex-col items-center gap-4 py-12 border-t border-muted/20">
         <span className="text-xl font-black tracking-tighter uppercase italic text-accent/20">{locale === 'am' ? 'ቤተሰብ' : 'BETESEB'}</span>
       </div>

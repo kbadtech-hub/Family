@@ -129,7 +129,7 @@ export default function Header() {
                {t('signIn')}
              </Link>
 
-             <Link href="/signup" className="bg-primary text-white px-8 py-3 rounded-[2rem] font-bold text-xs uppercase tracking-widest hover:shadow-lg transition-all active:scale-95">
+             <Link href="/location-selection" className="bg-primary text-white px-8 py-3 rounded-[2rem] font-bold text-xs uppercase tracking-widest hover:shadow-lg transition-all active:scale-95">
                {t('signUp')}
              </Link>
           </div>
@@ -177,7 +177,7 @@ export default function Header() {
           <Link href="/classes" onClick={() => setIsMobileMenuOpen(false)} className="font-bold uppercase tracking-widest text-sm">{t('classes')}</Link>
           <div className="flex flex-col gap-4 w-full">
             <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="w-full border border-primary text-primary text-center py-4 rounded-[1.5rem] font-bold text-sm uppercase tracking-widest">{t('signIn')}</Link>
-            <Link href="/signup" onClick={() => setIsMobileMenuOpen(false)} className="w-full bg-primary text-white text-center py-4 rounded-[1.5rem] font-bold text-sm uppercase tracking-widest">{t('signUp')}</Link>
+            <Link href="/location-selection" onClick={() => setIsMobileMenuOpen(false)} className="w-full bg-primary text-white text-center py-4 rounded-[1.5rem] font-bold text-sm uppercase tracking-widest">{t('signUp')}</Link>
           </div>
         </div>
       )}
