@@ -108,7 +108,7 @@ export default function Footer() {
                 <Mail size={16} /> {contactInfo.email || 'betesebhub@gmail.com'}
               </div>
               <div className="flex items-center gap-3 hover:text-white transition-colors cursor-pointer">
-                <Phone size={16} /> {contactInfo.phone || '+447347663219 / +251946414018'}
+                <Phone size={16} /> {contactInfo.phone || '+44 7347 663219 / +251 946 414018'}
               </div>
               <div className="flex items-start gap-3 hover:text-white transition-colors cursor-pointer">
                 <MapPin size={16} /> {contactInfo.address || t('address')}

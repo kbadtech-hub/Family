@@ -35,12 +35,12 @@ export default function ContactPage() {
   }, []);
 
   const socialIcons = [
-    { id: 'youtube', icon: Youtube, color: '#FF0000', label: 'YouTube' },
-    { id: 'facebook', icon: Facebook, color: '#1877F2', label: 'Facebook' },
-    { id: 'telegram', icon: Send, color: '#26A5E4', label: 'Telegram' },
-    { id: 'whatsapp', icon: MessageCircle, color: '#25D366', label: 'WhatsApp' },
-    { id: 'linkedin', icon: Linkedin, color: '#0A66C2', label: 'LinkedIn' },
-    { id: 'twitter', icon: Twitter, color: '#000000', label: 'X (Twitter)' },
+    { id: 'youtube', icon: Youtube, color: 'text-[#FF0000]', bgColor: 'bg-[#FF0000]/10', label: 'YouTube' },
+    { id: 'facebook', icon: Facebook, color: 'text-[#1877F2]', bgColor: 'bg-[#1877F2]/10', label: 'Facebook' },
+    { id: 'telegram', icon: Send, color: 'text-[#26A5E4]', bgColor: 'bg-[#26A5E4]/10', label: 'Telegram' },
+    { id: 'whatsapp', icon: MessageCircle, color: 'text-[#25D366]', bgColor: 'bg-[#25D366]/10', label: 'WhatsApp' },
+    { id: 'linkedin', icon: Linkedin, color: 'text-[#0A66C2]', bgColor: 'bg-[#0A66C2]/10', label: 'LinkedIn' },
+    { id: 'twitter', icon: Twitter, color: 'text-black', bgColor: 'bg-black/10', label: 'X (Twitter)' },
   ];
 
   const contactMethods = [
@@ -48,21 +48,37 @@ export default function ContactPage() {
       id: 'phone', 
       icon: Phone, 
       label: t('phone'), 
-      value: settings?.contact_info?.phone || '+251 911 22 33 44', 
-      href: `tel:${settings?.contact_info?.phone || '+251911223344'}` 
+      value: (
+        <div className="space-y-1">
+          <p>{t('phone1')}</p>
+          <p>{t('phone2')}</p>
+        </div>
+      ),
+      href: `tel:${t('phone1').replace(/\s/g, '')}` 
     },
     { 
       id: 'email', 
       icon: Mail, 
       label: t('email'), 
-      value: settings?.contact_info?.email || 'support@beteseb.com', 
-      href: `mailto:${settings?.contact_info?.email || 'support@beteseb.com'}` 
+      value: 'betesebhub@gmail.com', 
+      href: 'mailto:betesebhub@gmail.com' 
     },
     { 
       id: 'address', 
       icon: MapPin, 
       label: t('address'), 
-      value: t('officeLocation'), 
+      value: (
+        <div className="space-y-2">
+          <div>
+            <span className="text-[10px] text-primary font-black uppercase block opacity-70 mb-0.5">{t('hqLabel')}</span>
+            <p>{t('hqAddress')}</p>
+          </div>
+          <div>
+            <span className="text-[10px] text-primary font-black uppercase block opacity-70 mb-0.5">{t('branchLabel')}</span>
+            <p>{t('branchAddress')}</p>
+          </div>
+        </div>
+      ),
       href: '#' 
     },
     { 
@@ -95,20 +111,28 @@ export default function ContactPage() {
         {/* Contact Info Cards */}
         <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
           {contactMethods.map((method, idx) => (
-            <a 
+            <div 
               key={method.id} 
-              href={method.href}
-              className="card-premium flex items-start gap-6 group hover:translate-y-[-4px] animate-in fade-in slide-in-from-bottom-8 duration-700"
-              style={{ animationDelay: `${idx * 100}ms` }}
+              className={`card-premium flex items-start gap-6 group animate-in fade-in slide-in-from-bottom-8 duration-700 ${
+                idx === 0 ? 'delay-0' : idx === 1 ? 'delay-100' : idx === 2 ? 'delay-200' : 'delay-300'
+              }`}
             >
               <div className="w-14 h-14 rounded-2xl bg-muted text-primary flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-all">
                 <method.icon size={28} />
               </div>
-              <div>
-                <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">{method.label}</h4>
-                <p className="text-lg font-bold text-accent">{method.value}</p>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">{method.label}</h4>
+                <div className="text-lg font-bold text-accent">
+                  {method.id === 'chatbot' || method.id === 'email' ? (
+                    <a href={method.href} className="hover:text-primary transition-colors">
+                      {method.value}
+                    </a>
+                  ) : (
+                    method.value
+                  )}
+                </div>
               </div>
-            </a>
+            </div>
           ))}
           
           {/* Map Placeholder */}
@@ -118,6 +142,7 @@ export default function ContactPage() {
                className="absolute inset-0 w-full h-full border-0 grayscale hover:grayscale-0 transition-all duration-700"
                allowFullScreen
                loading="lazy"
+               title="Google Maps"
             />
           </div>
         </div>
@@ -139,8 +164,7 @@ export default function ContactPage() {
                   >
                     <div className="flex items-center gap-4">
                       <div 
-                        className="w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110"
-                        style={{ backgroundColor: `${social.color}20`, color: social.color }}
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 ${social.bgColor} ${social.color}`}
                       >
                         <social.icon size={20} />
                       </div>

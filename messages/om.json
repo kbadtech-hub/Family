@@ -110,7 +110,7 @@
     "privacy": "Icitii",
     "admin": "Bulchaa",
     "copyright": "© 2026 Beteseb (ቤተሰብ).",
-    "address": "Harar, Itoophiyaa",
+    "address": "Landan / Harar",
     "community": "Hawaasa"
   },
   "Auth": {
@@ -529,7 +529,7 @@
   },
   "TopHeader": {
     "email": "betesebhub@gmail.com",
-    "phone": "+447347663219 / +251946414018",
+    "phone": "+44 7347 663219 / +251 946 414018",
     "suggestion": "Mirkaneessuu eenyummaa {lang}?",
     "switchBtn": "Jijjiiri"
   },
@@ -542,12 +542,17 @@
   "Contact": {
     "title": "Nu Qunnamu",
     "subtitle": "Riqicha Amanamaa",
-    "description": "Yeroo hundaa isiniif dhiyoodha! Gaaffii, yaada yookaan qeeqa qabduu? 'Beteseb' sagalee keessan dhaga'uuf yeroo hunda qophiidha. Bilbilaan, imeelii, AI chaat boot ammayyaatiin yookaan biiroo keenya Hararitti argamutti gammachuun isin simanna.",
+    "description": "Yeroo hundaa isiniif dhiyoodha! Gaaffii, yaada yookaan qeeqa qabduu? 'Beteseb' sagalee keessan dhaga'uuf yeroo hunda qophiidha. Bilbilaan, imeelii, AI chaat boot ammayyaatiin yookaan biiroolee keenya Landan fi Hararitti argamutti gammachuun isin simanna.",
     "infoTitle": "Karaalee Quunnamtii",
     "socialTitle": "Miidiyaa Hawaasummaa",
-    "phone": "Bilbila",
-    "email": "Imeelii",
-    "address": "Teessoo",
-    "officeLocation": "Harar, Itoophiyaa"
+    "phone": "Lakkoofsota Bilbilaa",
+    "email": "Teessoo Imeelii",
+    "address": "Teessoowwan Keenya",
+    "hqLabel": "Waajjira Muummee",
+    "hqAddress": "Landan, Ingilaand",
+    "branchLabel": "Waajjira Damee",
+    "branchAddress": "Harar, Itoophiyaa",
+    "phone1": "+44 7347 663219",
+    "phone2": "+251 946 414018"
   }
 }

@@ -110,7 +110,7 @@
     "privacy": "Privacy Policy",
     "admin": "Admin Security Portal",
     "copyright": "© 2026 Beteseb (ቤተሰብ). Bringing Habesha Together.",
-    "address": "Harar, Ethiopia",
+    "address": "London, England / Harar, Ethiopia",
     "community": "Community Feed"
   },
   "Auth": {
@@ -396,7 +396,7 @@
   },
   "TopHeader": {
     "email": "betesebhub@gmail.com",
-    "phone": "+447347663219 / +251946414018",
+    "phone": "+44 7347 663219 / +251 946 414018",
     "suggestion": "It looks like you prefer {lang}. Switch?",
     "switchBtn": "Switch now"
   },
@@ -547,12 +547,17 @@
   "Contact": {
     "title": "Contact Us",
     "subtitle": "The Bridge of Trust",
-    "description": "We are always close to you! Do you have a question, suggestion, or complaint? 'Beteseb' is always ready to hear your voice. We welcome you with a smile via phone, email, our modern AI chatbot, or at our office located in Harar.",
+    "description": "We are always close to you! Do you have a question, suggestion, or complaint? 'Beteseb' is always ready to hear your voice. We welcome you with a smile via phone, email, our modern AI chatbot, or at our offices located in London and Harar.",
     "infoTitle": "Contact Channels",
     "socialTitle": "Social Media",
-    "phone": "Phone",
-    "email": "Email",
-    "address": "Address",
-    "officeLocation": "Harar, Ethiopia"
+    "phone": "Phone Numbers",
+    "email": "Email Address",
+    "address": "Our Locations",
+    "hqLabel": "Headquarters",
+    "hqAddress": "London, England",
+    "branchLabel": "Branch Office",
+    "branchAddress": "Harar, Ethiopia",
+    "phone1": "+44 7347 663219",
+    "phone2": "+251 946 414018"
   }
 }

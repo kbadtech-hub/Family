@@ -110,7 +110,7 @@
     "privacy": "Siyaasadda Khaaska ah",
     "admin": "Albaabka Amniga Admin",
     "copyright": "© 2026 Beteseb (ቤተሰብ). Isku keenida Habesha.",
-    "address": "Harar, Itoobiya",
+    "address": "London / Harar",
     "community": "Wararka Bulshada"
   },
   "Auth": {
@@ -529,7 +529,7 @@
   },
   "TopHeader": {
     "email": "betesebhub@gmail.com",
-    "phone": "+447347663219 / +251946414018",
+    "phone": "+44 7347 663219 / +251 946 414018",
     "suggestion": "Doorashadaadu ma {lang} baa?",
     "switchBtn": "Bedel"
   },
@@ -542,12 +542,17 @@
   "Contact": {
     "title": "Nala soo xiriir",
     "subtitle": "Buundada Kalsoonida",
-    "description": "Had iyo jeer waan kuu dhow nahay! Ma qabtaa su'aal, soo jeedin, ama cabasho? 'Beteseb' had iyo jeer waxay u diyaarsan tahay inay maqasho codkaaga. Waxaan kugu soo dhawaynaynaa dhoola caddeyn taleefan, iimayl, chatbot-ka casriga ah ee AI, ama xafiiskeena ku yaalla Harar.",
+    "description": "Had iyo jeer waan kuu dhow nahay! Ma qabtaa su'aal, soo jeedin, ama cabasho? 'Beteseb' had iyo jeer waxay u diyaarsan tahay inay maqasho codkaaga. Waxaan kugu soo dhawaynaynaa dhoola caddeyn taleefan, iimayl, chatbot-ka casriga ah ee AI, ama xafiisyadayada ku yaalla London iyo Harar.",
     "infoTitle": "Channel-lada Xiriirka",
     "socialTitle": "Baraha Bulshada",
-    "phone": "Telefoon",
-    "email": "Iimayl",
-    "address": "Cinwaanka",
-    "officeLocation": "Harar, Itoobiya"
+    "phone": "Lambarrada Taleefanka",
+    "email": "Cinwaanka Iimaylka",
+    "address": "Goobahaayaga",
+    "hqLabel": "Xarunta Guud",
+    "hqAddress": "London, England",
+    "branchLabel": "Xafiiska Laanta",
+    "branchAddress": "Harar, Itoobiya",
+    "phone1": "+44 7347 663219",
+    "phone2": "+251 946 414018"
   }
 }
