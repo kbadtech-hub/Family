@@ -91,6 +91,12 @@ function SignupContent() {
       if (authError) throw authError;
 
       if (data.user) {
+        // Call custom OTP sender (Resend)
+        await fetch('/api/auth/send-otp', {
+          method: 'POST',
+          body: JSON.stringify({ email: identifier, locale })
+        });
+        
         setSignupIdentifier(identifier);
         setIsSuccess(true);
       }

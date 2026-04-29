@@ -113,12 +113,10 @@ function VerifyOtpContent() {
     try {
       const isEmail = email.includes('@');
       if (isEmail) {
-        const { error: resendError } = await supabase.auth.resend({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          type: (type === 'recovery' ? 'recovery' : 'signup') as any,
-          email: email,
+        await fetch('/api/auth/send-otp', {
+          method: 'POST',
+          body: JSON.stringify({ email: email, locale })
         });
-        if (resendError) throw resendError;
       } else {
         const { error: resendError } = await supabase.auth.resend({
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
