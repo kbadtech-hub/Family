@@ -21,6 +21,7 @@ function SignupContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -177,10 +178,50 @@ function SignupContent() {
                 </div>
               </div>
 
+              <div className="flex items-start gap-3 px-2 group cursor-pointer" onClick={() => setAgreedToTerms(!agreedToTerms)}>
+                <div className="relative flex items-center justify-center mt-1">
+                  <input
+                    type="checkbox"
+                    checked={agreedToTerms}
+                    onChange={(e) => setAgreedToTerms(e.target.checked)}
+                    className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border-2 border-border transition-all checked:bg-primary checked:border-primary hover:border-primary/50"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <CheckCircle2 
+                    size={14} 
+                    className="absolute text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" 
+                  />
+                </div>
+                <label className="text-sm text-gray-500 font-medium cursor-pointer leading-tight select-none">
+                  {t.rich('agreement', {
+                    terms: (chunks) => (
+                      <a 
+                        href={`/${locale}/terms`} 
+                        target="_blank" 
+                        className="text-primary hover:underline font-bold"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {chunks}
+                      </a>
+                    ),
+                    privacy: (chunks) => (
+                      <a 
+                        href={`/${locale}/privacy`} 
+                        target="_blank" 
+                        className="text-primary hover:underline font-bold"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {chunks}
+                      </a>
+                    )
+                  })}
+                </label>
+              </div>
+
               <button
                 type="submit"
-                disabled={isLoading}
-                className="w-full bg-primary text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-primary/20 hover:shadow-2xl hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 mt-4"
+                disabled={isLoading || !agreedToTerms}
+                className="w-full bg-primary text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-primary/20 hover:shadow-2xl hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale-[0.5] disabled:cursor-not-allowed mt-4"
               >
                 {isLoading ? (
                   <Loader2 className="animate-spin" size={20} />

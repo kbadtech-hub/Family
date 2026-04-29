@@ -129,7 +129,10 @@
       "passwordTooShort": "Erayga sirta ah waa inuu ugu yaraan ka kooban yahay 8 xaraf.",
       "passwordTooWeak": "Erayga sirta ah waa inuu ku jiraa ugu يaraan hal lambar iyo hal calaamad gaar ah (@, #, $).",
       "passwordCommon": "Fadlan isticmaal eray sir ah oo xoog badan. Kan waa mid aad caadi u ah."
-    }
+    },
+    "agreement": "Waxaan ogolaaday {terms} iyo {privacy} ee 'Beteseb'.",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy"
   },
   "Community": {
     "title": "La-talinta Qoyska & Bulshada",
