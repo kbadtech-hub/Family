@@ -23,7 +23,11 @@ function LoginContent() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // No longer blocking unconfirmed users
+    const errorParam = new URLSearchParams(window.location.search).get('error');
+    if (errorParam === 'unconfirmed') {
+      const emailParam = new URLSearchParams(window.location.search).get('email');
+      router.push(`/verify-otp?email=${encodeURIComponent(emailParam || '')}`);
+    }
   }, [locale, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -39,7 +43,12 @@ function LoginContent() {
       const { data, error: authError } = await supabase.auth.signInWithPassword(loginParams);
 
       if (authError) {
-        throw authError;
+        if (authError.message.toLowerCase().includes('email not confirmed')) {
+          router.push(`/verify-otp?email=${encodeURIComponent(authMode === 'email' ? email : phone)}`);
+        } else {
+          throw authError;
+        }
+        return;
       }
 
       if (data.user) {

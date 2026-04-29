@@ -68,14 +68,21 @@ export async function proxy(request: NextRequest) {
      return NextResponse.redirect(new URL(`/${locale}/secure-beteseb-admin`, request.url));
   }
 
-    // 4. Regular Dashboard/Auth Protection
-    if (isDashboardRoute) {
-      if (!user) {
-        return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
-      }
-  
-      // Fetch profile and verification status
-      const { data: profile } = await supabase.from('profiles').select('is_onboarded, is_verified, role').eq('id', user.id).single();
+  // 4. Regular Dashboard/Auth Protection
+  if (isDashboardRoute) {
+    if (!user) {
+      return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
+    }
+
+    // Check if email is confirmed (Bypass for OTP step 5)
+    const isOTPStep = segments.includes('onboarding') && request.nextUrl.searchParams.get('step') === '5';
+
+    if (!user.email_confirmed_at && !isOTPStep) {
+      return NextResponse.redirect(new URL(`/${locale}/login?error=unconfirmed&email=${encodeURIComponent(user.email || '')}`, request.url));
+    }
+
+    // Fetch profile and verification status
+    const { data: profile } = await supabase.from('profiles').select('is_onboarded, is_verified, role').eq('id', user.id).single();
     
     // Check for staff status (Admin/Super Admin)
     const isStaff = profile?.role === 'admin' || profile?.role === 'super_admin';
