@@ -2,14 +2,43 @@
   "Index": {
     "Hero": {
       "tagline": "Dhaqanka iyo casriyeynta oo isku jira",
-      "title1": "Ballan dhab ah",
-      "title2": "Qoys waara",
-      "subtitle": "Goobta koowaad ee caalamiga ah ee isku xirta qoysaska Itoobiya iyo Ereteriya, oo ku salaysan dhaqanka laguna taageeray talada khuburada.",
+      "title1": "Lammaanahaaga nolosha ee saxda ah",
+      "title2": "Ku bilow 'Beteseb' (Qoyska)!",
+      "subtitle": "Madal isku-xirka guurka oo ku salaysan dhaqankayaga iyo qiyamkayaga, oo ay taageerayaan tignoolajiyada casriga ah. Buundo lagu kalsoonaan karo oo lagu helo lammaane nololeed oo dhab ah, ma aha oo kaliya raadinta jacayl.",
       "cta1": "Sameyso Koonto",
       "cta2": "Aragtidayada",
       "verify1": "La xaqiijiyay",
       "verify2": "Aqoonsi dhab ah",
       "verify3": "Matoorka Abushakir"
+    },
+    "Features": {
+      "title": "Maxaad u dooranaysaa 'Beteseb'?",
+      "aiMatch": {
+        "title": "Isbarbardhigga Wajiga (AI Face Match)",
+        "desc": "Wuxuu xaqiijiyaa xaqiiqada isticmaalaha iyadoo loo marayo nidaamka aqoonsiga wajiga oo ay ku shaqeyso AI."
+      },
+      "idVerify": {
+        "title": "Amni Adag (Aqoonsiga la Hubiyay)",
+        "desc": "Isticmaale kasta waxaa lagu hubiyaa aqoonsigiisa, hubinta is-barashada la isku halleyn karo. Ka madax bannaan xisaabaadka been abuurka ah!"
+      },
+      "expert": {
+        "title": "Talo khabiir",
+        "desc": "Hel koorsooyin iyo hagitaan ay diyaariyeen khubaro ku saabsan dhisidda guurka iyo qoyska."
+      }
+    },
+    "Trust": {
+      "title": "Dammaanadda Kalsoonida iyo Amniga",
+      "privacy": {
+        "title": "Asturnaantaadu waa sharaftayada",
+        "desc": "Xogtaada waxaa si adag u ilaaliya nidaamka sirta casriga ah."
+      },
+      "values": {
+        "title": "Xushmad iyo Daryeel",
+        "desc": "Nidaamkayagu wuxuu ku dhisan yahay qiyamka dhaqanka iyo akhlaaqda waxaana si adag loola socdaa."
+      }
+    },
+    "CTA": {
+      "message": "Qoyskaaga (Beteseb) halkan ayuu kugu sugayaa."
     },
     "Vision": {
       "tagline": "Hiddaha",

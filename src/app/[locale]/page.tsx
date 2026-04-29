@@ -111,9 +111,91 @@ export default function Home() {
          </div>
       </section>
 
-      <div className="mt-12 text-center flex flex-col items-center gap-4 py-12 border-t border-muted/20">
-        <span className="text-xl font-black tracking-tighter uppercase italic text-accent/20">{locale === 'am' ? 'ቤተሰብ' : 'BETESEB'}</span>
-      </div>
+      {/* Features Section */}
+      <section className="py-24 px-8 bg-white">
+         <div className="max-w-7xl mx-auto space-y-20">
+            <div className="text-center space-y-4">
+               <h2 className="text-primary uppercase tracking-[0.3em] text-[10px] font-black">{t('Features.title')}</h2>
+               <div className="h-1 w-20 bg-primary mx-auto rounded-full opacity-20" />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+               {[
+                 { id: 'aiMatch', icon: Sparkles },
+                 { id: 'idVerify', icon: ShieldCheck },
+                 { id: 'expert', icon: CheckCircle2 }
+               ].map(feature => (
+                  <div key={feature.id} className="p-10 rounded-[3rem] bg-[#FDFBF9] border border-border/50 space-y-6 hover:shadow-2xl hover:shadow-primary/5 transition-all group">
+                     <div className="w-16 h-16 rounded-2xl bg-white border border-border flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                        <feature.icon size={32} />
+                     </div>
+                     <h3 className="text-xl font-bold text-[#0F172A]">{t(`Features.${feature.id}.title`)}</h3>
+                     <p className="text-gray-500 leading-relaxed font-medium">
+                        {t(`Features.${feature.id}.desc`)}
+                     </p>
+                  </div>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      {/* Trust & Security Section */}
+      <section className="py-24 px-8 bg-[#0F172A] text-white relative overflow-hidden">
+         <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_var(--primary)_0%,_transparent_30%)] opacity-20" />
+         <div className="max-w-7xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-20">
+            <div className="space-y-8">
+               <h2 className="text-primary uppercase tracking-[0.3em] text-[10px] font-black">{t('Trust.title')}</h2>
+               <h3 className="text-4xl font-black leading-tight">
+                  {t('Trust.privacy.title')}
+               </h3>
+               <p className="text-lg text-white/60 leading-relaxed">
+                  {t('Trust.privacy.desc')}
+               </p>
+               <div className="pt-6 flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-primary">
+                     <ShieldCheck size={24} />
+                  </div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-white/40">Verified by Beteseb Secure Node</div>
+               </div>
+            </div>
+
+            <div className="p-10 rounded-[3rem] bg-white/5 border border-white/10 space-y-8">
+               <h4 className="text-xl font-bold italic">{t('Trust.values.title')}</h4>
+               <p className="text-white/60 leading-relaxed">
+                  {t('Trust.values.desc')}
+               </p>
+               <div className="grid grid-cols-2 gap-6 pt-4">
+                  <div className="p-6 rounded-2xl bg-white/5 border border-white/5">
+                     <p className="text-2xl font-black text-primary">100%</p>
+                     <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Privacy Sync</p>
+                  </div>
+                  <div className="p-6 rounded-2xl bg-white/5 border border-white/5">
+                     <p className="text-2xl font-black text-primary">24/7</p>
+                     <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">AI Monitoring</p>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-32 px-8 bg-white text-center space-y-12">
+         <div className="max-w-3xl mx-auto space-y-8">
+            <h2 className="text-5xl md:text-6xl font-black tracking-tighter text-[#0F172A] italic">
+               {t('CTA.message')}
+            </h2>
+            <Link 
+               href="/location-selection"
+               className="inline-flex bg-primary text-white py-6 px-16 rounded-[2.5rem] font-bold text-sm uppercase tracking-[0.2em] hover:shadow-2xl hover:shadow-primary/20 transition-all active:scale-95 items-center gap-4"
+            >
+               {t('Hero.cta1')} <ArrowRight size={20} className={locale === 'ar' ? 'rotate-180' : ''} />
+            </Link>
+         </div>
+
+         <div className="pt-20 opacity-10">
+            <span className="text-8xl font-black tracking-tighter uppercase italic">{locale === 'am' ? 'ቤተሰብ' : 'BETESEB'}</span>
+         </div>
+      </section>
     </div>
   );
 }

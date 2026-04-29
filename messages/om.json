@@ -2,14 +2,43 @@
   "Index": {
     "Hero": {
       "tagline": "Aadaa keenya, Akkaataa amayyaatiin",
-      "title1": "Kakuu Cimaa",
-      "title2": "Maatii Dhalootaaf",
-      "subtitle": "Platformii wal-argisiisuu maatii Itoophiyaa fi Eertiraa isa jalqabaa addunyaa irratti, aadaa irratti hundaa'ee fi gorsa ogeessotaan deeggarame.",
+      "title1": "Hiriyaa jireenyaa keessanii sirrii",
+      "title2": "Beteseb waliin jalqabaa!",
+      "subtitle": "Sirna gaa'ela walitti fiduu aadaa fi naamusaa keenya irratti hundaa'e, teeknooloojii amayyaatiin deeggarame. Jaalala barbaaduu qofa osoo hin taane, hiriyaa jireenyaa dhugaa argachuuf riqicha amanamaadha.",
       "cta1": "Hikaawuntii uumaa",
       "cta2": "Mul'ata keenya",
       "verify1": "Mirkanaa'aa",
       "verify2": "Mirkaneessuu eenyummaatiin",
       "verify3": "Abushakir Injiinii"
+    },
+    "Features": {
+      "title": "Maaliif 'Beteseb' filattu?",
+      "aiMatch": {
+        "title": "AI Face Match",
+        "desc": "Sirna adda baasuu fuulaa AI'n deeggarameen eenyummaa fayyadamtootaa mirkaneessa."
+      },
+      "idVerify": {
+        "title": "Nageenya Jabaa (ID Verified)",
+        "desc": "Fayyadamtoonni hundi waraqaa eenyummaatiin waan mirkanaa'aniif wal-beekuun amanamummaa qabu mirkanaa'aadha. Akkaawuntii sobaa irraa bilisa!"
+      },
+      "expert": {
+        "title": "Gorsa Ogeessaa",
+        "desc": "Barnoota fi qajeelfama ijaarsa gaa'elaa fi maatii irratti ogeessotaan qophaa'an ni argattu."
+      }
+    },
+    "Trust": {
+      "title": "Mirkaneessa Amanamummaa fi Nageenyaa",
+      "privacy": {
+        "title": "Iccitiin keessan nuuf kabaja",
+        "desc": "Odeeffannoon keessan sirna 'encryption' ammayyaatiin jabana eegamaadha."
+      },
+      "values": {
+        "title": "Kabaja fi Of-eeggannoo",
+        "desc": "Sirni keenya aadaa fi naamusaa irratti waan ijaarameef to'annoo jabaa jalatti gaggeeffama."
+      }
+    },
+    "CTA": {
+      "message": "Maatiin keessan asitti isin eegaa jiru."
     },
     "Vision": {
       "tagline": "Dhaala",

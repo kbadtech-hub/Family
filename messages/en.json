@@ -2,14 +2,43 @@
   "Index": {
     "Hero": {
       "tagline": "Traditional warmth, modern matching",
-      "title1": "Strong Marriages,",
-      "title2": "A Family for Generations!",
-      "subtitle": "The premier global platform dedicated to building sustainable Ethiopian homes through heritage-focused matching and AI-powered counseling.",
+      "title1": "Find Your Perfect Life Partner",
+      "title2": "Start with 'Beteseb'!",
+      "subtitle": "A marriage matching platform based on our culture and values, supported by modern technology. A trusted bridge to find a true life partner, not just a search for love.",
       "cta1": "Create Account",
       "cta2": "Our Vision",
       "verify1": "PASSPORT VERIFIED",
       "verify2": "IDENTITY SECURED",
       "verify3": "ABUSHAKIR ENGINE"
+    },
+    "Features": {
+      "title": "Why Choose 'Beteseb'?",
+      "aiMatch": {
+        "title": "AI Face Match",
+        "desc": "Ensures user authenticity through an AI-powered face recognition system."
+      },
+      "idVerify": {
+        "title": "Strict Security (ID Verified)",
+        "desc": "Every user is ID-verified, ensuring reliable introductions. Free from fake accounts!"
+      },
+      "expert": {
+        "title": "Expert Advice",
+        "desc": "Access expert-led courses and guidance on marriage and family building."
+      }
+    },
+    "Trust": {
+      "title": "Trust & Security Assurance",
+      "privacy": {
+        "title": "Your Privacy is Our Honor",
+        "desc": "Your data is strictly protected by a modern encryption system."
+      },
+      "values": {
+        "title": "Respect & Care",
+        "desc": "Our system is built on traditional and moral values and is strictly monitored."
+      }
+    },
+    "CTA": {
+      "message": "Your 'Family' (Beteseb) is waiting for you here."
     },
     "Vision": {
       "tagline": "Our Heritage",
