@@ -129,7 +129,8 @@
       "passwordTooShort": "Password must be at least 8 characters long.",
       "passwordTooWeak": "Password must include at least one number and one special character (@, #, $).",
       "passwordCommon": "Please use a stronger password. This one is too common."
-    }
+    },
+    "agreeTerms": "I agree with 'Beteseb' <terms>Family Membership Guidelines</terms> and <privacy>Your Information is in Trusted Hands</privacy>."
   },
   "Community": {
     "title": "Family Counseling & Community",
