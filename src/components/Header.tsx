@@ -53,28 +53,6 @@ export default function Header() {
 
   return (
     <header className={`sticky top-0 left-0 w-full z-[100] transition-all duration-300 ${isScrolled ? 'bg-white/90 backdrop-blur-md shadow-sm py-3 border-b border-border' : 'bg-[#FDFBF9]/50 backdrop-blur-sm'}`}>
-      {/* Top Support Bar */}
-      {!isScrolled && (
-        <div className="bg-accent text-white/60 py-2.5 px-6 border-b border-white/5 hidden md:block">
-           <div className="max-w-7xl mx-auto flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-              <div className="flex gap-8">
-                 <div className="flex items-center gap-2 hover:text-primary transition-colors cursor-pointer">
-                    <Heart size={12} className="text-primary" />
-                    <span>Support: betesebhub@gmail.com</span>
-                 </div>
-                 <div className="flex items-center gap-2">
-                    <span className="text-white/20">|</span>
-                    <span className="hover:text-primary transition-colors cursor-pointer">+447347663219</span>
-                    <span className="text-white/20">•</span>
-                    <span className="hover:text-primary transition-colors cursor-pointer">+251946414018</span>
-                 </div>
-              </div>
-              <div className="flex gap-4">
-                 <span>Official Beteseb Hub</span>
-              </div>
-           </div>
-        </div>
-      )}
 
       <div className={`max-w-7xl mx-auto px-6 flex justify-between items-center text-foreground transition-all duration-300 ${isScrolled ? 'py-4' : 'py-8'}`}>
         

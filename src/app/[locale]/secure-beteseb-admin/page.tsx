@@ -710,6 +710,7 @@ export default function AdminPortal() {
             { id: 'stats', icon: BarChart3, label: 'Analytics' },
             { id: 'cms', icon: Layout, label: 'Standard CMS' },
             { id: 'business', icon: SettingsIcon, label: 'Business Settings' },
+            { id: 'social', icon: Globe, label: 'Social Media Links' },
             { id: 'verification', icon: ShieldCheck, label: 'Verifications' },
             { id: 'payments', icon: Heart, label: 'Payment Review' },
             { id: 'messaging', icon: MessageSquare, label: 'Communication' },
@@ -1008,26 +1009,26 @@ export default function AdminPortal() {
           </div>
         )}
 
-        {activeTab === 'social_feed' && (
+        {activeTab === 'social' && (
            <div className="space-y-8 animate-in fade-in duration-500">
              <header className="flex justify-between items-end">
                <div>
-                 <h2 className="text-3xl font-bold italic uppercase tracking-tighter">Social Presence</h2>
-                 <p className="text-foreground/40 mt-1">Automatic icon linking for external platforms.</p>
+                 <h2 className="text-3xl font-bold italic uppercase tracking-tighter">Social Media Links</h2>
+                 <p className="text-foreground/40 mt-1">Manage official links for the platform's footer icons.</p>
                </div>
-               <button onClick={handleSaveCMS} className="btn-primary">Deploy Updates</button>
+               <button onClick={handleSaveCMS} className="btn-primary flex items-center gap-2">
+                 <CheckCircle2 size={20} /> Deploy Links
+               </button>
              </header>
 
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-8">
-                  <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5">
-                    <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-10">Main Links</h3>
+                   <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5">
+                    <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-10">Official Platforms</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                        {[
-                         { id: 'facebook', label: 'Facebook' },
                          { id: 'youtube', label: 'YouTube' },
-                         { id: 'tiktok', label: 'TikTok' },
-                         { id: 'instagram', label: 'Instagram' },
+                         { id: 'facebook', label: 'Facebook' },
                          { id: 'telegram', label: 'Telegram' },
                          { id: 'whatsapp', label: 'WhatsApp' },
                          { id: 'linkedin', label: 'LinkedIn' },
@@ -1038,7 +1039,7 @@ export default function AdminPortal() {
                              <div className="relative group">
                                 <input 
                                   type="text" 
-                                  placeholder={`https://${social.id}.com/...`}
+                                  placeholder={`https://${social.id}.com/beteseb`}
                                   value={(cmsForm[social.id] as string) || ""}
                                   onChange={(e) => setCmsForm({...cmsForm, [social.id]: e.target.value})}
                                   className="input-premium bg-background pl-12"
@@ -1055,14 +1056,14 @@ export default function AdminPortal() {
 
                 <div className="space-y-8">
                    <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5">
-                      <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6">Live Preview</h3>
-                      <p className="text-[10px] text-foreground/40 uppercase mb-8">Generated Footer Icons</p>
+                      <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6">Live Footer Preview</h3>
+                      <p className="text-[10px] text-foreground/40 uppercase mb-8">Visible Icons</p>
                       <div className="flex flex-wrap gap-4">
-                         {['facebook', 'youtube', 'tiktok', 'instagram', 'telegram', 'whatsapp', 'linkedin', 'twitter'].map(id => (
+                         {['youtube', 'facebook', 'telegram', 'whatsapp', 'linkedin', 'twitter'].map(id => (
                             (cmsForm[id] as string) && (
-                               <div key={id} className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-primary group-hover:bg-primary transition-all">
+                               <div key={id} className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-inner">
                                   <Globe size={20} />
-                               </div>
+                                </div>
                             )
                          ))}
                       </div>
