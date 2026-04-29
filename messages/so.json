@@ -554,5 +554,15 @@
     "branchAddress": "Harar, Itoobiya",
     "phone1": "+44 7347 663219",
     "phone2": "+251 946 414018"
+  },
+  "Legal": {
+    "Terms": {
+      "title": "Tilmaamaha Xubinnimada Qoyska",
+      "content": "'Beteseb' waa buundo loo maro guurka ee ma ahan oo kaliya xiriir caadi ah. Sidaa darteed, markaad ku biirto madasha, waxaad ballan qaadaysaa inaad mudnaanta siiso runta, sharafta, iyo ujeeddada muqadaska ah ee guurka. Xubin kasta waxaa ku waajib ah inay muujiso aqoonsigeeda dhabta ah, ixtiraamto sirta dadka kale, oo ay u isticmaasho madasha ujeedadii wanaagsanayd ee loogu talagalay oo kaliya hadal iyo ficilba. Markaad isticmaalayso madasha guurka ee 'Beteseb', waxaad ballan qaadaysaa inaad ixtiraamto sharciyada ku salaysan qiyamka dhaqanka iyo akhlaaqda. Annagoo raacayna ballantayada ah inaan ilaalinno sharaftaada oo aan dhisno bulsho nadiif ah, waxaan xaq u leenahay inaan xannibno isticmaalayaasha aan raacin sharciyada."
+    },
+    "Privacy": {
+      "title": "Macluumaadkaagu wuxuu ku jiraa Gacmo la aamini karo",
+      "content": "Sirtaadu waa noo muhiimad weyn. Macluumaadka shakhsi ahaaneed, sawirrada, iyo dukumentiyada aad geliso nidaamka 'Beteseb' waxay ku xidhan yihiin ilaalin tignoolajiyadeed oo casri ah oo la isku halayn karo. Macluumaadkaagu waligiis uma gudbi doono dhinac saddexaad ogolaanshahaaga la'aanteed. Aqoonsiyada aan u isticmaalno si aan u xaqiijinno aqoonsigaaga waxaa loo isticmaalaa oo kaliya baaritaanka amniga waxaana loo hayaa si qarsoodi ah. Annaga naloo joogo, kaliya aqoonsigaagu ma ahan mid la ilaaliyo, laakiin sidoo kale badbaadadaada."
+    }
   }
 }

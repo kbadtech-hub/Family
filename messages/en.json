@@ -559,5 +559,15 @@
     "branchAddress": "Harar, Ethiopia",
     "phone1": "+44 7347 663219",
     "phone2": "+251 946 414018"
+  },
+  "Legal": {
+    "Terms": {
+      "title": "Family Membership Guidelines",
+      "content": "'Beteseb' is a bridge to marriage, not just a casual connection. Therefore, by joining the platform, you promise to prioritize truth, honor, and the sacred purpose of marriage. Each member has an obligation to reveal their true identity, respect the privacy of others, and use the platform only for its intended good purpose in both speech and action. When using the 'Beteseb' marriage platform, you promise to respect rules based on cultural and moral values. In accordance with our promise to protect your dignity and build a clean community, we reserve the full right to suspend users who do not follow the rules."
+    },
+    "Privacy": {
+      "title": "Your Information is in Trusted Hands",
+      "content": "Your privacy is of the utmost value to us. Personal information, photos, and documents you enter into the 'Beteseb' system are sealed with modern and reliable technological protection. Your information will never pass to a third party without your permission. Identifications we use to verify your identity are used only for security screening and are kept secret. With us, not only is your identity protected, but your safety as well."
+    }
   }
 }

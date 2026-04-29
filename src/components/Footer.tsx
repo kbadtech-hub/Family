@@ -134,8 +134,8 @@ export default function Footer() {
           <div className="space-y-6">
             <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{t('legal')}</h3>
             <div className="flex flex-col gap-4 text-white/50 text-sm font-medium">
-              <Link href="#" className="hover:text-white transition-colors">{t('terms')}</Link>
-              <Link href="#" className="hover:text-white transition-colors">{t('privacy')}</Link>
+              <Link href="/terms" className="hover:text-white transition-colors">{t('terms')}</Link>
+              <Link href="/privacy" className="hover:text-white transition-colors">{t('privacy')}</Link>
             </div>
           </div>
         </div>

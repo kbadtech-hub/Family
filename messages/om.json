@@ -554,5 +554,15 @@
     "branchAddress": "Harar, Itoophiyaa",
     "phone1": "+44 7347 663219",
     "phone2": "+251 946 414018"
+  },
+  "Legal": {
+    "Terms": {
+      "title": "Qajeelfama Miseensummaa Maatii",
+      "content": "'Beteseb' riqicha gaa'elaa malee walqunnamtii salphaa miti. Kanaafuu, sirnichatti yeroo makamtan dhugaa, kabajaa fi kaayyoo gaa'elaa qulqulluuf dursa akka kennitan waadaa galtu. Miseensi hundi eenyummaa isaa dhugaa ibsuu, dhuunfaa warra kaanii kabajuu fi haasaanis ta'ee gochaan madda kabajamaa kaayyoo itti yaadame qofaaf fayyadamuuf dirqama qaba. Sirna gaa'elaa 'Beteseb' yeroo fayyadamtan seera duudhaa aadaa fi naamusaa irratti hundaa'an kabajuuf waadaa galtu. Nutis kabajaa keessan eeguu fi hawaasa qulqulluu ijaaruuf waadaa galleen, fayyadamtoota seera hin kabajne dhimmisuuf mirga guutuu qabna."
+    },
+    "Privacy": {
+      "title": "Odeeffannoon Keessan Harka Amanamaa Irra Jira",
+      "content": "Dhuunfaan keessan nuuf wanta hunda caalaa gatii guddaa qaba. Sirna 'Maatii' keessatti odeeffannoon dhuunfaa, fakkiiwwan fi sanadoonni galchitan teeknoolojii ammayyaa fi amanamaa keessa jiru. Hayyama keessan malee odeeffannoon keessan qaama sadaffaatti hin dabarru. Eenyummaa keessan mirkaneessuuf waraqaalee eenyummaa nuti fayyadamnu sakatta'iinsa nageenyaaf qofa kan tajaajilan fi icciitiin kan ka'amanidha. Nu biratti eenyummaa keessan qofa osoo hin taane nageenyi keessanis eegamaadha."
+    }
   }
 }
