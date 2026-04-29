@@ -32,7 +32,7 @@ function SignupContent() {
   React.useEffect(() => {
     if (isSuccess && signupIdentifier) {
       const timer = setTimeout(() => {
-        router.push(`/verify-otp?email=${encodeURIComponent(signupIdentifier)}`);
+        router.push('/onboarding');
       }, 2000);
       return () => clearTimeout(timer);
     }
@@ -122,7 +122,7 @@ function SignupContent() {
           </p>
           <div className="flex items-center justify-center gap-2 text-primary font-bold animate-pulse">
              <Loader2 className="animate-spin" size={18} />
-             <span>{locale === 'am' ? 'ወደ ቀጣዩ ገጽ በመውሰድ ላይ...' : locale === 'ti' ? 'ናብ ቀጻሊ ገጽ ይወስደኩም አሎ...' : 'Redirecting to verification...'}</span>
+             <span>{locale === 'am' ? 'ወደ ቀጣዩ ገጽ በመውሰድ ላይ...' : locale === 'ti' ? 'ናብ ቀጻሊ ገጽ ይወስደኩም አሎ...' : 'Redirecting to onboarding...'}</span>
           </div>
         </div>
       </div>
