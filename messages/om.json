@@ -478,6 +478,54 @@
       "Pakistan": "Paakistaan"
     }
   },
+  "Classes": {
+    "hero": {
+      "tagline": "Akkaadaamii Beteseb",
+      "title1": "Maaddii Beekumsaa—",
+      "title2": "Jaalala beekumsaan, gaa'ela ogummaan!",
+      "subtitle": "Gaa'elli carraadhaan kan milkaa'u osoo hin taane, beekumsaa fi of-eeggannoodhaan kan ijaaramu kutaa jireenyaati. Gaa'elli akka iddoo dhaabaa bareedaati; yoo hin kunuunfaminii fi bishaan hin obaasamin hin lalammu. Jaalalli dhugaa miira qofa osoo hin taane murtii guyyaa guyyaan haaromfamudha. Nuti maaddii kana irratti, hiriyaa jireenyaa filachuu irraa jalqabee, hanga maatii jabaa obomboleettiin hin dhabamsiifne ijaaruutti ogummoota barootaa karaa ammayyaatiin isiniif qopheessineerra.",
+      "cta": "Barachuu Jalqabaa"
+    },
+    "list": {
+      "class1": {
+        "title": "Filannoo Hiriyaa",
+        "desc": "Ogummaa eenyummaa bifa duubaa fi dhugaa jecha duubaa addaan baasanii beekuu.",
+        "date": "Miseensota Qofaaf",
+        "badge": "Adda"
+      },
+      "class2": {
+        "title": "Afaan Onnee",
+        "desc": "Ogummaa wal-dhabdee keessatti nagaa uumuu fi callisummaa keessatti wal-hubachuu.",
+        "date": "Miseensota Qofaaf",
+        "badge": "Adda"
+      },
+      "class3": {
+        "title": "Jabinna Maatii",
+        "desc": "Iccitii ijoollee naamusaan guddisuu fi manna keessan jaalalaan guutuu.",
+        "date": "Miseensota Qofaaf",
+        "badge": "Adda"
+      }
+    },
+    "counseling": {
+      "tagline": "Sadarkaalee Imalaa",
+      "title1": "Bu'urri manna keessan bareedaa",
+      "title2": "Har'a asitti bu'ureeffama",
+      "subtitle": "Kutaan kun miseensota keenya addaa kaayyoo qulqulluu maatii hubatanii fi jireenya isaanii gammachuu gara fuulduraatiif har'a beekumsa irratti invast godhaniif kan qophaa'e kuusaa ogummaati. Leenjiiwwan addaa kana viidiyoowwan ogeessotaan filatamanii fi barreeffamoota dabalanii kan dhiyeessinu yoo ta'u, qabiyyee haaraa fe'uun aangoo admiinii 'Beteseb' qofaani.",
+      "stat1Value": "1,000+",
+      "stat1Label": "Miseensota Leenji'an",
+      "stat2Value": "100%",
+      "stat2Label": "Ogummaa Dhugaa",
+      "curriculumTitle": "Qabiyyee Maaddii Beekumsaa",
+      "topics": {
+        "t1": "Filannoo Hiriyaa",
+        "t2": "Afaan Onnee fi Wal-qunnamtii",
+        "t3": "Ijaarsa fi Jabinna Maatii",
+        "t4": "Kuusaa Ogummaa"
+      }
+    },
+    "footerMeta": "Baradhu, Hubadhu, Hojiirra Olchi!",
+    "footerCTA": "Miseensa addaatti jijjiiruudhaan maaddii ogummaa kana amman dura argachuu jalقabaa"
+  },
   "TopHeader": {
     "email": "betesebhub@gmail.com",
     "phone": "+447347663219 / +251946414018",

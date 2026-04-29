@@ -342,51 +342,51 @@
   },
   "Classes": {
     "hero": {
-      "tagline": "Safarka Isu-hagaajinta ee Haggaasan",
-      "title1": "In ka badan Is-waafajin.",
-      "title2": "Xikmad Nololeed.",
-      "subtitle": "Ku biir aqoon-is-weydaarsiyadayada iyo xiisadaha guurka ka hor...",
-      "cta": "Isku diwaangeli Helitaanka aan xadidnayn"
+      "tagline": "Akadeemiyada Beteseb",
+      "title1": "Miiska Xigmadda—",
+      "title2": "Jacayl aqoon leh, guur xigmad leh!",
+      "subtitle": "Guurku maaha mid si kadis ah lagu gaaro, balse waa cutub nolosha ka mid ah oo lagu dhiso aqoon iyo daryeel. Guurku wuxuu u eg yahay beer qurux badan; haddii aan la beerin lana waraabin, ma kobcayso. Jacaylka dhabta ahi maaha dareen uun, ee waa go’aan maalin walba cusboonaada. Miiskan waxaan idiinku diyaarinay xigmadda wakhtiyada, laga bilaabo farsamada doorashada lammaanaha nolosha ilaa dhisidda qoys adag oo aanay duufaannadu ka adkaan karin, si casri ah.",
+      "cta": "Bilow Barashada"
     },
     "list": {
       "class1": {
-        "title": "Fahamka Abushakir",
-        "desc": "Falanqayn qoto dheer oo ku saabsan sida ay u shaqeyso caqliga is-waafajinta Itoobiya ee hore...",
-        "date": "Talaado kasta @ 7 PM (CET)",
-        "badge": "BILAASH AH XUBNAHA"
+        "title": "Doorashada Lammaanaha",
+        "desc": "Xigmadda aqoonsiga qofka ka dambeeya muuqaalka iyo runta ka dambeysa ereyada.",
+        "date": "Xubnaha Kaliya",
+        "badge": "Gaar ah"
       },
       "class2": {
-        "title": "Qiyamka Qoyska ee Dhaqanka",
-        "desc": "Maareynta guurka casriga ah iyadoo la haysto tiirarka dhaqanka Itoobiya...",
-        "date": "Khamiis kasta @ 6 PM (CET)",
-        "badge": "LOO JECEL YAHAY"
+        "title": "Luqadda Wadnaha",
+        "desc": "Farshaxanka abuurista nabadda ee colaadda dhexdeeda iyo fahamka aamusnaanta.",
+        "date": "Xubnaha Kaliya",
+        "badge": "Gaar ah"
       },
       "class3": {
-        "title": "Safarka La Hubiyay",
-        "desc": "Sida saxda ah ee loo diyaariyo profile-kaaga...",
-        "date": "Sabti kasta @ 11 AM (CET)",
-        "badge": "BILOWGA"
+        "title": "Adkeysiga Qoyska",
+        "desc": "Sirta korinta carruurta leh akhlaaqda wanaagsan iyo gurigaaga oo jacayl leh.",
+        "date": "Xubnaha Kaliya",
+        "badge": "Gaar ah"
       }
     },
     "counseling": {
-      "tagline": "Taageero Shakhsi ah",
-      "title1": "Khubaro Caalami ah.",
-      "title2": "Adeeggaaga.",
-      "subtitle": "La-taliyayaashayada takhasuska leh waxay bixiyaan fadhiyo gaar ah...",
-      "stat1Value": "500+",
-      "stat1Label": "La-taliyayaal Firfircoon",
+      "tagline": "Heerarka Socdaalka",
+      "title1": "Aasaaska gurigaaga quruxda badan berri",
+      "title2": "Halkan ayaa maanta la dhigay",
+      "subtitle": "Qaybtani waa bakhaar xigmad ah oo loo diyaariyey xubnahayaga gaarka ah ee fahamsan ujeeddada muqadaska ah ee qoyska isla markaana maanta aqoon u maalgeliya noloshooda farxadda leh ee berri. Waxaan bixinaa tababaro gaar ah oo ay ku jiraan casharo muuqaal ah iyo maqaallo ay soo xuleen khubaro, awoodda gelinta nuxurka cusubna waxay u xirnaan doontaa maamulaha 'Beteseb' oo kaliya.",
+      "stat1Value": "1,000+",
+      "stat1Label": "Xubnaha la Tababaray",
       "stat2Value": "100%",
-      "stat2Label": "Sir Ah",
-      "curriculumTitle": "Xuddunta Manhajka",
+      "stat2Label": "Xigmad dhab ah",
+      "curriculumTitle": "Nuxurka Miiska Xigmadda",
       "topics": {
-        "t1": "Dhaqdhaqaaqa Dhaqamada Kala Duwan",
-        "t2": "Xallinta Khilaafaadka",
-        "t3": "Maareynta Maaliyadda",
-        "t4": "Doorarka Dhaqanka & Xaqiiqooyinka Casriga ah"
+        "t1": "Doorashada Lammaanaha Saxda ah",
+        "t2": "Luqadda Wadnaha & Xiriirka",
+        "t3": "Adkeysiga & Dhismaha Qoyska",
+        "t4": "Bakhaarka Xigmadda"
       }
     },
-    "footerMeta": "Awood-siinta Qurba-joogta",
-    "footerCTA": "Bilow Helitaanka Qoyskaaga Premium"
+    "footerMeta": "Baro, Faham, Codso!",
+    "footerCTA": "Ku billow helitaanka miisaskan xigmadda hadda adigoo u beddelaya xubin gaar ah"
   },
   "Constants": {
     "Religions": {

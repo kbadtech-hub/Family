@@ -347,51 +347,51 @@
   },
   "Classes": {
     "hero": {
-      "tagline": "Guided Matching Journey",
-      "title1": "More than Matching.",
-      "title2": "A Lifetime of Wisdom.",
-      "subtitle": "Join our moderated workshops and pre-marriage classes...",
-      "cta": "Register for Unlimited Access"
+      "tagline": "Beteseb Academy",
+      "title1": "Table of Wisdom—",
+      "title2": "Love through Knowledge, Marriage through Wisdom!",
+      "subtitle": "Marriage is not achieved by chance, but is a chapter of life built with knowledge and care. Marriage is like a beautiful garden; if it is not cultivated and watered, it will not flourish. True love is not just a feeling, but a decision that is renewed every day. On this table, we have prepared for you the wisdom of the ages, from the art of choosing a life partner to building a strong family that is not overcome by storms, in a modern way.",
+      "cta": "Start Learning"
     },
     "list": {
       "class1": {
-        "title": "Understanding Abushakir",
-        "desc": "A deep dive into how ancient Ethiopian matching logic works...",
-        "date": "Every Tuesday @ 7 PM (CET)",
-        "badge": "FREE FOR MEMBERS"
+        "title": "Soulmate Selection",
+        "desc": "The wisdom of identifying identity beyond looks and truth beyond words.",
+        "date": "Members Only",
+        "badge": "Exclusive"
       },
       "class2": {
-        "title": "Traditional Family Values",
-        "desc": "Navigating modern marriage while holding onto Ethiopian cultural anchors...",
-        "date": "Every Thursday @ 6 PM (CET)",
-        "badge": "POPULAR"
+        "title": "Heart Language",
+        "desc": "The art of creating peace in conflict and understanding in silence.",
+        "date": "Members Only",
+        "badge": "Exclusive"
       },
       "class3": {
-        "title": "The Verified Journey",
-        "desc": "How to properly set up your profile...",
-        "date": "Saturdays @ 11 AM (CET)",
-        "badge": "ONBOARDING"
+        "title": "Family Resilience",
+        "desc": "The secrets of raising children with virtue and your home with love.",
+        "date": "Members Only",
+        "badge": "Exclusive"
       }
     },
     "counseling": {
-      "tagline": "One-on-One Support",
-      "title1": "Global Experts.",
-      "title2": "At Your Disposal.",
-      "subtitle": "Our specialized family counselors provide private sessions...",
-      "stat1Value": "500+",
-      "stat1Label": "Active Counselors",
+      "tagline": "The Learning Journey",
+      "title1": "The foundation of your beautiful home",
+      "title2": "Is laid here today",
+      "subtitle": "This section is a wisdom warehouse prepared for our special members who understand the sacred purpose of the family and invest in knowledge today for their happy life tomorrow. We offer these special trainings including video lessons and articles selected by experts, and the authority to upload new content is reserved for 'Beteseb' admin only.",
+      "stat1Value": "1,000+",
+      "stat1Label": "Trained Members",
       "stat2Value": "100%",
-      "stat2Label": "Confidential",
-      "curriculumTitle": "Curriculum Focus",
+      "stat2Label": "True Wisdom",
+      "curriculumTitle": "Table of Wisdom Contents",
       "topics": {
-        "t1": "Intercultural Dynamics",
-        "t2": "Conflict Resolution",
-        "t3": "Financial Stewardship",
-        "t4": "Traditional Roles & Modern Realities"
+        "t1": "Soulmate Selection",
+        "t2": "Heart Language & Connection",
+        "t3": "Family Resilience & Building",
+        "t4": "Wisdom Warehouse"
       }
     },
-    "footerMeta": "Empowering The Diaspora",
-    "footerCTA": "Start Your Premium Family Discovery"
+    "footerMeta": "Learn, Understand, Apply!",
+    "footerCTA": "Start accessing these tables of wisdom now by switching to special membership"
   },
   "TopHeader": {
     "email": "betesebhub@gmail.com",
