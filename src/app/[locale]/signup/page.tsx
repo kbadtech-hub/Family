@@ -25,7 +25,18 @@ function SignupContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
+  const [signupIdentifier, setSignupIdentifier] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+
+  // Auto-redirect on success
+  React.useEffect(() => {
+    if (isSuccess && signupIdentifier) {
+      const timer = setTimeout(() => {
+        router.push(`/verify-otp?email=${encodeURIComponent(signupIdentifier)}`);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [isSuccess, signupIdentifier, router]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,11 +83,8 @@ function SignupContent() {
       if (authError) throw authError;
 
       if (data.user) {
+        setSignupIdentifier(identifier);
         setIsSuccess(true);
-        // After 3 seconds, redirect to OTP verification step in onboarding
-        setTimeout(() => {
-          router.push(`/verify-otp?email=${encodeURIComponent(identifier)}`);
-        }, 3000);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Signup failed. Please try again.');

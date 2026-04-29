@@ -130,7 +130,7 @@
       "passwordTooWeak": "Erayga sirta ah waa inuu ku jiraa ugu يaraan hal lambar iyo hal calaamad gaar ah (@, #, $).",
       "passwordCommon": "Fadlan isticmaal eray sir ah oo xoog badan. Kan waa mid aad caadi u ah."
     },
-    "agreement": "Waxaan ogolaaday {terms} iyo {privacy} ee 'Beteseb'.",
+    "agreement": "Waxaan ogolaaday <terms>Terms of Service</terms> iyo <privacy>Privacy Policy</privacy> ee 'Beteseb'.",
     "terms": "Terms of Service",
     "privacy": "Privacy Policy"
   },

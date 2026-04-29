@@ -130,7 +130,7 @@
       "passwordTooWeak": "Password must include at least one number and one special character (@, #, $).",
       "passwordCommon": "Please use a stronger password. This one is too common."
     },
-    "agreement": "I agree to Beteseb's {terms} and {privacy}.",
+    "agreement": "I agree to Beteseb's <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>.",
     "terms": "Terms of Service",
     "privacy": "Privacy Policy"
   },

@@ -130,7 +130,7 @@
       "passwordTooWeak": "Jechi icitii yoo xiqqaate lakkoofsa tokkoo fi mallattoo addaa tokko (@, #, $) qabaachuu qaba.",
       "passwordCommon": "Maaloo jecha icitii cimaa fayyadamaa. Inni kun baay'ee beekamaadha."
     },
-    "agreement": "Waliigaltee tajaajilaa {terms} fi imaammata dhuunfaa {privacy} 'Beteseb' waliin nan walii gala.",
+    "agreement": "Waliigaltee tajaajilaa <terms>Terms of Service</terms> fi imaammata dhuunfaa <privacy>Privacy Policy</privacy> 'Beteseb' waliin nan walii gala.",
     "terms": "Terms of Service",
     "privacy": "Privacy Policy"
   },
