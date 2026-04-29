@@ -227,6 +227,12 @@ function VerifyOtpContent() {
                   {locale === 'am' ? 'እንደገና ላክ' : 'Resend Code'}
                 </button>
               </p>
+              
+              <div className="bg-muted/30 p-4 rounded-xl text-[10px] text-gray-400 font-medium leading-relaxed">
+                {locale === 'am' 
+                  ? 'ማሳሰቢያ፦ ኮዱ በኢሜልዎ ካልደረሰዎት፣ የላክነውን ሊንክ በቀጥታ በመጫን ማረጋገጥ ይችላሉ። እባክዎ "Spam" ፎልደርዎን ያረጋግጡ።' 
+                  : 'Note: If you didn\'t receive a code, you can also confirm by clicking the link in the email we sent. Please check your Spam folder.'}
+              </div>
 
               <button 
                 onClick={() => router.push(type === 'recovery' ? '/forgot-password' : '/signup')}

@@ -78,7 +78,7 @@ export async function proxy(request: NextRequest) {
     const isOTPStep = segments.includes('onboarding') && request.nextUrl.searchParams.get('step') === '5';
 
     if (!user.email_confirmed_at && !isOTPStep) {
-      return NextResponse.redirect(new URL(`/${locale}/login?error=unconfirmed`, request.url));
+      return NextResponse.redirect(new URL(`/${locale}/login?error=unconfirmed&email=${encodeURIComponent(user.email || '')}`, request.url));
     }
 
     // Fetch profile and verification status
