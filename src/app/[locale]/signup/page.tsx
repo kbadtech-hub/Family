@@ -60,25 +60,33 @@ function SignupContent() {
     const identifier = authMode === 'email' ? email : `${countryCode}${phone}`;
  
     try {
-      const signupParams: any = {
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/confirm`,
-          data: {
-            is_onboarded: false,
-            verification_status: 'unverified',
-            pref_location: prefLocation || 'Local'
-          }
-        }
-      };
-
-      if (authMode === 'email') {
-        signupParams.email = email;
-      } else {
-        signupParams.phone = identifier;
-      }
-
-      const { data, error: authError } = await supabase.auth.signUp(signupParams);
+      const { data, error: authError } = await supabase.auth.signUp(
+        authMode === 'email' 
+          ? { 
+              email, 
+              password, 
+              options: {
+                emailRedirectTo: `${window.location.origin}/auth/confirm`,
+                data: {
+                  is_onboarded: false,
+                  verification_status: 'unverified',
+                  pref_location: prefLocation || 'Local'
+                }
+              }
+            }
+          : { 
+              phone: identifier, 
+              password, 
+              options: {
+                emailRedirectTo: `${window.location.origin}/auth/confirm`,
+                data: {
+                  is_onboarded: false,
+                  verification_status: 'unverified',
+                  pref_location: prefLocation || 'Local'
+                }
+              }
+            }
+      );
 
       if (authError) throw authError;
 
@@ -249,6 +257,7 @@ function SignupContent() {
               <div className="flex items-start gap-3 px-2 group cursor-pointer" onClick={() => setAgreedToTerms(!agreedToTerms)}>
                 <div className="relative flex items-center justify-center mt-1">
                   <input
+                    id="agreedToTerms"
                     type="checkbox"
                     checked={agreedToTerms}
                     onChange={(e) => setAgreedToTerms(e.target.checked)}
@@ -260,7 +269,7 @@ function SignupContent() {
                     className="absolute text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" 
                   />
                 </div>
-                <label className="text-sm text-gray-500 font-medium cursor-pointer leading-tight select-none">
+                <label htmlFor="agreedToTerms" className="text-sm text-gray-500 font-medium cursor-pointer leading-tight select-none">
                   {t.rich('agreement', {
                     terms: (chunks) => (
                       <a 

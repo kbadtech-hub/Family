@@ -3,13 +3,12 @@
 import React, { useState, Suspense } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { useSearchParams } from 'next/navigation';
-import { useTranslations, useLocale } from 'next-intl';
+import { useLocale } from 'next-intl';
 import { supabase } from '@/lib/supabase';
 import { Mail, Loader2, ChevronRight, CheckCircle2 } from 'lucide-react';
 import Image from 'next/image';
 
 function VerifyOtpContent() {
-  const t = useTranslations('Onboarding');
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -69,20 +68,22 @@ function VerifyOtpContent() {
     setErrorMsg('');
     try {
       const isEmail = email.includes('@');
-      const verifyParams: any = {
-        token: otpValue,
-        type: type
-      };
-
       if (isEmail) {
-        verifyParams.email = email;
+        const { error } = await supabase.auth.verifyOtp({
+          email,
+          token: otpValue,
+          type: type === 'recovery' ? 'recovery' : 'signup'
+        });
+        if (error) throw error;
       } else {
-        verifyParams.phone = email;
+        const { error } = await supabase.auth.verifyOtp({
+          phone: email,
+          token: otpValue,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          type: 'sms_otp' as any
+        });
+        if (error) throw error;
       }
-
-      const { error } = await supabase.auth.verifyOtp(verifyParams);
-
-      if (error) throw error;
       
       setIsSuccess(true);
       // Redirect based on type
@@ -111,24 +112,26 @@ function VerifyOtpContent() {
     setErrorMsg('');
     try {
       const isEmail = email.includes('@');
-      let res;
       if (isEmail) {
-        const resendType = (type === 'recovery' ? 'recovery' : 'signup') as any;
-        res = await supabase.auth.resend({
-          type: resendType,
+        const { error: resendError } = await supabase.auth.resend({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          type: (type === 'recovery' ? 'recovery' : 'signup') as any,
           email: email,
         });
+        if (resendError) throw resendError;
       } else {
-        res = await supabase.auth.resend({
-          type: 'sms_otp',
+        const { error: resendError } = await supabase.auth.resend({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          type: 'sms_otp' as any,
           phone: email,
         });
+        if (resendError) throw resendError;
       }
-
-      if (res.error) throw res.error;
       alert(locale === 'am' ? 'ኮዱ እንደገና ተልኳል' : 'Code resent successfully!');
-    } catch (error: any) {
-      setErrorMsg(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setErrorMsg(error.message);
+      }
     }
   };
 
