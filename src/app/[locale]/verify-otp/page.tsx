@@ -28,11 +28,19 @@ function VerifyOtpContent() {
     setIsSubmitting(true);
     setErrorMsg('');
     try {
-      const { error } = await supabase.auth.verifyOtp({
-        email,
+      const isEmail = email.includes('@');
+      const verifyParams: any = {
         token: otp,
         type: type
-      });
+      };
+
+      if (isEmail) {
+        verifyParams.email = email;
+      } else {
+        verifyParams.phone = email;
+      }
+
+      const { error } = await supabase.auth.verifyOtp(verifyParams);
 
       if (error) throw error;
       
@@ -56,6 +64,30 @@ function VerifyOtpContent() {
       }
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    setErrorMsg('');
+    try {
+      const isEmail = email.includes('@');
+      let res;
+      if (isEmail) {
+        res = await supabase.auth.resend({
+          type: type === 'recovery' ? 'recovery' : 'signup',
+          email: email,
+        });
+      } else {
+        res = await supabase.auth.resend({
+          type: 'sms_otp',
+          phone: email,
+        });
+      }
+
+      if (res.error) throw res.error;
+      alert(locale === 'am' ? 'ኮዱ እንደገና ተልኳል' : 'Code resent successfully!');
+    } catch (error: any) {
+      setErrorMsg(error.message);
     }
   };
 
@@ -135,12 +167,24 @@ function VerifyOtpContent() {
               </button>
             </form>
 
-            <button 
-              onClick={() => router.push(type === 'recovery' ? '/forgot-password' : '/signup')}
-              className="text-gray-400 text-[10px] font-black uppercase tracking-widest hover:text-primary transition-colors"
-            >
-              {locale === 'am' ? 'ተመለስ' : locale === 'ti' ? 'ተመለሱ' : 'Go Back'}
-            </button>
+            <div className="pt-4 space-y-4">
+              <p className="text-sm text-gray-400 font-medium">
+                {locale === 'am' ? 'ኮዱ አልደረሰዎትም?' : 'Didn\'t receive the code?'}
+                <button 
+                  onClick={handleResendOTP}
+                  className="text-primary font-bold ml-2 hover:underline"
+                >
+                  {locale === 'am' ? 'እንደገና ላክ' : 'Resend Code'}
+                </button>
+              </p>
+
+              <button 
+                onClick={() => router.push(type === 'recovery' ? '/forgot-password' : '/signup')}
+                className="text-gray-400 text-[10px] font-black uppercase tracking-widest hover:text-primary transition-colors block mx-auto"
+              >
+                {locale === 'am' ? 'ተመለስ' : locale === 'ti' ? 'ተመለሱ' : 'Go Back'}
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -6,15 +6,19 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from '@/i18n/routing';
 import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
-import { Mail, Lock, ChevronRight, AlertCircle, Loader2, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
+import { Mail, Lock, ChevronRight, AlertCircle, Loader2, Eye, EyeOff, CheckCircle2, Phone, Globe } from 'lucide-react';
 import { validatePassword } from '@/lib/password-validator';
+import { COUNTRIES } from '@/lib/countries';
 
 function SignupContent() {
   const t = useTranslations('Auth');
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [authMode, setAuthMode] = useState<'email' | 'phone'>('email');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [countryCode, setCountryCode] = useState('+251');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -42,10 +46,10 @@ function SignupContent() {
     }
 
     const prefLocation = searchParams.get('pref_location');
+    const identifier = authMode === 'email' ? email : `${countryCode}${phone}`;
  
     try {
-      const { data, error: authError } = await supabase.auth.signUp({
-        email,
+      const signupParams: any = {
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/auth/confirm`,
@@ -55,7 +59,15 @@ function SignupContent() {
             pref_location: prefLocation || 'Local'
           }
         }
-      });
+      };
+
+      if (authMode === 'email') {
+        signupParams.email = email;
+      } else {
+        signupParams.phone = identifier;
+      }
+
+      const { data, error: authError } = await supabase.auth.signUp(signupParams);
 
       if (authError) throw authError;
 
@@ -63,7 +75,7 @@ function SignupContent() {
         setIsSuccess(true);
         // After 3 seconds, redirect to OTP verification step in onboarding
         setTimeout(() => {
-          router.push(`/verify-otp?email=${encodeURIComponent(email)}`);
+          router.push(`/verify-otp?email=${encodeURIComponent(identifier)}`);
         }, 3000);
       }
     } catch (err: unknown) {
@@ -125,21 +137,69 @@ function SignupContent() {
               </div>
             )}
 
+            {/* Auth Mode Toggle */}
+            <div className="flex gap-2 p-1.5 bg-[#F8F4F1] rounded-2xl mb-8">
+              <button
+                type="button"
+                onClick={() => setAuthMode('email')}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${authMode === 'email' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-accent'}`}
+              >
+                <Mail size={14} /> {t('email')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setAuthMode('phone')}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${authMode === 'phone' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-accent'}`}
+              >
+                <Phone size={14} /> {t('phoneTab')}
+              </button>
+            </div>
+
             <form onSubmit={handleSignup} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">{t('email')}</label>
-                <div className="relative group">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-primary transition-colors" size={20} />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 bg-[#F8F4F1] border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all font-medium text-accent"
-                    placeholder="name@example.com"
-                  />
+              {authMode === 'email' ? (
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">{t('email')}</label>
+                  <div className="relative group">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-primary transition-colors" size={20} />
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full pl-12 pr-4 py-4 bg-[#F8F4F1] border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all font-medium text-accent"
+                      placeholder="name@example.com"
+                    />
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">{t('phone')}</label>
+                  <div className="flex gap-2">
+                    <div className="relative group min-w-[120px]">
+                      <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-primary transition-colors" size={18} />
+                      <select 
+                        value={countryCode}
+                        onChange={(e) => setCountryCode(e.target.value)}
+                        aria-label="Select country code"
+                        className="w-full pl-10 pr-4 py-4 bg-[#F8F4F1] border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none appearance-none transition-all font-bold text-accent text-sm"
+                      >
+                        {COUNTRIES.map(c => <option key={c.iso} value={c.code}>{c.iso} {c.code}</option>)}
+                      </select>
+                    </div>
+                    <div className="relative group flex-1">
+                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-primary transition-colors" size={20} />
+                      <input
+                        type="tel"
+                        required
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="w-full pl-12 pr-4 py-4 bg-[#F8F4F1] border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all font-medium text-accent"
+                        placeholder="912345678"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">{t('password')}</label>
