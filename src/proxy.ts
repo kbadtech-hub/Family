@@ -41,7 +41,7 @@ export async function proxy(request: NextRequest) {
   // Route definitions
   const isDashboardRoute = segments.includes('dashboard') || segments.includes('community') || segments.includes('chat');
   const isLoginRoute = segments.includes('login');
-  const isAdminSecureRoute = segments.includes('secure-beteseb-admin');
+  const isAdminSecureRoute = segments.includes('admin');
   
   if (isAdminSecureRoute) {
     const authHeader = request.headers.get('authorization');
@@ -65,7 +65,7 @@ export async function proxy(request: NextRequest) {
 
   // Redirect old secure path if someone tries it
   if (segments.includes('admin-secure-portal')) {
-     return NextResponse.redirect(new URL(`/${locale}/secure-beteseb-admin`, request.url));
+     return NextResponse.redirect(new URL(`/${locale}/admin`, request.url));
   }
 
   // 4. Regular Dashboard/Auth Protection
