@@ -66,35 +66,35 @@ export default function Footer() {
           <p className="text-white/40 max-w-sm leading-relaxed text-sm">
             {cmsContent.footer_description || t('description')}
           </p>
-          <div className="flex flex-wrap gap-4 mt-6">
+          <div className="flex flex-wrap gap-3">
              {socialLinks.facebook && (
-               <a href={socialLinks.facebook} target="_blank" className="p-3 bg-white/10 rounded-xl hover:bg-[#1877F2] transition-all group shadow-lg" title="Facebook">
-                  <Facebook size={20} className="text-white group-hover:scale-110 transition-transform" />
+               <a href={socialLinks.facebook} target="_blank" className="p-3 bg-white/5 rounded-2xl hover:bg-primary transition-all group" title="Facebook">
+                  <Facebook size={18} className="text-gray-400 group-hover:text-white" />
                </a>
              )}
              {socialLinks.telegram && (
-               <a href={socialLinks.telegram} target="_blank" className="p-3 bg-white/10 rounded-xl hover:bg-[#26A5E4] transition-all group shadow-lg" title="Telegram">
-                  <Send size={20} className="text-white group-hover:scale-110 transition-transform" />
+               <a href={socialLinks.telegram} target="_blank" className="p-3 bg-white/5 rounded-2xl hover:bg-primary transition-all group" title="Telegram">
+                  <Send size={18} className="text-gray-400 group-hover:text-white" />
                </a>
              )}
              {socialLinks.youtube && (
-               <a href={socialLinks.youtube} target="_blank" className="p-3 bg-white/10 rounded-xl hover:bg-[#FF0000] transition-all group shadow-lg" title="YouTube">
-                  <Youtube size={20} className="text-white group-hover:scale-110 transition-transform" />
+               <a href={socialLinks.youtube} target="_blank" className="p-3 bg-white/5 rounded-2xl hover:bg-primary transition-all group" title="YouTube">
+                  <Youtube size={18} className="text-gray-400 group-hover:text-white" />
                </a>
              )}
              {socialLinks.twitter && (
-               <a href={socialLinks.twitter} target="_blank" className="p-3 bg-white/10 rounded-xl hover:bg-black transition-all group shadow-lg" title="X (Twitter)">
-                  <Twitter size={20} className="text-white group-hover:scale-110 transition-transform" />
+               <a href={socialLinks.twitter} target="_blank" className="p-3 bg-white/5 rounded-2xl hover:bg-primary transition-all group" title="X (Twitter)">
+                  <Twitter size={18} className="text-gray-400 group-hover:text-white" />
                </a>
              )}
              {socialLinks.linkedin && (
-               <a href={socialLinks.linkedin} target="_blank" className="p-3 bg-white/10 rounded-xl hover:bg-[#0077B5] transition-all group shadow-lg" title="LinkedIn">
-                  <Linkedin size={20} className="text-white group-hover:scale-110 transition-transform" />
+               <a href={socialLinks.linkedin} target="_blank" className="p-3 bg-white/5 rounded-2xl hover:bg-primary transition-all group" title="LinkedIn">
+                  <Linkedin size={18} className="text-gray-400 group-hover:text-white" />
                </a>
              )}
              {socialLinks.whatsapp && (
-               <a href={`https://wa.me/${socialLinks.whatsapp.replace(/\D/g, '')}`} target="_blank" className="p-3 bg-white/10 rounded-xl hover:bg-[#25D366] transition-all group shadow-lg" title="WhatsApp">
-                  <Send size={20} className="text-white group-hover:scale-110 transition-transform rotate-[-45deg]" />
+               <a href={`https://wa.me/${socialLinks.whatsapp.replace(/\D/g, '')}`} target="_blank" className="p-3 bg-white/5 rounded-2xl hover:bg-primary transition-all group" title="WhatsApp">
+                  <Send size={18} className="text-gray-400 group-hover:text-white rotate-[-45deg]" />
                </a>
              )}
           </div>

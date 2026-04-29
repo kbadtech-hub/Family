@@ -1166,53 +1166,6 @@ export default function AdminPortal() {
            </div>
          )}
 
-        {activeTab === 'social' && (
-          <div className="space-y-8 animate-in fade-in duration-500 max-w-4xl">
-            <header>
-              <h2 className="text-3xl font-bold italic">Social Media Links</h2>
-              <p className="text-foreground/40 mt-1">Manage your platform&apos;s presence across social networks.</p>
-            </header>
-
-            <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {[
-                  { id: 'facebook', label: 'Facebook', placeholder: 'https://facebook.com/beteseb' },
-                  { id: 'telegram', label: 'Telegram', placeholder: 'https://t.me/beteseb' },
-                  { id: 'youtube', label: 'YouTube', placeholder: 'https://youtube.com/@beteseb' },
-                  { id: 'twitter', label: 'Twitter / X', placeholder: 'https://x.com/beteseb' },
-                  { id: 'linkedin', label: 'LinkedIn', placeholder: 'https://linkedin.com/company/beteseb' },
-                  { id: 'whatsapp', label: 'WhatsApp Number', placeholder: '+251...' },
-                  { id: 'tiktok', label: 'TikTok', placeholder: 'https://tiktok.com/@beteseb' },
-                  { id: 'instagram', label: 'Instagram', placeholder: 'https://instagram.com/beteseb' },
-                ].map((social) => (
-                  <div key={social.id} className="space-y-2">
-                    <label className="text-[10px] font-black text-primary uppercase tracking-[0.2em] ml-2">
-                      {social.label}
-                    </label>
-                    <input
-                      type="text"
-                      value={(cmsForm[social.id] as string) || ''}
-                      onChange={(e) => setCmsForm({ ...cmsForm, [social.id]: e.target.value })}
-                      placeholder={social.placeholder}
-                      className="input-premium py-4"
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-12 pt-8 border-t border-white/5 flex justify-end">
-                <button 
-                  onClick={handleSaveCMS} 
-                  disabled={isSaving}
-                  className="btn-primary px-12 py-4 rounded-2xl shadow-xl shadow-primary/20 flex items-center gap-3"
-                >
-                  <Plus size={20} /> {isSaving ? 'Saving...' : 'Save Social Links'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
         {activeTab === 'verification' && (
            <div className="space-y-8 animate-in fade-in duration-500">
               <header>
