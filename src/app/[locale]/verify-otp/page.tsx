@@ -113,8 +113,9 @@ function VerifyOtpContent() {
       const isEmail = email.includes('@');
       let res;
       if (isEmail) {
+        const resendType = (type === 'recovery' ? 'recovery' : 'signup') as any;
         res = await supabase.auth.resend({
-          type: (type === 'recovery' ? 'recovery' : 'signup') as any,
+          type: resendType,
           email: email,
         });
       } else {
