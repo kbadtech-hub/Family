@@ -66,7 +66,8 @@
     "settings": "Settings",
     "dashboard": "Dashboard",
     "chat": "Sheeko",
-    "community": "Bulshada",
+    "community": "Xarunta Bulshada",
+    "contact": "Nala soo xiriir",
     "workshops": "Aqoon isweydaarsiyo",
     "profile": "Profile-ka"
   },
@@ -529,7 +530,24 @@
   "TopHeader": {
     "email": "betesebhub@gmail.com",
     "phone": "+447347663219 / +251946414018",
-    "suggestion": "Waxay u muuqataa inaad doorbidayso {lang}. Beddel?",
-    "switchBtn": "Hadda baddal"
+    "suggestion": "Doorashadaadu ma {lang} baa?",
+    "switchBtn": "Bedel"
+  },
+  "CommunityHub": {
+    "title": "Xarunta Bulshada",
+    "subtitle": "Qolka Dijital ah",
+    "description": "Aadamigu waa daawada aadamiga! 'Xarunta Bulshada' waa qolkeena guud halkaas oo fikradaha wadnaha loo sifeeyo sidii dahabka, aqoontana lagu daro khibradda. Halkan, waxaad si xor ah ula wadaagtaa wax kasta oo aad ka dareemayso guurka, barba भावनात्मकinta carruurta iyo dhisidda qoyska; halkan, qofna keligiis ma aha!",
+    "cta": "Hadda ku biir"
+  },
+  "Contact": {
+    "title": "Nala soo xiriir",
+    "subtitle": "Buundada Kalsoonida",
+    "description": "Had iyo jeer waan kuu dhow nahay! Ma qabtaa su'aal, soo jeedin, ama cabasho? 'Beteseb' had iyo jeer waxay u diyaarsan tahay inay maqasho codkaaga. Waxaan kugu soo dhawaynaynaa dhoola caddeyn taleefan, iimayl, chatbot-ka casriga ah ee AI, ama xafiiskeena ku yaalla Harar.",
+    "infoTitle": "Channel-lada Xiriirka",
+    "socialTitle": "Baraha Bulshada",
+    "phone": "Telefoon",
+    "email": "Iimayl",
+    "address": "Cinwaanka",
+    "officeLocation": "Harar, Itoobiya"
   }
 }

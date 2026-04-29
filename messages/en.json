@@ -66,7 +66,8 @@
     "settings": "Settings",
     "dashboard": "Dashboard",
     "chat": "Chat",
-    "community": "Community",
+    "community": "Community Hub",
+    "contact": "Contact Us",
     "workshops": "Workshops",
     "profile": "Profile"
   },
@@ -536,5 +537,22 @@
       "India": "India",
       "Pakistan": "Pakistan"
     }
+  },
+  "CommunityHub": {
+    "title": "Community Hub",
+    "subtitle": "The Digital Room",
+    "description": "Man is the medicine for man! 'Community Hub' is our common digital room where heart ideas are refined like gold, and knowledge is combined with experience. Here, you freely share everything you feel about marriage, child-rearing, and family building; here, no one is alone!",
+    "cta": "Join Hub Now"
+  },
+  "Contact": {
+    "title": "Contact Us",
+    "subtitle": "The Bridge of Trust",
+    "description": "We are always close to you! Do you have a question, suggestion, or complaint? 'Beteseb' is always ready to hear your voice. We welcome you with a smile via phone, email, our modern AI chatbot, or at our office located in Harar.",
+    "infoTitle": "Contact Channels",
+    "socialTitle": "Social Media",
+    "phone": "Phone",
+    "email": "Email",
+    "address": "Address",
+    "officeLocation": "Harar, Ethiopia"
   }
 }

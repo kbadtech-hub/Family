@@ -66,7 +66,8 @@
     "settings": "Sajantii",
     "dashboard": "Daashboordii",
     "chat": "Chaat",
-    "community": "Hawaasa",
+    "community": "Bakka Hawwaasaa",
+    "contact": "Nu Qunnamu",
     "workshops": "Warkishooppii",
     "profile": "Piroofayila"
   },
@@ -531,5 +532,22 @@
     "phone": "+447347663219 / +251946414018",
     "suggestion": "Mirkaneessuu eenyummaa {lang}?",
     "switchBtn": "Jijjiiri"
+  },
+  "CommunityHub": {
+    "title": "Bakka Hawwaasaa",
+    "subtitle": "Kutaa Keenya",
+    "description": "Namni namaaf qoricha! 'Bakka Hawwaasaa' kutaa keenya isa waliinii kan yaadonni onnee akka warqeetti itti qulqullaa'an, beekumsi immoo muuxannoo waliin itti walitti dhufeedha. Asitti waa'ee gaa'elaa, guddisa ijoollee fi ijaarsa maatii irratti wanta isitti dhaga'amu hunda bilisaan ni qooddattu; asitti eenyuun iyyuu kophaa isaa miti!",
+    "cta": "Amma Itti Dabalami"
+  },
+  "Contact": {
+    "title": "Nu Qunnamu",
+    "subtitle": "Riqicha Amanamaa",
+    "description": "Yeroo hundaa isiniif dhiyoodha! Gaaffii, yaada yookaan qeeqa qabduu? 'Beteseb' sagalee keessan dhaga'uuf yeroo hunda qophiidha. Bilbilaan, imeelii, AI chaat boot ammayyaatiin yookaan biiroo keenya Hararitti argamutti gammachuun isin simanna.",
+    "infoTitle": "Karaalee Quunnamtii",
+    "socialTitle": "Miidiyaa Hawaasummaa",
+    "phone": "Bilbila",
+    "email": "Imeelii",
+    "address": "Teessoo",
+    "officeLocation": "Harar, Itoophiyaa"
   }
 }

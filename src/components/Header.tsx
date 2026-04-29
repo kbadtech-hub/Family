@@ -73,6 +73,8 @@ export default function Header() {
             <Link href="/" className="text-base font-bold uppercase tracking-widest hover:text-primary transition-colors">{t('home')}</Link>
             <Link href="/about" className="text-base font-bold uppercase tracking-widest hover:text-primary transition-colors">{t('about')}</Link>
             <Link href="/classes" className="text-base font-bold uppercase tracking-widest hover:text-primary transition-colors">{t('classes')}</Link>
+            <Link href="/community-hub" className="text-base font-bold uppercase tracking-widest hover:text-primary transition-colors">{t('community')}</Link>
+            <Link href="/contact" className="text-base font-bold uppercase tracking-widest hover:text-primary transition-colors">{t('contact')}</Link>
           </nav>
 
           <div className="flex items-center gap-6">
@@ -153,6 +155,8 @@ export default function Header() {
           <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="font-bold uppercase tracking-widest text-sm">{t('home')}</Link>
           <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="font-bold uppercase tracking-widest text-sm">{t('about')}</Link>
           <Link href="/classes" onClick={() => setIsMobileMenuOpen(false)} className="font-bold uppercase tracking-widest text-sm">{t('classes')}</Link>
+          <Link href="/community-hub" onClick={() => setIsMobileMenuOpen(false)} className="font-bold uppercase tracking-widest text-sm">{t('community')}</Link>
+          <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)} className="font-bold uppercase tracking-widest text-sm">{t('contact')}</Link>
           <div className="flex flex-col gap-4 w-full">
             <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="w-full border border-primary text-primary text-center py-4 rounded-[1.5rem] font-bold text-sm uppercase tracking-widest">{t('signIn')}</Link>
             <Link href="/location-selection" onClick={() => setIsMobileMenuOpen(false)} className="w-full bg-primary text-white text-center py-4 rounded-[1.5rem] font-bold text-sm uppercase tracking-widest">{t('signUp')}</Link>
