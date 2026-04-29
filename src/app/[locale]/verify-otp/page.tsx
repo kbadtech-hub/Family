@@ -114,7 +114,7 @@ function VerifyOtpContent() {
       let res;
       if (isEmail) {
         res = await supabase.auth.resend({
-          type: type === 'recovery' ? 'recovery' : 'signup',
+          type: (type === 'recovery' ? 'recovery' : 'signup') as any,
           email: email,
         });
       } else {
