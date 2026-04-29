@@ -64,7 +64,7 @@ export default function Footer() {
              </p>
           </div>
           <p className="text-white/40 max-w-sm leading-relaxed text-sm">
-            {cmsContent.footer_description || t('description')}
+            {t('description')}
           </p>
           <div className="flex flex-wrap gap-3">
              {socialLinks.facebook && (
@@ -105,13 +105,13 @@ export default function Footer() {
             <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{t('connect')}</h3>
             <div className="space-y-4 text-white/50 text-sm font-medium">
               <div className="flex items-center gap-3 hover:text-white transition-colors cursor-pointer">
-                <Mail size={16} /> {contactInfo.email || 'betesebhub@gmail.com'}
+                <Mail size={16} /> betesebhub@gmail.com
               </div>
               <div className="flex items-center gap-3 hover:text-white transition-colors cursor-pointer">
-                <Phone size={16} /> {contactInfo.phone || '+44 7347 663219 / +251 946 414018'}
+                <Phone size={16} /> +44 7347 663219 / +251 946 414018
               </div>
               <div className="flex items-start gap-3 hover:text-white transition-colors cursor-pointer">
-                <MapPin size={16} /> {contactInfo.address || t('address')}
+                <MapPin size={16} /> {t('address')}
               </div>
               {contactInfo.website_url && (
                 <a href={contactInfo.website_url} target="_blank" className="flex items-center gap-3 hover:text-white transition-colors">

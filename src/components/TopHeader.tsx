@@ -66,11 +66,11 @@ export default function TopHeader() {
       <div className="flex items-center gap-6 opacity-60">
         <div className="flex items-center gap-2 hover:text-primary transition-colors cursor-pointer">
           <Mail size={12} />
-          <span>{settings?.contact_info?.email || settings?.cms_content?.email || t('email')}</span>
+          <span>{t('email')}</span>
         </div>
         <div className="flex items-center gap-2 hover:text-primary transition-colors cursor-pointer">
           <Phone size={12} />
-          <span>{settings?.contact_info?.phone || settings?.cms_content?.phone || t('phone')}</span>
+          <span>{t('phone')}</span>
         </div>
       </div>
 

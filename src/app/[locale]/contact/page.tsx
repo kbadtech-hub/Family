@@ -135,15 +135,35 @@ export default function ContactPage() {
             </div>
           ))}
           
-          {/* Map Placeholder */}
-          <div className="md:col-span-2 rounded-[2.5rem] overflow-hidden border border-border h-[300px] relative shadow-lg animate-in fade-in duration-1000 delay-500">
-            <iframe 
-               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15762.669524672613!2d42.1287!3d9.3129!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x163406f5c8f8f8f8%3A0x123456789abcdef!2sHarar%2C%20Ethiopia!5e0!3m2!1sen!2set!4v1620000000000!5m2!1sen!2set" 
-               className="absolute inset-0 w-full h-full border-0 grayscale hover:grayscale-0 transition-all duration-700"
-               allowFullScreen
-               loading="lazy"
-               title="Google Maps"
-            />
+          {/* Maps Section */}
+          <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-1000 delay-500">
+            {/* Harar Map */}
+            <div className="rounded-[2rem] overflow-hidden border border-border h-[300px] relative shadow-lg group">
+              <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-primary border border-primary/20">
+                {t('branchLabel')}
+              </div>
+              <iframe 
+                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15762.669524672613!2d42.1287!3d9.3129!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x163406f5c8f8f8f8%3A0x123456789abcdef!2sHarar%2C%20Ethiopia!5e0!3m2!1sen!2set!4v1620000000000!5m2!1sen!2set" 
+                 className="absolute inset-0 w-full h-full border-0 grayscale hover:grayscale-0 transition-all duration-700"
+                 allowFullScreen
+                 loading="lazy"
+                 title="Harar, Ethiopia Map"
+              />
+            </div>
+            
+            {/* London Map */}
+            <div className="rounded-[2rem] overflow-hidden border border-border h-[300px] relative shadow-lg group">
+              <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-primary border border-primary/20">
+                {t('hqLabel')}
+              </div>
+              <iframe 
+                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d158857.7281065113!2d-0.2416815494246067!3d51.528771840875414!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47d8a00baf21de75%3A0x52963a5addd52a99!2sLondon%2C%20UK!5e0!3m2!1sen!2suk!4v1620000000000!5m2!1sen!2suk" 
+                 className="absolute inset-0 w-full h-full border-0 grayscale hover:grayscale-0 transition-all duration-700"
+                 allowFullScreen
+                 loading="lazy"
+                 title="London, UK Map"
+              />
+            </div>
           </div>
         </div>
 
