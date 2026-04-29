@@ -87,7 +87,7 @@ export default function AIChatbot() {
     setIsLoading(false);
   };
 
-  if (isLoading || !isVerified) return null;
+  if (isLoading) return null;
 
   return (
     <div className={`fixed bottom-8 ${locale === 'ar' ? 'left-8' : 'right-8'} z-[200]`} dir={locale === 'ar' ? 'rtl' : 'ltr'}>
