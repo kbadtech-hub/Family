@@ -16,21 +16,61 @@ function VerifyOtpContent() {
   const email = searchParams.get('email') || '';
   const type = (searchParams.get('type') || 'signup') as 'signup' | 'recovery';
 
-  const [otp, setOtp] = useState('');
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
+  const otpRefs = [
+    React.useRef<HTMLInputElement>(null),
+    React.useRef<HTMLInputElement>(null),
+    React.useRef<HTMLInputElement>(null),
+    React.useRef<HTMLInputElement>(null),
+    React.useRef<HTMLInputElement>(null),
+    React.useRef<HTMLInputElement>(null),
+  ];
+
+  const handleOtpChange = (index: number, value: string) => {
+    if (value.length > 1) {
+      // Handle paste
+      const pastedData = value.slice(0, 6).split('');
+      const newOtp = [...otp];
+      pastedData.forEach((char, i) => {
+        if (i < 6) newOtp[i] = char;
+      });
+      setOtp(newOtp);
+      // Focus last filled box or next empty
+      const nextIndex = Math.min(pastedData.length, 5);
+      otpRefs[nextIndex].current?.focus();
+      return;
+    }
+
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+
+    // Auto focus next
+    if (value !== '' && index < 5) {
+      otpRefs[index + 1].current?.focus();
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && otp[index] === '' && index > 0) {
+      otpRefs[index - 1].current?.focus();
+    }
+  };
 
   const handleVerifyOTP = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (otp.length !== 6) return;
+    const otpValue = otp.join('');
+    if (otpValue.length !== 6) return;
 
     setIsSubmitting(true);
     setErrorMsg('');
     try {
       const isEmail = email.includes('@');
       const verifyParams: any = {
-        token: otp,
+        token: otpValue,
         type: type
       };
 
@@ -139,16 +179,22 @@ function VerifyOtpContent() {
               {locale === 'am' ? `ወደ ${email} የላክነውን ባለ 6 ዲጂት ኮድ ያስገቡ` : locale === 'ti' ? `ናብ ${email} ዝሰደድናዮ 6 ቁጽሪ ዘለዎ ኮድ አእትዉ` : `Enter the 6-digit code we sent to ${email}`}
             </p>
 
-            <form onSubmit={handleVerifyOTP} className="space-y-6">
-              <input 
-                type="text" 
-                maxLength={6}
-                value={otp}
-                autoFocus
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                className="w-full bg-[#F8F4F1] border-transparent focus:bg-white focus:ring-2 focus:ring-primary/20 rounded-[2rem] p-6 text-center text-4xl font-black tracking-[0.5em] transition-all text-accent outline-none"
-                placeholder="000000"
-              />
+            <form onSubmit={handleVerifyOTP} className="space-y-8">
+              <div className="flex justify-center gap-3">
+                {otp.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={otpRefs[index]}
+                    type="text"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleOtpChange(index, e.target.value.replace(/\D/g, ''))}
+                    onKeyDown={(e) => handleKeyDown(index, e)}
+                    className="w-12 h-16 md:w-14 md:h-20 bg-[#F8F4F1] border-2 border-transparent focus:border-primary focus:bg-white rounded-2xl text-center text-2xl md:text-3xl font-black transition-all outline-none text-accent"
+                    placeholder="•"
+                  />
+                ))}
+              </div>
               
               {errorMsg && (
                 <p className="text-red-500 text-sm font-bold animate-pulse">{errorMsg}</p>
@@ -156,8 +202,8 @@ function VerifyOtpContent() {
 
               <button 
                 type="submit"
-                disabled={isSubmitting || otp.length !== 6}
-                className="w-full bg-primary text-white py-5 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-primary/20 disabled:opacity-50 font-black uppercase tracking-widest text-xs"
+                disabled={isSubmitting || otp.join('').length !== 6}
+                className="w-full bg-primary text-white py-5 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-primary/20 disabled:opacity-50 font-black uppercase tracking-widest text-xs transition-all hover:bg-primary/90 active:scale-95"
               >
                 {isSubmitting ? (
                    <Loader2 className="animate-spin" size={20} />
