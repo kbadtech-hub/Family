@@ -133,7 +133,12 @@ function OnboardingContent() {
               family_value: data.family_values || '',
               conflict_resolution: data.conflict_resolution || '',
               spouse_requirements: data.spouse_requirements || [],
-              gallery_photos: data.gallery_urls || []
+              gallery_photos: data.gallery_urls || [],
+              partner_countries: data.partner_countries || [],
+              partner_age_min: data.partner_age_min || 18,
+              partner_age_max: data.partner_age_max || 50,
+              partner_religion: data.partner_religion || '',
+              partner_intent: data.partner_marital_pref || ''
             }));
           }
         });
@@ -413,18 +418,18 @@ function OnboardingContent() {
                       </div>
                    </div>
                 </div>
-               </div>
-               <div className="grid grid-cols-2 gap-4">
-                 <select value={formData.partner_religion} aria-label={t('fields.partnerReligion')} onChange={(e) => updateField('partner_religion', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
-                    <option value="">{t('fields.partnerReligion')}</option>
-                    {RELIGIONS.map(r => <option key={r} value={r}>{t_const(`Religions.${r}`)}</option>)}
-                 </select>
-                 <select value={formData.partner_intent} aria-label={t('fields.partnerIntent')} onChange={(e) => updateField('partner_intent', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
-                    <option value="">{t('fields.partnerIntent')}</option>
-                    {PARTNER_MARITAL_PREF_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`Marital.${o}`)}</option>)}
-                 </select>
-               </div>
-            </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <select value={formData.partner_religion} aria-label={t('fields.partnerReligion')} onChange={(e) => updateField('partner_religion', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                     <option value="">{t('fields.partnerReligion')}</option>
+                     {RELIGIONS.map(r => <option key={r} value={r}>{t_const(`Religions.${r}`)}</option>)}
+                  </select>
+                  <select value={formData.partner_intent} aria-label={t('fields.partnerIntent')} onChange={(e) => updateField('partner_intent', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                     <option value="">{t('fields.partnerIntent')}</option>
+                     {PARTNER_MARITAL_PREF_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`Marital.${o}`)}</option>)}
+                  </select>
+                </div>
+             </div>
           </div>
         );
       case 4: // ID Upload
