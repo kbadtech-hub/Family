@@ -17,25 +17,49 @@ export async function GET(request: NextRequest) {
             return request.cookies.getAll()
           },
           setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              request.cookies.set(name, value, options)
-            )
+            // In a Route Handler, we can't set cookies on the request.
+            // We'll handle this by passing them to the final response.
           },
         },
       }
     )
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) {
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+    
+    if (!error && data.session) {
       const forwardedHost = request.headers.get('x-forwarded-host') // Hello, Vercel
       const isLocalEnv = process.env.NODE_ENV === 'development'
-      if (isLocalEnv) {
-        // we can be sure that origin is localhost
-        return NextResponse.redirect(`${origin}${next}`)
-      } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`)
-      } else {
-        return NextResponse.redirect(`${origin}${next}`)
-      }
+      
+      const redirectUrl = isLocalEnv 
+        ? `${origin}${next}` 
+        : (forwardedHost ? `https://${forwardedHost}${next}` : `${origin}${next}`)
+        
+      const response = NextResponse.redirect(redirectUrl)
+      
+      // Manually set the cookies on the response from the session
+      // This is more robust than relying on setAll inside exchangeCodeForSession
+      // for some server environments.
+      // However, exchangeCodeForSession usually calls setAll.
+      // Let's use the standard pattern:
+      
+      const finalSupabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            getAll() { return request.cookies.getAll() },
+            setAll(cookiesToSet) {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                response.cookies.set(name, value, options)
+              )
+            },
+          },
+        }
+      )
+      
+      // Re-exchange or just refresh to trigger setAll on the response
+      await finalSupabase.auth.getUser() 
+      
+      return response
     }
   }
 
