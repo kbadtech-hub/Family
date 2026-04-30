@@ -153,92 +153,101 @@ export default function CommunityView({
          </div>
       </div>
 
-      {isVerified ? (
-        <div className="bg-card p-8 rounded-[2.5rem] border border-border shadow-xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl opacity-50" />
-          <div className="flex gap-4 relative z-10">
-            <div className="w-12 h-12 rounded-2xl bg-muted border border-border flex-shrink-0 flex items-center justify-center text-primary">
-              <User size={24} />
-            </div>
-            <form onSubmit={handlePostSubmit} className="flex-1 space-y-4">
-              <textarea 
-                value={newPostContent}
-                onChange={(e) => setNewPostContent(e.target.value)}
-                placeholder={t('newPostPlaceholder')} 
-                aria-label="Post content"
-                className="w-full bg-background/30 border border-border rounded-[2rem] p-6 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[120px] resize-none text-foreground"
-              />
-
-              {mediaUrl && (
-                <div className="relative w-full aspect-video rounded-3xl overflow-hidden border border-border">
-                  <img src={mediaUrl} className="w-full h-full object-cover" alt="Preview" />
-                  <button 
-                    type="button"
-                    onClick={() => { setMediaUrl(null); setMediaType('none'); }}
-                    aria-label="Remove media"
-                    className="absolute top-4 right-4 bg-red-500 text-white p-2 rounded-xl shadow-lg"
-                  >
-                    <X size={16} />
-                  </button>
+      <div className="bg-card p-8 rounded-[2.5rem] border border-border shadow-xl relative overflow-hidden">
+        {!isVerified && (
+          <div className="absolute inset-0 z-20 bg-white/60 backdrop-blur-[2px] flex items-center justify-center p-6 text-center">
+             <div className="space-y-4 max-w-sm">
+                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto text-primary">
+                   <ShieldCheck size={32} />
                 </div>
-              )}
-
-              <div className="flex justify-between items-center">
-                 <div className="flex items-center gap-4">
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="p-3 bg-muted rounded-xl text-primary hover:bg-primary/10 transition-colors flex items-center gap-2"
-                    >
-                      <Camera size={18} />
-                      <span className="text-[10px] font-black uppercase tracking-widest hidden md:block">Photo</span>
-                    </button>
-                    <input 
-                      type="file" 
-                      ref={fileInputRef} 
-                      className="hidden" 
-                      aria-label="Upload photo"
-                      accept="image/*"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        setIsUploading(true);
-                        const { data: { user } } = await supabase.auth.getUser();
-                        if (user) {
-                           const ext = file.name.split('.').pop();
-                           const path = `community/${user.id}-${Date.now()}.${ext}`;
-                           const { error } = await supabase.storage.from('user_photos').upload(path, file);
-                           if (!error) {
-                              const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(path);
-                              setMediaUrl(publicUrl);
-                              setMediaType('image');
-                           }
-                        }
-                        setIsUploading(false);
-                      }}
-                    />
-                    <div className="flex items-center gap-2 text-[10px] text-primary font-black uppercase tracking-widest">
-                       <Sparkles size={12} className="animate-pulse" /> {t('aiFilter')}
-                    </div>
-                 </div>
-                 <button 
-                  type="submit"
-                  disabled={isSubmitting || isUploading || (!newPostContent.trim() && !mediaUrl)}
-                  className="btn-primary py-3 px-8 text-xs flex items-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50"
-                 >
-                  <Send size={16} /> {isSubmitting ? t('checking') : t('postButton')}
-                 </button>
-              </div>
-            </form>
+                <h4 className="font-black text-lg text-accent italic">{t('verifyToPostTitle')}</h4>
+                <p className="text-xs text-gray-500 font-medium">{t('verifyToPostSub')}</p>
+                <button 
+                  onClick={() => window.location.href = `/${locale}/onboarding`}
+                  className="bg-primary text-white px-8 py-3 rounded-2xl font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20"
+                >
+                  {locale === 'am' ? 'ፕሮፋይል ይሙሉ።' : 'Complete Profile'}
+                </button>
+             </div>
           </div>
+        )}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl opacity-50" />
+        <div className="flex gap-4 relative z-10">
+          <div className="w-12 h-12 rounded-2xl bg-muted border border-border flex-shrink-0 flex items-center justify-center text-primary">
+            <User size={24} />
+          </div>
+          <form onSubmit={handlePostSubmit} className="flex-1 space-y-4">
+            <textarea 
+              value={newPostContent}
+              onChange={(e) => setNewPostContent(e.target.value)}
+              placeholder={t('newPostPlaceholder')} 
+              aria-label="Post content"
+              className="w-full bg-background/30 border border-border rounded-[2rem] p-6 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[120px] resize-none text-foreground"
+            />
+
+            {mediaUrl && (
+              <div className="relative w-full aspect-video rounded-3xl overflow-hidden border border-border">
+                <img src={mediaUrl} className="w-full h-full object-cover" alt="Preview" />
+                <button 
+                  type="button"
+                  onClick={() => { setMediaUrl(null); setMediaType('none'); }}
+                  aria-label="Remove media"
+                  className="absolute top-4 right-4 bg-red-500 text-white p-2 rounded-xl shadow-lg"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )}
+
+            <div className="flex justify-between items-center">
+                <div className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-3 bg-muted rounded-xl text-primary hover:bg-primary/10 transition-colors flex items-center gap-2"
+                  >
+                    <Camera size={18} />
+                    <span className="text-[10px] font-black uppercase tracking-widest hidden md:block">Photo</span>
+                  </button>
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    className="hidden" 
+                    aria-label="Upload photo"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setIsUploading(true);
+                      const { data: { user } } = await supabase.auth.getUser();
+                      if (user) {
+                          const ext = file.name.split('.').pop();
+                          const path = `community/${user.id}-${Date.now()}.${ext}`;
+                          const { error } = await supabase.storage.from('user_photos').upload(path, file);
+                          if (!error) {
+                            const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(path);
+                            setMediaUrl(publicUrl);
+                            setMediaType('image');
+                          }
+                      }
+                      setIsUploading(false);
+                    }}
+                  />
+                  <div className="flex items-center gap-2 text-[10px] text-primary font-black uppercase tracking-widest">
+                      <Sparkles size={12} className="animate-pulse" /> {t('aiFilter')}
+                  </div>
+                </div>
+                <button 
+                type="submit"
+                disabled={isSubmitting || isUploading || (!newPostContent.trim() && !mediaUrl)}
+                className="btn-primary py-3 px-8 text-xs flex items-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50"
+                >
+                <Send size={16} /> {isSubmitting ? t('checking') : t('postButton')}
+                </button>
+            </div>
+          </form>
         </div>
-      ) : (
-        <div className="p-8 bg-red-50 text-red-600 rounded-[2.5rem] border border-red-100 text-center">
-          <ShieldCheck size={32} className="mx-auto mb-4" />
-          <h4 className="font-black text-lg mb-2">{t('verifyToPostTitle')}</h4>
-          <p className="text-sm opacity-80">{t('verifyToPostSub')}</p>
-        </div>
-      )}
+      </div>
 
       <div className="space-y-6">
         {posts.map((post) => (

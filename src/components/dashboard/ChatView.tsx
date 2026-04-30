@@ -57,8 +57,8 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUser(user);
 
-      if (user && isPremium) {
-        // Fetch potential matches (for now, other users)
+      if (user) {
+        // Fetch potential matches (for now, other users) - Fetch for everyone to show value
         const { data: profiles } = await supabase
           .from('profiles')
           .select('*')
@@ -184,28 +184,6 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
 
   if (loading) return <div className="flex-1 flex items-center justify-center">Loading family chat...</div>;
 
-  if (!isPremium) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center bg-white rounded-[2.5rem] border border-muted shadow-2xl p-12 text-center space-y-8">
-        <div className="w-24 h-24 bg-primary/10 rounded-[2.5rem] flex items-center justify-center">
-          <MessageCircle size={48} className="text-primary fill-primary/10" />
-        </div>
-        <div className="max-w-md space-y-4">
-          <h2 className="text-3xl font-black text-accent italic tracking-tighter">Premium Chat Feature</h2>
-          <p className="text-gray-500 leading-relaxed">
-            {locale === 'am' ? "ይህ ፊቸር ለፕሪሚየም አባላት ብቻ ነው" : "Messaging and private chat are exclusive to our premium members. Upgrade your account to start connecting with your matches."}
-          </p>
-        </div>
-        <button 
-           className="bg-primary text-white px-10 py-4 rounded-2xl font-bold uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 transition-all"
-           onClick={() => window.location.reload()} 
-        >
-          {locale === 'am' ? "ፕሪሚየም ይሁኑ" : "Upgrade Now"}
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className="flex h-[calc(100vh-200px)] bg-white rounded-[2.5rem] overflow-hidden border border-muted shadow-2xl">
       {/* Sidebar - Matches */}
@@ -260,6 +238,27 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col bg-[#FDFBF9]">
         {selectedMatch ? (
+          !isPremium ? (
+            <div className="flex-1 flex flex-col items-center justify-center p-12 text-center space-y-6 bg-white/50 backdrop-blur-sm">
+               <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center">
+                  <ShieldCheck size={40} className="text-primary" />
+               </div>
+               <div className="max-w-sm space-y-2">
+                  <h3 className="text-2xl font-black text-accent italic tracking-tighter">Premium Feature</h3>
+                  <p className="text-gray-500 text-sm">
+                    {locale === 'am' 
+                      ? "ከጥንድዎ ጋር በቀጥታ ለመገናኘት የፕሪሚየም አባል መሆን ያስፈልግዎታል።" 
+                      : "Direct messaging with your matches is a premium feature. Upgrade now to start your journey."}
+                  </p>
+               </div>
+               <button 
+                 onClick={() => window.location.search = '?tab=payment'}
+                 className="bg-primary text-white px-8 py-3 rounded-2xl font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20"
+               >
+                 {locale === 'am' ? "ፕሪሚየም ይሁኑ" : "Upgrade Now"}
+               </button>
+            </div>
+          ) : (
           <>
             {/* Header */}
             <header className="p-6 bg-white border-b border-muted flex items-center justify-between shadow-sm">
@@ -356,6 +355,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
               </div>
             </form>
           </>
+          )
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-12 space-y-6">
              <div className="w-24 h-24 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mb-4">
