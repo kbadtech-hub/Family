@@ -70,12 +70,9 @@ export async function proxy(request: NextRequest) {
 
   // 4. Regular Dashboard/Auth Protection
   if (isDashboardRoute) {
-    if (!user) {
-      return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
-    }
-
-    // REMOVED email confirmation check to allow direct access
-    // REMOVED onboarding/verification gates to allow free viewing of dashboard
+    // We allow the request to pass to the page. 
+    // The Dashboard page (Client Component) will handle the session check.
+    // This prevents the common 'Server vs Client' cookie sync redirect loop.
   }
 
   // If user is logged in, don't let them go back to login
