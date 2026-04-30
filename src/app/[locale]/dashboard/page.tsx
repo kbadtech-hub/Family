@@ -145,22 +145,19 @@ function DashboardContent() {
       
       setProfile(prev => prev ? { ...prev, is_premium: isPremium } : null);
 
-      // 5. Fetch Matches (only if ONBOARDED AND verified AND trial active/premium)
-      if (profileData?.onboarding_completed && currentVerifyStatus === 'verified' && isPremium) {
-        const { data: profiles } = await supabase.from('profiles')
-          .select('*')
-          .neq('id', user.id)
-          .eq('onboarding_completed', true)
-          .limit(10);
+      // 5. Fetch Matches (Always allow viewing matches)
+      const { data: profiles } = await supabase.from('profiles')
+        .select('*')
+        .neq('id', user.id)
+        .limit(10);
 
-        if (profiles) {
-          setMatches(profiles.map(p => ({
-            id: p.id,
-            name: p.full_name || 'Anonymous',
-            match_percent: 85 + Math.floor(Math.random() * 10),
-            image: p.avatar_url || 'https://images.unsplash.com/photo-1531123897727-8f129e16fd3c?auto=format&fit=crop&q=80&w=200'
-          })));
-        }
+      if (profiles) {
+        setMatches(profiles.map(p => ({
+          id: p.id,
+          name: p.full_name || 'Anonymous',
+          match_percent: 85 + Math.floor(Math.random() * 10),
+          image: p.avatar_url || 'https://images.unsplash.com/photo-1531123897727-8f129e16fd3c?auto=format&fit=crop&q=80&w=200'
+        })));
       }
     };
     fetchData();
@@ -326,15 +323,6 @@ function DashboardContent() {
                       <h3 className="text-2xl font-black text-accent italic">{t('trialExpired')}</h3>
                       <p className="text-gray-500 max-w-sm mx-auto">{t('trialEnded')}</p>
                       <button onClick={() => setShowPayment(true)} className="bg-primary text-white px-10 py-4 rounded-2xl font-bold uppercase tracking-widest shadow-xl shadow-primary/20">{t('upgradeNow')}</button>
-                    </div>
-                  ) : !profile?.onboarding_completed ? (
-                    <div className="col-span-full bg-[#F8F4F1] p-16 rounded-[3rem] border border-dashed border-primary/30 text-center space-y-6">
-                       <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto">
-                          <Heart size={40} className="animate-pulse" />
-                       </div>
-                       <h3 className="text-2xl font-black text-accent italic">{t('matchingLocked')}</h3>
-                       <p className="text-gray-400 max-w-sm mx-auto font-medium">{t('matchingLockedSub')}</p>
-                       <button onClick={() => router.push('/onboarding')} className="btn-primary px-10 py-4 rounded-2xl">{t('completeOnboarding')}</button>
                     </div>
                   ) : matches.length === 0 ? (
                     <div className="col-span-full py-20 text-center text-gray-400 font-bold uppercase tracking-widest text-xs">

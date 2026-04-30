@@ -218,7 +218,12 @@ function OnboardingContent() {
           conflict_resolution: formData.conflict_resolution,
           spouse_requirements: formData.spouse_requirements,
           gallery_urls: formData.gallery_photos,
-          star_sign: formData.star_sign
+          star_sign: formData.star_sign,
+          partner_countries: formData.partner_countries,
+          partner_age_min: formData.partner_age_min,
+          partner_age_max: formData.partner_age_max,
+          partner_religion: formData.partner_religion,
+          partner_marital_pref: formData.partner_intent
         }).eq('id', userId);
       }
       setStep(s => Math.min(s + 1, 7));
@@ -366,19 +371,48 @@ function OnboardingContent() {
           <div className="space-y-6">
             <h2 className="text-3xl font-bold text-accent italic">{t('fields.partnerPrefs')}</h2>
             <div className="space-y-6">
-               <div className="space-y-2">
-                  <span className="text-sm font-bold text-gray-700">{t('fields.partnerCountry')}</span>
-                  <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 bg-muted/50 rounded-xl">
-                    {[{name:'Anywhere'}, ...[...COUNTRIES].sort((a, b) => (t_const(`Countries.${a.name}`) || a.name).localeCompare(t_const(`Countries.${b.name}`) || b.name, locale))].map(c => (
-                      <button key={c.name} type="button" aria-label={c.name === 'Anywhere' ? 'Anywhere' : t_const(`Countries.${c.name}`) || c.name} onClick={() => {
-                        if (c.name === 'Anywhere') return updateField('partner_countries', ['Anywhere']);
-                        const next = formData.partner_countries.filter(pc => pc !== 'Anywhere');
-                        updateField('partner_countries', formData.partner_countries.includes(c.name) ? next.filter(pc => pc !== c.name) : [...next, c.name].slice(0, 5));
-                      }} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${formData.partner_countries.includes(c.name) ? 'bg-primary text-white' : 'bg-white text-gray-400'}`}>
-                        {c.name === 'Anywhere' ? 'Anywhere' : t_const(`Countries.${c.name}`) || c.name}
-                      </button>
-                    ))}
-                  </div>
+                <div className="space-y-2">
+                   <span className="text-sm font-bold text-gray-700">{t('fields.partnerCountry')}</span>
+                   <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 bg-muted/50 rounded-xl">
+                     {[{name:'Anywhere'}, ...[...COUNTRIES].sort((a, b) => (t_const(`Countries.${a.name}`) || a.name).localeCompare(t_const(`Countries.${b.name}`) || b.name, locale))].map(c => (
+                       <button key={c.name} type="button" aria-label={c.name === 'Anywhere' ? 'Anywhere' : t_const(`Countries.${c.name}`) || c.name} onClick={() => {
+                         if (c.name === 'Anywhere') return updateField('partner_countries', ['Anywhere']);
+                         const next = formData.partner_countries.filter(pc => pc !== 'Anywhere');
+                         updateField('partner_countries', formData.partner_countries.includes(c.name) ? next.filter(pc => pc !== c.name) : [...next, c.name].slice(0, 5));
+                       }} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${formData.partner_countries.includes(c.name) ? 'bg-primary text-white' : 'bg-white text-gray-400'}`}>
+                         {c.name === 'Anywhere' ? 'Anywhere' : t_const(`Countries.${c.name}`) || c.name}
+                       </button>
+                     ))}
+                   </div>
+                </div>
+
+                <div className="space-y-2">
+                   <span className="text-sm font-bold text-gray-700">{locale === 'am' ? 'የእድሜ ምርጫ (ከ - እስከ)' : 'Age Range Preference (From - To)'}</span>
+                   <div className="flex items-center gap-4">
+                      <div className="flex-1 space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{locale === 'am' ? 'ቢያንስ' : 'Min Age'}</label>
+                        <input 
+                          type="number" 
+                          value={formData.partner_age_min} 
+                          onChange={(e) => updateField('partner_age_min', parseInt(e.target.value))}
+                          className="w-full p-3 bg-muted rounded-xl font-bold"
+                          min={18}
+                          max={100}
+                        />
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{locale === 'am' ? 'ቢበዛ' : 'Max Age'}</label>
+                        <input 
+                          type="number" 
+                          value={formData.partner_age_max} 
+                          onChange={(e) => updateField('partner_age_max', parseInt(e.target.value))}
+                          className="w-full p-3 bg-muted rounded-xl font-bold"
+                          min={18}
+                          max={100}
+                        />
+                      </div>
+                   </div>
+                </div>
                </div>
                <div className="grid grid-cols-2 gap-4">
                  <select value={formData.partner_religion} aria-label={t('fields.partnerReligion')} onChange={(e) => updateField('partner_religion', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">

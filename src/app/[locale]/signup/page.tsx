@@ -30,13 +30,13 @@ function SignupContent() {
 
   // Auto-redirect on success
   React.useEffect(() => {
-    if (isSuccess && signupIdentifier) {
+    if (isSuccess) {
       const timer = setTimeout(() => {
-        router.push(`/verify-otp?email=${encodeURIComponent(signupIdentifier)}`);
+        router.push('/dashboard');
       }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [isSuccess, signupIdentifier, router]);
+  }, [isSuccess, router]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,13 +91,6 @@ function SignupContent() {
       if (authError) throw authError;
 
       if (data.user) {
-        // Call custom OTP sender (Resend)
-        await fetch('/api/auth/send-otp', {
-          method: 'POST',
-          body: JSON.stringify({ email: identifier, locale })
-        });
-        
-        setSignupIdentifier(identifier);
         setIsSuccess(true);
       }
     } catch (err: unknown) {
@@ -118,11 +111,11 @@ function SignupContent() {
             {locale === 'am' ? 'እንኳን ደስ አለዎት!' : locale === 'ti' ? 'እንቋዕ ደስ በለኩም!' : 'Registration Successful!'}
           </h2>
           <p className="text-gray-500 mb-8 font-medium">
-            {locale === 'am' ? 'የማረጋገጫ ኮድ ወደ ኢሜልዎ ልከናል:: እባክዎ ኢሜልዎን ያረጋግጡ::' : locale === 'ti' ? 'ናይ ምርግጋጽ ኮድ ናብ ኢሜልኩም ሰዲድና አለና። ብኽብረትኩም ኢሜልኩም አረጋግጹ።' : 'We have sent a verification code to your email. Please check your inbox.'}
+            {locale === 'am' ? 'ወደ ዳሽቦርድ በመግባት ላይ ነዎት...' : locale === 'ti' ? 'ናብ ዳሽቦርድ እናኣተኹም ኢኹም...' : 'You are being logged in to your dashboard...'}
           </p>
           <div className="flex items-center justify-center gap-2 text-primary font-bold animate-pulse">
              <Loader2 className="animate-spin" size={18} />
-             <span>{locale === 'am' ? 'ወደ ቀጣዩ ገጽ በመውሰድ ላይ...' : locale === 'ti' ? 'ናብ ቀጻሊ ገጽ ይወስደኩም አሎ...' : 'Redirecting to verification...'}</span>
+             <span>{locale === 'am' ? 'ወደ ዳሽቦርድ በመውሰድ ላይ...' : locale === 'ti' ? 'ናብ ዳሽቦርድ ይወስደኩም አሎ...' : 'Redirecting to Dashboard...'}</span>
           </div>
         </div>
       </div>

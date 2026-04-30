@@ -20,7 +20,7 @@ export async function POST(req: Request) {
       - Registration Flow:
         1. Select Location (Inside Ethiopia or Diaspora).
         2. Create Account (Email or Phone).
-        3. Verify OTP (6-digit code sent to you).
+        3. Access Dashboard (Direct access immediately after signup).
         4. Complete Onboarding (Profile details & 5 lifestyle photos).
         5. Identity Verification (Upload Government ID and take a Live Selfie).
       - Contact Information:
@@ -41,11 +41,11 @@ export async function POST(req: Request) {
 
     if (isRegister) {
       if (locale === 'am') {
-        response = "ለመመዝገብ መጀመሪያ ሀገርዎን ይምረጡ፣ ከዚያ በኢሜል ወይም በስልክ አካውንት ይክፈቱ። በመቀጠል የ6 አሃዝ ኮድ ይደርስዎታል፤ እሱን ካረጋገጡ በኋላ ፕሮፋይልዎን በመሙላት እና ፎቶ በመጫን ምዝገባዎን መጨረስ ይችላሉ።";
+        response = "ለመመዝገብ መጀመሪያ ሀገርዎን ይምረጡ፣ ከዚያ በኢሜል ወይም በስልክ አካውንት ይክፈቱ። አካውንት እንደከፈቱ ወዲያውኑ ወደ ዳሽቦርድ ይገባሉ። በመቀጠል ፕሮፋይልዎን በመሙላት እና ፎቶ በመጫን ምዝገባዎን መጨረስ ይችላሉ።";
       } else if (locale === 'ti') {
-        response = "ንምዝገባ መጀመሪያ ሃገርኩም ምረጹ፣ ድሕሪኡ ብኢሜል ወይ ብስልኪ አካውንት ክፈቱ። ቀጺሉ 6 ቁጽሪ ዘለዎ ኮድ ክሰደደልኩም እዩ፤ ንዕኡ ምስ አረጋገጽኩም ፕሮፋይልኩም ብምምላእን ፎቶ ብምጽዓንን ምዝገባኹም ክትውድኡ ትኽእሉ ኢኹም።";
+        response = "ንምዝገባ መጀመሪያ ሃገርኩም ምረጹ፣ ድሕሪኡ ብኢሜል ወይ ብስልኪ አካውንት ክፈቱ። አካውንት ምስ ኸፈትኩም ብቀጥታ ናብ ዳሽቦርድ ክትአትዉ ኢኹም። ቀጺሉ ፕሮፋይልኩም ብምምላእን ፎቶ ብምጽዓንን ምዝገባኹም ክትወድኡ ትኽእሉ ኢኹም።";
       } else {
-        response = "To register: 1. Select your location. 2. Create an account with email/phone. 3. Verify your 6-digit OTP. 4. Complete your profile and upload photos. 5. Verify your ID and Selfie.";
+        response = "To register: 1. Select your location. 2. Create an account with email/phone. 3. Access your Dashboard immediately. 4. Complete your profile and upload photos. 5. Verify your ID and Selfie.";
       }
     } else if (isSecurity) {
       if (locale === 'am') {
