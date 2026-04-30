@@ -32,7 +32,7 @@ function SignupContent() {
   React.useEffect(() => {
     if (isSuccess) {
       const timer = setTimeout(() => {
-        router.push('/dashboard');
+        window.location.href = `/${locale}/dashboard`;
       }, 2000);
       return () => clearTimeout(timer);
     }

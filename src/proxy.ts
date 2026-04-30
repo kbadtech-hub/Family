@@ -74,36 +74,11 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
     }
 
-    // Check if email is confirmed (Bypass for OTP step 5)
-    const isOTPStep = segments.includes('onboarding') && request.nextUrl.searchParams.get('step') === '5';
-
-    if (!user.email_confirmed_at && !isOTPStep) {
-      return NextResponse.redirect(new URL(`/${locale}/login?error=unconfirmed&email=${encodeURIComponent(user.email || '')}`, request.url));
-    }
-
-    // Fetch profile and verification status
-    const { data: profile } = await supabase.from('profiles').select('is_onboarded, is_verified, role').eq('id', user.id).single();
-    
-    // Check for staff status (Admin/Super Admin)
-    const isStaff = profile?.role === 'admin' || profile?.role === 'super_admin';
-    
-    // Bypass onboarding/verification for staff
-    if (isStaff) {
-      return response;
-    }
-
-    // Onboarding gate for regular users
-    if (!profile?.is_onboarded) {
-      return NextResponse.redirect(new URL(`/${locale}/onboarding`, request.url));
-    }
-
-    // Verification gate for regular users
-    if (!profile?.is_verified) {
-      return NextResponse.redirect(new URL(`/${locale}/onboarding?step=5`, request.url));
-    }
+    // REMOVED email confirmation check to allow direct access
+    // REMOVED onboarding/verification gates to allow free viewing of dashboard
   }
 
-  // If user is logged in and verified, don't let them go back to login/onboarding (except if they are modifying profile)
+  // If user is logged in, don't let them go back to login
   if (user && (isLoginRoute)) {
      return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
   }
