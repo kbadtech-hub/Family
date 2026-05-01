@@ -164,6 +164,18 @@ export default function PaymentTab() {
                    </div>
                  ))}
               </div>
+              
+              {/* Refund Policy */}
+              <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 space-y-2">
+                 <div className="flex items-center gap-2 text-primary font-bold text-[10px] uppercase tracking-widest">
+                    <ShieldCheck size={14} /> 3-Day Refund Policy
+                 </div>
+                 <p className="text-[10px] text-gray-500 font-medium leading-relaxed italic">
+                    {locale === 'am' 
+                      ? 'ክፍያ በፈጸሙ በ3 ቀናት ውስጥ በማንኛውም ምክንያት ካልረኩ ሙሉ ክፍያዎን መመለስ ይችላሉ።' 
+                      : 'If you are not satisfied, you can request a full refund within 3 days of your payment.'}
+                 </p>
+              </div>
            </div>
 
            {/* Step 2: Proof Upload */}

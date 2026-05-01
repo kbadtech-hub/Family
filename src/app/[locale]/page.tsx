@@ -67,10 +67,10 @@ export default function Home() {
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-6">
             <Link 
-               href="/location-selection"
+               href="/signup"
                className="w-full sm:w-auto bg-primary text-white py-5 px-12 rounded-[2rem] font-bold text-sm uppercase tracking-widest hover:shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3"
             >
-              {t('Hero.cta1')} <ArrowRight size={18} className={locale === 'ar' ? 'rotate-180' : ''} />
+              {locale === 'am' ? 'ነጻ የ7 ቀን ሙከራ ጀምር' : 'Start Free Trial'} <ArrowRight size={18} className={locale === 'ar' ? 'rotate-180' : ''} />
             </Link>
             <Link href="/about" className="w-full sm:w-auto px-12 py-5 rounded-[2rem] border-2 border-border text-[#0F172A] font-bold text-sm uppercase tracking-widest hover:bg-[#F8F4F1] transition-all text-center">
                {t('Hero.cta2')}
@@ -185,10 +185,10 @@ export default function Home() {
                {t('CTA.message')}
             </h2>
             <Link 
-               href="/location-selection"
+               href="/signup"
                className="inline-flex bg-primary text-white py-6 px-16 rounded-[2.5rem] font-bold text-sm uppercase tracking-[0.2em] hover:shadow-2xl hover:shadow-primary/20 transition-all active:scale-95 items-center gap-4"
             >
-               {t('Hero.cta1')} <ArrowRight size={20} className={locale === 'ar' ? 'rotate-180' : ''} />
+               {locale === 'am' ? 'ነጻ የ7 ቀን ሙከራ ጀምር' : 'Start Free Trial'} <ArrowRight size={20} className={locale === 'ar' ? 'rotate-180' : ''} />
             </Link>
          </div>
 

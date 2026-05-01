@@ -33,7 +33,7 @@ export default function CommunityHubPage() {
           </p>
 
           <div className="flex flex-wrap justify-center gap-6 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-300">
-            <Link href="/location-selection" className="btn-primary flex items-center gap-3">
+            <Link href="/signup" className="btn-primary flex items-center gap-3">
               {t('cta')} <ArrowRight size={18} />
             </Link>
             <Link href="/community" className="btn-secondary flex items-center gap-3">
@@ -114,7 +114,7 @@ export default function CommunityHubPage() {
       <section className="py-24 bg-accent text-white text-center">
         <div className="max-w-3xl mx-auto px-6">
            <h2 className="text-4xl font-bold mb-8 tracking-tight">{t('cta')}</h2>
-           <Link href="/location-selection" className="btn-primary bg-white text-accent hover:bg-white/90">
+           <Link href="/signup" className="btn-primary bg-white text-accent hover:bg-white/90">
              {locale === 'am' ? 'አባል ይሁኑ' : 'Become a Member'}
            </Link>
         </div>
