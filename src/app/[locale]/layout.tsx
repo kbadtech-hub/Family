@@ -8,6 +8,7 @@ import ConditionalLayout from "@/components/ConditionalLayout";
 import {UIProvider} from "@/context/UIContext";
 import {AuthProvider} from "@/context/AuthContext";
 import Chatbot from "@/components/Chatbot";
+import SubscriptionObserver from "@/components/SubscriptionObserver";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -56,6 +57,7 @@ export default async function LocaleLayout({
               <ConditionalLayout>
                 {children}
                 <Chatbot />
+                <SubscriptionObserver />
               </ConditionalLayout>
             </UIProvider>
           </AuthProvider>

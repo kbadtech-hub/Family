@@ -62,7 +62,9 @@ CREATE TABLE public.profiles (
   role TEXT DEFAULT 'user' CHECK (role IN ('user', 'admin', 'super_admin', 'expert')),
   onboarding_step INTEGER DEFAULT 1,
   onboarding_completed BOOLEAN DEFAULT FALSE,
-  trial_ends_at TIMESTAMP WITH TIME ZONE DEFAULT (NOW() + INTERVAL '3 days'),
+  trial_ends_at TIMESTAMP WITH TIME ZONE DEFAULT (NOW() + INTERVAL '7 days'),
+  premium_until TIMESTAMP WITH TIME ZONE,
+  is_locked BOOLEAN DEFAULT FALSE,
   last_online TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -196,6 +198,36 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION public.handle_payment_approval()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_interval INTERVAL;
+BEGIN
+  IF (NEW.status = 'approved' AND (OLD.status = 'pending' OR OLD.status = 'rejected')) THEN
+    -- Determine interval based on plan_type
+    CASE NEW.plan_type
+      WHEN 'monthly' THEN v_interval := INTERVAL '1 month';
+      WHEN 'quarterly' THEN v_interval := INTERVAL '3 months';
+      WHEN 'semi-annually' THEN v_interval := INTERVAL '6 months';
+      WHEN 'yearly' THEN v_interval := INTERVAL '1 year';
+      WHEN 'lifetime' THEN v_interval := INTERVAL '100 years';
+      ELSE v_interval := INTERVAL '1 month';
+    END CASE;
+
+    -- Update profile
+    UPDATE public.profiles
+    SET premium_until = GREATEST(COALESCE(premium_until, NOW()), NOW()) + v_interval,
+        is_locked = FALSE
+    WHERE id = NEW.user_id;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_payment_approved
+  AFTER UPDATE ON public.payments
+  FOR EACH ROW EXECUTE FUNCTION public.handle_payment_approval();
 
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users

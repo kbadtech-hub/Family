@@ -23,11 +23,12 @@ import {
   ChevronRight
 } from 'lucide-react';
 import CommunityView from '@/components/dashboard/CommunityView';
-import PaymentPortal from '@/components/payment/PaymentPortal';
+import PaymentTab from '@/components/dashboard/PaymentTab';
 import ChatView from '@/components/dashboard/ChatView';
 import ProfileView from '@/components/dashboard/ProfileView';
 import MatchDetailView from '@/components/dashboard/MatchDetailView';
 import LessonsView from '@/components/dashboard/LessonsView';
+import SubscriptionGate from '@/components/SubscriptionGate';
 
 function DashboardContent() {
   const t = useTranslations('Dashboard');
@@ -299,21 +300,7 @@ function DashboardContent() {
                   {showPayment && profile ? (
                     <div className="col-span-full">
                       <button onClick={() => setShowPayment(false)} className="mb-6 text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">← {t('backToDash')}</button>
-                      {paymentStatus === 'pending' ? (
-                         <div className="bg-white p-20 rounded-[4rem] border border-primary/20 text-center space-y-6 shadow-2xl shadow-primary/5">
-                            <div className="w-24 h-24 bg-primary/10 text-primary rounded-[2.5rem] flex items-center justify-center mx-auto animate-bounce">
-                               <ShieldCheck size={48} />
-                            </div>
-                            <h3 className="text-3xl font-black text-accent italic">Payment Under Review</h3>
-                            <p className="text-gray-500 max-w-md mx-auto font-medium">We have received your screenshot. Our team is verifying the transfer. This usually takes a few hours.</p>
-                            <button onClick={() => setShowPayment(false)} className="btn-secondary px-8 py-3 rounded-xl font-bold uppercase text-[10px] tracking-widest">Return to Dashboard</button>
-                         </div>
-                      ) : (
-                         <PaymentPortal profile={profile} onPaymentStarted={() => {
-                            setShowPayment(false);
-                            setPaymentStatus('pending');
-                         }} />
-                      )}
+                      <PaymentTab />
                     </div>
                   ) : isTrialExpired && paymentStatus !== 'approved' ? (
                     <div className="col-span-full bg-white p-12 rounded-[3rem] border border-red-100 text-center space-y-6">
@@ -390,17 +377,27 @@ function DashboardContent() {
         {/* Tab Components */}
         {activeTab === 'chat' && (
            <div className="mt-10 h-[calc(100vh-200px)]">
-              <ChatView isPremium={isPremium} />
+              <SubscriptionGate allowVerifiedView={false}>
+                 <ChatView isPremium={isPremium} />
+              </SubscriptionGate>
            </div>
         )}
 
         {activeTab === 'workshops' && (
            <div className="mt-10">
-              <LessonsView isPremium={isPremium} />
+              <SubscriptionGate allowVerifiedView={true}>
+                 <LessonsView isPremium={isPremium} />
+              </SubscriptionGate>
            </div>
         )}
 
-        {activeTab === 'community' && <CommunityView isVerified={verificationStatus === 'verified'} isPremium={isPremium} isAdmin={isAdmin} />}
+        {activeTab === 'community' && (
+          <div className="mt-10">
+            <SubscriptionGate allowVerifiedView={true}>
+              <CommunityView isVerified={verificationStatus === 'verified'} isPremium={isPremium} isAdmin={isAdmin} />
+            </SubscriptionGate>
+          </div>
+        )}
 
         {activeTab === 'profile' && profile && (
           <ProfileView 
