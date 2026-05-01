@@ -2,23 +2,21 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url)
+  const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/dashboard'
 
-  // Extract locale from 'next' if possible, or fallback to segments
+  // Determine the correct origin
+  const forwardedHost = request.headers.get('x-forwarded-host')
+  const forwardedProto = request.headers.get('x-forwarded-proto') || 'https'
+  const origin = forwardedHost ? `${forwardedProto}://${forwardedHost}` : new URL(request.url).origin
+  
+  // Extract locale from 'next' if possible
   const nextSegments = next.split('/')
   const locale = nextSegments[1] && nextSegments[1].length === 2 ? nextSegments[1] : 'en'
 
   if (code) {
-    const forwardedHost = request.headers.get('x-forwarded-host')
-    const isLocalEnv = process.env.NODE_ENV === 'development'
-    
-    const baseUrl = isLocalEnv 
-      ? origin 
-      : (forwardedHost ? `https://${forwardedHost}` : origin)
-      
-    const response = NextResponse.redirect(`${baseUrl}${next}`)
+    const response = NextResponse.redirect(`${origin}${next}`)
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -30,22 +28,27 @@ export async function GET(request: NextRequest) {
           },
           setAll(cookiesToSet) {
             cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options)
+              response.cookies.set(name, value, {
+                ...options,
+                path: '/', // Ensure cookies are accessible everywhere
+              })
             )
           },
         },
       }
     )
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    
-    if (!error) {
-      return response
+    try {
+      const { error } = await supabase.auth.exchangeCodeForSession(code)
+      if (!error) {
+        return response
+      }
+      console.error('Auth exchange error:', error.message)
+    } catch (err) {
+      console.error('Auth callback exception:', err)
     }
-    
-    console.error('Auth callback error:', error)
   }
 
-  // return the user to an error page with instructions
+  // Fallback to login with error
   return NextResponse.redirect(`${origin}/${locale}/login?error=auth_code_error`)
 }
