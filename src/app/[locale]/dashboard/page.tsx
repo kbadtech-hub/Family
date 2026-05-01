@@ -20,9 +20,7 @@ import {
   ChevronDown,
   AlertCircle,
   LogOut,
-  ChevronRight,
-  Sparkles,
-  Lock
+  ChevronRight
 } from 'lucide-react';
 import CommunityView from '@/components/dashboard/CommunityView';
 import PaymentPortal from '@/components/payment/PaymentPortal';
@@ -260,34 +258,8 @@ function DashboardContent() {
           </div>
         </header>
 
-        {/* Payment Wall Popup / Banner */}
-        {!isPremium && (
-          <div className="mb-10 bg-[#0F172A] border border-primary/20 p-8 md:p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full -mr-32 -mt-32 blur-3xl" />
-            <div className="relative flex flex-col md:flex-row items-center justify-between gap-8">
-               <div className="space-y-4 text-center md:text-left">
-                  <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/20 rounded-full text-[10px] font-black uppercase tracking-widest text-primary">
-                     <Sparkles size={14} /> Premium Access
-                  </div>
-                  <h2 className="text-3xl font-black italic tracking-tighter">
-                    Unlock your system right now!
-                  </h2>
-                  <p className="text-white/60 font-medium max-w-lg">
-                    {locale === 'am' ? 'ሁሉንም አገልግሎቶች ለመጠቀም እና የትዳር አጋርዎን ለማግኘት አሁኑኑ ክፍያ ይፈጽሙ።' : 'To access all features and find your life partner, please complete your payment now.'}
-                  </p>
-               </div>
-               <button 
-                 onClick={() => setShowPayment(true)}
-                 className="bg-primary text-white px-10 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
-               >
-                  {t('upgradeNow')} <ArrowUpRight size={20} />
-               </button>
-            </div>
-          </div>
-        )}
-
-        {/* Verification Banner (If not completed) */}
-        {profile?.onboarding_completed === false && (
+        {/* Verification Banner */}
+        {!profile?.onboarding_completed && (
           <div className="mb-10 bg-gradient-to-r from-primary to-orange-400 p-8 md:p-10 rounded-[3rem] text-white shadow-2xl shadow-primary/20 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:scale-110 transition-transform duration-700" />
             <div className="relative flex flex-col md:flex-row items-center justify-between gap-8">
@@ -343,13 +315,13 @@ function DashboardContent() {
                          }} />
                       )}
                     </div>
-                  ) : !isPremium ? (
-                    <div className="col-span-full bg-white p-12 rounded-[3rem] border border-primary/10 text-center space-y-6 shadow-xl">
-                      <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto">
-                        <Lock size={32} />
+                  ) : isTrialExpired && paymentStatus !== 'approved' ? (
+                    <div className="col-span-full bg-white p-12 rounded-[3rem] border border-red-100 text-center space-y-6">
+                      <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto">
+                        <AlertCircle size={32} />
                       </div>
-                      <h3 className="text-2xl font-black text-accent italic">Premium Content Locked</h3>
-                      <p className="text-gray-500 max-w-sm mx-auto">Upgrade your account to see your perfect matches and start connecting.</p>
+                      <h3 className="text-2xl font-black text-accent italic">{t('trialExpired')}</h3>
+                      <p className="text-gray-500 max-w-sm mx-auto">{t('trialEnded')}</p>
                       <button onClick={() => setShowPayment(true)} className="bg-primary text-white px-10 py-4 rounded-2xl font-bold uppercase tracking-widest shadow-xl shadow-primary/20">{t('upgradeNow')}</button>
                     </div>
                   ) : matches.length === 0 ? (
@@ -395,16 +367,20 @@ function DashboardContent() {
                        <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-tighter">Your payment screenshot is being reviewed.</p>
                     </div>
                   </div>
-                ) : (
+                ) : profile?.onboarding_completed && !isTrialExpired ? (
                   <div className="space-y-4">
                     <div className="p-5 bg-primary/5 rounded-[1.5rem]">
                       <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Trial Status</p>
-                      <p className="text-xl font-black text-accent italic">{isPremium ? trialDaysLeft : 0} Days Left</p>
+                      <p className="text-xl font-black text-accent italic">{trialDaysLeft} Days Left</p>
                     </div>
                     <button onClick={() => setShowPayment(true)} className="w-full bg-primary text-white py-5 rounded-[2rem] font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20">
                       {t('premium.unlock')}
                     </button>
                   </div>
+                ) : (
+                  <button onClick={() => setShowPayment(true)} className="w-full bg-primary text-white py-5 rounded-[2rem] font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20">
+                    {t('premium.unlock')}
+                  </button>
                 )}
               </div>
             </aside>

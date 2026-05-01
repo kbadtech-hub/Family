@@ -13,8 +13,7 @@ import {
   Image as ImageIcon,
   Link as LinkIcon,
   X,
-  Camera,
-  Lock
+  Camera
 } from 'lucide-react';
 
 interface Post {
@@ -155,28 +154,7 @@ export default function CommunityView({
       </div>
 
       <div className="bg-card p-8 rounded-[2.5rem] border border-border shadow-xl relative overflow-hidden">
-        {!isPremium && !isAdmin && (
-          <div className="absolute inset-0 z-20 bg-white/80 backdrop-blur-[4px] flex items-center justify-center p-6 text-center">
-             <div className="space-y-6 max-w-sm animate-in zoom-in duration-300">
-                <div className="w-20 h-20 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mx-auto text-primary">
-                   <Lock size={40} />
-                </div>
-                <h4 className="font-black text-2xl text-accent italic tracking-tighter">Premium Access Only</h4>
-                <p className="text-sm text-gray-500 font-medium leading-relaxed">
-                  {locale === 'am' 
-                    ? "በኮሚኒቲው ውስጥ ሃሳብ ለመለዋወጥ እና ፖስት ለማድረግ እባክዎ ፕሪሚየም አካውንት ይክፈቱ።" 
-                    : "To post and share ideas in the community, please upgrade to a premium account."}
-                </p>
-                <button 
-                  onClick={() => window.location.search = '?tab=payment'}
-                  className="bg-primary text-white px-10 py-4 rounded-[2rem] font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
-                >
-                  {locale === 'am' ? 'አሁኑኑ ይክፈቱ' : 'Unlock Now'}
-                </button>
-             </div>
-          </div>
-        )}
-        {!isAdmin && isPremium && !isVerified && (
+        {!isVerified && (
           <div className="absolute inset-0 z-20 bg-white/60 backdrop-blur-[2px] flex items-center justify-center p-6 text-center">
              <div className="space-y-4 max-w-sm">
                 <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto text-primary">

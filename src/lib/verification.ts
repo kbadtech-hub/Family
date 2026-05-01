@@ -18,29 +18,27 @@ export async function simulateIdentityVerification(
   selfiePhotoUrl: string,
   profileData: { full_name: string; birth_date: string }
 ): Promise<VerificationResult> {
-  // Simulate network delay for AI processing
-  await new Promise(resolve => setTimeout(resolve, 4500));
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 3500));
 
+  // In a real app, this would call an AI service like AWS Rekognition or Google Vision AI
+  // Here we simulate a high match score for demo purposes
+  
+  // LOGIC SIMULATION:
+  // We check if the profile has a name. If it's "User XXXXX" (default), we might flag it.
+  const isDefaultName = profileData.full_name.startsWith('User ');
+  
   if (!idPhotoUrl || !selfiePhotoUrl) {
-    return { isMatch: false, score: 0, reason: 'Missing images for AI analysis' };
+    return { isMatch: false, score: 0, reason: 'Missing images' };
   }
 
-  // AI SIMULATION LOGIC:
-  // 1. OCR Name Match
-  // 2. OCR Date of Birth Match
-  // 3. Facial Recognition (Selfie vs ID)
-  
-  const nameMatch = profileData.full_name.length > 3; // Basic check
-  const dobMatch = !!profileData.birth_date;
-  
-  // 98% success rate if data is provided
-  const faceMatchScore = 0.85 + Math.random() * 0.14;
-  const success = nameMatch && dobMatch && (faceMatchScore > 0.88);
+  // 95% success rate for simulation
+  const success = Math.random() > 0.05;
   
   if (success) {
     return {
       isMatch: true,
-      score: faceMatchScore,
+      score: 0.92 + Math.random() * 0.07,
       extractedData: {
         full_name: profileData.full_name,
         birth_date: profileData.birth_date
@@ -49,10 +47,8 @@ export async function simulateIdentityVerification(
   } else {
     return {
       isMatch: false,
-      score: faceMatchScore,
-      reason: !nameMatch ? 'Name on ID does not match profile' : 
-              !dobMatch ? 'Birth date on ID does not match profile' : 
-              'Facial match score too low'
+      score: 0.45,
+      reason: 'Face match score too low'
     };
   }
 }

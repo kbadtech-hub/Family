@@ -162,6 +162,13 @@ function OnboardingContent() {
         if (!formData.gender) return t('errors.genderRequired');
         if (!formData.location) return t('errors.locationRequired');
         
+        // Location Integrity Check
+        if (prefLocation === 'Local' && formData.location !== 'Ethiopia') {
+          return t('errors.locationMismatch');
+        }
+        if (prefLocation === 'Diaspora' && formData.location === 'Ethiopia') {
+          return t('errors.locationMismatch');
+        }
 
         if (!formData.religion) return t('errors.religionRequired');
         if (!formData.marital_status) return t('errors.maritalRequired');
@@ -221,8 +228,7 @@ function OnboardingContent() {
           partner_age_min: formData.partner_age_min,
           partner_age_max: formData.partner_age_max,
           partner_religion: formData.partner_religion,
-          partner_marital_pref: formData.partner_intent,
-          currency_locked: formData.location === 'Ethiopia' ? 'ETB' : 'USD'
+          partner_marital_pref: formData.partner_intent
         }).eq('id', userId);
       }
       setStep(s => Math.min(s + 1, 7));

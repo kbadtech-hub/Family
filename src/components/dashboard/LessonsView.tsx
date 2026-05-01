@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Play, BookOpen, Clock, Tag, ChevronRight, GraduationCap, Lock } from 'lucide-react';
+import { Play, BookOpen, Clock, Tag, ChevronRight, GraduationCap } from 'lucide-react';
 import YouTubeEmbed from '@/components/YouTubeEmbed';
 import PremiumGate from '@/components/PremiumGate';
 import { useLocale } from 'next-intl';
@@ -70,28 +70,7 @@ export default function LessonsView({ isPremium }: { isPremium: boolean }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         {/* Main Player */}
-        <div className="lg:col-span-8 space-y-8 relative">
-          {!isPremium && (
-            <div className="absolute inset-0 z-30 bg-white/90 backdrop-blur-md rounded-[3rem] flex items-center justify-center p-12 text-center">
-               <div className="max-w-md space-y-6">
-                  <div className="w-20 h-20 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mx-auto text-primary">
-                     <Lock size={40} />
-                  </div>
-                  <h3 className="text-3xl font-black text-accent italic tracking-tighter">Premium Academy</h3>
-                  <p className="text-gray-500 font-medium leading-relaxed">
-                    {locale === 'am' 
-                      ? "የትምህርት እና ስልጠና ይዘቶችን ለማየት እባክዎ አካውንትዎን ወደ ፕሪሚየም ያሳድጉ።" 
-                      : "Upgrade to premium to access all expert lessons and relationship workshops."}
-                  </p>
-                  <button 
-                    onClick={() => window.location.search = '?tab=payment'}
-                    className="bg-primary text-white px-10 py-4 rounded-[2rem] font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20"
-                  >
-                     {locale === 'am' ? 'አሁኑኑ ይክፈቱ' : 'Unlock Now'}
-                  </button>
-               </div>
-            </div>
-          )}
+        <div className="lg:col-span-8 space-y-8">
           {selectedLesson ? (
             <>
               <YouTubeEmbed url={selectedLesson.youtube_url} />

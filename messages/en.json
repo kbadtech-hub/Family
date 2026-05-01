@@ -5,7 +5,7 @@
       "title1": "Find Your Perfect Life Partner",
       "title2": "Start with 'Beteseb'!",
       "subtitle": "A marriage matching platform based on our culture and values, supported by modern technology. A trusted bridge to find a true life partner, not just a search for love.",
-      "cta1": "Start Free Trial",
+      "cta1": "Create Account",
       "cta2": "Our Vision",
       "verify1": "PASSPORT VERIFIED",
       "verify2": "IDENTITY SECURED",
@@ -86,7 +86,7 @@
       "percent": "Match"
     },
     "trialExpired": "Trial Expired",
-    "trialEnded": "Your 7-day trial has ended. Please subscribe to continue finding your perfect match.",
+    "trialEnded": "Your 3-day trial has ended. Please subscribe to continue finding your perfect match.",
     "upgradeNow": "Upgrade Now",
     "backToDash": "Back to Dashboard",
     "subscription": "Subscription",
@@ -95,8 +95,7 @@
     "verifyNow": "Verify Now",
     "matchingLocked": "Matching Locked",
     "matchingLockedSub": "Please complete your onboarding verification to see your potential matches.",
-    "completeOnboarding": "Complete Onboarding",
-    "refundPolicy": "3-Day Refund Guarantee: You can request a full refund within 3 days of payment if you are not satisfied."
+    "completeOnboarding": "Complete Onboarding"
   },
   "Footer": {
     "tagline": "ቤተሰብ | Beteseb - Global Habesha Marriage Matching",
