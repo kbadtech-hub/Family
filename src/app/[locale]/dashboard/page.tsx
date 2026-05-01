@@ -98,15 +98,29 @@ function DashboardContent() {
   }, [searchParams]);
 
   useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
+        router.push('/login');
+      }
+    });
+
     const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
+      
       if (!user) {
-        router.push('/login');
-        return;
+        // Double check session
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          router.push('/login');
+          return;
+        }
       }
 
+      const currentUser = user || (await supabase.auth.getUser()).data.user;
+      if (!currentUser) return;
+
       // 1. Fetch Profile
-      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
       let currentTrialExpired = false;
       if (profileData) {
         setProfile(profileData as Profile);
@@ -124,7 +138,7 @@ function DashboardContent() {
       // 2. Fetch Verification
       const { data: verifyData } = await supabase.from('verifications')
         .select('status')
-        .eq('user_id', user.id)
+        .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
@@ -135,7 +149,7 @@ function DashboardContent() {
       // 3. Fetch Payment
       const { data: paymentData } = await supabase.from('payments')
         .select('status')
-        .eq('user_id', user.id)
+        .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
@@ -153,7 +167,7 @@ function DashboardContent() {
       // 5. Fetch Matches (Always allow viewing matches)
       const { data: profiles } = await supabase.from('profiles')
         .select('*')
-        .neq('id', user.id)
+        .neq('id', currentUser.id)
         .limit(10);
 
       if (profiles) {

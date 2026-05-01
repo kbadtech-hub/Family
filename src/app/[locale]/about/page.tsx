@@ -161,7 +161,7 @@ export default function AboutPage() {
             <span>{t('joinStats')}</span>
          </div>
          <h3 className="text-4xl md:text-7xl font-black text-accent tracking-tighter mb-12 leading-none italic max-w-4xl">{t('ctaTitle')}</h3>
-         <Link href="/location-selection" className="bg-primary text-white text-xl py-6 px-20 rounded-2xl font-black uppercase tracking-widest shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-4 group">
+         <Link href="/signup" className="bg-primary text-white text-xl py-6 px-20 rounded-2xl font-black uppercase tracking-widest shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-4 group">
             {t('ctaButton')} <ArrowRight className="group-hover:translate-x-3 transition-transform duration-500" size={24} />
          </Link>
       </section>
