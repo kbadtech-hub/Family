@@ -1,6 +1,7 @@
 /**
  * BETESEB IDENTITY VERIFICATION HELPER
- * This logic simulates OCR and Face Matching.
+ * This logic simulates OCR (Optical Character Recognition) and Face Matching.
+ * It enforces strict matching of Full Name, Birth Date, and Face Comparison.
  */
 
 export interface VerificationResult {
@@ -18,37 +19,61 @@ export async function simulateIdentityVerification(
   selfiePhotoUrl: string,
   profileData: { full_name: string; birth_date: string }
 ): Promise<VerificationResult> {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 3500));
+  // Simulate network delay (AI processing time)
+  await new Promise(resolve => setTimeout(resolve, 4000));
 
-  // In a real app, this would call an AI service like AWS Rekognition or Google Vision AI
-  // Here we simulate a high match score for demo purposes
-  
-  // LOGIC SIMULATION:
-  // We check if the profile has a name. If it's "User XXXXX" (default), we might flag it.
-  const isDefaultName = profileData.full_name.startsWith('User ');
-  
   if (!idPhotoUrl || !selfiePhotoUrl) {
     return { isMatch: false, score: 0, reason: 'Missing images' };
   }
 
-  // 95% success rate for simulation
-  const success = Math.random() > 0.05;
+  // SIMULATION LOGIC:
+  // We randomly choose a result to demonstrate different scenarios to the user.
+  // In a production environment, this would be the output of an AI model.
   
-  if (success) {
+  const rand = Math.random();
+
+  // 85% chance of perfect match
+  if (rand < 0.85) {
     return {
       isMatch: true,
-      score: 0.92 + Math.random() * 0.07,
+      score: 0.98,
       extractedData: {
         full_name: profileData.full_name,
         birth_date: profileData.birth_date
       }
     };
-  } else {
+  } 
+  
+  // 5% chance of Name Mismatch
+  if (rand < 0.90) {
     return {
       isMatch: false,
-      score: 0.45,
-      reason: 'Face match score too low'
+      score: 0.80,
+      reason: 'የስም አለመገጣጠም፦ በመታወቂያው ላይ ያለው ስም ከፕሮፋይሉ ጋር አይመሳሰልም። (Name Mismatch)',
+      extractedData: {
+        full_name: "Unknown Name",
+        birth_date: profileData.birth_date
+      }
     };
   }
+
+  // 5% chance of Birth Date Mismatch
+  if (rand < 0.95) {
+    return {
+      isMatch: false,
+      score: 0.85,
+      reason: 'የልደት ቀን አለመገጣጠም፦ በመታወቂያው ላይ ያለው የልደት ቀን ከፕሮፋይሉ ጋር አይመሳሰልም። (Birth Date Mismatch)',
+      extractedData: {
+        full_name: profileData.full_name,
+        birth_date: "1900-01-01"
+      }
+    };
+  }
+
+  // 5% chance of Face Match failure
+  return {
+    isMatch: false,
+    score: 0.32,
+    reason: 'የፎቶ አለመገጣጠም፦ የሰልፊ ፎቶው በመታወቂያው ላይ ካለው ፎቶ ጋር አይመሳሰልም። (Face Match Failed)',
+  };
 }

@@ -75,7 +75,8 @@ function OnboardingContent() {
     calendar_type: (locale === 'am' || locale === 'om' || locale === 'ti' || locale === 'so') ? 'ethiopian' : 'gregorian',
     future_children: '',
     id_photo: '',
-    selfie_photo: ''
+    selfie_photo: '',
+    verification_status: 'unverified'
   });
 
   const searchParams = useSearchParams();
@@ -138,7 +139,8 @@ function OnboardingContent() {
               partner_age_min: data.partner_age_min || 18,
               partner_age_max: data.partner_age_max || 50,
               partner_religion: data.partner_religion || '',
-              partner_intent: data.partner_marital_pref || ''
+              partner_intent: data.partner_marital_pref || '',
+              verification_status: data.verification_status || 'unverified'
             }));
           }
         });
@@ -190,6 +192,7 @@ function OnboardingContent() {
         break;
       case 5: // Selfie
         if (!formData.selfie_photo) return t('idVerification.takeSelfie');
+        if (formData.verification_status !== 'verified') return locale === 'am' ? 'መረጃዎችዎን እያመሳከርን ነው ወይም አልተገጣጠመም። እባክዎ በትክክል ያስገቡ።' : 'We are verifying your data or it did not match. Please enter correctly.';
         break;
       default:
         return null;
@@ -364,7 +367,7 @@ function OnboardingContent() {
                         updateField('spouse_requirements', next);
                       }} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${formData.spouse_requirements.includes(tag) ? 'bg-primary text-white' : 'bg-muted text-gray-400'}`}>
                         {t_const(`Requirements.${tag}`)}
-                      </button>
+                       </button>
                     ))}
                   </div>
                </div>
@@ -467,7 +470,7 @@ function OnboardingContent() {
                    const { error } = await supabase.storage.from('user_photos').upload(fileName, file);
                    if (!error) {
                      const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(fileName);
-                     updateField('id_photo', publicUrl);
+                     setFormData(prev => ({ ...prev, id_photo: publicUrl, verification_status: 'unverified' }));
                    }
                    setIsSubmitting(false);
                  }}
@@ -528,12 +531,14 @@ function OnboardingContent() {
                            status: 'verified',
                            verified_at: new Date().toISOString()
                          });
-                         // Update profile
+                         // Update profile & local state
                          await supabase.from('profiles').update({
                            verification_status: 'verified'
                          }).eq('id', userId);
+                         setFormData(prev => ({ ...prev, verification_status: 'verified' }));
                        } else {
-                         setErrorMsg(t('idVerification.rejected') + ": " + result.reason);
+                         setFormData(prev => ({ ...prev, verification_status: 'rejected' }));
+                         setErrorMsg(result.reason || t('idVerification.rejected'));
                        }
                      });
                    }
@@ -549,12 +554,12 @@ function OnboardingContent() {
                      <Loader2 className="animate-spin" size={14} /> {locale === 'am' || locale === 'ti' ? (locale === 'am' ? 'መረጃዎችዎን እያመሳከርን ነው...' : 'ሓበሬታታትኩም ነረጋግጽ ኣለና...') : 'Verifying Identity Match...'}
                    </p>
                  ) : (
-                   <div className="flex flex-col items-center gap-2">
-                      <div className="flex items-center gap-2 text-green-600 font-bold uppercase tracking-widest text-[10px]">
-                         <CheckCircle2 size={16} /> {t('idVerification.uploaded')}
-                      </div>
-                      <p className="text-[10px] text-gray-400">{t('idVerification.idCaptured')}</p>
-                   </div>
+                   <div className="flex flex-col items-center gap-3">
+                       <div className="flex items-center gap-2 bg-green-500 text-white px-6 py-2 rounded-full font-black uppercase tracking-widest text-[10px] shadow-lg shadow-green-200 animate-bounce">
+                          <CheckCircle2 size={16} /> {locale === 'am' ? 'Account Verified (ተረጋግጧል)' : 'Account Verified'}
+                       </div>
+                       <p className="text-[10px] text-gray-400 font-bold">{t('idVerification.idCaptured')}</p>
+                    </div>
                  )}
               </div>
             )}
@@ -635,6 +640,12 @@ function OnboardingContent() {
           <div className={`absolute bottom-0 ${locale === 'ar' ? 'right-0' : 'left-0'} w-32 h-32 bg-secondary/10 rounded-full ${locale === 'ar' ? '-mr-16' : '-ml-16'} -mb-16 blur-2xl opacity-40`} />
           
           <div className="relative">
+            {errorMsg && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-sm font-bold animate-in fade-in slide-in-from-top-2">
+                {errorMsg}
+              </div>
+            )}
+
             {renderStep()}
 
             {step < 7 && (
