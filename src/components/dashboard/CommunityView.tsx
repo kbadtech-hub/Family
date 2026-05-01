@@ -13,7 +13,8 @@ import {
   Image as ImageIcon,
   Link as LinkIcon,
   X,
-  Camera
+  Camera,
+  Lock
 } from 'lucide-react';
 
 interface Post {

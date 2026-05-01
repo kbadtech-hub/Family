@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Play, BookOpen, Clock, Tag, ChevronRight, GraduationCap } from 'lucide-react';
+import { Play, BookOpen, Clock, Tag, ChevronRight, GraduationCap, Lock } from 'lucide-react';
 import YouTubeEmbed from '@/components/YouTubeEmbed';
 import PremiumGate from '@/components/PremiumGate';
 import { useLocale } from 'next-intl';
