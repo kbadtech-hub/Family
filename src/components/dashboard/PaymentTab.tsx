@@ -12,7 +12,8 @@ import {
   Landmark, 
   Globe,
   Loader2,
-  Camera
+  Camera,
+  ShieldCheck
 } from 'lucide-react';
 import Image from 'next/image';
 import { useLocale } from 'next-intl';
