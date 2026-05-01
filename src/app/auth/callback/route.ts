@@ -63,6 +63,10 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/auth/auth-code-error`)
+  // If no code, or something went wrong, send to dashboard (middleware will handle auth check)
+  // or back to login with an error message
+  const segments = request.nextUrl.pathname.split('/')
+  const locale = segments[1] && segments[1].length === 2 ? segments[1] : 'en'
+  
+  return NextResponse.redirect(`${origin}/${locale}/login?error=auth_code_error`)
 }

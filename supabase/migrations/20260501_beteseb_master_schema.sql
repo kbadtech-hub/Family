@@ -62,7 +62,8 @@ CREATE TABLE public.profiles (
   role TEXT DEFAULT 'user' CHECK (role IN ('user', 'admin', 'super_admin', 'expert')),
   onboarding_step INTEGER DEFAULT 1,
   onboarding_completed BOOLEAN DEFAULT FALSE,
-  trial_ends_at TIMESTAMP WITH TIME ZONE DEFAULT (NOW() + INTERVAL '3 days'),
+  trial_ends_at TIMESTAMP WITH TIME ZONE DEFAULT (NOW() + INTERVAL '7 days'),
+  currency_locked TEXT DEFAULT 'USD' CHECK (currency_locked IN ('USD', 'ETB')),
   last_online TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

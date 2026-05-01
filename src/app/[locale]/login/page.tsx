@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from '@/i18n/routing';
 import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import { 
   Mail, 
   Phone, 
@@ -23,6 +24,14 @@ function LoginContent() {
   const t = useTranslations('Auth');
   const locale = useLocale();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  useEffect(() => {
+    const errorParam = searchParams.get('error');
+    if (errorParam === 'auth_code_error') {
+       setError(locale === 'am' ? 'የማረጋገጫ ሊንኩ ስህተት አለበት ወይም ጊዜ አልፎበታል። እባክዎ እንደገና ይሞክሩ።' : 'The authentication link is invalid or has expired. Please try again.');
+    }
+  }, [searchParams, locale]);
   
   // View state: 'initial' | 'email' | 'phone'
   const [view, setView] = useState<'initial' | 'email' | 'phone'>('initial');

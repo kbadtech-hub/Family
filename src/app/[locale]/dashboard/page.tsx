@@ -100,7 +100,10 @@ function DashboardContent() {
   useEffect(() => {
     const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        router.push('/login');
+        return;
+      }
 
       // 1. Fetch Profile
       const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();

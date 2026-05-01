@@ -256,6 +256,7 @@ export default function PaymentPortal({ profile, onPaymentStarted }: { profile: 
               )}
             </button>
             <p className="text-[10px] text-white/30 text-center font-bold uppercase tracking-widest leading-relaxed">
+               {t('refundPolicy')} <br/>
                By clicking complete, you agree to our terms. <br/> Approval typically takes 2-6 hours.
             </p>
          </div>

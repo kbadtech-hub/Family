@@ -185,7 +185,7 @@ export default function Home() {
                {t('CTA.message')}
             </h2>
             <Link 
-               href="/location-selection"
+               href="/signup"
                className="inline-flex bg-primary text-white py-6 px-16 rounded-[2.5rem] font-bold text-sm uppercase tracking-[0.2em] hover:shadow-2xl hover:shadow-primary/20 transition-all active:scale-95 items-center gap-4"
             >
                {t('Hero.cta1')} <ArrowRight size={20} className={locale === 'ar' ? 'rotate-180' : ''} />
