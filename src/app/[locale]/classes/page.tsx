@@ -34,7 +34,7 @@ export default function ClassesPage() {
           {t('hero.subtitle') || "Expert-led courses on cultural heritage, family values, and modern dating for the Ethiopian community."}
         </p>
         <div className="flex flex-col md:flex-row gap-4 pt-6">
-           <Link href="/signup" className="btn-primary text-xl py-5 px-16 shadow-2xl shadow-primary/20 flex items-center gap-3">
+           <Link href="/location-selection" className="btn-primary text-xl py-5 px-16 shadow-2xl shadow-primary/20 flex items-center gap-3">
               {t('hero.cta') || "Start Learning"} <ArrowRight size={24} className={locale === 'ar' ? 'rotate-180' : ''} />
            </Link>
            <Link href="/login" className="bg-white text-accent border-2 border-accent/10 text-xl py-5 px-16 rounded-[2rem] font-black uppercase tracking-tighter hover:bg-muted transition-all">
@@ -144,7 +144,7 @@ export default function ClassesPage() {
       {/* Footer Meta */}
       <section className="py-32 px-8 text-center bg-white">
          <p className="text-xs font-black text-accent/10 uppercase tracking-[1em] mb-12">{t('footerMeta') || "JOIN THE ACADEMY"}</p>
-         <Link href="/signup" className="inline-flex items-center gap-4 btn-primary text-2xl py-6 px-20 group shadow-2xl shadow-primary/20">
+         <Link href="/location-selection" className="inline-flex items-center gap-4 btn-primary text-2xl py-6 px-20 group shadow-2xl shadow-primary/20">
             {t('footerCTA') || "Join Beteseb"} <ArrowRight className={`group-hover:translate-x-3 transition-transform duration-300 ${locale === 'ar' ? 'rotate-180' : ''}`} />
          </Link>
       </section>

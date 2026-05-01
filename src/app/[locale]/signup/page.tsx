@@ -101,8 +101,7 @@ function SignupContent() {
                   is_onboarded: false,
                   verification_status: 'unverified',
                   pref_location: 'Local'
-                },
-                emailRedirectTo: `${window.location.origin}/auth/callback?next=/${locale}/dashboard`
+                }
               }
             }
           : { 
@@ -114,8 +113,7 @@ function SignupContent() {
                   is_onboarded: false,
                   verification_status: 'unverified',
                   pref_location: 'Local'
-                },
-                emailRedirectTo: `${window.location.origin}/auth/callback?next=/${locale}/dashboard`
+                }
               }
             }
       );

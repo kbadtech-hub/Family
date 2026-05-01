@@ -2,22 +2,12 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url)
+  const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
+  // if "next" is in param, use it as the redirect URL
   const next = searchParams.get('next') ?? '/dashboard'
 
-  // Determine the correct origin
-  const forwardedHost = request.headers.get('x-forwarded-host')
-  const forwardedProto = request.headers.get('x-forwarded-proto') || 'https'
-  const origin = forwardedHost ? `${forwardedProto}://${forwardedHost}` : new URL(request.url).origin
-  
-  // Extract locale from 'next' if possible
-  const nextSegments = next.split('/')
-  const locale = nextSegments[1] && nextSegments[1].length === 2 ? nextSegments[1] : 'en'
-
   if (code) {
-    const response = NextResponse.redirect(`${origin}${next}`)
-
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -27,28 +17,52 @@ export async function GET(request: NextRequest) {
             return request.cookies.getAll()
           },
           setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, {
-                ...options,
-                path: '/', // Ensure cookies are accessible everywhere
-              })
-            )
+            // In a Route Handler, we can't set cookies on the request.
+            // We'll handle this by passing them to the final response.
           },
         },
       }
     )
-
-    try {
-      const { error } = await supabase.auth.exchangeCodeForSession(code)
-      if (!error) {
-        return response
-      }
-      console.error('Auth exchange error:', error.message)
-    } catch (err) {
-      console.error('Auth callback exception:', err)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+    
+    if (!error && data.session) {
+      const forwardedHost = request.headers.get('x-forwarded-host') // Hello, Vercel
+      const isLocalEnv = process.env.NODE_ENV === 'development'
+      
+      const redirectUrl = isLocalEnv 
+        ? `${origin}${next}` 
+        : (forwardedHost ? `https://${forwardedHost}${next}` : `${origin}${next}`)
+        
+      const response = NextResponse.redirect(redirectUrl)
+      
+      // Manually set the cookies on the response from the session
+      // This is more robust than relying on setAll inside exchangeCodeForSession
+      // for some server environments.
+      // However, exchangeCodeForSession usually calls setAll.
+      // Let's use the standard pattern:
+      
+      const finalSupabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            getAll() { return request.cookies.getAll() },
+            setAll(cookiesToSet) {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                response.cookies.set(name, value, options)
+              )
+            },
+          },
+        }
+      )
+      
+      // Re-exchange or just refresh to trigger setAll on the response
+      await finalSupabase.auth.getUser() 
+      
+      return response
     }
   }
 
-  // Fallback to login with error
-  return NextResponse.redirect(`${origin}/${locale}/login?error=auth_code_error`)
+  // return the user to an error page with instructions
+  return NextResponse.redirect(`${origin}/auth/auth-code-error`)
 }

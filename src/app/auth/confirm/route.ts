@@ -45,9 +45,6 @@ export async function GET(request: NextRequest) {
   }
 
   // return the user to an error page with some instructions
-  const segments = request.nextUrl.pathname.split('/')
-  const locale = segments[1] && segments[1].length === 2 ? segments[1] : 'en'
-  redirectTo.pathname = `/${locale}/login`
-  redirectTo.searchParams.set('error', 'verification_failed')
+  redirectTo.pathname = '/login?error=verification_failed'
   return NextResponse.redirect(redirectTo)
 }

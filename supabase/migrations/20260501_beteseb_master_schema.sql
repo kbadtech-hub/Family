@@ -190,7 +190,7 @@ BEGIN
   INSERT INTO public.profiles (id, full_name, email, phone)
   VALUES (
     NEW.id,
-    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', 'Anonymous User'),
+    NEW.raw_user_meta_data->>'full_name',
     NEW.email,
     NEW.phone
   );
