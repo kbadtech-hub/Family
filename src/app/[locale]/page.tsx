@@ -67,7 +67,7 @@ export default function Home() {
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-6">
             <Link 
-               href="/location-selection"
+               href="/signup"
                className="w-full sm:w-auto bg-primary text-white py-5 px-12 rounded-[2rem] font-bold text-sm uppercase tracking-widest hover:shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3"
             >
               {t('Hero.cta1')} <ArrowRight size={18} className={locale === 'ar' ? 'rotate-180' : ''} />

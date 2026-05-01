@@ -87,7 +87,6 @@ function SignupContent() {
       return;
     }
 
-    const prefLocation = searchParams.get('pref_location');
     const identifier = view === 'email' ? email : `${countryCode}${phone}`;
  
     try {
@@ -101,7 +100,7 @@ function SignupContent() {
                   full_name: fullName,
                   is_onboarded: false,
                   verification_status: 'unverified',
-                  pref_location: prefLocation || 'Local'
+                  pref_location: 'Local'
                 }
               }
             }
@@ -113,7 +112,7 @@ function SignupContent() {
                   full_name: fullName,
                   is_onboarded: false,
                   verification_status: 'unverified',
-                  pref_location: prefLocation || 'Local'
+                  pref_location: 'Local'
                 }
               }
             }

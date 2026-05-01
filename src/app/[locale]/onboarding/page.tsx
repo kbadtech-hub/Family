@@ -162,13 +162,6 @@ function OnboardingContent() {
         if (!formData.gender) return t('errors.genderRequired');
         if (!formData.location) return t('errors.locationRequired');
         
-        // Location Integrity Check
-        if (prefLocation === 'Local' && formData.location !== 'Ethiopia') {
-          return t('errors.locationMismatch');
-        }
-        if (prefLocation === 'Diaspora' && formData.location === 'Ethiopia') {
-          return t('errors.locationMismatch');
-        }
 
         if (!formData.religion) return t('errors.religionRequired');
         if (!formData.marital_status) return t('errors.maritalRequired');
