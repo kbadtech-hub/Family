@@ -326,7 +326,6 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
               {isSaving ? <Loader2 size={24} className="animate-spin" /> : <ShieldCheck size={24} />}
               {t('saveChanges')}
            </button>
-        </div>
       </div>
     </div>
   );
