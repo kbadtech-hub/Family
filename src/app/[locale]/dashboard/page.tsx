@@ -146,11 +146,20 @@ function DashboardContent() {
       
       setProfile(prev => prev ? { ...prev, is_premium: isPremium } : null);
 
-      // 5. Fetch Matches (Always allow viewing matches)
-      const { data: profiles } = await supabase.from('profiles')
+      // 5. Fetch Matches (Gender-Based Logic)
+      let matchQuery = supabase.from('profiles')
         .select('*')
         .neq('id', user.id)
-        .limit(10);
+        .eq('onboarding_completed', true);
+      
+      // Apply Gender Filter: Men see Women, Women see Men
+      if (profileData?.gender === 'Male') {
+        matchQuery = matchQuery.eq('gender', 'Female');
+      } else if (profileData?.gender === 'Female') {
+        matchQuery = matchQuery.eq('gender', 'Male');
+      }
+
+      const { data: profiles } = await matchQuery.limit(10);
 
       if (profiles) {
         setMatches(profiles.map(p => ({
