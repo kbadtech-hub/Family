@@ -14,7 +14,8 @@ import {
   Camera,
   Loader2,
   X,
-  Upload
+  Upload,
+  AlertCircle
 } from 'lucide-react';
 import { calculateStarSign } from '@/lib/abushakir';
 import { simulateIdentityVerification } from '@/lib/verification';
