@@ -45,48 +45,29 @@ body {
   word-wrap: break-word;
 }
 
-/* Mobile-specific adjustments */
-@media (max-width: 768px) {
-  h1 {
-    @apply text-3xl !important;
-  }
-  h2 {
-    @apply text-2xl !important;
-  }
-  h3 {
-    @apply text-xl !important;
-  }
-  .card-premium {
-    @apply p-6 rounded-[2rem] !important;
-  }
-  p, span, div {
-    @apply text-sm leading-relaxed;
-  }
-}
-
 .font-arabic {
   font-family: var(--font-noto-arabic), sans-serif;
 }
 
 /* Minimalism: Lighter Weights for a Professional Feel */
 h1 {
-  @apply font-semibold tracking-tighter text-4xl md:text-5xl lg:text-6xl leading-tight;
+  @apply font-semibold tracking-tighter text-3xl md:text-5xl lg:text-6xl leading-tight;
 }
 
 h2 {
-  @apply font-semibold tracking-tight text-3xl md:text-4xl leading-snug;
+  @apply font-semibold tracking-tight text-2xl md:text-4xl leading-snug;
 }
 
 h3 {
-  @apply font-medium text-2xl md:text-3xl tracking-tight;
+  @apply font-medium text-xl md:text-3xl tracking-tight;
 }
 
 h4 {
-  @apply font-medium text-xl md:text-2xl;
+  @apply font-medium text-lg md:text-2xl;
 }
 
 p, span, div {
-   @apply font-normal leading-relaxed;
+   @apply font-normal text-sm md:text-base leading-relaxed;
 }
 
 /* Branding Text - Kept slightly bolder for distinction */
@@ -108,7 +89,7 @@ p, span, div {
   }
 
   .card-premium {
-    @apply bg-[var(--card)] text-[var(--card-foreground)] rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[var(--border)] p-10 transition-all hover:shadow-[0_20px_40px_rgb(0,0,0,0.06)];
+    @apply bg-[var(--card)] text-[var(--card-foreground)] rounded-[2rem] md:rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[var(--border)] p-6 md:p-10 transition-all hover:shadow-[0_20px_40px_rgb(0,0,0,0.06)];
   }
 
   .input-premium {
