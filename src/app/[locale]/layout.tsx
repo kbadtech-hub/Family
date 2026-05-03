@@ -9,14 +9,6 @@ import {UIProvider} from "@/context/UIContext";
 import {AuthProvider} from "@/context/AuthContext";
 import Chatbot from "@/components/Chatbot";
 import SubscriptionObserver from "@/components/SubscriptionObserver";
-import { Viewport } from 'next';
-
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-};
 
 const poppins = Poppins({
   variable: "--font-poppins",
