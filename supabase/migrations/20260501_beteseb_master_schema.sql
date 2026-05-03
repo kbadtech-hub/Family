@@ -34,7 +34,7 @@ CREATE TABLE public.profiles (
   
   -- Step 2: Career & Psychology
   job_title TEXT,
-  financial_habits TEXT,
+  finance_habit TEXT,
   family_values TEXT,
   conflict_resolution TEXT,
   
