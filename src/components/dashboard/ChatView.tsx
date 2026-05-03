@@ -17,9 +17,14 @@ import {
   Languages,
   Eye,
   EyeOff,
-  CheckCircle2,
   MessageCircle,
-  ShieldCheck
+  ShieldCheck,
+  UserPlus,
+  UserCheck,
+  UserX,
+  Bell,
+  Check,
+  X as CloseIcon
 } from 'lucide-react';
 import Image from 'next/image';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -51,7 +56,10 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
   const [newMessage, setNewMessage] = useState('');
   const [currentUser, setCurrentUser] = useState<SupabaseUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [friendRequests, setFriendRequests] = useState<any[]>([]);
+  const [isFriend, setIsFriend] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const tf = useTranslations('Friendship');
 
   useEffect(() => {
     const init = async () => {
@@ -59,14 +67,39 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
       setCurrentUser(user);
 
       if (user) {
-        // Fetch potential matches (for now, other users) - Fetch for everyone to show value
+        // Fetch Matches/Friends
+        const { data: friends } = await supabase
+          .from('friendships')
+          .select(`
+            *,
+            sender:sender_id(id, full_name, avatar_url, star_sign, is_verified),
+            receiver:receiver_id(id, full_name, avatar_url, star_sign, is_verified)
+          `)
+          .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
+        
+        const friendList = (friends || [])
+          .filter(f => f.status === 'accepted')
+          .map(f => f.sender_id === user.id ? f.receiver : f.sender);
+        
+        // Also show some potential matches if no friends
         const { data: profiles } = await supabase
           .from('profiles')
           .select('*')
           .neq('id', user.id)
           .limit(20);
         
-        if (profiles) setMatches(profiles);
+        // Merge - prioritizing accepted friends
+        const merged = [...friendList, ...(profiles || []).filter(p => !friendList.find(f => f.id === p.id))];
+        setMatches(merged);
+
+        // Fetch Pending Requests
+        const { data: requests } = await supabase
+          .from('friendships')
+          .select('*, profiles:sender_id(id, full_name, avatar_url)')
+          .eq('receiver_id', user.id)
+          .eq('status', 'pending');
+        
+        if (requests) setFriendRequests(requests);
       }
       setLoading(false);
     };
@@ -75,6 +108,18 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
 
   useEffect(() => {
     if (!selectedMatch || !currentUser) return;
+
+    const checkFriendship = async () => {
+      const { data } = await supabase
+        .from('friendships')
+        .select('status')
+        .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${selectedMatch.id}),and(sender_id.eq.${selectedMatch.id},receiver_id.eq.${currentUser.id})`)
+        .single();
+      
+      setIsFriend(data?.status === 'accepted');
+    };
+
+    checkFriendship();
 
     const fetchMessages = async () => {
       const { data } = await supabase
@@ -183,6 +228,19 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
     }
   };
 
+  const handleFriendRequest = async (requestId: string, status: 'accepted' | 'rejected') => {
+    const { error } = await supabase
+      .from('friendships')
+      .update({ status })
+      .eq('id', requestId);
+    
+    if (!error) {
+      setFriendRequests(prev => prev.filter(r => r.id !== requestId));
+      // Refresh matches if accepted
+      if (status === 'accepted') window.location.reload();
+    }
+  };
+
   if (loading) return <div className="flex-1 flex items-center justify-center">{t('loading')}</div>;
 
   return (
@@ -201,53 +259,89 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
           </div>
         </div>
         
-        <div className="flex-1 overflow-y-auto p-2">
-          {matches.length === 0 ? (
-             <div className="p-8 text-center text-gray-400 text-sm">{t('noMatches')}</div>
-          ) : (
-            matches.map((match) => (
-              <button
-                key={match.id}
-                onClick={() => setSelectedMatch(match)}
-                className={`w-full flex items-center gap-4 p-4 rounded-[1.5rem] transition-all group ${
-                  selectedMatch?.id === match.id ? 'bg-primary/10 border-primary/20 bg-primary/5' : 'hover:bg-muted/30'
-                }`}
-              >
-                <div className="relative">
-                  <div className="w-12 h-12 rounded-2xl bg-secondary border-2 border-primary overflow-hidden">
-                    {match.avatar_url ? (
-                      <Image src={match.avatar_url} alt={match.full_name} width={48} height={48} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-primary"><User size={24} /></div>
-                    )}
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
-                </div>
-                <div className="flex-1 text-center md:text-left">
-                  <p className="font-bold text-accent group-hover:text-primary transition-colors flex items-center justify-center md:justify-start gap-1">
-                    {match.full_name}
-                    {match.is_verified && <CheckCircle2 size={12} className="text-primary fill-primary/10" />}
-                  </p>
-                  <p className="text-[10px] text-primary font-black uppercase tracking-widest">{match.star_sign || 'Abushakir Match'}</p>
-                </div>
-              </button>
-            ))
+        <div className="flex-1 overflow-y-auto p-2 space-y-4">
+          {/* Friend Requests Section */}
+          {friendRequests.length > 0 && (
+            <div className="px-4 py-2 space-y-3">
+               <h3 className="text-[10px] font-black text-primary uppercase tracking-widest flex items-center gap-2">
+                  <Bell size={12} /> {tf('pending')}
+               </h3>
+               {friendRequests.map(req => (
+                 <div key={req.id} className="bg-primary/5 border border-primary/10 rounded-2xl p-3 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                       <div className="w-8 h-8 rounded-lg bg-secondary overflow-hidden">
+                          <Image src={req.profiles.avatar_url || 'https://images.unsplash.com/photo-1531123897727-8f129e16fd3c?auto=format&fit=crop&q=80&w=100'} alt="" width={32} height={32} className="object-cover w-full h-full" />
+                       </div>
+                       <span className="text-xs font-bold text-accent">{req.profiles.full_name}</span>
+                    </div>
+                    <div className="flex gap-1">
+                       <button 
+                        onClick={() => handleFriendRequest(req.id, 'accepted')}
+                        className="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center hover:scale-110 transition-all"
+                       >
+                          <Check size={14} />
+                       </button>
+                       <button 
+                        onClick={() => handleFriendRequest(req.id, 'rejected')}
+                        className="w-8 h-8 bg-muted text-gray-400 rounded-lg flex items-center justify-center hover:scale-110 transition-all"
+                       >
+                          <CloseIcon size={14} />
+                       </button>
+                    </div>
+                 </div>
+               ))}
+            </div>
           )}
+
+          <div className="space-y-1">
+            <h3 className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{t('title')}</h3>
+            {matches.length === 0 ? (
+               <div className="p-8 text-center text-gray-400 text-sm">{t('noMatches')}</div>
+            ) : (
+              matches.map((match) => (
+                <button
+                  key={match.id}
+                  onClick={() => setSelectedMatch(match)}
+                  className={`w-full flex items-center gap-4 p-4 rounded-[1.5rem] transition-all group ${
+                    selectedMatch?.id === match.id ? 'bg-primary/10 border-primary/20 bg-primary/5' : 'hover:bg-muted/30'
+                  }`}
+                >
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-2xl bg-secondary border-2 border-primary overflow-hidden">
+                      {match.avatar_url ? (
+                        <Image src={match.avatar_url} alt={match.full_name} width={48} height={48} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-primary"><User size={24} /></div>
+                      )}
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+                  </div>
+                  <div className="flex-1 text-center md:text-left">
+                    <p className="font-bold text-accent group-hover:text-primary transition-colors flex items-center justify-center md:justify-start gap-1">
+                      {match.full_name}
+                      {match.is_verified && <CheckCircle2 size={12} className="text-primary fill-primary/10" />}
+                    </p>
+                    <p className="text-[10px] text-primary font-black uppercase tracking-widest">{match.star_sign || 'Abushakir Match'}</p>
+                  </div>
+                </button>
+              ))
+            )}
+          </div>
         </div>
       </aside>
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col bg-[#FDFBF9]">
         {selectedMatch ? (
-          !isPremium ? (
+          (!isPremium && !isFriend) ? (
             <div className="flex-1 flex flex-col items-center justify-center p-12 text-center space-y-6 bg-white/50 backdrop-blur-sm">
                <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center">
                   <ShieldCheck size={40} className="text-primary" />
                </div>
                <div className="max-w-sm space-y-2">
-                  <h3 className="text-2xl font-black text-accent italic tracking-tighter">{t('premiumTitle')}</h3>
+                  <h3 className="text-2xl font-black text-accent italic tracking-tighter">Premium or Friends Only</h3>
                   <p className="text-gray-500 text-sm">
-                    {t('premiumSub')}
+                    Direct messaging is for premium members or accepted friends. Send a friend request to start a conversation for free!
                   </p>
                </div>
                <button 

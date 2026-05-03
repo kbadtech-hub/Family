@@ -13,8 +13,13 @@ import {
   ShieldCheck,
   CheckCircle2,
   Calendar,
-  Sparkles
+  Sparkles,
+  UserPlus,
+  UserCheck,
+  UserClock,
+  Loader2
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 
 interface MatchDetailProps {
@@ -29,9 +34,15 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
   const [photos, setPhotos] = useState<any[]>([]);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [friendshipStatus, setFriendshipStatus] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const t = useTranslations('Friendship');
 
   useEffect(() => {
     const fetchMatchDetails = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
       // Fetch Profile including gallery_photos
       const { data: profileData } = await supabase
         .from('profiles')
@@ -43,6 +54,17 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
         setProfile(profileData);
         if (profileData.gallery_urls) {
            setPhotos(profileData.gallery_urls.map((url: string) => ({ url })));
+        }
+
+        // Check Friendship Status
+        const { data: friendship } = await supabase
+          .from('friendships')
+          .select('*')
+          .or(`and(sender_id.eq.${user.id},receiver_id.eq.${matchId}),and(sender_id.eq.${matchId},receiver_id.eq.${user.id})`)
+          .single();
+        
+        if (friendship) {
+          setFriendshipStatus(friendship.status);
         }
       }
       setLoading(false);
@@ -64,6 +86,29 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
 
   const nextPhoto = () => setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length);
   const prevPhoto = () => setCurrentPhotoIndex((prev) => (prev - 1 + allPhotos.length) % allPhotos.length);
+
+  const handleAddFriend = async () => {
+    setIsProcessing(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('friendships')
+        .insert({
+          sender_id: user.id,
+          receiver_id: matchId,
+          status: 'pending'
+        });
+
+      if (error) throw error;
+      setFriendshipStatus('pending');
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-accent/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 md:p-10 animate-in fade-in duration-300">
@@ -161,29 +206,45 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
               </div>
            </div>
 
-           <div className="pt-10">
-              {isPremium ? (
-                <button 
-                  onClick={() => onStartChat(matchId)}
-                  className="w-full bg-primary text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4"
-                >
-                   <MessageCircle size={24} />
-                   Start Connection
-                </button>
-              ) : (
-                <div className="p-8 bg-muted rounded-[2.5rem] border border-primary/20 text-center space-y-4">
-                   <ShieldCheck className="mx-auto text-primary" size={32} />
-                   <p className="text-xs font-black text-accent uppercase tracking-widest">Premium Feature</p>
-                   <p className="text-[10px] text-gray-500">Upgrade to Premium to view full details and start a conversation.</p>
-                   <button 
-                      onClick={() => window.location.reload()}
-                      className="text-primary font-black text-[10px] uppercase tracking-[0.2em] underline"
-                   >
-                      Upgrade Now
-                   </button>
-                </div>
-              )}
-           </div>
+            <div className="pt-10 space-y-4">
+               {/* Friendship Button */}
+               {friendshipStatus === 'accepted' ? (
+                 <div className="w-full bg-green-500/10 text-green-500 py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-4">
+                    <UserCheck size={24} />
+                    {t('friends')}
+                 </div>
+               ) : friendshipStatus === 'pending' ? (
+                 <div className="w-full bg-muted text-gray-400 py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-4">
+                    <UserClock size={24} />
+                    {t('requestSent')}
+                 </div>
+               ) : (
+                 <button 
+                  onClick={handleAddFriend}
+                  disabled={isProcessing}
+                  className="w-full bg-accent text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-2xl shadow-accent/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4"
+                 >
+                    {isProcessing ? <Loader2 size={24} className="animate-spin" /> : <UserPlus size={24} />}
+                    {t('addFriend')}
+                 </button>
+               )}
+
+               {isPremium || friendshipStatus === 'accepted' ? (
+                 <button 
+                   onClick={() => onStartChat(matchId)}
+                   className="w-full bg-primary text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4"
+                 >
+                    <MessageCircle size={24} />
+                    {friendshipStatus === 'accepted' ? 'Open Chat' : 'Start Connection'}
+                 </button>
+               ) : (
+                 <div className="p-8 bg-muted rounded-[2.5rem] border border-primary/20 text-center space-y-4">
+                    <ShieldCheck className="mx-auto text-primary" size={32} />
+                    <p className="text-xs font-black text-accent uppercase tracking-widest">Premium or Friends Only</p>
+                    <p className="text-[10px] text-gray-500">Upgrade to Premium or be accepted as a friend to start a conversation.</p>
+                 </div>
+               )}
+            </div>
         </div>
       </div>
     </div>
