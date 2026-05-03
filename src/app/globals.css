@@ -37,12 +37,22 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  position: relative;
+  width: 100%;
 }
 
 /* Global Text Wrap and Overflow Fixes */
 * {
   overflow-wrap: break-word;
   word-wrap: break-word;
+  box-sizing: border-box;
+}
+
+/* Fix for Mobile Input Auto-Zoom (Font must be 16px+) */
+input, 
+textarea, 
+select {
+  font-size: 16px !important;
 }
 
 .font-arabic {
