@@ -191,10 +191,15 @@ BEGIN
   INSERT INTO public.profiles (id, full_name, email, phone)
   VALUES (
     NEW.id,
-    NEW.raw_user_meta_data->>'full_name',
+    COALESCE(
+      NEW.raw_user_meta_data->>'full_name',
+      NEW.raw_user_meta_data->>'name',
+      'User'
+    ),
     NEW.email,
     NEW.phone
-  );
+  )
+  ON CONFLICT (id) DO NOTHING;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
