@@ -186,9 +186,9 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
   if (loading) return <div className="flex-1 flex items-center justify-center">{t('loading')}</div>;
 
   return (
-    <div className="flex h-[calc(100vh-200px)] bg-white rounded-[2.5rem] overflow-hidden border border-muted shadow-2xl">
+    <div className="flex flex-col md:flex-row h-auto md:h-[calc(100vh-200px)] bg-white rounded-[2.5rem] overflow-hidden border border-muted shadow-2xl">
       {/* Sidebar - Matches */}
-      <aside className="w-full md:w-80 border-r border-muted flex flex-col">
+      <aside className="w-full md:w-80 border-b md:border-b-0 md:border-r border-muted flex flex-col h-[40vh] md:h-full">
         <div className="p-6 border-b border-muted">
           <h2 className="text-xl font-bold text-accent mb-4 tracking-tighter uppercase">{t('title')}</h2>
           <div className="relative">
@@ -223,8 +223,8 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                   </div>
                   <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
                 </div>
-                <div className="flex-1 text-left">
-                  <p className="font-bold text-accent group-hover:text-primary transition-colors flex items-center gap-1">
+                <div className="flex-1 text-center md:text-left">
+                  <p className="font-bold text-accent group-hover:text-primary transition-colors flex items-center justify-center md:justify-start gap-1">
                     {match.full_name}
                     {match.is_verified && <CheckCircle2 size={12} className="text-primary fill-primary/10" />}
                   </p>
@@ -356,22 +356,22 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
           </>
           )
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-12 space-y-6">
-             <div className="w-24 h-24 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mb-4">
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-8 md:p-12 space-y-6">
+             <div className="w-20 h-20 md:w-24 md:h-24 bg-primary/10 rounded-[2rem] md:rounded-[2.5rem] flex items-center justify-center mb-4">
                 <Heart size={48} className="text-primary fill-primary/10 animate-pulse" />
              </div>
-              <div>
-                 <h3 className="text-3xl font-black text-accent mb-2 italic tracking-tighter">{t('selectMatchTitle')}</h3>
-                 <p className="text-gray-400 max-w-sm mx-auto leading-relaxed">
+              <div className="space-y-4 px-4">
+                 <h3 className="text-2xl md:text-3xl font-black text-accent mb-2 italic tracking-tighter">{t('selectMatchTitle')}</h3>
+                 <p className="text-gray-400 max-w-sm mx-auto leading-relaxed text-sm md:text-base">
                    {t('selectMatchSub')}
                  </p>
               </div>
-             <div className="grid grid-cols-2 gap-4 mt-8 opacity-40">
-                <div className="p-4 bg-white rounded-3xl border border-muted flex items-center gap-3">
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8 opacity-40 w-full max-w-md">
+                <div className="p-4 bg-white rounded-3xl border border-muted flex items-center justify-center gap-3">
                    <div className="w-8 h-8 rounded-lg bg-green-500/10 text-green-500 flex items-center justify-center"><CheckCheck size={16} /></div>
                    <span className="text-[10px] font-bold uppercase">{t('encrypted')}</span>
                 </div>
-                <div className="p-4 bg-white rounded-3xl border border-muted flex items-center gap-3">
+                <div className="p-4 bg-white rounded-3xl border border-muted flex items-center justify-center gap-3">
                    <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center"><User size={16} /></div>
                    <span className="text-[10px] font-bold uppercase">{t('private')}</span>
                 </div>

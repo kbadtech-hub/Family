@@ -50,6 +50,9 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} dir={direction} className={`${poppins.variable} ${notoEthiopic.variable} ${notoArabic.variable} antialiased`}>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+      </head>
       <body className={`min-h-screen bg-white dark:bg-accent ${locale === 'ar' ? 'font-arabic' : 'font-sans'} flex flex-col transition-colors duration-500`}>
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
