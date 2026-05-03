@@ -135,7 +135,7 @@ function OnboardingContent() {
               conflict_resolution: data.conflict_resolution || '',
               spouse_requirements: data.spouse_requirements || [],
               gallery_photos: data.gallery_urls || [],
-              partner_countries: data.partner_countries || [],
+              partner_countries: data.partner_location || [],
               partner_age_min: data.partner_age_min || 18,
               partner_age_max: data.partner_age_max || 50,
               partner_religion: data.partner_religion || '',
@@ -230,7 +230,7 @@ function OnboardingContent() {
           spouse_requirements: formData.spouse_requirements,
           gallery_urls: formData.gallery_photos,
           star_sign: formData.star_sign,
-          partner_countries: formData.partner_countries,
+          partner_location: formData.partner_countries,
           partner_age_min: formData.partner_age_min,
           partner_age_max: formData.partner_age_max,
           partner_religion: formData.partner_religion,
@@ -239,7 +239,7 @@ function OnboardingContent() {
 
         if (updateError) {
           console.error("Step Update Error:", updateError);
-          setErrorMsg(locale === 'am' ? 'መረጃውን መመዝገብ አልተቻለም። እባክዎ ደግመው ይሞክሩ።' : 'Failed to save data. Please try again.');
+          setErrorMsg(locale === 'am' ? `መረጃውን መመዝገብ አልተቻለም። (Error: ${updateError.message})` : `Failed to save data. (Error: ${updateError.message})`);
           return;
         }
       }
