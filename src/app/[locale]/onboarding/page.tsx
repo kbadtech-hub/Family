@@ -124,7 +124,7 @@ function OnboardingContent() {
               full_name: data.full_name || '',
               birth_date: data.birth_date || '',
               gender: data.gender || '',
-              location: data.location || '',
+              location: data.location?.country || data.location || '',
               religion: data.religion || '',
               marital_status: data.marital_status || '',
               has_children: data.has_children || '',
@@ -139,7 +139,7 @@ function OnboardingContent() {
               partner_age_min: data.partner_age_min || 18,
               partner_age_max: data.partner_age_max || 50,
               partner_religion: data.partner_religion || '',
-              partner_intent: data.partner_marital_pref || '',
+              partner_intent: data.partner_intent || '',
               verification_status: data.verification_status || 'unverified'
             }));
           }
@@ -211,11 +211,14 @@ function OnboardingContent() {
     setIsSubmitting(true);
     try {
       if (userId) {
-        await supabase.from('profiles').update({ 
+        // Location must be JSONB as per schema: {"country": "", "city": ""}
+        const locationJson = { country: formData.location, city: "" };
+
+        const { error: updateError } = await supabase.from('profiles').update({ 
           full_name: formData.full_name,
           birth_date: formData.birth_date,
           gender: formData.gender,
-          location: formData.location,
+          location: locationJson,
           religion: formData.religion,
           marital_status: formData.marital_status,
           has_children: formData.has_children,
@@ -231,12 +234,19 @@ function OnboardingContent() {
           partner_age_min: formData.partner_age_min,
           partner_age_max: formData.partner_age_max,
           partner_religion: formData.partner_religion,
-          partner_marital_pref: formData.partner_intent
+          partner_intent: formData.partner_intent
         }).eq('id', userId);
+
+        if (updateError) {
+          console.error("Step Update Error:", updateError);
+          setErrorMsg(locale === 'am' ? 'መረጃውን መመዝገብ አልተቻለም። እባክዎ ደግመው ይሞክሩ።' : 'Failed to save data. Please try again.');
+          return;
+        }
       }
       setStep(s => Math.min(s + 1, 7));
     } catch (e) {
       console.error(e);
+      setErrorMsg('An unexpected error occurred.');
     } finally {
       setIsSubmitting(false);
     }
@@ -249,16 +259,24 @@ function OnboardingContent() {
 
   const handleFinish = async () => {
     setIsSubmitting(true);
+    setErrorMsg('');
     try {
       if (userId) {
-        await supabase.from('profiles').update({ 
-          onboarding_completed: true,
-          is_onboarded: true 
+        const { error: finishError } = await supabase.from('profiles').update({ 
+          onboarding_completed: true
         }).eq('id', userId);
+
+        if (finishError) {
+          console.error("Finish Error:", finishError);
+          setErrorMsg(locale === 'am' ? 'ማጠናቀቅ አልተቻለም። እባክዎ ደግመው ይሞክሩ።' : 'Failed to finish onboarding. Please try again.');
+          return;
+        }
+        
         router.push('/dashboard');
       }
     } catch (e) {
       console.error(e);
+      setErrorMsg('An unexpected error occurred.');
     } finally {
       setIsSubmitting(false);
     }
@@ -521,21 +539,35 @@ function OnboardingContent() {
                      }).then(async (result) => {
                        setIsVerifying(false);
                        if (result.isMatch) {
-                         // Save verification record
-                         await supabase.from('verifications').insert({
-                           user_id: userId,
-                           id_url: formData.id_photo,
-                           selfie_url: publicUrl,
-                           id_data: result.extractedData,
-                           match_score: result.score,
-                           status: 'verified',
-                           verified_at: new Date().toISOString()
-                         });
-                         // Update profile & local state
-                         await supabase.from('profiles').update({
-                           verification_status: 'verified'
-                         }).eq('id', userId);
-                         setFormData(prev => ({ ...prev, verification_status: 'verified' }));
+                          // 1. Save verification record
+                          const { error: insError } = await supabase.from('verifications').insert({
+                            user_id: userId,
+                            id_url: formData.id_photo,
+                            selfie_url: publicUrl,
+                            id_data: result.extractedData,
+                            match_score: result.score,
+                            status: 'verified',
+                            verified_at: new Date().toISOString()
+                          });
+
+                          if (insError) {
+                             console.error("Verification Insert Error:", insError);
+                             setErrorMsg(locale === 'am' ? 'የማረጋገጫ መረጃ መመዝገብ አልተቻለም።' : 'Failed to save verification record.');
+                             return;
+                          }
+
+                          // 2. Update profile status
+                          const { error: upError } = await supabase.from('profiles').update({
+                            verification_status: 'verified'
+                          }).eq('id', userId);
+
+                          if (upError) {
+                             console.error("Profile Status Update Error:", upError);
+                             setErrorMsg(locale === 'am' ? 'የፕሮፋይል ሁኔታን መቀየር አልተቻለም።' : 'Failed to update profile status.');
+                             return;
+                          }
+
+                          setFormData(prev => ({ ...prev, verification_status: 'verified' }));
                        } else {
                          setFormData(prev => ({ ...prev, verification_status: 'rejected' }));
                          setErrorMsg(result.reason || t('idVerification.rejected'));

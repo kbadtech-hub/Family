@@ -145,6 +145,19 @@ CREATE TABLE public.support_tickets (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 8. IDENTITY VERIFICATION
+CREATE TABLE public.verifications (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  id_url TEXT NOT NULL,
+  selfie_url TEXT NOT NULL,
+  id_data JSONB DEFAULT '{}',
+  match_score NUMERIC,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'verified', 'rejected')),
+  verified_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- ==========================================
 -- PERFORMANCE & INTEGRITY
 -- ==========================================
@@ -165,10 +178,14 @@ ALTER TABLE public.lessons ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.support_tickets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.verifications ENABLE ROW LEVEL SECURITY;
 
 -- Basic Policies
 CREATE POLICY "Public Profiles Access" ON public.profiles FOR SELECT USING (true);
 CREATE POLICY "Users Own Profile Update" ON public.profiles FOR UPDATE USING (auth.uid() = id);
+
+CREATE POLICY "Users Own Verification Access" ON public.verifications FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users Own Verification Insert" ON public.verifications FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Community Posts Access" ON public.community_posts FOR SELECT USING (true);
 CREATE POLICY "Community Posts Insert" ON public.community_posts FOR INSERT WITH CHECK (auth.uid() = author_id);
