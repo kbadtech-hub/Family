@@ -482,14 +482,33 @@
       "Pakistan": "Paakistaan"
     }
   },
+  "Academy": {
+    "loading": "Leenjiiwwan fe'amaa jiru...",
+    "learnTitle": "Baradhu. Wal-qunnami. Guddadhu.",
+    "learnSub": "Barnoota fi qajeelfama ijaarsa gaa'elaa fi maatii irratti ogeessotaan qophaa'an ni argattu.",
+    "duration": "Yeroo",
+    "description": "Ibsa",
+    "actionableSteps": "Tarkaanfiiwwan",
+    "selectLesson": "Barumsa eegaluuf filadhu.",
+    "availableLessons": "Leenjiiwwan jiran ({count})",
+    "tagline": "Akkaadaamii Beteseb",
+    "premiumOnly": "Piriimiyaamii Qofa",
+    "general": "Waliigala"
+  },
   "Classes": {
     "hero": {
       "tagline": "Akkaadaamii Beteseb",
       "title1": "Maaddii Beekumsaa—",
       "title2": "Jaalala beekumsaan, gaa'ela ogummaan!",
-      "subtitle": "Gaa'elli carraadhaan kan milkaa'u osoo hin taane, beekumsaa fi of-eeggannoodhaan kan ijaaramu kutaa jireenyaati. Gaa'elli akka iddoo dhaabaa bareedaati; yoo hin kunuunfaminii fi bishaan hin obaasamin hin lalammu. Jaalalli dhugaa miira qofa osoo hin taane murtii guyyaa guyyaan haaromfamudha. Nuti maaddii kana irratti, hiriyaa jireenyaa filachuu irraa jalqabee, hanga maatii jabaa obomboleettiin hin dhabamsiifne ijaaruutti ogummoota barootaa karaa ammayyaatiin isiniif qopheessineerra.",
+      "subtitle": "Gaa'elli carraadhaan kan milkaa'u osoo hin taane, beekumsaa fi of-eeggannoodhaan kan iجاaramu kutaa jireenyaati. Gaa'elli akka iddoo dhaabaa bareedaati; yoo hin kunuunfaminii fi bishaan hin obaasamin hin lalammu. Jaalalli dhugaa miira qofa osoo hin taane murtii guyyaa guyyaan haaromfamudha. Nuti maaddii kana irratti, hiriyaa jireenyaa filachuu irraa jalqabee, hanga maatii jabaa obomboleettiin hin dhabamsiifne ijaaruutti ogummoota barootaa karaa ammayyaatiin isiniif qopheessineerra.",
       "cta": "Barachuu Jalqabaa"
     },
+    "login": "Seenaa",
+    "curriculum": "Kilaasota",
+    "featured": "Kilaasota Filatamoo",
+    "viewAll": "Kilaasota hunda ilaali",
+    "footerMeta": "ACADEMY'N JOIN GODHAA",
+    "footerCTA": "Beteseb Join godhaa",
     "list": {
       "class1": {
         "title": "Filannoo Hiriyaa",

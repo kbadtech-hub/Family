@@ -154,7 +154,9 @@
     "premiumOnly": "ይህ ፊቸር ለፕሪሚየም አባላት ብቻ ነው",
     "adminOnly": "ሊንክ መጫን ለአድሚን ብቻ የተፈቀደ ነው",
     "unsafeContent": "ጽሁፍዎ አደገኛ ይዘት ስላለው ሊወጣ አይችልም።",
-    "completeProfile": "ፕሮፋይል ይሙሉ"
+    "completeProfile": "ፕሮፋይል ይሙሉ",
+    "like": "ወድጄዋለሁ",
+    "reply": "መልስ ስጥ"
   },
   "Chat": {
     "loading": "የቤተሰብ ቻት በመጫን ላይ...",
@@ -184,7 +186,25 @@
     "description": "መግለጫ",
     "actionableSteps": "ተግባራዊ እርምጃዎች",
     "selectLesson": "ጉዞዎን ለመጀመር ትምህርት ይምረጡ።",
-    "availableLessons": "ያሉ ትምህርቶች ({count})"
+    "availableLessons": "ያሉ ትምህርቶች ({count})",
+    "tagline": "ቤተሰብ አካዳሚ",
+    "premiumOnly": "ለፕሪሚየም ብቻ",
+    "general": "ጠቅላላ"
+  },
+  "Classes": {
+    "hero": {
+      "tagline": "ቤተሰብ አካዳሚ",
+      "title1": "የግንኙነት ጥበብን",
+      "title2": "ይማሩ",
+      "subtitle": "ስለ ባህላዊ ቅርስ፣ የቤተሰብ እሴቶች እና ዘመናዊ ግንኙነት ከባለሙያዎች የተዘጋጁ ትምህርቶች።",
+      "cta": "መማር ጀምር"
+    },
+    "curriculum": "ስርአተ ትምህርት",
+    "featured": "ልዩ ትምህርቶች",
+    "viewAll": "ሁሉንም ትምህርቶች ይመልከቱ",
+    "footerMeta": "አካዳሚውን ይቀላቀሉ",
+    "footerCTA": "ቤተሰብን ይቀላቀሉ",
+    "login": "ግባ"
   },
   "Footer": {
     "tagline": "ቤተሰብ | Beteseb",

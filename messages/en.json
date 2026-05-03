@@ -154,7 +154,9 @@
     "premiumOnly": "This feature is for premium members only",
     "adminOnly": "Posting links is allowed for Admins only",
     "unsafeContent": "Your post contains unsafe content.",
-    "completeProfile": "Complete Profile"
+    "completeProfile": "Complete Profile",
+    "like": "Like",
+    "reply": "Reply"
   },
   "Chat": {
     "loading": "Loading family chat...",
@@ -184,7 +186,25 @@
     "description": "Description",
     "actionableSteps": "Actionable Steps",
     "selectLesson": "Select a lesson to begin your journey.",
-    "availableLessons": "Available Lessons ({count})"
+    "availableLessons": "Available Lessons ({count})",
+    "tagline": "Beteseb Academy",
+    "premiumOnly": "Premium Only",
+    "general": "General"
+  },
+  "Classes": {
+    "hero": {
+      "tagline": "Beteseb Academy",
+      "title1": "Master the Art of",
+      "title2": "Habesha Relationships",
+      "subtitle": "Expert-led courses on cultural heritage, family values, and modern dating for the Ethiopian community.",
+      "cta": "Start Learning"
+    },
+    "curriculum": "Curriculum",
+    "featured": "Featured Classes",
+    "viewAll": "View All Lessons",
+    "footerMeta": "JOIN THE ACADEMY",
+    "footerCTA": "Join Beteseb",
+    "login": "Login"
   },
   "Footer": {
     "tagline": "Beteseb - Global Habesha Marriage Matching",

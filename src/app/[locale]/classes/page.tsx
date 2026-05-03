@@ -25,20 +25,20 @@ export default function ClassesPage() {
       <section className="py-32 px-6 flex flex-col items-center text-center space-y-8 bg-[radial-gradient(circle_at_bottom_right,_var(--primary)_0%,_transparent_40%)] bg-opacity-5">
         <div className="inline-flex items-center gap-2 px-6 py-2 bg-primary/10 rounded-full text-primary font-black text-xs tracking-widest uppercase">
            <Sparkles size={16} className="fill-primary" />
-           {t('hero.tagline') || "Beteseb Academy"}
+           {t('hero.tagline')}
         </div>
         <h1 className="text-5xl md:text-7xl font-black text-accent tracking-tighter max-w-4xl">
-          {t('hero.title1') || "Master the Art of"} <br /> <span className="text-primary italic underline decoration-primary/20">{t('hero.title2') || "Habesha Relationships"}</span>
+          {t('hero.title1')} <br /> <span className="text-primary italic underline decoration-primary/20">{t('hero.title2')}</span>
         </h1>
         <p className="text-xl text-gray-500 max-w-2xl leading-relaxed font-medium italic">
-          {t('hero.subtitle') || "Expert-led courses on cultural heritage, family values, and modern dating for the Ethiopian community."}
+          {t('hero.subtitle')}
         </p>
         <div className="flex flex-col md:flex-row gap-4 pt-6">
            <Link href="/signup" className="btn-primary text-xl py-5 px-16 shadow-2xl shadow-primary/20 flex items-center gap-3">
-              {t('hero.cta') || "Start Learning"} <ArrowRight size={24} className={locale === 'ar' ? 'rotate-180' : ''} />
+              {t('hero.cta')} <ArrowRight size={24} className={locale === 'ar' ? 'rotate-180' : ''} />
            </Link>
            <Link href="/login" className="bg-white text-accent border-2 border-accent/10 text-xl py-5 px-16 rounded-[2rem] font-black uppercase tracking-tighter hover:bg-muted transition-all">
-              {locale === 'am' ? 'ግባ' : 'Login'}
+              {t('login')}
            </Link>
         </div>
       </section>
@@ -47,11 +47,11 @@ export default function ClassesPage() {
       <section className="py-24 px-8 max-w-7xl mx-auto">
          <div className="flex justify-between items-end mb-16">
             <div className="space-y-4">
-               <h2 className="text-sm font-black text-primary uppercase tracking-[0.4em]">Curriculum</h2>
-               <h3 className="text-4xl font-black text-accent tracking-tighter uppercase">Featured Classes</h3>
+               <h2 className="text-sm font-black text-primary uppercase tracking-[0.4em]">{t('curriculum')}</h2>
+               <h3 className="text-4xl font-black text-accent tracking-tighter uppercase">{t('featured')}</h3>
             </div>
             <Link href="/dashboard?tab=workshops" className="text-primary font-black text-xs uppercase tracking-widest underline decoration-primary/20 hover:text-accent transition-colors">
-               View All Lessons
+               {t('viewAll')}
             </Link>
          </div>
 
@@ -64,14 +64,14 @@ export default function ClassesPage() {
                       <Play size={32} className="fill-current" />
                    </div>
                    
-                   <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2">{c.category || "General"}</p>
+                   <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2">{c.category || t('general')}</p>
                    <h3 className="text-2xl font-black text-accent mb-4 tracking-tighter uppercase line-clamp-1">{c.title}</h3>
                    <p className="text-gray-500 text-sm leading-relaxed mb-8 line-clamp-2 italic font-medium">{c.description}</p>
                    
                    <div className="pt-6 border-t border-muted/50 flex items-center justify-between">
                       <div className="flex items-center gap-3 text-[10px] font-black text-accent italic uppercase tracking-widest">
                          <ShieldCheck size={14} className="text-primary" />
-                         Premium Only
+                         {t('premiumOnly')}
                       </div>
                       <Link href="/dashboard?tab=workshops" className="p-3 bg-muted rounded-xl text-primary hover:bg-primary hover:text-white transition-all">
                          <ArrowRight size={18} />
@@ -143,9 +143,9 @@ export default function ClassesPage() {
 
       {/* Footer Meta */}
       <section className="py-32 px-8 text-center bg-white">
-         <p className="text-xs font-black text-accent/10 uppercase tracking-[1em] mb-12">{t('footerMeta') || "JOIN THE ACADEMY"}</p>
+         <p className="text-xs font-black text-accent/10 uppercase tracking-[1em] mb-12">{t('footerMeta')}</p>
          <Link href="/signup" className="inline-flex items-center gap-4 btn-primary text-2xl py-6 px-20 group shadow-2xl shadow-primary/20">
-            {t('footerCTA') || "Join Beteseb"} <ArrowRight className={`group-hover:translate-x-3 transition-transform duration-300 ${locale === 'ar' ? 'rotate-180' : ''}`} />
+            {t('footerCTA')} <ArrowRight className={`group-hover:translate-x-3 transition-transform duration-300 ${locale === 'ar' ? 'rotate-180' : ''}`} />
          </Link>
       </section>
     </div>

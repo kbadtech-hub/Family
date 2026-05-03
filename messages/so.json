@@ -344,6 +344,19 @@
       "locationMismatch": "Goobta aad dooratay inaad ka soo gashid iyo dalka aad profile-kaaga ku buuxisay isma laha. Fadlan sax."
     }
   },
+  "Academy": {
+    "loading": "Soo rarida casharrada...",
+    "learnTitle": "Baro. Ku xirnow. Kor.",
+    "learnSub": "Ka hel casharro iyo hagitaan gaar ah oo ku saabsan dhisidda xiriirka, qiyamka qoyska, iyo hiddaha dhaqanka Itoobiya oo ka yimid khubaro la aqoonsan yahay.",
+    "duration": "Muddada",
+    "description": "Sharaxaada",
+    "actionableSteps": "Tallaabooyinka Waxqabadka",
+    "selectLesson": "Dooro cashar si aad u bilowdo safarkaaga.",
+    "availableLessons": "Casharrada la heli karo ({count})",
+    "tagline": "Akadeemiyada Beteseb",
+    "premiumOnly": "Premium kaliya",
+    "general": "Guud"
+  },
   "Classes": {
     "hero": {
       "tagline": "Akadeemiyada Beteseb",
@@ -352,6 +365,12 @@
       "subtitle": "Guurku maaha mid si kadis ah lagu gaaro, balse waa cutub nolosha ka mid ah oo lagu dhiso aqoon iyo daryeel. Guurku wuxuu u eg yahay beer qurux badan; haddii aan la beerin lana waraabin, ma kobcayso. Jacaylka dhabta ahi maaha dareen uun, ee waa go’aan maalin walba cusboonaada. Miiskan waxaan idiinku diyaarinay xigmadda wakhtiyada, laga bilaabo farsamada doorashada lammaanaha nolosha ilaa dhisidda qoys adag oo aanay duufaannadu ka adkaan karin, si casri ah.",
       "cta": "Bilow Barashada"
     },
+    "login": "Gali",
+    "curriculum": "Manhajka",
+    "featured": "Xiisado gaar ah",
+    "viewAll": "Arag dhammaan xiisadaha",
+    "footerMeta": "KU BIIR AKADEEMIYADA",
+    "footerCTA": "Ku biir Beteseb",
     "list": {
       "class1": {
         "title": "Doorashada Lammaanaha",

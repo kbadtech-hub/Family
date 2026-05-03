@@ -57,7 +57,7 @@ export default function LessonsView({ isPremium }: { isPremium: boolean }) {
       <div className="bg-accent rounded-[3rem] p-10 md:p-16 text-white relative overflow-hidden shadow-2xl">
          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -mr-32 -mt-32" />
          <div className="relative z-10 space-y-6 max-w-2xl">
-            <h2 className="text-sm font-black text-primary uppercase tracking-[0.4em]">Beteseb Academy</h2>
+            <h2 className="text-sm font-black text-primary uppercase tracking-[0.4em]">{t('tagline')}</h2>
             <h3 className="text-4xl md:text-6xl font-black tracking-tighter leading-none italic">
                {t('learnTitle')}
             </h3>

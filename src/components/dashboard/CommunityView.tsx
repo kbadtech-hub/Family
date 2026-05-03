@@ -52,6 +52,8 @@ export default function CommunityView({
   const [isUploading, setIsUploading] = useState(false);
   const [loading, setLoading] = useState(true);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -66,6 +68,20 @@ export default function CommunityView({
 
     fetchPosts();
   }, []);
+
+  const handleJoinDiscussion = () => {
+    textareaRef.current?.focus();
+    textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  const toggleLike = (postId: string) => {
+    setLikedPosts(prev => {
+      const next = new Set(prev);
+      if (next.has(postId)) next.delete(postId);
+      else next.add(postId);
+      return next;
+    });
+  };
 
   const handlePostSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,7 +163,10 @@ export default function CommunityView({
                {t('topicQuestion')}
             </h3>
             <p className="text-white/70 text-sm font-medium">{t('topicJoin')}</p>
-            <button className="bg-white text-primary px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-105 transition-all">
+            <button 
+              onClick={handleJoinDiscussion}
+              className="bg-white text-primary px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-105 transition-all"
+            >
                {t('joinBtn')}
             </button>
          </div>
@@ -178,6 +197,7 @@ export default function CommunityView({
           </div>
           <form onSubmit={handlePostSubmit} className="flex-1 space-y-4">
             <textarea 
+              ref={textareaRef}
               value={newPostContent}
               onChange={(e) => setNewPostContent(e.target.value)}
               placeholder={t('newPostPlaceholder')} 
@@ -302,6 +322,23 @@ export default function CommunityView({
                   </div>
                </div>
             )}
+
+            <div className="flex items-center gap-6 mt-4 pt-4 border-t border-border">
+               <button 
+                onClick={() => toggleLike(post.id)}
+                className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${likedPosts.has(post.id) ? 'text-primary scale-110' : 'text-gray-400 hover:text-primary'}`}
+               >
+                  <Sparkles size={14} className={likedPosts.has(post.id) ? 'fill-primary' : ''} />
+                  {t('like')} {likedPosts.has(post.id) ? '(1)' : ''}
+               </button>
+               <button 
+                onClick={handleJoinDiscussion}
+                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-primary transition-all"
+               >
+                  <Send size={14} />
+                  {t('reply')}
+               </button>
+            </div>
           </article>
         ))}
       </div>
