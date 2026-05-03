@@ -15,7 +15,7 @@ import {
   UserPlus,
   UserCheck,
   UserClock,
-  Loader2
+  Loader2,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
