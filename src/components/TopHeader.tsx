@@ -62,17 +62,8 @@ export default function TopHeader() {
 
   return (
     <div className="bg-accent text-white py-2 px-6 flex flex-col md:flex-row justify-between items-center text-[10px] font-bold uppercase tracking-widest border-b border-white/5 relative z-[110]">
-      {/* Contact Info */}
-      <div className="flex items-center gap-6 opacity-60">
-        <div className="flex items-center gap-2 hover:text-primary transition-colors cursor-pointer">
-          <Mail size={12} />
-          <span>{t('email')}</span>
-        </div>
-        <div className="flex items-center gap-2 hover:text-primary transition-colors cursor-pointer">
-          <Phone size={12} />
-          <span>{t('phone')}</span>
-        </div>
-      </div>
+      {/* Left side spacer for balance if no suggestion */}
+      {!suggestion && <div className="hidden md:block w-32" />}
 
       {/* Auto-Detection Suggestion */}
       {suggestion && (
@@ -94,11 +85,25 @@ export default function TopHeader() {
       )}
 
       {/* Social Links / Mini Nav */}
-      <div className="flex items-center gap-6 opacity-80 hidden md:flex">
-         <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors text-[9px]">TIKTOK</a>
-         <a href="https://t.me" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors text-[9px]">TELEGRAM</a>
-         <div className="w-px h-3 bg-white/10 mx-2" />
-         <span className="text-primary italic tracking-tight font-black">Beteseb Official</span>
+      <div className="flex items-center gap-4 md:gap-6 opacity-80">
+         <div className="flex items-center gap-4 border-r border-white/10 pr-6 mr-2 hidden md:flex">
+            <a href="https://www.youtube.com/@betesebhub" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-1.5 group">
+               <span className="text-[9px] group-hover:underline">YOUTUBE</span>
+            </a>
+            <a href="https://wa.me/447347663254" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-1.5 group">
+               <span className="text-[9px] group-hover:underline">WHATSAPP</span>
+            </a>
+            <a href="https://facebook.com/betesebhub" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-1.5 group">
+               <span className="text-[9px] group-hover:underline">FACEBOOK</span>
+            </a>
+            <a href="https://tiktok.com/@betesebhub" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-1.5 group">
+               <span className="text-[9px] group-hover:underline">TIKTOK</span>
+            </a>
+            <a href="https://t.me/betesebhub" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-1.5 group">
+               <span className="text-[9px] group-hover:underline">TELEGRAM</span>
+            </a>
+         </div>
+         <span className="text-primary italic tracking-tight font-black whitespace-nowrap">Beteseb Official</span>
       </div>
     </div>
   );
