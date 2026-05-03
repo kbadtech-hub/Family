@@ -67,6 +67,8 @@ function DashboardContent() {
   const [isTrialExpired, setIsTrialExpired] = useState(false);
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [friendshipStatuses, setFriendshipStatuses] = useState<Record<string, string>>({});
 
   const languages = [
     { id: 'en', label: 'English' },
@@ -174,10 +176,34 @@ function DashboardContent() {
       // 6. Fetch Pending Friend Requests Count
       const { count } = await supabase.from('friendships')
         .select('*', { count: 'exact', head: true })
-        .eq('friend_id', user.id)
+        .eq('receiver_id', user.id)
         .eq('status', 'pending');
       
       setPendingRequestsCount(count || 0);
+
+      // 7. Fetch Friend Suggestions
+      const { data: suggestionsData } = await supabase
+        .from('profiles')
+        .select('id, full_name, avatar_url, role')
+        .neq('id', user.id)
+        .limit(10);
+      
+      if (suggestionsData) {
+        // Check friendship status for suggestions
+        const { data: friendshipData } = await supabase
+          .from('friendships')
+          .select('*')
+          .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
+        
+        const statuses: Record<string, string> = {};
+        friendshipData?.forEach(f => {
+          const otherId = f.sender_id === user.id ? f.receiver_id : f.sender_id;
+          statuses[otherId] = f.status;
+        });
+        
+        setFriendshipStatuses(statuses);
+        setSuggestions(suggestionsData.filter(s => !statuses[s.id] || statuses[s.id] === 'rejected'));
+      }
     };
     fetchData();
   }, []);
@@ -316,7 +342,53 @@ function DashboardContent() {
         )}
 
         {activeTab === 'dashboard' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          <div className="space-y-10">
+            {/* Friend Suggestions Carousel */}
+            {suggestions.length > 0 && (
+              <section className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                 <div className="flex justify-between items-center mb-6">
+                   <h2 className="text-xl font-black uppercase tracking-tighter text-[#0F172A] flex items-center gap-2">
+                      <Users size={20} className="text-primary" /> {t('suggestions.title')}
+                   </h2>
+                 </div>
+                 <div className="flex overflow-x-auto pb-6 gap-6 no-scrollbar -mx-2 px-2">
+                   {suggestions.map((person) => (
+                     <div key={person.id} className="flex-shrink-0 w-64 bg-white p-6 rounded-[2.5rem] border border-border shadow-sm hover:shadow-xl transition-all duration-500 group">
+                       <div className="relative w-20 h-20 mx-auto mb-4 rounded-2xl overflow-hidden bg-muted border border-border">
+                          {person.avatar_url ? (
+                            <Image src={person.avatar_url} alt={person.full_name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-primary/20"><UserCircle size={40} /></div>
+                          )}
+                       </div>
+                       <h3 className="font-black text-sm text-[#0F172A] text-center mb-1">{person.full_name}</h3>
+                       <p className="text-[10px] text-primary font-black uppercase tracking-widest text-center mb-4">{person.role}</p>
+                       
+                       <button 
+                         onClick={async () => {
+                           const { data: { user } } = await supabase.auth.getUser();
+                           if (!user) return;
+                           const { error } = await supabase.from('friendships').insert({
+                             sender_id: user.id,
+                             receiver_id: person.id,
+                             status: 'pending'
+                           });
+                           if (!error) {
+                             setFriendshipStatuses(prev => ({ ...prev, [person.id]: 'pending' }));
+                             setSuggestions(prev => prev.filter(s => s.id !== person.id));
+                           }
+                         }}
+                         className="w-full bg-primary/10 text-primary py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all"
+                       >
+                          {t('suggestions.addFriend')}
+                       </button>
+                     </div>
+                   ))}
+                 </div>
+              </section>
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             <div className="lg:col-span-2 space-y-10">
               <section>
                 <div className="flex justify-between items-center mb-8">
@@ -401,6 +473,7 @@ function DashboardContent() {
                 )}
               </div>
             </aside>
+            </div>
           </div>
         )}
 

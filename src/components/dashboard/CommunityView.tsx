@@ -13,15 +13,23 @@ import {
   Image as ImageIcon,
   Link as LinkIcon,
   X,
-  Camera
+  Camera,
+  Heart,
+  ThumbsDown,
+  MessageSquare,
+  Share2,
+  ChevronDown,
+  MessageCircle,
+  MoreVertical
 } from 'lucide-react';
 
 interface Post {
   id: string;
   author_id: string;
   content: string;
-  is_approved: boolean;
-  created_at: string;
+  topic: string;
+  heart_count: number;
+  dislike_count: number;
   media_url: string | null;
   media_type: 'image' | 'video' | 'link' | 'none';
   profiles: {
@@ -31,6 +39,20 @@ interface Post {
     is_verified: boolean;
     role: string;
   } | null;
+}
+
+interface Comment {
+  id: string;
+  post_id: string;
+  author_id: string;
+  parent_id: string | null;
+  content: string;
+  created_at: string;
+  profiles: {
+    full_name: string;
+    avatar_url: string;
+  } | null;
+  replies?: Comment[];
 }
 
 export default function CommunityView({ 
@@ -51,37 +73,122 @@ export default function CommunityView({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [selectedTopic, setSelectedTopic] = useState('General');
+  const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
+  const [commentContent, setCommentContent] = useState('');
+  const [postComments, setPostComments] = useState<Record<string, Comment[]>>({});
+  const [replyingToId, setReplyingToId] = useState<string | null>(null);
+  
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+  const [userReactions, setUserReactions] = useState<Record<string, 'heart' | 'dislike' | null>>({});
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      const { data } = await supabase
+    const fetchData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { data: postsData } = await supabase
         .from('community_posts')
         .select('*, profiles(full_name, avatar_url, star_sign, is_verified, role)')
         .order('created_at', { ascending: false });
       
-      if (data) setPosts(data as any[]);
+      if (postsData) setPosts(postsData as any[]);
+
+      if (user) {
+        const { data: reactionsData } = await supabase
+          .from('post_reactions')
+          .select('post_id, type')
+          .eq('user_id', user.id);
+        
+        const reactions: Record<string, 'heart' | 'dislike' | null> = {};
+        reactionsData?.forEach(r => reactions[r.post_id] = r.type as any);
+        setUserReactions(reactions);
+      }
+      
       setLoading(false);
     };
 
-    fetchPosts();
+    fetchData();
   }, []);
+
+  const fetchComments = async (postId: string) => {
+    const { data } = await supabase
+      .from('post_comments')
+      .select('*, profiles(full_name, avatar_url)')
+      .eq('post_id', postId)
+      .order('created_at', { ascending: true });
+    
+    if (data) {
+      // Organize into nested structure
+      const commentMap: Record<string, Comment> = {};
+      const roots: Comment[] = [];
+      
+      data.forEach(c => {
+        commentMap[c.id] = { ...c, replies: [] };
+      });
+      
+      data.forEach(c => {
+        if (c.parent_id && commentMap[c.parent_id]) {
+          commentMap[c.parent_id].replies?.push(commentMap[c.id]);
+        } else {
+          roots.push(commentMap[c.id]);
+        }
+      });
+      
+      setPostComments(prev => ({ ...prev, [postId]: roots }));
+    }
+  };
+
+  const handleReaction = async (postId: string, type: 'heart' | 'dislike') => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const currentReaction = userReactions[postId];
+    
+    if (currentReaction === type) {
+      // Remove reaction
+      await supabase.from('post_reactions').delete().eq('post_id', postId).eq('user_id', user.id);
+      setUserReactions(prev => ({ ...prev, [postId]: null }));
+    } else {
+      // Add or update reaction
+      if (currentReaction) {
+        await supabase.from('post_reactions').delete().eq('post_id', postId).eq('user_id', user.id);
+      }
+      await supabase.from('post_reactions').insert({ post_id: postId, user_id: user.id, type });
+      setUserReactions(prev => ({ ...prev, [postId]: type }));
+    }
+    
+    // Refresh post counts (simplified for demo, usually use RPC or triggers)
+    const { data } = await supabase.from('community_posts').select('heart_count, dislike_count').eq('id', postId).single();
+    if (data) {
+      setPosts(prev => prev.map(p => p.id === postId ? { ...p, ...data } : p));
+    }
+  };
+
+  const handleCommentSubmit = async (postId: string) => {
+    if (!commentContent.trim()) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase.from('post_comments').insert({
+      post_id: postId,
+      author_id: user.id,
+      parent_id: replyingToId,
+      content: commentContent.trim()
+    });
+
+    if (!error) {
+      setCommentContent('');
+      setReplyingToId(null);
+      fetchComments(postId);
+    }
+  };
 
   const handleJoinDiscussion = () => {
     textareaRef.current?.focus();
     textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
-  const toggleLike = (postId: string) => {
-    setLikedPosts(prev => {
-      const next = new Set(prev);
-      if (next.has(postId)) next.delete(postId);
-      else next.add(postId);
-      return next;
-    });
-  };
 
   const handlePostSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,40 +210,50 @@ export default function CommunityView({
 
     setIsSubmitting(true);
     
-    // AI Moderation Simulation
-    const forbiddenWords = ['hate', 'violence', 'scam', 'spam', 'rude'];
-    const isUnsafe = forbiddenWords.some(word => newPostContent.toLowerCase().includes(word));
-    
-    if (isUnsafe) {
-      alert(t('unsafeContent'));
-      setIsSubmitting(false);
-      return;
+    // AI Moderation API Call
+    try {
+      const response = await fetch(`/${locale}/api/ai/moderate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: newPostContent.trim() })
+      });
+      const safety = await response.json();
+      
+      if (!safety.approved) {
+        alert(`${t('unsafeContent')}: ${safety.reason}`);
+        setIsSubmitting(false);
+        return;
+      }
+    } catch (e) {
+      console.error("AI Moderation failed, using fallback", e);
     }
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-      const { error } = await supabase.from('community_posts').insert({
-        author_id: user.id,
-        content: newPostContent.trim(),
-        media_url: mediaUrl,
-        media_type: mediaType === 'none' && hasLinks ? 'link' : mediaType,
-        is_approved: true
-      });
+    const { error } = await supabase.from('community_posts').insert({
+      author_id: user.id,
+      content: newPostContent.trim(),
+      topic: selectedTopic,
+      media_url: mediaUrl,
+      media_type: mediaType === 'none' && hasLinks ? 'link' : mediaType,
+      is_approved: true
+    });
 
-      if (!error) {
-        setNewPostContent('');
-        setMediaUrl(null);
-        setMediaType('none');
-        // Re-fetch posts
-        const { data } = await supabase
-          .from('community_posts')
-          .select('*, profiles(full_name, avatar_url, star_sign, is_verified, role)')
-          .order('created_at', { ascending: false });
-        if (data) setPosts(data as any[]);
-      }
+    if (!error) {
+      setNewPostContent('');
+      setMediaUrl(null);
+      setMediaType('none');
+      // Re-fetch posts
+      const { data } = await supabase
+        .from('community_posts')
+        .select('*, profiles(full_name, avatar_url, star_sign, is_verified, role)')
+        .order('created_at', { ascending: false });
+      if (data) setPosts(data as any[]);
+    }
     setIsSubmitting(false);
   };
+
 
   if (loading) return <div className="p-12 text-center text-foreground/40 font-black uppercase tracking-widest text-xs">{t('loadingFeed')}</div>;
 
@@ -196,6 +313,18 @@ export default function CommunityView({
             <User size={24} />
           </div>
           <form onSubmit={handlePostSubmit} className="w-full flex-1 space-y-4">
+            <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+               {['Marriage', 'Parenting', 'Family Finance', 'General'].map(topic => (
+                 <button
+                   key={topic}
+                   type="button"
+                   onClick={() => setSelectedTopic(topic)}
+                   className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border ${selectedTopic === topic ? 'bg-primary text-white border-primary shadow-lg' : 'bg-muted text-gray-500 border-border hover:border-primary/50'}`}
+                 >
+                    {t(`topics.${topic}`)}
+                 </button>
+               ))}
+            </div>
             <textarea 
               ref={textareaRef}
               value={newPostContent}
@@ -292,9 +421,14 @@ export default function CommunityView({
                       {post.profiles?.full_name || t('anonymousUser')}
                       {post.profiles?.is_verified && <CheckCircle2 size={12} className="text-primary fill-primary/10" />}
                     </h4>
-                    <p className="text-[10px] text-primary font-black uppercase tracking-widest">{post.profiles?.star_sign || t('memberBadge')}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                       <p className="text-[10px] text-primary font-black uppercase tracking-widest">{post.profiles?.star_sign || t('memberBadge')}</p>
+                       <span className="w-1 h-1 bg-border rounded-full" />
+                       <p className="text-[8px] bg-primary/5 text-primary px-2 py-0.5 rounded-full font-black uppercase tracking-widest">{t(`topics.${post.topic || 'General'}`)}</p>
+                    </div>
                   </div>
               </div>
+              <button className="text-gray-400 hover:text-primary transition-colors p-2"><MoreVertical size={16} /></button>
             </div>
 
             <div className="mb-6 pl-4 border-l-4 border-primary/20">
@@ -323,25 +457,131 @@ export default function CommunityView({
                </div>
             )}
 
-            <div className="flex items-center gap-6 mt-4 pt-4 border-t border-border">
+            <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
+               <div className="flex items-center gap-6">
+                 <button 
+                  onClick={() => handleReaction(post.id, 'heart')}
+                  className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${userReactions[post.id] === 'heart' ? 'text-primary scale-110' : 'text-gray-400 hover:text-primary'}`}
+                 >
+                    <Heart size={16} className={userReactions[post.id] === 'heart' ? 'fill-primary' : ''} />
+                    {post.heart_count || 0}
+                 </button>
+                 <button 
+                  onClick={() => handleReaction(post.id, 'dislike')}
+                  className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${userReactions[post.id] === 'dislike' ? 'text-red-500 scale-110' : 'text-gray-400 hover:text-red-500'}`}
+                 >
+                    <ThumbsDown size={16} className={userReactions[post.id] === 'dislike' ? 'fill-red-500' : ''} />
+                    {post.dislike_count || 0}
+                 </button>
+                 <button 
+                  onClick={() => {
+                    if (activeCommentPostId === post.id) setActiveCommentPostId(null);
+                    else {
+                      setActiveCommentPostId(post.id);
+                      fetchComments(post.id);
+                    }
+                  }}
+                  className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${activeCommentPostId === post.id ? 'text-primary' : 'text-gray-400 hover:text-primary'}`}
+                 >
+                    <MessageSquare size={16} />
+                    {t('comments')}
+                 </button>
+               </div>
                <button 
-                onClick={() => toggleLike(post.id)}
-                className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${likedPosts.has(post.id) ? 'text-primary scale-110' : 'text-gray-400 hover:text-primary'}`}
+                onClick={() => {
+                   navigator.clipboard.writeText(`${window.location.origin}/dashboard?post=${post.id}`);
+                   alert(t('linkCopied'));
+                }}
+                className="text-gray-400 hover:text-primary transition-all p-2 rounded-full hover:bg-muted"
                >
-                  <Sparkles size={14} className={likedPosts.has(post.id) ? 'fill-primary' : ''} />
-                  {t('like')} {likedPosts.has(post.id) ? '(1)' : ''}
-               </button>
-               <button 
-                onClick={handleJoinDiscussion}
-                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-primary transition-all"
-               >
-                  <Send size={14} />
-                  {t('reply')}
+                  <Share2 size={16} />
                </button>
             </div>
+
+            {activeCommentPostId === post.id && (
+               <div className="mt-6 space-y-6 animate-in slide-in-from-top-4 duration-500">
+                  <div className="flex gap-4">
+                     <div className="w-8 h-8 rounded-lg bg-muted flex-shrink-0 flex items-center justify-center text-primary">
+                        <User size={16} />
+                     </div>
+                     <div className="flex-1 space-y-2">
+                        {replyingToId && (
+                           <div className="flex items-center justify-between bg-primary/5 p-2 rounded-lg mb-2">
+                              <span className="text-[8px] font-black text-primary uppercase">{t('replyingTo')}</span>
+                              <button onClick={() => setReplyingToId(null)} className="text-primary"><X size={12} /></button>
+                           </div>
+                        )}
+                        <div className="flex gap-2">
+                           <input 
+                              value={commentContent}
+                              onChange={(e) => setCommentContent(e.target.value)}
+                              placeholder={t('commentPlaceholder')}
+                              className="flex-1 bg-muted/50 border border-border rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-primary transition-all"
+                           />
+                           <button 
+                              onClick={() => handleCommentSubmit(post.id)}
+                              className="bg-primary text-white p-2 rounded-xl"
+                           >
+                              <Send size={16} />
+                           </button>
+                        </div>
+                     </div>
+                  </div>
+                  
+                  {postComments[post.id] && (
+                     <RecursiveComments comments={postComments[post.id]} t={t} setReplyingToId={setReplyingToId} />
+                  )}
+               </div>
+            )}
           </article>
         ))}
       </div>
     </div>
   );
 }
+
+const RecursiveComments = ({ 
+  comments, 
+  level = 0, 
+  t, 
+  setReplyingToId 
+}: { 
+  comments: Comment[], 
+  level?: number, 
+  t: any, 
+  setReplyingToId: (id: string) => void 
+}) => {
+  return (
+    <div className={`space-y-4 ${level > 0 ? 'ml-8 border-l-2 border-primary/10 pl-4' : ''}`}>
+      {comments.map(comment => (
+        <div key={comment.id} className="space-y-2 animate-in fade-in slide-in-from-left-2 duration-300">
+          <div className="flex items-start gap-3 bg-muted/30 p-4 rounded-2xl">
+            <div className="w-8 h-8 rounded-lg bg-muted border border-border overflow-hidden flex-shrink-0">
+              {comment.profiles?.avatar_url ? (
+                <Image src={comment.profiles.avatar_url} alt="" width={32} height={32} className="w-full h-full object-cover" />
+              ) : (
+                <User size={16} className="m-auto text-primary" />
+              )}
+            </div>
+            <div className="flex-1">
+              <div className="flex justify-between items-center mb-1">
+                <span className="font-black text-[10px] uppercase tracking-widest text-foreground">{comment.profiles?.full_name}</span>
+                <span className="text-[8px] text-gray-400 font-bold uppercase">{new Date(comment.created_at).toLocaleDateString()}</span>
+              </div>
+              <p className="text-sm text-foreground/80 leading-relaxed font-medium">{comment.content}</p>
+              <button 
+                onClick={() => setReplyingToId(comment.id)}
+                className="text-[10px] font-black text-primary uppercase tracking-widest mt-2 hover:underline"
+              >
+                {t('reply')}
+              </button>
+            </div>
+          </div>
+          {comment.replies && comment.replies.length > 0 && (
+            <RecursiveComments comments={comment.replies} level={level + 1} t={t} setReplyingToId={setReplyingToId} />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
