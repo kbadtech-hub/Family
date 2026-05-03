@@ -95,7 +95,13 @@
     "verifyNow": "አሁን አረጋግጥ",
     "matchingLocked": "ማዛመድ ተዘግቷል",
     "matchingLockedSub": "ተዛማጅ ሰዎችን ለማየት እባክዎ መገለጫዎን ያረጋግጡ::",
-    "completeOnboarding": "ማረጋገጫውን ጨርስ"
+    "completeOnboarding": "ማረጋገጫውን ጨርስ",
+    "actionRequired": "እርምጃ ያስፈልጋል",
+    "searching": "ተስማሚ አጋርዎን እየፈለግን ነው...",
+    "reviewPending": "ግምገማ ላይ",
+    "reviewNote": "የከፈሉበት ደረሰኝ እየተገመገመ ነው::",
+    "trialStatus": "የሙከራ ጊዜ",
+    "daysLeft": "{count} ቀናት ይቀራሉ"
   },
   "Footer": {
     "tagline": "ቤተሰብ | Beteseb",

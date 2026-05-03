@@ -95,10 +95,16 @@
     "verifyNow": "Verify Now",
     "matchingLocked": "Matching Locked",
     "matchingLockedSub": "Please complete your onboarding verification to see your potential matches.",
-    "completeOnboarding": "Complete Onboarding"
+    "completeOnboarding": "Complete Onboarding",
+    "actionRequired": "Action Required",
+    "searching": "Searching for your perfect match...",
+    "reviewPending": "Review Pending",
+    "reviewNote": "Your payment screenshot is being reviewed.",
+    "trialStatus": "Trial Status",
+    "daysLeft": "{count} Days Left"
   },
   "Footer": {
-    "tagline": "ቤተሰብ | Beteseb - Global Habesha Marriage Matching",
+    "tagline": "Beteseb - Global Habesha Marriage Matching",
     "description": "Bringing Ethiopian families together across the globe with tradition, technology, and unconditional warmth.",
     "connect": "Connect",
     "platform": "Platform",

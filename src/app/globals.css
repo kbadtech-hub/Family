@@ -36,6 +36,32 @@ body {
   font-weight: 300; /* Minimalist default */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Global Text Wrap and Overflow Fixes */
+* {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 768px) {
+  h1 {
+    @apply text-3xl !important;
+  }
+  h2 {
+    @apply text-2xl !important;
+  }
+  h3 {
+    @apply text-xl !important;
+  }
+  .card-premium {
+    @apply p-6 rounded-[2rem] !important;
+  }
+  p, span, div {
+    @apply text-sm leading-relaxed;
+  }
 }
 
 .font-arabic {

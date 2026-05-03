@@ -255,9 +255,13 @@ function DashboardContent() {
 
             <button 
               onClick={() => setActiveTab('profile')}
-              className="w-14 h-14 rounded-full bg-[#F8F4F1] border-2 border-primary/20 overflow-hidden shadow-sm hover:border-primary transition-all active:scale-95"
+              className="w-14 h-14 rounded-full bg-muted border-2 border-primary/20 overflow-hidden shadow-sm hover:border-primary transition-all active:scale-95 flex items-center justify-center"
             >
-              <Image src={profile?.avatar_url || 'https://images.unsplash.com/photo-1531123897727-8f129e16fd3c?auto=format&fit=crop&q=80&w=200'} alt="Avatar" width={56} height={56} className="w-full h-full object-cover" />
+              {profile?.avatar_url ? (
+                <Image src={profile.avatar_url} alt="Avatar" width={56} height={56} className="w-full h-full object-cover" />
+              ) : (
+                <UserCircle size={32} className="text-gray-300" />
+              )}
             </button>
           </div>
         </header>
@@ -269,7 +273,7 @@ function DashboardContent() {
             <div className="relative flex flex-col md:flex-row items-center justify-between gap-8">
                <div className="space-y-4 text-center md:text-left">
                   <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/20 rounded-full text-[10px] font-black uppercase tracking-widest">
-                     <ShieldCheck size={14} /> Action Required
+                     <ShieldCheck size={14} /> {t('actionRequired')}
                   </div>
                   <h2 className="text-3xl font-black italic tracking-tighter">
                     {t('verifyBannerTitle')}
@@ -315,8 +319,8 @@ function DashboardContent() {
                       <button onClick={() => setShowPayment(true)} className="bg-primary text-white px-10 py-4 rounded-2xl font-bold uppercase tracking-widest shadow-xl shadow-primary/20">{t('upgradeNow')}</button>
                     </div>
                   ) : matches.length === 0 ? (
-                    <div className="col-span-full py-20 text-center text-gray-400 font-bold uppercase tracking-widest text-xs">
-                       Searching for your perfect match...
+                    <div className="col-span-full py-20 text-center text-gray-400 font-bold uppercase tracking-widest text-[10px]">
+                       {t('searching')}
                     </div>
                   ) : (
                     matches.map(match => (
@@ -353,15 +357,15 @@ function DashboardContent() {
                        <ShieldCheck size={24} />
                     </div>
                     <div>
-                       <p className="font-black text-xs uppercase tracking-widest text-primary">Review Pending</p>
-                       <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-tighter">Your payment screenshot is being reviewed.</p>
+                       <p className="font-black text-xs uppercase tracking-widest text-primary">{t('reviewPending')}</p>
+                       <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-tighter">{t('reviewNote')}</p>
                     </div>
                   </div>
                 ) : profile?.onboarding_completed && !isTrialExpired ? (
                   <div className="space-y-4">
                     <div className="p-5 bg-primary/5 rounded-[1.5rem]">
-                      <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Trial Status</p>
-                      <p className="text-xl font-black text-accent italic">{trialDaysLeft} Days Left</p>
+                      <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">{t('trialStatus')}</p>
+                      <p className="text-xl font-black text-accent italic">{t('daysLeft', { count: trialDaysLeft })}</p>
                     </div>
                     <button onClick={() => setShowPayment(true)} className="w-full bg-primary text-white py-5 rounded-[2rem] font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20">
                       {t('premium.unlock')}
