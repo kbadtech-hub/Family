@@ -503,6 +503,12 @@
         "t4": "Wisdom Warehouse"
       }
     },
+    "login": "Sign In",
+    "curriculum": "The Curriculum",
+    "featured": "Featured Tables",
+    "viewAll": "View All Classes",
+    "general": "General Wisdom",
+    "premiumOnly": "Special Membership Only",
     "footerMeta": "Learn, Understand, Apply!",
     "footerCTA": "Start accessing these tables of wisdom now by switching to special membership"
   },

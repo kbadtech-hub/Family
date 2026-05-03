@@ -14,7 +14,7 @@ import {
   Sparkles, 
   UserPlus, 
   UserCheck, 
-  UserClock, 
+  Clock, 
   Loader2 
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -213,7 +213,7 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
                  </div>
                ) : friendshipStatus === 'pending' ? (
                  <div className="w-full bg-muted text-gray-400 py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-4">
-                    <UserClock size={24} />
+                     <Clock size={24} />
                     {t('requestSent')}
                  </div>
                ) : (

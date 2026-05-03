@@ -50,7 +50,7 @@ export default function Home() {
             {t('Hero.tagline')}
           </div>
           
-          <h1 className="text-4xl md:text-5xl font-black leading-[1.15] tracking-tight text-[#0F172A]">
+          <h1 className="text-4xl md:text-5xl font-black leading-[1.25] tracking-tight text-[#0F172A]">
             <span className="block opacity-90">
               {settings?.cms_content?.hero_title || t('Hero.title1')}
             </span> 

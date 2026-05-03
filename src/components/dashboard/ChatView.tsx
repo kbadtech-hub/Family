@@ -24,6 +24,7 @@ import {
   UserX,
   Bell,
   Check,
+  CheckCircle2,
   X as CloseIcon
 } from 'lucide-react';
 import Image from 'next/image';
