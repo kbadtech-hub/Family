@@ -130,6 +130,11 @@ GRANT SELECT ON public.profiles, public.community_posts TO anon;
 CREATE POLICY "Users Own Profile Update" ON public.profiles FOR UPDATE USING (auth.uid() = id);
 CREATE POLICY "Public Profiles Select" ON public.profiles FOR SELECT USING (true);
 CREATE POLICY "Message Access" ON public.messages FOR SELECT USING (auth.uid() = sender_id OR auth.uid() = receiver_id);
+CREATE POLICY "Message Insert" ON public.messages FOR INSERT WITH CHECK (auth.uid() = sender_id);
+CREATE POLICY "Own Verification Access" ON public.verifications FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Own Payment Access" ON public.payments FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Community Access" ON public.community_posts FOR SELECT USING (true);
+CREATE POLICY "Community Insert" ON public.community_posts FOR INSERT WITH CHECK (auth.uid() = author_id);
 
 -- 8. AUTOMATION (Functions & Triggers)
 CREATE OR REPLACE FUNCTION public.handle_new_user()

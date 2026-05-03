@@ -560,7 +560,8 @@ function OnboardingContent() {
 
                           // 2. Update profile status
                           const { error: upError } = await supabase.from('profiles').update({
-                            verification_status: 'verified'
+                            verification_status: 'verified',
+                            is_verified: true
                           }).eq('id', userId);
 
                           if (upError) {
