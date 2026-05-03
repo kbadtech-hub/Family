@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { Play, BookOpen, Clock, Tag, ChevronRight, GraduationCap } from 'lucide-react';
 import YouTubeEmbed from '@/components/YouTubeEmbed';
 import PremiumGate from '@/components/PremiumGate';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 interface Lesson {
   id: string;
@@ -22,6 +22,7 @@ export default function LessonsView({ isPremium }: { isPremium: boolean }) {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [loading, setLoading] = useState(true);
+  const t = useTranslations('Academy');
   const locale = useLocale();
 
   useEffect(() => {
@@ -45,7 +46,7 @@ export default function LessonsView({ isPremium }: { isPremium: boolean }) {
     <div className="flex items-center justify-center h-64 bg-white rounded-[3rem] border border-gray-100">
       <div className="animate-pulse flex flex-col items-center gap-4">
         <GraduationCap size={40} className="text-primary/20" />
-        <p className="text-xs font-black text-primary/20 uppercase tracking-widest">Loading Lessons...</p>
+        <p className="text-xs font-black text-primary/20 uppercase tracking-widest">{t('loading')}</p>
       </div>
     </div>
   );
@@ -58,12 +59,10 @@ export default function LessonsView({ isPremium }: { isPremium: boolean }) {
          <div className="relative z-10 space-y-6 max-w-2xl">
             <h2 className="text-sm font-black text-primary uppercase tracking-[0.4em]">Beteseb Academy</h2>
             <h3 className="text-4xl md:text-6xl font-black tracking-tighter leading-none italic">
-               {locale === 'am' ? 'የትምህርት እና ስልጠና ማዕከል' : 'Learn. Connect. Grow.'}
+               {t('learnTitle')}
             </h3>
             <p className="text-white/50 text-lg font-medium leading-relaxed italic">
-               {locale === 'am' 
-                 ? 'ስለ ግንኙነት፣ ቤተሰብ እና ባህል ጠቃሚ ትምህርቶችን ከባለሙያዎች ያግኙ።' 
-                 : 'Access exclusive lessons on relationship building, family values, and Ethiopian cultural heritage from verified experts.'}
+                {t('learnSub')}
             </p>
          </div>
       </div>
@@ -84,21 +83,21 @@ export default function LessonsView({ isPremium }: { isPremium: boolean }) {
                   </div>
                   <div className="flex gap-4">
                      <div className="text-center">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Duration</p>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{t('duration')}</p>
                         <p className="text-sm font-bold text-accent italic">~15 min</p>
                      </div>
                   </div>
                 </div>
                 
                 <div className="space-y-4">
-                   <h4 className="text-xs font-black text-accent uppercase tracking-widest border-b border-muted pb-2">Description</h4>
+                   <h4 className="text-xs font-black text-accent uppercase tracking-widest border-b border-muted pb-2">{t('description')}</h4>
                    <p className="text-gray-500 leading-relaxed font-medium italic">{selectedLesson.description}</p>
                 </div>
 
                 {selectedLesson.instructions && (
                   <div className="p-8 bg-muted rounded-[2rem] border border-primary/5 space-y-4">
                      <h4 className="text-xs font-black text-primary uppercase tracking-widest flex items-center gap-2">
-                        <BookOpen size={14} /> Actionable Steps
+                        <BookOpen size={14} /> {t('actionableSteps')}
                      </h4>
                      <p className="text-sm text-accent font-bold leading-relaxed whitespace-pre-wrap">{selectedLesson.instructions}</p>
                   </div>
@@ -107,14 +106,14 @@ export default function LessonsView({ isPremium }: { isPremium: boolean }) {
             </>
           ) : (
             <div className="bg-white p-20 rounded-[3rem] border border-dashed border-gray-200 text-center">
-               <p className="text-gray-400 font-bold italic">Select a lesson to begin your journey.</p>
+               <p className="text-gray-400 font-bold italic">{t('selectLesson')}</p>
             </div>
           )}
         </div>
 
         {/* Playlist */}
         <div className="lg:col-span-4 space-y-6">
-          <h3 className="text-xs font-black text-accent uppercase tracking-[0.2em] px-4">Available Lessons ({lessons.length})</h3>
+          <h3 className="text-xs font-black text-accent uppercase tracking-[0.2em] px-4">{t('availableLessons', { count: lessons.length })}</h3>
           <div className="space-y-4 max-h-[800px] overflow-y-auto pr-2 custom-scrollbar">
             {lessons.map((lesson) => (
               <button

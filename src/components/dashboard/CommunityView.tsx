@@ -72,7 +72,7 @@ export default function CommunityView({
     if (!newPostContent.trim()) return;
 
     if (!isPremium && !isAdmin) {
-       alert(locale === 'am' ? "ይህ ፊቸር ለፕሪሚየም አባላት ብቻ ነው" : "This feature is for premium members only");
+       alert(t('premiumOnly'));
        return;
     }
 
@@ -81,7 +81,7 @@ export default function CommunityView({
     const hasLinks = urlRegex.test(newPostContent);
 
     if (hasLinks && !isAdmin) {
-       alert(locale === 'am' ? "ሊንክ መጫን ለአድሚን ብቻ የተፈቀደ ነው" : "Posting links is allowed for Admins only");
+       alert(t('adminOnly'));
        return;
     }
 
@@ -92,7 +92,7 @@ export default function CommunityView({
     const isUnsafe = forbiddenWords.some(word => newPostContent.toLowerCase().includes(word));
     
     if (isUnsafe) {
-      alert(t('safetyAlert') || "Your post contains unsafe content.");
+      alert(t('unsafeContent'));
       setIsSubmitting(false);
       return;
     }
@@ -166,7 +166,7 @@ export default function CommunityView({
                   onClick={() => window.location.href = `/${locale}/onboarding`}
                   className="bg-primary text-white px-8 py-3 rounded-2xl font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20"
                 >
-                  {locale === 'am' ? 'ፕሮፋይል ይሙሉ።' : 'Complete Profile'}
+                  {t('completeProfile')}
                 </button>
              </div>
           </div>
@@ -207,7 +207,7 @@ export default function CommunityView({
                     className="p-3 bg-muted rounded-xl text-primary hover:bg-primary/10 transition-colors flex items-center gap-2"
                   >
                     <Camera size={18} />
-                    <span className="text-[10px] font-black uppercase tracking-widest hidden md:block">Photo</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest hidden md:block">{t('photo')}</span>
                   </button>
                   <input 
                     type="file" 
@@ -295,7 +295,7 @@ export default function CommunityView({
                      <LinkIcon size={20} />
                   </div>
                   <div className="flex-1 min-w-0">
-                     <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Shared Link</p>
+                     <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">{t('sharedLink')}</p>
                      <a href={post.media_url} target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-accent hover:underline truncate block">
                         {post.media_url}
                      </a>

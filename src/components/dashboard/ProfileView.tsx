@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useTranslations } from 'next-intl';
+import { useRouter, usePathname } from '@/i18n/routing';
 import { 
   User, 
   Camera, 
@@ -18,6 +19,8 @@ import Image from 'next/image';
 
 export default function ProfileView({ profile, onUpdate }: { profile: any, onUpdate: () => void }) {
   const t = useTranslations('Dashboard.profile');
+  const router = useRouter();
+  const pathname = usePathname();
   const [photos, setPhotos] = useState<string[]>(profile?.gallery_photos || []);
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -58,7 +61,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
       if (dbError) throw dbError;
       onUpdate();
     } catch (error: any) {
-      alert('Avatar upload failed: ' + error.message);
+      alert(t('alerts.avatarFailed') + ': ' + error.message);
     } finally {
       setIsUploading(false);
     }
@@ -94,7 +97,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
 
       setPhotos(newPhotos);
     } catch (error: any) {
-      alert('Upload failed: ' + error.message);
+      alert(t('alerts.uploadFailed') + ': ' + error.message);
     } finally {
       setIsUploading(false);
     }
@@ -113,7 +116,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
 
       setPhotos(newPhotos);
     } catch (error: any) {
-      alert('Delete failed: ' + error.message);
+      alert(t('alerts.deleteFailed') + ': ' + error.message);
     }
   };
 
@@ -124,7 +127,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
     if (formData.username && formData.username !== profile.username) {
        const { data: existing } = await supabase.from('profiles').select('id').eq('username', formData.username).single();
        if (existing) {
-          alert('Username already taken. Please choose another.');
+          alert(t('alerts.usernameTaken'));
           setIsSaving(false);
           return;
        }
@@ -137,11 +140,16 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
 
     if (!error) {
       onUpdate();
-      alert('Profile updated successfully!');
+      alert(t('alerts.updateSuccess'));
     } else {
-      alert('Update failed: ' + error.message);
+      alert(t('alerts.updateFailed') + ': ' + error.message);
     }
     setIsSaving(false);
+  };
+
+  const handleLanguageChange = (newLocale: string) => {
+    setFormData({...formData, preferred_language: newLocale});
+    router.replace(pathname, { locale: newLocale });
   };
 
   const languages = [
@@ -190,8 +198,8 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
              </div>
              <div className="flex flex-wrap justify-center md:justify-start gap-3">
                 <span className="px-4 py-1.5 bg-primary/10 text-primary text-[10px] font-black rounded-full uppercase tracking-widest">{profile?.star_sign}</span>
-                <span className="px-4 py-1.5 bg-muted text-gray-500 text-[10px] font-black rounded-full uppercase tracking-widest">{profile?.location?.city || 'Addis Ababa'}</span>
-                <span className="px-4 py-1.5 bg-accent/5 text-accent text-[10px] font-black rounded-full uppercase tracking-widest">{profile?.role}</span>
+                <span className="px-4 py-1.5 bg-muted text-gray-500 text-[10px] font-black rounded-full uppercase tracking-widest">{profile?.location?.city || t('defaultCity')}</span>
+                <span className="px-4 py-1.5 bg-accent/5 text-accent text-[10px] font-black rounded-full uppercase tracking-widest">{t('roles.' + (profile?.role || 'user'))}</span>
              </div>
           </div>
         </div>
@@ -200,12 +208,12 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
       {/* Profile Settings Section */}
       <div className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-xl space-y-8">
         <h3 className="text-xl font-black text-accent italic tracking-tighter flex items-center gap-2">
-           <ShieldCheck size={20} className="text-primary" /> Profile Settings
+           <ShieldCheck size={20} className="text-primary" /> {t('settings')}
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
            <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Full Name</label>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">{t('fullName')}</label>
               <input 
                 type="text"
                 value={formData.full_name}
@@ -215,24 +223,24 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
            </div>
 
            <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Username (Unique)</label>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">{t('username')}</label>
               <div className="relative">
                  <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">@</span>
                  <input 
                    type="text"
                    value={formData.username}
                    onChange={(e) => setFormData({...formData, username: e.target.value.toLowerCase().replace(/\s+/g, '')})}
-                   placeholder="yourname"
+                   placeholder={t('usernamePlaceholder')}
                    className="w-full bg-muted/30 border border-muted rounded-2xl p-5 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                  />
               </div>
            </div>
 
            <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">System Language</label>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">{t('systemLanguage')}</label>
               <select 
                 value={formData.preferred_language}
-                onChange={(e) => setFormData({...formData, preferred_language: e.target.value})}
+                onChange={(e) => handleLanguageChange(e.target.value)}
                 className="w-full bg-muted/30 border border-muted rounded-2xl p-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all appearance-none"
               >
                  {languages.map(lang => (
@@ -248,9 +256,9 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
         <div className="flex justify-between items-center">
            <div className="space-y-1">
               <h3 className="text-xl font-black text-accent italic tracking-tighter flex items-center gap-2">
-                 <Sparkles size={20} className="text-primary" /> Multi-Photo Gallery
+                 <Sparkles size={20} className="text-primary" /> {t('gallery')}
               </h3>
-              <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Share up to 5 additional photos ( {photos.length} / 5 )</p>
+              <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">{t('gallerySub', { count: photos.length })}</p>
            </div>
            {photos.length < 5 && (
              <button 
@@ -259,7 +267,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
               className="bg-primary text-white px-6 py-3 rounded-2xl font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 flex items-center gap-2 hover:scale-105 transition-all"
              >
                 {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
-                Add Photo
+                {t('addPhoto')}
              </button>
            )}
            <input type="file" ref={fileInputRef} className="hidden" onChange={handlePhotoUpload} accept="image/*" />
@@ -280,7 +288,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
            {Array.from({ length: 5 - photos.length }).map((_, i) => (
              <div key={i} className="aspect-[3/4] rounded-2xl bg-muted/50 border-2 border-dashed border-muted flex flex-col items-center justify-center text-gray-300 gap-2">
                 <Camera size={24} />
-                <span className="text-[8px] font-bold uppercase tracking-widest">Empty Slot</span>
+                <span className="text-[8px] font-bold uppercase tracking-widest">{t('emptySlot')}</span>
              </div>
            ))}
         </div>
@@ -289,27 +297,27 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
       {/* Edit Details Section */}
       <div className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-xl space-y-8">
         <h3 className="text-xl font-black text-accent italic tracking-tighter flex items-center gap-2">
-           <User size={20} className="text-primary" /> About & Interests
+           <User size={20} className="text-primary" /> {t('aboutInterests')}
         </h3>
         
         <div className="space-y-6">
            <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Bio / About Me</label>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">{t('bio')}</label>
               <textarea 
                 value={formData.bio}
                 onChange={(e) => setFormData({...formData, bio: e.target.value})}
-                placeholder="Tell others about yourself..."
+                placeholder={t('bioPlaceholder')}
                 className="w-full bg-muted/30 border border-muted rounded-[2rem] p-6 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[120px] resize-none"
               />
            </div>
 
            <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Interests & Hobbies</label>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">{t('interests')}</label>
               <input 
                 type="text"
                 value={formData.interests}
                 onChange={(e) => setFormData({...formData, interests: e.target.value})}
-                placeholder="Tradition, Family, Travel, Cooking..."
+                placeholder={t('interestsPlaceholder')}
                 className="w-full bg-muted/30 border border-muted rounded-2xl p-6 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
               />
            </div>
@@ -320,7 +328,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
              className="w-full bg-accent text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
            >
               {isSaving ? <Loader2 size={24} className="animate-spin" /> : <ShieldCheck size={24} />}
-              Save Changes
+              {t('saveChanges')}
            </button>
         </div>
       </div>
