@@ -571,6 +571,7 @@ function OnboardingContent() {
                           }
 
                           setFormData(prev => ({ ...prev, verification_status: 'verified' }));
+                          setErrorMsg(''); // Clear any previous error
                        } else {
                          setFormData(prev => ({ ...prev, verification_status: 'rejected' }));
                          setErrorMsg(result.reason || t('idVerification.rejected'));
@@ -582,20 +583,33 @@ function OnboardingContent() {
                />
             </label>
 
-            {(isVerifying || formData.selfie_photo) && (
-              <div className="bg-primary/5 p-6 rounded-[2rem] border border-primary/10">
+            {(isVerifying || formData.verification_status === 'verified' || errorMsg) && (
+              <div className={`p-6 rounded-[2rem] border transition-all ${
+                formData.verification_status === 'verified' 
+                  ? 'bg-green-50 border-green-100' 
+                  : errorMsg 
+                    ? 'bg-red-50 border-red-100' 
+                    : 'bg-primary/5 border-primary/10'
+              }`}>
                  {isVerifying ? (
                    <p className="text-xs font-bold text-primary uppercase tracking-widest flex items-center justify-center gap-2 animate-pulse">
                      <Loader2 className="animate-spin" size={14} /> {locale === 'am' || locale === 'ti' ? (locale === 'am' ? 'መረጃዎችዎን እያመሳከርን ነው...' : 'ሓበሬታታትኩም ነረጋግጽ ኣለና...') : 'Verifying Identity Match...'}
                    </p>
-                 ) : (
-                   <div className="flex flex-col items-center gap-3">
-                       <div className="flex items-center gap-2 bg-green-500 text-white px-6 py-2 rounded-full font-black uppercase tracking-widest text-[10px] shadow-lg shadow-green-200 animate-bounce">
-                          <CheckCircle2 size={16} /> {locale === 'am' ? 'Account Verified (ተረጋግጧል)' : 'Account Verified'}
-                       </div>
-                       <p className="text-[10px] text-gray-400 font-bold">{t('idVerification.idCaptured')}</p>
+                 ) : formData.verification_status === 'verified' ? (
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="flex items-center gap-2 bg-green-500 text-white px-6 py-2 rounded-full font-black uppercase tracking-widest text-[10px] shadow-lg shadow-green-200 animate-bounce">
+                           <CheckCircle2 size={16} /> {locale === 'am' ? 'Account Verified (ተረጋግጧል)' : 'Account Verified'}
+                        </div>
+                        <p className="text-[10px] text-green-600 font-bold">{t('idVerification.idCaptured')}</p>
+                     </div>
+                 ) : errorMsg ? (
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="flex items-center gap-2 bg-red-500 text-white px-6 py-2 rounded-full font-black uppercase tracking-widest text-[10px] shadow-lg shadow-red-200">
+                           <AlertCircle size={16} /> {locale === 'am' ? 'Verification Failed' : 'Verification Failed'}
+                        </div>
+                        <p className="text-[10px] text-red-600 font-medium px-4">{errorMsg}</p>
                     </div>
-                 )}
+                 ) : null}
               </div>
             )}
           </div>
