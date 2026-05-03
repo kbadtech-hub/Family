@@ -31,12 +31,18 @@ CREATE TABLE public.profiles (
   religion TEXT,
   marital_status TEXT,
   has_children TEXT DEFAULT 'No', -- Yes / No
+  future_children TEXT,
+  star_sign TEXT,
+  education TEXT,
   
   -- Step 2: Career & Psychology
   job_title TEXT,
   finance_habit TEXT,
   family_values TEXT,
   conflict_resolution TEXT,
+  hobbies TEXT[] DEFAULT '{}',
+  lifestyle TEXT,
+  expectations TEXT,
   
   -- Step 3: Marriage Criteria
   spouse_requirements TEXT[] DEFAULT '{}', -- Tags: e.g., 'Religious Compatibility'
@@ -47,6 +53,7 @@ CREATE TABLE public.profiles (
   partner_age_max INTEGER DEFAULT 100,
   partner_religion TEXT,
   partner_intent TEXT, -- e.g., 'Marriage', 'Serious Relationship'
+  partner_children_pref TEXT,
   
   -- Step 5 & 6: Identity Verification
   id_url TEXT, -- ID Document URL

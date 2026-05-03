@@ -223,6 +223,7 @@ function OnboardingContent() {
           marital_status: formData.marital_status,
           has_children: formData.has_children,
           future_children: formData.future_children,
+          education: formData.education,
           job_title: formData.job,
           finance_habit: formData.finance_habit,
           family_values: formData.family_value,
@@ -234,7 +235,8 @@ function OnboardingContent() {
           partner_age_min: formData.partner_age_min,
           partner_age_max: formData.partner_age_max,
           partner_religion: formData.partner_religion,
-          partner_intent: formData.partner_intent
+          partner_intent: formData.partner_intent,
+          partner_children_pref: formData.partner_children_pref
         }).eq('id', userId);
 
         if (updateError) {
