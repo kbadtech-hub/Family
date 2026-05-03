@@ -167,18 +167,18 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
            </div>
 
            <div className="space-y-4">
-              <h3 className="text-sm font-black text-accent uppercase tracking-widest border-b border-muted pb-2">About</h3>
+              <h3 className="text-sm font-black text-accent uppercase tracking-widest border-b border-muted pb-2">{t('about')}</h3>
               <p className={`text-gray-500 leading-relaxed italic text-lg font-medium ${!isPremium ? 'blur-sm select-none' : ''}`}>
-                &quot;{profile?.bio || 'No bio available yet.'}&quot;
+                &quot;{profile?.bio || t('noBio')}&quot;
               </p>
               {!isPremium && (
-                <p className="text-[10px] font-black text-primary uppercase tracking-widest italic text-center pt-2">Upgrade to Premium to read full bio</p>
+                <p className="text-[10px] font-black text-primary uppercase tracking-widest italic text-center pt-2">{t('upgradeToRead')}</p>
               )}
            </div>
 
            {profile?.interests && (
              <div className="space-y-4">
-                <h3 className="text-sm font-black text-accent uppercase tracking-widest border-b border-muted pb-2">Interests</h3>
+                <h3 className="text-sm font-black text-accent uppercase tracking-widest border-b border-muted pb-2">{t('interests')}</h3>
                 <div className={`flex flex-wrap gap-2 ${!isPremium ? 'blur-md select-none pointer-events-none' : ''}`}>
                    {profile.interests.split(',').map((interest: string) => (
                      <span key={interest} className="px-5 py-2.5 bg-muted text-accent text-[10px] font-black rounded-2xl uppercase tracking-widest">
@@ -190,17 +190,17 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
            )}
 
            <div className="space-y-4">
-              <h3 className="text-sm font-black text-accent uppercase tracking-widest border-b border-muted pb-2">Contact Info</h3>
+              <h3 className="text-sm font-black text-accent uppercase tracking-widest border-b border-muted pb-2">{t('contactInfo')}</h3>
               <div className="bg-muted/30 p-6 rounded-[2rem] border border-gray-100 flex justify-between items-center">
                  <div className="space-y-1">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Direct Email</p>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('directEmail')}</p>
                     <p className={`text-sm font-bold text-accent ${!isPremium ? 'blur-md select-none' : ''}`}>
                        {isPremium ? profile?.email : '••••••••@••••.com'}
                     </p>
                  </div>
                  {!isPremium && (
                     <div className="px-3 py-1 bg-primary/10 text-primary text-[8px] font-black rounded-full uppercase tracking-tighter">
-                       Premium Only
+                       {t('premiumOnly')}
                     </div>
                  )}
               </div>
@@ -235,13 +235,19 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
                    className="w-full bg-primary text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4"
                  >
                     <MessageCircle size={24} />
-                    {friendshipStatus === 'accepted' ? 'Open Chat' : 'Start Connection'}
+                    {friendshipStatus === 'accepted' ? t('openChat') : t('startConnection')}
                  </button>
                ) : (
                  <div className="p-8 bg-muted rounded-[2.5rem] border border-primary/20 text-center space-y-4">
                     <ShieldCheck className="mx-auto text-primary" size={32} />
-                    <p className="text-xs font-black text-accent uppercase tracking-widest">Premium or Friends Only</p>
-                    <p className="text-[10px] text-gray-500">Upgrade to Premium or be accepted as a friend to start a conversation.</p>
+                    <p className="text-xs font-black text-accent uppercase tracking-widest">{t('premiumFriendsOnly')}</p>
+                    <p className="text-[10px] text-gray-500">{t('upgradeOrFriendSub')}</p>
+                    <button 
+                       onClick={() => window.location.reload()}
+                       className="text-primary font-black text-[10px] uppercase tracking-[0.2em] underline"
+                    >
+                       {t('upgradeNow')}
+                    </button>
                  </div>
                )}
             </div>

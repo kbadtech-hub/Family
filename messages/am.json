@@ -695,6 +695,18 @@
     "friends": "ጓደኛሞች",
     "alreadyFriends": "ቀድሞውኑ ጓደኛሞች ናችሁ!",
     "notification": "አዲስ የጓደኝነት ጥያቄ ከ {name}",
-    "noRequests": "ምንም የጓደኝነት ጥያቄ የለም"
+    "noRequests": "ምንም የጓደኝነት ጥያቄ የለም",
+    "about": "ስለ እኔ",
+    "interests": "ፍላጎቶች",
+    "contactInfo": "የመገናኛ መረጃ",
+    "directEmail": "ቀጥታ ኢሜይል",
+    "premiumOnly": "ለፕሪሚየም ብቻ",
+    "openChat": "ውይይት ጀምር",
+    "startConnection": "ግንኙነት ጀምር",
+    "upgradeToRead": "ሙሉውን ለማንበብ ፕሪሚየም ይሁኑ",
+    "noBio": "ምንም መግለጫ አልተጻፈም።",
+    "premiumFriendsOnly": "ለፕሪሚየም ወይም ለጓደኛሞች ብቻ",
+    "upgradeOrFriendSub": "ውይይት ለመጀመር የፕሪሚየም አባል ይሁኑ ወይም የጓደኝነት ጥያቄ ይላኩ።",
+    "upgradeNow": "አሁኑኑ ያሻሽሉ"
   }
 }

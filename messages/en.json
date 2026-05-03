@@ -691,6 +691,18 @@
     "friends": "Friends",
     "alreadyFriends": "You are already friends!",
     "notification": "New Friend Request from {name}",
-    "noRequests": "No pending friend requests."
+    "noRequests": "No pending friend requests.",
+    "about": "About",
+    "interests": "Interests",
+    "contactInfo": "Contact Info",
+    "directEmail": "Direct Email",
+    "premiumOnly": "Premium Only",
+    "openChat": "Open Chat",
+    "startConnection": "Start Connection",
+    "upgradeToRead": "Upgrade to Premium to read full bio",
+    "noBio": "No bio available yet.",
+    "premiumFriendsOnly": "Premium or Friends Only",
+    "upgradeOrFriendSub": "Upgrade to Premium or be accepted as a friend to start a conversation.",
+    "upgradeNow": "Upgrade Now"
   }
 }
