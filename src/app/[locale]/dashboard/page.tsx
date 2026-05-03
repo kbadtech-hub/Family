@@ -170,7 +170,7 @@ function DashboardContent() {
   const isAdmin = ['admin', 'super_admin'].includes((profile as any)?.role);
 
   return (
-    <div className="min-h-screen bg-[#FDFBF9] flex flex-col md:flex-row" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+    <div className="min-h-screen bg-[#FDFBF9] flex flex-col md:flex-row overflow-x-hidden" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       {/* Sidebar */}
       <aside className={`w-full md:w-64 bg-[#0F172A] text-white flex md:flex-col p-8 sticky top-0 md:h-screen z-50 ${locale === 'ar' ? 'md:border-l' : 'md:border-r'} border-white/5`}>
         <div className="flex items-center gap-4 mb-12 hidden md:flex group cursor-pointer">
@@ -221,12 +221,12 @@ function DashboardContent() {
       {/* Main Content */}
       <main className="flex-1 p-8 md:p-16 overflow-y-auto">
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-black text-[#0F172A] italic tracking-tighter">{t('welcome')}</h1>
-            <p className="text-gray-400 mt-2 font-bold text-xs uppercase tracking-widest">{t('subtitle')}</p>
+          <div className="text-center md:text-left w-full">
+            <h1 className="text-3xl md:text-5xl font-black text-[#0F172A] italic tracking-tighter">{t('welcome')}</h1>
+            <p className="text-gray-400 mt-2 font-bold text-[10px] md:text-xs uppercase tracking-widest">{t('subtitle')}</p>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center justify-center md:justify-end gap-6 w-full md:w-auto">
             {/* Language Switcher */}
             <div className="relative">
               <button
@@ -255,12 +255,12 @@ function DashboardContent() {
 
             <button 
               onClick={() => setActiveTab('profile')}
-              className="w-14 h-14 rounded-full bg-muted border-2 border-primary/20 overflow-hidden shadow-sm hover:border-primary transition-all active:scale-95 flex items-center justify-center"
+              className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-muted border-2 border-primary/20 overflow-hidden shadow-sm hover:border-primary transition-all active:scale-95 flex items-center justify-center"
             >
               {profile?.avatar_url ? (
                 <Image src={profile.avatar_url} alt="Avatar" width={56} height={56} className="w-full h-full object-cover" />
               ) : (
-                <UserCircle size={32} className="text-gray-300" />
+                <UserCircle size={28} className="text-gray-300" />
               )}
             </button>
           </div>
@@ -303,20 +303,20 @@ function DashboardContent() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                   {showPayment && profile ? (
                     <div className="col-span-full">
                       <button onClick={() => setShowPayment(false)} className="mb-6 text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">← {t('backToDash')}</button>
                       <PaymentTab />
                     </div>
                   ) : isTrialExpired && paymentStatus !== 'approved' ? (
-                    <div className="col-span-full bg-white p-12 rounded-[3rem] border border-red-100 text-center space-y-6">
-                      <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto">
-                        <AlertCircle size={32} />
+                    <div className="col-span-full bg-white p-8 md:p-12 rounded-[2.5rem] md:rounded-[3rem] border border-red-100 text-center space-y-6">
+                      <div className="w-14 h-14 md:w-16 md:h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto">
+                        <AlertCircle size={28} md:size={32} />
                       </div>
-                      <h3 className="text-2xl font-black text-accent italic">{t('trialExpired')}</h3>
-                      <p className="text-gray-500 max-w-sm mx-auto">{t('trialEnded')}</p>
-                      <button onClick={() => setShowPayment(true)} className="bg-primary text-white px-10 py-4 rounded-2xl font-bold uppercase tracking-widest shadow-xl shadow-primary/20">{t('upgradeNow')}</button>
+                      <h3 className="text-xl md:text-2xl font-black text-accent italic">{t('trialExpired')}</h3>
+                      <p className="text-xs md:text-gray-500 max-w-sm mx-auto">{t('trialEnded')}</p>
+                      <button onClick={() => setShowPayment(true)} className="w-full md:w-auto bg-primary text-white px-10 py-4 rounded-2xl font-bold uppercase tracking-widest shadow-xl shadow-primary/20">{t('upgradeNow')}</button>
                     </div>
                   ) : matches.length === 0 ? (
                     <div className="col-span-full py-20 text-center text-gray-400 font-bold uppercase tracking-widest text-[10px]">
@@ -327,7 +327,7 @@ function DashboardContent() {
                       <div 
                         key={match.id} 
                         onClick={() => setSelectedMatchId(match.id)}
-                        className="bg-white p-6 rounded-[2.5rem] border border-border shadow-sm group hover:shadow-xl transition-all duration-500 cursor-pointer"
+                        className="bg-white p-4 md:p-6 rounded-[2.5rem] border border-border shadow-sm group hover:shadow-xl transition-all duration-500 cursor-pointer w-full"
                       >
                         <div className="relative aspect-square rounded-[2rem] overflow-hidden mb-5">
                           <Image src={match.image} alt={match.name} width={400} height={400} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
@@ -335,7 +335,7 @@ function DashboardContent() {
                             {match.match_percent}% {t('matching.percent')}
                           </div>
                         </div>
-                        <h3 className="text-lg font-black text-[#0F172A]">{match.name}</h3>
+                        <h3 className="text-base md:text-lg font-black text-[#0F172A] text-center md:text-left">{match.name}</h3>
                       </div>
                     ))
                   )}

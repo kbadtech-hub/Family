@@ -54,14 +54,14 @@ export default function LessonsView({ isPremium }: { isPremium: boolean }) {
   return (
     <div className="space-y-10">
       {/* Hero Section */}
-      <div className="bg-accent rounded-[3rem] p-10 md:p-16 text-white relative overflow-hidden shadow-2xl">
+      <div className="bg-accent rounded-[2rem] md:rounded-[3rem] p-8 md:p-16 text-white relative overflow-hidden shadow-2xl">
          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -mr-32 -mt-32" />
-         <div className="relative z-10 space-y-6 max-w-2xl">
-            <h2 className="text-sm font-black text-primary uppercase tracking-[0.4em]">{t('tagline')}</h2>
-            <h3 className="text-4xl md:text-6xl font-black tracking-tighter leading-none italic">
+         <div className="relative z-10 space-y-4 md:space-y-6 max-w-2xl text-center md:text-left">
+            <h2 className="text-[10px] md:text-sm font-black text-primary uppercase tracking-[0.4em]">{t('tagline')}</h2>
+            <h3 className="text-3xl md:text-6xl font-black tracking-tighter leading-tight md:leading-none italic">
                {t('learnTitle')}
             </h3>
-            <p className="text-white/50 text-lg font-medium leading-relaxed italic">
+            <p className="text-white/50 text-sm md:text-lg font-medium leading-relaxed italic">
                 {t('learnSub')}
             </p>
          </div>
@@ -73,13 +73,13 @@ export default function LessonsView({ isPremium }: { isPremium: boolean }) {
           {selectedLesson ? (
             <>
               <YouTubeEmbed url={selectedLesson.youtube_url} />
-              <div className="bg-white p-10 rounded-[3rem] border border-gray-100 shadow-sm space-y-6">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-2">
+              <div className="bg-white p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border border-gray-100 shadow-sm space-y-6">
+                <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+                  <div className="space-y-2 w-full text-center md:text-left">
                      <span className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-black rounded-full uppercase tracking-widest">
                        {selectedLesson.category}
                      </span>
-                     <h1 className="text-3xl font-black text-accent tracking-tighter uppercase">{selectedLesson.title}</h1>
+                     <h1 className="text-xl md:text-3xl font-black text-accent tracking-tighter uppercase">{selectedLesson.title}</h1>
                   </div>
                   <div className="flex gap-4">
                      <div className="text-center">

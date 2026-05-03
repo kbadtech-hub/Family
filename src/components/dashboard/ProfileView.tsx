@@ -162,14 +162,14 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
   ];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12 pb-20">
+    <div className="max-w-4xl mx-auto space-y-6 md:space-y-12 pb-20">
       {/* Header Profile Section */}
-      <div className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-xl relative overflow-hidden">
+      <div className="bg-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 border border-gray-100 shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl" />
         
-        <div className="relative flex flex-col md:flex-row items-center gap-10">
+        <div className="relative flex flex-col md:flex-row items-center gap-6 md:gap-10">
           <div className="relative group">
-            <div className="w-40 h-40 rounded-[2.5rem] bg-muted border-4 border-white shadow-2xl overflow-hidden">
+            <div className="w-32 h-32 md:w-40 md:h-40 rounded-[2rem] md:rounded-[2.5rem] bg-muted border-4 border-white shadow-2xl overflow-hidden">
                <Image 
                 src={profile?.avatar_url || 'https://images.unsplash.com/photo-1531123897727-8f129e16fd3c?auto=format&fit=crop&q=80&w=200'} 
                 alt="Avatar" 
@@ -181,49 +181,48 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
             <button 
               onClick={() => avatarInputRef.current?.click()}
               disabled={isUploading}
-              className="absolute -bottom-2 -right-2 w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-xl hover:scale-110 transition-transform"
+              className="absolute -bottom-1 -right-1 md:-bottom-2 md:-right-2 w-10 h-10 md:w-12 md:h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-xl hover:scale-110 transition-transform"
             >
-               {isUploading ? <Loader2 size={20} className="animate-spin" /> : <Camera size={20} />}
+               {isUploading ? <Loader2 size={18} className="animate-spin" /> : <Camera size={18} md:size={20} />}
             </button>
             <input type="file" ref={avatarInputRef} className="hidden" onChange={handleAvatarUpload} accept="image/*" />
           </div>
 
-          <div className="flex-1 text-center md:text-left space-y-4">
+          <div className="flex-1 text-center md:text-left space-y-3 md:space-y-4">
              <div className="flex flex-col md:flex-row md:items-center justify-center md:justify-start gap-2">
-                <h2 className="text-3xl font-black text-accent italic tracking-tighter">{profile?.full_name}</h2>
+                <h2 className="text-2xl md:text-3xl font-black text-accent italic tracking-tighter">{profile?.full_name}</h2>
                 <div className="flex items-center justify-center gap-2">
-                   {profile?.is_verified && <CheckCircle2 size={20} className="text-primary fill-primary/10" />}
-                   {profile?.username && <span className="text-xs font-bold text-gray-400">@{profile.username}</span>}
+                   {profile?.is_verified && <CheckCircle2 size={16} md:size={20} className="text-primary fill-primary/10" />}
+                   {profile?.username && <span className="text-[10px] md:text-xs font-bold text-gray-400">@{profile.username}</span>}
                 </div>
              </div>
-             <div className="flex flex-wrap justify-center md:justify-start gap-3">
-                <span className="px-4 py-1.5 bg-primary/10 text-primary text-[10px] font-black rounded-full uppercase tracking-widest">{profile?.star_sign}</span>
-                <span className="px-4 py-1.5 bg-muted text-gray-500 text-[10px] font-black rounded-full uppercase tracking-widest">{profile?.location?.city || t('defaultCity')}</span>
-                <span className="px-4 py-1.5 bg-accent/5 text-accent text-[10px] font-black rounded-full uppercase tracking-widest">{t('roles.' + (profile?.role || 'user'))}</span>
+             <div className="flex flex-wrap justify-center md:justify-start gap-2 md:gap-3">
+                <span className="px-3 py-1 md:px-4 md:py-1.5 bg-primary/10 text-primary text-[8px] md:text-[10px] font-black rounded-full uppercase tracking-widest">{profile?.star_sign}</span>
+                <span className="px-3 py-1 md:px-4 md:py-1.5 bg-muted text-gray-500 text-[8px] md:text-[10px] font-black rounded-full uppercase tracking-widest">{profile?.location?.city || t('defaultCity')}</span>
+                <span className="px-3 py-1 md:px-4 md:py-1.5 bg-accent/5 text-accent text-[8px] md:text-[10px] font-black rounded-full uppercase tracking-widest">{t('roles.' + (profile?.role || 'user'))}</span>
              </div>
           </div>
         </div>
       </div>
 
-      {/* Profile Settings Section */}
-      <div className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-xl space-y-8">
-        <h3 className="text-xl font-black text-accent italic tracking-tighter flex items-center gap-2">
+      <div className="bg-white rounded-[2rem] md:rounded-[3rem] p-8 md:p-10 border border-gray-100 shadow-xl space-y-8">
+        <h3 className="text-lg md:text-xl font-black text-accent italic tracking-tighter flex items-center gap-2 justify-center md:justify-start">
            <ShieldCheck size={20} className="text-primary" /> {t('settings')}
         </h3>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
            <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">{t('fullName')}</label>
+              <label className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">{t('fullName')}</label>
               <input 
                 type="text"
                 value={formData.full_name}
                 onChange={(e) => setFormData({...formData, full_name: e.target.value})}
-                className="w-full bg-muted/30 border border-muted rounded-2xl p-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                className="w-full bg-muted/30 border border-muted rounded-xl md:rounded-2xl p-4 md:p-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
               />
            </div>
 
            <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">{t('username')}</label>
+              <label className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">{t('username')}</label>
               <div className="relative">
                  <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">@</span>
                  <input 
@@ -231,17 +230,17 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                    value={formData.username}
                    onChange={(e) => setFormData({...formData, username: e.target.value.toLowerCase().replace(/\s+/g, '')})}
                    placeholder={t('usernamePlaceholder')}
-                   className="w-full bg-muted/30 border border-muted rounded-2xl p-5 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                   className="w-full bg-muted/30 border border-muted rounded-xl md:rounded-2xl p-4 md:p-5 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                  />
               </div>
            </div>
 
            <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">{t('systemLanguage')}</label>
+              <label className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">{t('systemLanguage')}</label>
               <select 
                 value={formData.preferred_language}
                 onChange={(e) => handleLanguageChange(e.target.value)}
-                className="w-full bg-muted/30 border border-muted rounded-2xl p-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all appearance-none"
+                className="w-full bg-muted/30 border border-muted rounded-xl md:rounded-2xl p-4 md:p-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all appearance-none"
               >
                  {languages.map(lang => (
                    <option key={lang.id} value={lang.id}>{lang.label}</option>
@@ -251,20 +250,19 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
         </div>
       </div>
 
-      {/* Photo Gallery Section */}
-      <div className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-xl space-y-8">
-        <div className="flex justify-between items-center">
-           <div className="space-y-1">
-              <h3 className="text-xl font-black text-accent italic tracking-tighter flex items-center gap-2">
+      <div className="bg-white rounded-[2rem] md:rounded-[3rem] p-8 md:p-10 border border-gray-100 shadow-xl space-y-8">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+           <div className="space-y-1 text-center md:text-left">
+              <h3 className="text-lg md:text-xl font-black text-accent italic tracking-tighter flex items-center gap-2 justify-center md:justify-start">
                  <Sparkles size={20} className="text-primary" /> {t('gallery')}
               </h3>
-              <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">{t('gallerySub', { count: photos.length })}</p>
+              <p className="text-[8px] md:text-xs text-gray-400 font-bold uppercase tracking-widest">{t('gallerySub', { count: photos.length })}</p>
            </div>
            {photos.length < 5 && (
              <button 
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="bg-primary text-white px-6 py-3 rounded-2xl font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 flex items-center gap-2 hover:scale-105 transition-all"
+              className="w-full md:w-auto bg-primary text-white px-6 py-4 md:py-3 rounded-xl md:rounded-2xl font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 flex items-center justify-center gap-2 hover:scale-105 transition-all"
              >
                 {isUploading ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
                 {t('addPhoto')}
@@ -273,59 +271,57 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
            <input type="file" ref={fileInputRef} className="hidden" onChange={handlePhotoUpload} accept="image/*" />
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4">
            {photos.map((photoUrl, index) => (
-             <div key={index} className="relative aspect-[3/4] group rounded-2xl overflow-hidden border border-muted">
+             <div key={index} className="relative aspect-[3/4] group rounded-xl md:rounded-2xl overflow-hidden border border-border">
                 <Image src={photoUrl} alt="Gallery" fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
                 <button 
                   onClick={() => deletePhoto(photoUrl)}
-                  className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                  className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-lg md:rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                 >
                    <Trash2 size={14} />
                 </button>
              </div>
            ))}
            {Array.from({ length: 5 - photos.length }).map((_, i) => (
-             <div key={i} className="aspect-[3/4] rounded-2xl bg-muted/50 border-2 border-dashed border-muted flex flex-col items-center justify-center text-gray-300 gap-2">
-                <Camera size={24} />
+             <div key={i} className="aspect-[3/4] rounded-xl md:rounded-2xl bg-muted/50 border-2 border-dashed border-muted flex flex-col items-center justify-center text-gray-300 gap-2">
+                <Camera size={20} />
                 <span className="text-[8px] font-bold uppercase tracking-widest">{t('emptySlot')}</span>
              </div>
            ))}
         </div>
       </div>
 
-      {/* Edit Details Section */}
-      <div className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-xl space-y-8">
-        <h3 className="text-xl font-black text-accent italic tracking-tighter flex items-center gap-2">
+      <div className="bg-white rounded-[2rem] md:rounded-[3rem] p-8 md:p-10 border border-gray-100 shadow-xl space-y-8">
+        <h3 className="text-lg md:text-xl font-black text-accent italic tracking-tighter flex items-center gap-2 justify-center md:justify-start">
            <User size={20} className="text-primary" /> {t('aboutInterests')}
         </h3>
         
-        <div className="space-y-6">
            <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">{t('bio')}</label>
+              <label className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">{t('bio')}</label>
               <textarea 
                 value={formData.bio}
                 onChange={(e) => setFormData({...formData, bio: e.target.value})}
                 placeholder={t('bioPlaceholder')}
-                className="w-full bg-muted/30 border border-muted rounded-[2rem] p-6 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[120px] resize-none"
+                className="w-full bg-muted/30 border border-muted rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-6 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[120px] resize-none text-foreground"
               />
            </div>
 
            <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">{t('interests')}</label>
+              <label className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">{t('interests')}</label>
               <input 
                 type="text"
                 value={formData.interests}
                 onChange={(e) => setFormData({...formData, interests: e.target.value})}
                 placeholder={t('interestsPlaceholder')}
-                className="w-full bg-muted/30 border border-muted rounded-2xl p-6 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                className="w-full bg-muted/30 border border-muted rounded-xl md:rounded-2xl p-5 md:p-6 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-foreground"
               />
            </div>
 
            <button 
              onClick={handleSaveProfile}
              disabled={isSaving}
-             className="w-full bg-accent text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+             className="w-full bg-accent text-white py-5 md:py-6 rounded-2xl md:rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
            >
               {isSaving ? <Loader2 size={24} className="animate-spin" /> : <ShieldCheck size={24} />}
               {t('saveChanges')}

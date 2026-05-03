@@ -22,35 +22,35 @@ export default function ClassesPage() {
   return (
     <div className="bg-[#FDFBF9] min-h-screen" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       {/* Hero */}
-      <section className="py-32 px-6 flex flex-col items-center text-center space-y-8 bg-[radial-gradient(circle_at_bottom_right,_var(--primary)_0%,_transparent_40%)] bg-opacity-5">
-        <div className="inline-flex items-center gap-2 px-6 py-2 bg-primary/10 rounded-full text-primary font-black text-xs tracking-widest uppercase">
-           <Sparkles size={16} className="fill-primary" />
+      <section className="py-20 md:py-32 px-6 flex flex-col items-center text-center space-y-6 md:space-y-8 bg-[radial-gradient(circle_at_bottom_right,_var(--primary)_0%,_transparent_40%)] bg-opacity-5">
+        <div className="inline-flex items-center gap-2 px-6 py-2 bg-primary/10 rounded-full text-primary font-black text-[10px] md:text-xs tracking-widest uppercase">
+           <Sparkles size={14} md:size={16} className="fill-primary" />
            {t('hero.tagline')}
         </div>
-        <h1 className="text-5xl md:text-7xl font-black text-accent tracking-tighter max-w-4xl">
+        <h1 className="text-4xl md:text-7xl font-black text-accent tracking-tighter max-w-4xl leading-tight">
           {t('hero.title1')} <br /> <span className="text-primary italic underline decoration-primary/20">{t('hero.title2')}</span>
         </h1>
-        <p className="text-xl text-gray-500 max-w-2xl leading-relaxed font-medium italic">
+        <p className="text-base md:text-xl text-gray-500 max-w-2xl leading-relaxed font-medium italic">
           {t('hero.subtitle')}
         </p>
-        <div className="flex flex-col md:flex-row gap-4 pt-6">
-           <Link href="/signup" className="btn-primary text-xl py-5 px-16 shadow-2xl shadow-primary/20 flex items-center gap-3">
-              {t('hero.cta')} <ArrowRight size={24} className={locale === 'ar' ? 'rotate-180' : ''} />
+        <div className="flex flex-col md:flex-row gap-4 pt-6 w-full md:w-auto px-4 md:px-0">
+           <Link href="/signup" className="btn-primary text-lg md:text-xl py-4 md:py-5 px-10 md:px-16 shadow-2xl shadow-primary/20 flex items-center justify-center gap-3">
+              {t('hero.cta')} <ArrowRight size={20} md:size={24} className={locale === 'ar' ? 'rotate-180' : ''} />
            </Link>
-           <Link href="/login" className="bg-white text-accent border-2 border-accent/10 text-xl py-5 px-16 rounded-[2rem] font-black uppercase tracking-tighter hover:bg-muted transition-all">
+           <Link href="/login" className="bg-white text-accent border-2 border-accent/10 text-lg md:text-xl py-4 md:py-5 px-10 md:px-16 rounded-[1.5rem] md:rounded-[2rem] font-black uppercase tracking-tighter hover:bg-muted transition-all flex items-center justify-center">
               {t('login')}
            </Link>
         </div>
       </section>
 
       {/* Course Highlights */}
-      <section className="py-24 px-8 max-w-7xl mx-auto">
-         <div className="flex justify-between items-end mb-16">
-            <div className="space-y-4">
-               <h2 className="text-sm font-black text-primary uppercase tracking-[0.4em]">{t('curriculum')}</h2>
-               <h3 className="text-4xl font-black text-accent tracking-tighter uppercase">{t('featured')}</h3>
+      <section className="py-16 md:py-24 px-6 md:px-8 max-w-7xl mx-auto">
+         <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-12 md:mb-16 gap-6">
+            <div className="space-y-4 text-center md:text-left">
+               <h2 className="text-[10px] md:text-sm font-black text-primary uppercase tracking-[0.4em]">{t('curriculum')}</h2>
+               <h3 className="text-3xl md:text-4xl font-black text-accent tracking-tighter uppercase">{t('featured')}</h3>
             </div>
-            <Link href="/dashboard?tab=workshops" className="text-primary font-black text-xs uppercase tracking-widest underline decoration-primary/20 hover:text-accent transition-colors">
+            <Link href="/dashboard?tab=workshops" className="text-primary font-black text-[10px] md:text-xs uppercase tracking-widest underline decoration-primary/20 hover:text-accent transition-colors">
                {t('viewAll')}
             </Link>
          </div>
@@ -92,47 +92,47 @@ export default function ClassesPage() {
       </section>
 
       {/* Counseling Feature */}
-      <section className="py-32 bg-accent text-white px-8 relative overflow-hidden">
+      <section className="py-20 md:py-32 bg-accent text-white px-6 md:px-8 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--secondary)_0%,_transparent_70%)] opacity-10" />
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-20 items-center relative z-10">
-           <div className={`flex-1 space-y-10 ${locale === 'ar' ? 'text-right' : 'text-left'}`}>
-              <h2 className="text-sm font-black text-primary uppercase tracking-[0.4em]">{t('counseling.tagline')}</h2>
-              <h3 className="text-5xl md:text-7xl font-black tracking-tight leading-none italic">{t('counseling.title1')} <br /> <span className="text-primary">{t('counseling.title2')}</span></h3>
-              <p className="text-lg text-white/50 leading-relaxed max-w-xl font-medium italic">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-12 md:gap-20 items-center relative z-10">
+           <div className={`flex-1 space-y-6 md:space-y-10 ${locale === 'ar' ? 'text-right' : 'text-left'} text-center md:text-left`}>
+              <h2 className="text-[10px] md:text-sm font-black text-primary uppercase tracking-[0.4em]">{t('counseling.tagline')}</h2>
+              <h3 className="text-4xl md:text-7xl font-black tracking-tight leading-tight md:leading-none italic">{t('counseling.title1')} <br /> <span className="text-primary">{t('counseling.title2')}</span></h3>
+              <p className="text-base md:text-lg text-white/50 leading-relaxed max-w-xl font-medium italic mx-auto md:mx-0">
                  {t('counseling.subtitle')}
               </p>
-              <div className="grid grid-cols-2 gap-8 pt-4">
+              <div className="grid grid-cols-2 gap-4 md:gap-8 pt-4">
                  <div className="space-y-2">
-                    <p className="text-4xl font-black text-primary">{t('counseling.stat1Value')}</p>
-                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">{t('counseling.stat1Label')}</p>
+                    <p className="text-3xl md:text-4xl font-black text-primary">{t('counseling.stat1Value')}</p>
+                    <p className="text-[8px] md:text-[10px] font-black text-white/40 uppercase tracking-widest">{t('counseling.stat1Label')}</p>
                  </div>
                  <div className="space-y-2">
-                    <p className="text-4xl font-black text-primary">{t('counseling.stat2Value')}</p>
-                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">{t('counseling.stat2Label')}</p>
+                    <p className="text-3xl md:text-4xl font-black text-primary">{t('counseling.stat2Value')}</p>
+                    <p className="text-[8px] md:text-[10px] font-black text-white/40 uppercase tracking-widest">{t('counseling.stat2Label')}</p>
                  </div>
               </div>
            </div>
-           <div className="flex-1 w-full bg-white/5 backdrop-blur-3xl rounded-[4rem] p-12 border border-white/10 shadow-2xl relative">
-              <div className="absolute -top-6 -right-6 w-20 h-20 bg-primary rounded-[2.5rem] flex items-center justify-center shadow-xl shadow-primary/30 animate-bounce">
-                 <GraduationCap size={40} className="text-white" />
+           <div className="flex-1 w-full bg-white/5 backdrop-blur-3xl rounded-[2.5rem] md:rounded-[4rem] p-8 md:p-12 border border-white/10 shadow-2xl relative">
+              <div className="absolute -top-4 -right-4 md:-top-6 md:-right-6 w-14 h-14 md:w-20 md:h-20 bg-primary rounded-[1.5rem] md:rounded-[2.5rem] flex items-center justify-center shadow-xl shadow-primary/30 animate-bounce">
+                 <GraduationCap size={28} md:size={40} className="text-white" />
               </div>
-              <div className="space-y-8">
-                 <div className="flex gap-4 items-center">
-                    <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
-                       <BookOpen className="text-primary" />
+              <div className="space-y-6 md:space-y-8">
+                 <div className="flex gap-4 items-center justify-center md:justify-start">
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-white/10 rounded-xl flex items-center justify-center">
+                       <BookOpen className="text-primary" size={20} md:size={24} />
                     </div>
-                    <p className="text-2xl font-black uppercase tracking-tighter italic">{t('counseling.curriculumTitle')}</p>
+                    <p className="text-xl md:text-2xl font-black uppercase tracking-tighter italic">{t('counseling.curriculumTitle')}</p>
                  </div>
-                 <div className="space-y-4">
+                 <div className="space-y-3 md:space-y-4">
                     {[
                       t('counseling.topics.t1'),
                       t('counseling.topics.t2'),
                       t('counseling.topics.t3'),
                       t('counseling.topics.t4')
                     ].map((f, i) => (
-                       <div key={i} className="flex justify-between items-center bg-white/5 p-5 rounded-[1.5rem] hover:bg-white/10 transition-all cursor-default border border-white/5">
-                          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80">{f}</p>
-                          <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shadow-lg"><Heart size={10} className="fill-white text-white" /></div>
+                       <div key={i} className="flex justify-between items-center bg-white/5 p-4 md:p-5 rounded-[1.2rem] md:rounded-[1.5rem] hover:bg-white/10 transition-all cursor-default border border-white/5">
+                          <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] text-white/80">{f}</p>
+                          <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-primary flex items-center justify-center shadow-lg"><Heart size={8} md:size={10} className="fill-white text-white" /></div>
                        </div>
                     ))}
                  </div>
