@@ -43,7 +43,7 @@ interface Profile {
 }
 
 export default function ChatView({ isPremium = false }: { isPremium?: boolean }) {
-  const t = useTranslations('Community');
+  const t = useTranslations('Dashboard');
   const locale = useLocale();
   const [matches, setMatches] = useState<Profile[]>([]);
   const [selectedMatch, setSelectedMatch] = useState<Profile | null>(null);
@@ -183,19 +183,19 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
     }
   };
 
-  if (loading) return <div className="flex-1 flex items-center justify-center">Loading family chat...</div>;
+  if (loading) return <div className="flex-1 flex items-center justify-center">{t('chat.loading')}</div>;
 
   return (
     <div className="flex h-[calc(100vh-200px)] bg-white rounded-[2.5rem] overflow-hidden border border-muted shadow-2xl">
       {/* Sidebar - Matches */}
       <aside className="w-full md:w-80 border-r border-muted flex flex-col">
         <div className="p-6 border-b border-muted">
-          <h2 className="text-xl font-bold text-accent mb-4 tracking-tighter uppercase">Matches</h2>
+          <h2 className="text-xl font-bold text-accent mb-4 tracking-tighter uppercase">{t('chat.matches')}</h2>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <input 
               type="text" 
-              placeholder="Search matches..." 
+              placeholder={t('chat.search')} 
               className="w-full pl-10 pr-4 py-3 bg-muted/50 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
             />
           </div>
@@ -203,7 +203,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
         
         <div className="flex-1 overflow-y-auto p-2">
           {matches.length === 0 ? (
-             <div className="p-8 text-center text-gray-400 text-sm">No matches yet. Keep exploring!</div>
+             <div className="p-8 text-center text-gray-400 text-sm">{t('chat.noMatches')}</div>
           ) : (
             matches.map((match) => (
               <button
@@ -245,18 +245,16 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                   <ShieldCheck size={40} className="text-primary" />
                </div>
                <div className="max-w-sm space-y-2">
-                  <h3 className="text-2xl font-black text-accent italic tracking-tighter">Premium Feature</h3>
+                  <h3 className="text-2xl font-black text-accent italic tracking-tighter">{t('chat.premiumOnly')}</h3>
                   <p className="text-gray-500 text-sm">
-                    {locale === 'am' 
-                      ? "ከጥንድዎ ጋር በቀጥታ ለመገናኘት የፕሪሚየም አባል መሆን ያስፈልግዎታል።" 
-                      : "Direct messaging with your matches is a premium feature. Upgrade now to start your journey."}
+                    {t('chat.premiumSub')}
                   </p>
                </div>
                <button 
                  onClick={() => window.location.search = '?tab=payment'}
                  className="bg-primary text-white px-8 py-3 rounded-2xl font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20"
                >
-                 {locale === 'am' ? "ፕሪሚየም ይሁኑ" : "Upgrade Now"}
+                 {t('upgradeNow')}
                </button>
             </div>
           ) : (
@@ -272,7 +270,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                     {selectedMatch.full_name}
                     {selectedMatch.is_verified && <CheckCircle2 size={14} className="text-primary fill-primary/10" />}
                   </h3>
-                  <p className="text-[10px] text-green-500 font-bold uppercase tracking-widest">Active Now</p>
+                  <p className="text-[10px] text-green-500 font-bold uppercase tracking-widest">{t('chat.activeNow')}</p>
                 </div>
               </div>
               <div className="flex items-center gap-4 text-gray-400">
@@ -290,8 +288,8 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
               <div className="flex flex-col items-center mb-8">
                  <div className="p-4 bg-primary/5 rounded-3xl border border-primary/10 text-center max-w-xs">
                     <Heart size={20} className="text-primary mx-auto mb-2 fill-primary/20" />
-                    <p className="text-xs text-accent font-medium mt-1 uppercase tracking-tighter">Your Abushakir Compatibility is High!</p>
-                    <p className="text-[10px] text-gray-400 mt-1">Start a conversation with traditional values.</p>
+                    <p className="text-xs text-accent font-medium mt-1 uppercase tracking-tighter">{t('chat.compatibilityHigh')}</p>
+                    <p className="text-[10px] text-gray-400 mt-1">{t('chat.startConversation')}</p>
                  </div>
               </div>
 
@@ -315,7 +313,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                         onClick={() => handleTranslate(msg.id, locale)}
                         className={`absolute -bottom-6 ${msg.sender_id === currentUser?.id ? 'right-0' : 'left-0'} p-2 text-[8px] font-black uppercase tracking-widest flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all hover:text-primary`}
                       >
-                        <Languages size={10} /> {msg.translations?.[locale] ? 'Original' : 'Translate to ' + locale}
+                        <Languages size={10} /> {msg.translations?.[locale] ? t('chat.original') : t('chat.translateTo') + ' ' + locale}
                       </button>
                     </div>
                     <div className={`flex items-center gap-2 mt-2 px-2 text-[10px] ${msg.sender_id === currentUser?.id ? 'justify-end text-gray-400' : 'justify-start text-gray-400'}`}>
@@ -334,7 +332,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                   onClick={suggestIceBreaker}
                   className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-primary/20 transition-all"
                  >
-                    <Lightbulb size={12} /> Suggest AI Ice-Breaker
+                    <Lightbulb size={12} /> {t('chat.iceBreaker')}
                  </button>
               </div>
               <div className="flex items-center gap-4 bg-muted/30 rounded-[2rem] p-2 pl-6 focus-within:ring-2 focus-within:ring-primary/20 transition-all border border-muted">
@@ -342,7 +340,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                   type="text" 
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Type a message with respect..." 
+                  placeholder={t('chat.typeMessage')} 
                   className="flex-1 bg-transparent border-none focus:outline-none text-sm text-accent py-3"
                 />
                 <button 
@@ -363,19 +361,19 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                 <Heart size={48} className="text-primary fill-primary/10 animate-pulse" />
              </div>
               <div>
-                 <h3 className="text-3xl font-black text-accent mb-2 italic tracking-tighter">Select a Match</h3>
+                 <h3 className="text-3xl font-black text-accent mb-2 italic tracking-tighter">{t('chat.selectMatch')}</h3>
                  <p className="text-gray-400 max-w-sm mx-auto leading-relaxed">
-                   Connect with your potential partner within the Beteseb family. Secure, real-time, and privacy-focused messaging.
+                   {t('chat.selectMatchSub')}
                  </p>
               </div>
              <div className="grid grid-cols-2 gap-4 mt-8 opacity-40">
                 <div className="p-4 bg-white rounded-3xl border border-muted flex items-center gap-3">
                    <div className="w-8 h-8 rounded-lg bg-green-500/10 text-green-500 flex items-center justify-center"><CheckCheck size={16} /></div>
-                   <span className="text-[10px] font-bold uppercase">Encrypted</span>
+                   <span className="text-[10px] font-bold uppercase">{t('chat.encrypted')}</span>
                 </div>
                 <div className="p-4 bg-white rounded-3xl border border-muted flex items-center gap-3">
                    <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center"><User size={16} /></div>
-                   <span className="text-[10px] font-bold uppercase">Private</span>
+                   <span className="text-[10px] font-bold uppercase">{t('chat.private')}</span>
                 </div>
              </div>
           </div>

@@ -101,7 +101,41 @@
     "reviewPending": "Review Pending",
     "reviewNote": "Your payment screenshot is being reviewed.",
     "trialStatus": "Trial Status",
-    "daysLeft": "{count} Days Left"
+    "daysLeft": "{count} Days Left",
+    "profile": {
+      "settings": "Profile Settings",
+      "fullName": "Full Name",
+      "username": "Username (Unique)",
+      "language": "System Language",
+      "gallery": "Multi-Photo Gallery",
+      "gallerySub": "Share up to 5 additional photos",
+      "addPhoto": "Add Photo",
+      "emptySlot": "Empty Slot",
+      "about": "About & Interests",
+      "bio": "Bio / About Me",
+      "bioPlaceholder": "Tell others about yourself...",
+      "interests": "Interests & Hobbies",
+      "interestsPlaceholder": "Tradition, Family, Travel, Cooking...",
+      "save": "Save Changes",
+      "usernameTaken": "Username already taken. Please choose another.",
+      "updateSuccess": "Profile updated successfully!"
+    },
+    "chat": {
+      "matches": "Matches",
+      "search": "Search matches...",
+      "noMatches": "No matches yet. Keep exploring!",
+      "premiumOnly": "Premium Feature",
+      "premiumSub": "Direct messaging with your matches is a premium feature. Upgrade now to start your journey.",
+      "activeNow": "Active Now",
+      "iceBreaker": "Suggest AI Ice-Breaker",
+      "typeMessage": "Type a message with respect...",
+      "selectMatch": "Select a Match",
+      "selectMatchSub": "Connect with your potential partner within the Beteseb family. Secure, real-time, and privacy-focused messaging.",
+      "compatibilityHigh": "Your Abushakir Compatibility is High!",
+      "startConversation": "Start a conversation with traditional values.",
+      "encrypted": "Encrypted",
+      "private": "Private"
+    }
   },
   "Footer": {
     "tagline": "Beteseb - Global Habesha Marriage Matching",

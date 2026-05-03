@@ -101,7 +101,41 @@
     "reviewPending": "ግምገማ ላይ",
     "reviewNote": "የከፈሉበት ደረሰኝ እየተገመገመ ነው::",
     "trialStatus": "የሙከራ ጊዜ",
-    "daysLeft": "{count} ቀናት ይቀራሉ"
+    "daysLeft": "{count} ቀናት ይቀራሉ",
+    "profile": {
+      "settings": "የመገለጫ ቅንብሮች",
+      "fullName": "ሙሉ ስም",
+      "username": "መለያ ስም (Username)",
+      "language": "የሲስተም ቋንቋ",
+      "gallery": "የፎቶ ማዕከለ-ስዕላት",
+      "gallerySub": "እስከ 5 ተጨማሪ ፎቶዎችን ማጋራት ይችላሉ",
+      "addPhoto": "ፎቶ ጨምር",
+      "emptySlot": "ባዶ ቦታ",
+      "about": "ስለ እኔ እና ፍላጎቶቼ",
+      "bio": "ስለ እኔ (Bio)",
+      "bioPlaceholder": "ስለራስዎ ለሌሎች ይንገሩ...",
+      "interests": "ፍላጎቶች እና የትርፍ ጊዜ ማሳለፊያዎች",
+      "interestsPlaceholder": "ባህል፣ ቤተሰብ፣ ጉዞ፣ ምግብ ማብሰል...",
+      "save": "ለውጦችን አስቀምጥ",
+      "usernameTaken": "ይህ መለያ ስም አስቀድሞ ተይዟል። እባክዎ ሌላ ይምረጡ።",
+      "updateSuccess": "መገለጫዎ በትክክል ተዘምኗል!"
+    },
+    "chat": {
+      "matches": "ተዛማጆች",
+      "search": "ተዛማጆችን ፈልግ...",
+      "noMatches": "እስካሁን ምንም ተዛማጅ የለም። መፈለግዎን ይቀጥሉ!",
+      "premiumOnly": "የፕሪሚየም አገልግሎት",
+      "premiumSub": "ከተዛማጆችዎ ጋር መልዕክት መለዋወጥ የፕሪሚየም አገልግሎት ነው። ጉዞዎን ለመጀመር አሁኑኑ ያሻሽሉ።",
+      "activeNow": "አሁን ኦንላይን",
+      "iceBreaker": "የ AI መልዕክት ጥቆማ",
+      "typeMessage": "መልዕክትዎን በትህትና ይጻፉ...",
+      "selectMatch": "ተዛማጅ ይምረጡ",
+      "selectMatchSub": "በቤተሰብ (Beteseb) ውስጥ ካለው አጋርዎ ጋር ይገናኙ። ደህንነቱ የተጠበቀ እና ሚስጥራዊነት ያለው የመልዕክት ልውውጥ።",
+      "compatibilityHigh": "የአቡሻክር ተኳኋኝነትዎ ከፍተኛ ነው!",
+      "startConversation": "በባህላዊ እሴቶች ውይይት ይጀምሩ።",
+      "encrypted": "የተመሰጠረ",
+      "private": "ሚስጥራዊ"
+    }
   },
   "Footer": {
     "tagline": "ቤተሰብ | Beteseb",
