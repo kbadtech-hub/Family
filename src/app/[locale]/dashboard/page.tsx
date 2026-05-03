@@ -365,7 +365,7 @@ function DashboardContent() {
                   <div className="space-y-4">
                     <div className="p-5 bg-primary/5 rounded-[1.5rem]">
                       <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">{t('trialStatus')}</p>
-                      <p className="text-xl font-black text-accent italic">{t('daysLeft', { count: trialDaysLeft })}</p>
+                      <p className="text-xl font-black text-accent italic">{t('daysLeft', { count: trialDaysLeft ?? 0 })}</p>
                     </div>
                     <button onClick={() => setShowPayment(true)} className="w-full bg-primary text-white py-5 rounded-[2rem] font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20">
                       {t('premium.unlock')}
