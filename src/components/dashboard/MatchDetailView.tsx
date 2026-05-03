@@ -41,8 +41,8 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
       
       if (profileData) {
         setProfile(profileData);
-        if (profileData.gallery_photos) {
-           setPhotos(profileData.gallery_photos.map((url: string) => ({ url })));
+        if (profileData.gallery_urls) {
+           setPhotos(profileData.gallery_urls.map((url: string) => ({ url })));
         }
       }
       setLoading(false);

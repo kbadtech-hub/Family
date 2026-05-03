@@ -21,7 +21,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
   const t = useTranslations('Dashboard.profile');
   const router = useRouter();
   const pathname = usePathname();
-  const [photos, setPhotos] = useState<string[]>(profile?.gallery_photos || []);
+  const [photos, setPhotos] = useState<string[]>(profile?.gallery_urls || []);
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
