@@ -198,19 +198,19 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
       </div>
 
       {/* Profile Settings Section */}
-      <div className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-xl space-y-8">
+      <div className="bg-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 border border-gray-100 shadow-xl space-y-8 overflow-hidden">
         <h3 className="text-xl font-black text-accent italic tracking-tighter flex items-center gap-2">
            <ShieldCheck size={20} className="text-primary" /> {t('profile.settings')}
         </h3>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="flex flex-col gap-6">
            <div className="space-y-2">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">{t('profile.fullName')}</label>
               <input 
                 type="text"
                 value={formData.full_name}
                 onChange={(e) => setFormData({...formData, full_name: e.target.value})}
-                className="w-full bg-muted/30 border border-muted rounded-2xl p-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                className="w-full bg-muted/30 border border-muted rounded-2xl p-5 text-base focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
               />
            </div>
 
@@ -223,7 +223,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                    value={formData.username}
                    onChange={(e) => setFormData({...formData, username: e.target.value.toLowerCase().replace(/\s+/g, '')})}
                    placeholder="yourname"
-                   className="w-full bg-muted/30 border border-muted rounded-2xl p-5 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                   className="w-full bg-muted/30 border border-muted rounded-2xl p-5 pl-10 text-base focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                  />
               </div>
            </div>
@@ -233,7 +233,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
               <select 
                 value={formData.preferred_language}
                 onChange={(e) => setFormData({...formData, preferred_language: e.target.value})}
-                className="w-full bg-muted/30 border border-muted rounded-2xl p-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all appearance-none"
+                className="w-full bg-muted/30 border border-muted rounded-2xl p-5 text-base focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all appearance-none"
               >
                  {languages.map(lang => (
                    <option key={lang.id} value={lang.id}>{lang.label}</option>
@@ -287,19 +287,19 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
       </div>
 
       {/* Edit Details Section */}
-      <div className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-xl space-y-8">
+      <div className="bg-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 border border-gray-100 shadow-xl space-y-8 overflow-hidden">
         <h3 className="text-xl font-black text-accent italic tracking-tighter flex items-center gap-2">
            <User size={20} className="text-primary" /> {t('profile.about')}
         </h3>
         
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
            <div className="space-y-2">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">{t('profile.bio')}</label>
               <textarea 
                 value={formData.bio}
                 onChange={(e) => setFormData({...formData, bio: e.target.value})}
                 placeholder={t('profile.bioPlaceholder')}
-                className="w-full bg-muted/30 border border-muted rounded-[2rem] p-6 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[120px] resize-none"
+                className="w-full bg-muted/30 border border-muted rounded-[2rem] p-6 text-base focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[120px] resize-none"
               />
            </div>
 
@@ -310,7 +310,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                 value={formData.interests}
                 onChange={(e) => setFormData({...formData, interests: e.target.value})}
                 placeholder={t('profile.interestsPlaceholder')}
-                className="w-full bg-muted/30 border border-muted rounded-2xl p-6 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                className="w-full bg-muted/30 border border-muted rounded-2xl p-6 text-base focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
               />
            </div>
 
