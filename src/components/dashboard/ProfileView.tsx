@@ -23,10 +23,46 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || '',
+    username: profile?.username || '',
     bio: profile?.bio || '',
-    interests: profile?.interests || ''
+    interests: profile?.interests || '',
+    preferred_language: profile?.preferred_language || 'en'
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${profile.id}/avatar-${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('user_photos')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('user_photos')
+        .getPublicUrl(fileName);
+      
+      const { error: dbError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', profile.id);
+
+      if (dbError) throw dbError;
+      onUpdate();
+    } catch (error: any) {
+      alert('Avatar upload failed: ' + error.message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -51,7 +87,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
       
       const { error: dbError } = await supabase
         .from('profiles')
-        .update({ gallery_photos: newPhotos })
+        .update({ gallery_urls: newPhotos })
         .eq('id', profile.id);
 
       if (dbError) throw dbError;
@@ -70,7 +106,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
       
       const { error: dbError } = await supabase
         .from('profiles')
-        .update({ gallery_photos: newPhotos })
+        .update({ gallery_urls: newPhotos })
         .eq('id', profile.id);
 
       if (dbError) throw dbError;
@@ -83,6 +119,17 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
+    
+    // Check if username is taken if changed
+    if (formData.username && formData.username !== profile.username) {
+       const { data: existing } = await supabase.from('profiles').select('id').eq('username', formData.username).single();
+       if (existing) {
+          alert('Username already taken. Please choose another.');
+          setIsSaving(false);
+          return;
+       }
+    }
+
     const { error } = await supabase
       .from('profiles')
       .update(formData)
@@ -96,6 +143,15 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
     }
     setIsSaving(false);
   };
+
+  const languages = [
+    { id: 'en', label: 'English' },
+    { id: 'am', label: 'አማርኛ' },
+    { id: 'om', label: 'Oromoo' },
+    { id: 'ar', label: 'العربية' },
+    { id: 'ti', label: 'ትግርኛ' },
+    { id: 'so', label: 'Soomaali' }
+  ];
 
   return (
     <div className="max-w-4xl mx-auto space-y-12 pb-20">
@@ -114,22 +170,76 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                 className="w-full h-full object-cover"
                />
             </div>
-            <button className="absolute -bottom-2 -right-2 w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-xl hover:scale-110 transition-transform">
-               <Camera size={20} />
+            <button 
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={isUploading}
+              className="absolute -bottom-2 -right-2 w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-xl hover:scale-110 transition-transform"
+            >
+               {isUploading ? <Loader2 size={20} className="animate-spin" /> : <Camera size={20} />}
             </button>
+            <input type="file" ref={avatarInputRef} className="hidden" onChange={handleAvatarUpload} accept="image/*" />
           </div>
 
           <div className="flex-1 text-center md:text-left space-y-4">
-             <div className="flex items-center justify-center md:justify-start gap-3">
+             <div className="flex flex-col md:flex-row md:items-center justify-center md:justify-start gap-2">
                 <h2 className="text-3xl font-black text-accent italic tracking-tighter">{profile?.full_name}</h2>
-                {profile?.is_verified && <CheckCircle2 size={24} className="text-primary fill-primary/10" />}
+                <div className="flex items-center justify-center gap-2">
+                   {profile?.is_verified && <CheckCircle2 size={20} className="text-primary fill-primary/10" />}
+                   {profile?.username && <span className="text-xs font-bold text-gray-400">@{profile.username}</span>}
+                </div>
              </div>
              <div className="flex flex-wrap justify-center md:justify-start gap-3">
                 <span className="px-4 py-1.5 bg-primary/10 text-primary text-[10px] font-black rounded-full uppercase tracking-widest">{profile?.star_sign}</span>
-                <span className="px-4 py-1.5 bg-muted text-gray-500 text-[10px] font-black rounded-full uppercase tracking-widest">{profile?.location}</span>
+                <span className="px-4 py-1.5 bg-muted text-gray-500 text-[10px] font-black rounded-full uppercase tracking-widest">{profile?.location?.city || 'Addis Ababa'}</span>
                 <span className="px-4 py-1.5 bg-accent/5 text-accent text-[10px] font-black rounded-full uppercase tracking-widest">{profile?.role}</span>
              </div>
           </div>
+        </div>
+      </div>
+
+      {/* Profile Settings Section */}
+      <div className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-xl space-y-8">
+        <h3 className="text-xl font-black text-accent italic tracking-tighter flex items-center gap-2">
+           <ShieldCheck size={20} className="text-primary" /> Profile Settings
+        </h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+           <div className="space-y-2">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Full Name</label>
+              <input 
+                type="text"
+                value={formData.full_name}
+                onChange={(e) => setFormData({...formData, full_name: e.target.value})}
+                className="w-full bg-muted/30 border border-muted rounded-2xl p-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+              />
+           </div>
+
+           <div className="space-y-2">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Username (Unique)</label>
+              <div className="relative">
+                 <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">@</span>
+                 <input 
+                   type="text"
+                   value={formData.username}
+                   onChange={(e) => setFormData({...formData, username: e.target.value.toLowerCase().replace(/\s+/g, '')})}
+                   placeholder="yourname"
+                   className="w-full bg-muted/30 border border-muted rounded-2xl p-5 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                 />
+              </div>
+           </div>
+
+           <div className="space-y-2">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">System Language</label>
+              <select 
+                value={formData.preferred_language}
+                onChange={(e) => setFormData({...formData, preferred_language: e.target.value})}
+                className="w-full bg-muted/30 border border-muted rounded-2xl p-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all appearance-none"
+              >
+                 {languages.map(lang => (
+                   <option key={lang.id} value={lang.id}>{lang.label}</option>
+                 ))}
+              </select>
+           </div>
         </div>
       </div>
 
@@ -194,7 +304,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
            </div>
 
            <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Interests & Hobbies (Comma separated)</label>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Interests & Hobbies</label>
               <input 
                 type="text"
                 value={formData.interests}

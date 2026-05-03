@@ -253,9 +253,12 @@ function DashboardContent() {
               )}
             </div>
 
-            <div className="w-14 h-14 rounded-full bg-[#F8F4F1] border-2 border-primary/20 overflow-hidden shadow-sm">
+            <button 
+              onClick={() => setActiveTab('profile')}
+              className="w-14 h-14 rounded-full bg-[#F8F4F1] border-2 border-primary/20 overflow-hidden shadow-sm hover:border-primary transition-all active:scale-95"
+            >
               <Image src={profile?.avatar_url || 'https://images.unsplash.com/photo-1531123897727-8f129e16fd3c?auto=format&fit=crop&q=80&w=200'} alt="Avatar" width={56} height={56} className="w-full h-full object-cover" />
-            </div>
+            </button>
           </div>
         </header>
 
