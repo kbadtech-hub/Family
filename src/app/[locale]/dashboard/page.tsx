@@ -312,7 +312,7 @@ function DashboardContent() {
                   ) : isTrialExpired && paymentStatus !== 'approved' ? (
                     <div className="col-span-full bg-white p-8 md:p-12 rounded-[2.5rem] md:rounded-[3rem] border border-red-100 text-center space-y-6">
                       <div className="w-14 h-14 md:w-16 md:h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto">
-                        <AlertCircle size={28} md:size={32} />
+                        <AlertCircle className="w-7 h-7 md:w-8 md:h-8" />
                       </div>
                       <h3 className="text-xl md:text-2xl font-black text-accent italic">{t('trialExpired')}</h3>
                       <p className="text-xs md:text-gray-500 max-w-sm mx-auto">{t('trialEnded')}</p>

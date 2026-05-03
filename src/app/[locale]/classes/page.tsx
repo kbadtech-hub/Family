@@ -24,7 +24,7 @@ export default function ClassesPage() {
       {/* Hero */}
       <section className="py-20 md:py-32 px-6 flex flex-col items-center text-center space-y-6 md:space-y-8 bg-[radial-gradient(circle_at_bottom_right,_var(--primary)_0%,_transparent_40%)] bg-opacity-5">
         <div className="inline-flex items-center gap-2 px-6 py-2 bg-primary/10 rounded-full text-primary font-black text-[10px] md:text-xs tracking-widest uppercase">
-           <Sparkles size={14} md:size={16} className="fill-primary" />
+           <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 fill-primary" />
            {t('hero.tagline')}
         </div>
         <h1 className="text-4xl md:text-7xl font-black text-accent tracking-tighter max-w-4xl leading-tight">
@@ -35,7 +35,7 @@ export default function ClassesPage() {
         </p>
         <div className="flex flex-col md:flex-row gap-4 pt-6 w-full md:w-auto px-4 md:px-0">
            <Link href="/signup" className="btn-primary text-lg md:text-xl py-4 md:py-5 px-10 md:px-16 shadow-2xl shadow-primary/20 flex items-center justify-center gap-3">
-              {t('hero.cta')} <ArrowRight size={20} md:size={24} className={locale === 'ar' ? 'rotate-180' : ''} />
+              {t('hero.cta')} <ArrowRight className={`w-5 h-5 md:w-6 md:h-6 ${locale === 'ar' ? 'rotate-180' : ''}`} />
            </Link>
            <Link href="/login" className="bg-white text-accent border-2 border-accent/10 text-lg md:text-xl py-4 md:py-5 px-10 md:px-16 rounded-[1.5rem] md:rounded-[2rem] font-black uppercase tracking-tighter hover:bg-muted transition-all flex items-center justify-center">
               {t('login')}
@@ -114,12 +114,12 @@ export default function ClassesPage() {
            </div>
            <div className="flex-1 w-full bg-white/5 backdrop-blur-3xl rounded-[2.5rem] md:rounded-[4rem] p-8 md:p-12 border border-white/10 shadow-2xl relative">
               <div className="absolute -top-4 -right-4 md:-top-6 md:-right-6 w-14 h-14 md:w-20 md:h-20 bg-primary rounded-[1.5rem] md:rounded-[2.5rem] flex items-center justify-center shadow-xl shadow-primary/30 animate-bounce">
-                 <GraduationCap size={28} md:size={40} className="text-white" />
+                 <GraduationCap className="w-7 h-7 md:w-10 md:h-10 text-white" />
               </div>
               <div className="space-y-6 md:space-y-8">
                  <div className="flex gap-4 items-center justify-center md:justify-start">
                     <div className="w-10 h-10 md:w-12 md:h-12 bg-white/10 rounded-xl flex items-center justify-center">
-                       <BookOpen className="text-primary" size={20} md:size={24} />
+                       <BookOpen className="text-primary w-5 h-5 md:w-6 md:h-6" />
                     </div>
                     <p className="text-xl md:text-2xl font-black uppercase tracking-tighter italic">{t('counseling.curriculumTitle')}</p>
                  </div>
@@ -132,7 +132,7 @@ export default function ClassesPage() {
                     ].map((f, i) => (
                        <div key={i} className="flex justify-between items-center bg-white/5 p-4 md:p-5 rounded-[1.2rem] md:rounded-[1.5rem] hover:bg-white/10 transition-all cursor-default border border-white/5">
                           <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] text-white/80">{f}</p>
-                          <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-primary flex items-center justify-center shadow-lg"><Heart size={8} md:size={10} className="fill-white text-white" /></div>
+                          <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-primary flex items-center justify-center shadow-lg"><Heart className="w-2 h-2 md:w-2.5 md:h-2.5 fill-white text-white" /></div>
                        </div>
                     ))}
                  </div>

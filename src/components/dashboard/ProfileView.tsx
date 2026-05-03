@@ -183,7 +183,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
               disabled={isUploading}
               className="absolute -bottom-1 -right-1 md:-bottom-2 md:-right-2 w-10 h-10 md:w-12 md:h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-xl hover:scale-110 transition-transform"
             >
-               {isUploading ? <Loader2 size={18} className="animate-spin" /> : <Camera size={18} md:size={20} />}
+               {isUploading ? <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" /> : <Camera className="w-4 h-4 md:w-5 md:h-5" />}
             </button>
             <input type="file" ref={avatarInputRef} className="hidden" onChange={handleAvatarUpload} accept="image/*" />
           </div>
@@ -192,7 +192,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
              <div className="flex flex-col md:flex-row md:items-center justify-center md:justify-start gap-2">
                 <h2 className="text-2xl md:text-3xl font-black text-accent italic tracking-tighter">{profile?.full_name}</h2>
                 <div className="flex items-center justify-center gap-2">
-                   {profile?.is_verified && <CheckCircle2 size={16} md:size={20} className="text-primary fill-primary/10" />}
+                   {profile?.is_verified && <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 text-primary fill-primary/10" />}
                    {profile?.username && <span className="text-[10px] md:text-xs font-bold text-gray-400">@{profile.username}</span>}
                 </div>
              </div>
