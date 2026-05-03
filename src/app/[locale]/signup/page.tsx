@@ -53,23 +53,6 @@ function SignupContent() {
     }
   }, [isSuccess, locale]);
 
-  const handleGoogleSignup = async () => {
-    if (!agreedToTerms) {
-      setError(locale === 'am' ? 'እባክዎ መጀመሪያ በደንቦቹ ላይ ይስማሙ' : 'Please agree to the terms first');
-      return;
-    }
-    setIsLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/${locale}/dashboard`,
-      },
-    });
-    if (error) {
-      setError(error.message);
-      setIsLoading(false);
-    }
-  };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -198,26 +181,16 @@ function SignupContent() {
             )}
 
             {view === 'initial' ? (
-              <div className="space-y-4">
-                {/* Google Button */}
-                <button
-                  onClick={handleGoogleSignup}
-                  disabled={isLoading}
-                  className="w-full flex items-center justify-center gap-4 py-4 bg-white border border-border rounded-2xl shadow-sm hover:shadow-md hover:border-primary/30 transition-all group"
-                >
-                  <Image src="/google.svg" alt="Google" width={20} height={20} />
-                  <span className="font-bold text-sm text-accent">
-                    {locale === 'am' ? 'በጎግል ይቀጥሉ' : 'Continue with Google'}
-                  </span>
-                </button>
-
+              <div className="grid grid-cols-1 gap-4">
                 {/* Phone Button */}
                 <button
                   onClick={() => setView('phone')}
-                  className="w-full flex items-center justify-center gap-4 py-4 bg-[#F8F4F1] rounded-2xl hover:bg-primary hover:text-white transition-all group"
+                  className="w-full flex flex-col items-center justify-center gap-3 py-8 bg-primary text-white rounded-[2rem] shadow-xl shadow-primary/20 hover:shadow-2xl hover:bg-primary/90 transition-all group"
                 >
-                  <Phone size={20} className="text-primary group-hover:text-white transition-colors" />
-                  <span className="font-bold text-sm text-accent group-hover:text-white transition-colors">
+                  <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Phone size={24} />
+                  </div>
+                  <span className="font-black uppercase tracking-[0.1em] text-xs">
                     {locale === 'am' ? 'በስልክ ቁጥር ይቀጥሉ' : 'Continue with Phone'}
                   </span>
                 </button>
@@ -225,10 +198,12 @@ function SignupContent() {
                 {/* Email Button */}
                 <button
                   onClick={() => setView('email')}
-                  className="w-full flex items-center justify-center gap-4 py-4 bg-[#F8F4F1] rounded-2xl hover:bg-primary hover:text-white transition-all group"
+                  className="w-full flex flex-col items-center justify-center gap-3 py-8 bg-accent text-white rounded-[2rem] shadow-xl shadow-accent/20 hover:shadow-2xl hover:bg-accent/90 transition-all group"
                 >
-                  <Mail size={20} className="text-primary group-hover:text-white transition-colors" />
-                  <span className="font-bold text-sm text-accent group-hover:text-white transition-colors">
+                  <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Mail size={24} />
+                  </div>
+                  <span className="font-black uppercase tracking-[0.1em] text-xs">
                     {locale === 'am' ? 'በኢሜይል ይቀጥሉ' : 'Continue with Email'}
                   </span>
                 </button>
