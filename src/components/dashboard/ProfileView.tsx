@@ -154,9 +154,9 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
   ];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12 pb-20">
+    <div className="max-w-4xl mx-auto space-y-10 pb-20 px-4 md:px-0 overflow-hidden">
       {/* Header Profile Section */}
-      <div className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-xl relative overflow-hidden">
+      <div className="bg-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 border border-gray-100 shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl" />
         
         <div className="relative flex flex-col md:flex-row items-center gap-10">
