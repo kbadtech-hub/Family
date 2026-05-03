@@ -66,6 +66,7 @@ function DashboardContent() {
   const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
   const [isTrialExpired, setIsTrialExpired] = useState(false);
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
+  const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
 
   const languages = [
     { id: 'en', label: 'English' },
@@ -169,6 +170,14 @@ function DashboardContent() {
           image: p.avatar_url || 'https://images.unsplash.com/photo-1531123897727-8f129e16fd3c?auto=format&fit=crop&q=80&w=200'
         })));
       }
+
+      // 6. Fetch Pending Friend Requests Count
+      const { count } = await supabase.from('friendships')
+        .select('*', { count: 'exact', head: true })
+        .eq('friend_id', user.id)
+        .eq('status', 'pending');
+      
+      setPendingRequestsCount(count || 0);
     };
     fetchData();
   }, []);
@@ -200,11 +209,16 @@ function DashboardContent() {
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`flex-1 md:flex-none flex items-center gap-4 p-4 rounded-[1.5rem] transition-all duration-300 ${activeTab === item.id ? 'bg-primary text-white shadow-lg' : 'text-white/40 hover:bg-white/5'
+              className={`flex-1 md:flex-none flex items-center gap-4 p-4 rounded-[1.5rem] transition-all duration-300 relative ${activeTab === item.id ? 'bg-primary text-white shadow-lg' : 'text-white/40 hover:bg-white/5'
                 }`}
             >
               <item.icon size={22} />
               <span className="hidden md:block font-bold text-[10px] uppercase tracking-widest">{item.label}</span>
+              {item.id === 'chat' && pendingRequestsCount > 0 && (
+                <span className="absolute top-2 right-2 md:relative md:top-0 md:right-0 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-lg border-2 border-[#0F172A] md:border-none animate-pulse">
+                  {pendingRequestsCount}
+                </span>
+              )}
             </button>
           ))}
           <button

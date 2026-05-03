@@ -2,7 +2,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Heart, MapPin, MessageCircle, ChevronLeft, ChevronRight, X, ShieldCheck, CheckCircle2, Sparkles, UserPlus, UserCheck, UserClock, Loader2 } from 'lucide-react';
+import { 
+  Heart, 
+  MapPin, 
+  MessageCircle, 
+  ChevronLeft, 
+  ChevronRight, 
+  X, 
+  ShieldCheck, 
+  CheckCircle2, 
+  Sparkles, 
+  UserPlus, 
+  UserCheck, 
+  UserClock, 
+  Loader2 
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 

@@ -27,7 +27,7 @@ export default function ClassesPage() {
            <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 fill-primary" />
            {t('hero.tagline')}
         </div>
-        <h1 className="text-4xl md:text-7xl font-black text-accent tracking-tight max-w-4xl leading-[1.1]">
+        <h1 className="text-4xl md:text-7xl font-black text-accent tracking-tight max-w-4xl leading-[1.2] md:leading-[1.1]">
           {t('hero.title1')} <br /> <span className="text-primary italic underline decoration-primary/20">{t('hero.title2')}</span>
         </h1>
         <p className="text-base md:text-xl text-gray-500 max-w-2xl leading-relaxed font-medium italic">
@@ -97,7 +97,7 @@ export default function ClassesPage() {
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-12 md:gap-20 items-center relative z-10">
            <div className={`flex-1 space-y-6 md:space-y-10 ${locale === 'ar' ? 'text-right' : 'text-left'} text-center md:text-left`}>
               <h2 className="text-[10px] md:text-sm font-black text-primary uppercase tracking-[0.4em]">{t('counseling.tagline')}</h2>
-              <h3 className="text-4xl md:text-7xl font-black tracking-tight leading-[1.1] italic">{t('counseling.title1')} <br /> <span className="text-primary">{t('counseling.title2')}</span></h3>
+              <h3 className="text-4xl md:text-7xl font-black tracking-tight leading-[1.2] md:leading-[1.1] italic">{t('counseling.title1')} <br /> <span className="text-primary">{t('counseling.title2')}</span></h3>
               <p className="text-base md:text-lg text-white/50 leading-relaxed max-w-xl font-medium italic mx-auto md:mx-0">
                  {t('counseling.subtitle')}
               </p>
