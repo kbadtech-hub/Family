@@ -659,18 +659,18 @@
   "Contact": {
     "title": "Contact Us",
     "subtitle": "The Bridge of Trust",
-    "description": "We are always close to you! Do you have a question, suggestion, or complaint? 'Beteseb' is always ready to hear your voice. We welcome you with a smile via phone, email, our modern AI chatbot, or at our offices located in London and Harar.",
+    "description": "We are always close to you! Do you have a question, suggestion, or complaint? 'Beteseb' is always ready to hear your voice. We welcome you with a smile via phone, email, our modern AI chatbot, or at our headquarters in London.",
     "infoTitle": "Contact Channels",
     "socialTitle": "Social Media",
-    "phone": "Phone Numbers",
+    "phone": "Phone Number",
     "email": "Email Address",
-    "address": "Our Locations",
+    "address": "Our Location",
     "hqLabel": "Headquarters",
     "hqAddress": "London, England",
-    "branchLabel": "Branch Office",
-    "branchAddress": "Harar, Ethiopia",
-    "phone1": "+44 7347 663219",
-    "phone2": "+251 946 414018"
+    "branchLabel": "",
+    "branchAddress": "",
+    "phone1": "+447347663254",
+    "phone2": ""
   },
   "Legal": {
     "Terms": {
