@@ -25,10 +25,13 @@ import {
   Bell,
   Check,
   CheckCircle2,
-  X as CloseIcon
+  X as CloseIcon,
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 import Image from 'next/image';
 import { User as SupabaseUser } from '@supabase/supabase-js';
+import CallInterface from '@/components/dashboard/CallInterface';
 
 interface Message {
   id: string;
@@ -59,6 +62,8 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
   const [loading, setLoading] = useState(true);
   const [friendRequests, setFriendRequests] = useState<any[]>([]);
   const [isFriend, setIsFriend] = useState(false);
+  const [isGeneratingIceBreaker, setIsGeneratingIceBreaker] = useState(false);
+  const [activeCallMatch, setActiveCallMatch] = useState<Profile | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const tf = useTranslations('Friendship');
 
@@ -175,6 +180,33 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
     ];
     const random = suggestions[Math.floor(Math.random() * suggestions.length)];
     setNewMessage(random);
+  };
+
+  const generateIceBreakerAI = async () => {
+    if (!selectedMatch) return;
+    setIsGeneratingIceBreaker(true);
+    
+    try {
+      const res = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          message: `Generate a unique, culturally respectful, warm dating ice-breaker conversation starter in ${locale === 'am' ? 'Amharic' : 'English'} for a match whose name is ${selectedMatch.full_name} and star sign is ${selectedMatch.star_sign || 'Unknown'}. Keep it concise (1-2 sentences) and highly engaging.`, 
+          locale 
+        })
+      });
+      const data = await res.json();
+      if (data.text) {
+        setNewMessage(data.text);
+      } else {
+        suggestIceBreaker();
+      }
+    } catch (err) {
+      console.error("Failed to generate AI ice-breaker:", err);
+      suggestIceBreaker(); // Fallback to local array
+    } finally {
+      setIsGeneratingIceBreaker(false);
+    }
   };
 
   const handleTranslate = async (messageId: string, targetLang: string) => {
@@ -369,8 +401,20 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                 </div>
               </div>
               <div className="flex items-center gap-4 text-gray-400">
-                <button aria-label="Start phone call" className="hover:text-primary transition-colors"><Phone size={20} /></button>
-                <button aria-label="Start video call" className="hover:text-primary transition-colors"><Video size={20} /></button>
+                <button 
+                  onClick={() => setActiveCallMatch(selectedMatch)}
+                  aria-label="Start phone call" 
+                  className="hover:text-primary transition-colors"
+                >
+                  <Phone size={20} />
+                </button>
+                <button 
+                  onClick={() => setActiveCallMatch(selectedMatch)}
+                  aria-label="Start video call" 
+                  className="hover:text-primary transition-colors"
+                >
+                  <Video size={20} />
+                </button>
                 <button aria-label="More options" className="hover:text-primary transition-colors"><MoreVertical size={20} /></button>
               </div>
             </header>
@@ -425,9 +469,18 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                  <button 
                   type="button"
                   onClick={suggestIceBreaker}
-                  className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-primary/20 transition-all"
+                  className="flex items-center gap-2 px-4 py-2 bg-muted text-accent border border-gray-100 rounded-full text-[9px] font-black uppercase tracking-widest hover:bg-primary/10 hover:text-primary transition-all shadow-sm"
                  >
-                    <Lightbulb size={12} /> {t('iceBreaker')}
+                    <Lightbulb size={12} /> Templates
+                 </button>
+                 <button 
+                  type="button"
+                  onClick={generateIceBreakerAI}
+                  disabled={isGeneratingIceBreaker}
+                  className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-full text-[9px] font-black uppercase tracking-widest hover:bg-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 shadow-sm"
+                 >
+                    {isGeneratingIceBreaker ? <Loader2 className="animate-spin" size={12} /> : <Sparkles size={12} className="fill-primary" />}
+                    AI Ice-breaker
                  </button>
               </div>
               <div className="flex items-center gap-4 bg-muted/30 rounded-[2rem] p-2 pl-6 focus-within:ring-2 focus-within:ring-primary/20 transition-all border border-muted">
@@ -474,6 +527,12 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
           </div>
         )}
       </div>
+      {activeCallMatch && (
+        <CallInterface 
+          matchProfile={activeCallMatch} 
+          onEndCall={() => setActiveCallMatch(null)} 
+        />
+      )}
     </div>
   );
 }

@@ -29,6 +29,7 @@ import PaymentTab from '@/components/dashboard/PaymentTab';
 import ChatView from '@/components/dashboard/ChatView';
 import ProfileView from '@/components/dashboard/ProfileView';
 import MatchDetailView from '@/components/dashboard/MatchDetailView';
+import SwipeCards from '@/components/dashboard/SwipeCards';
 import LessonsView from '@/components/dashboard/LessonsView';
 import SubscriptionGate from '@/components/SubscriptionGate';
 
@@ -51,6 +52,7 @@ function DashboardContent() {
     currency_locked: 'USD' | 'ETB';
     onboarding_completed: boolean;
     role: string;
+    is_premium?: boolean;
   }
 
   interface Match {
@@ -71,6 +73,8 @@ function DashboardContent() {
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [friendshipStatuses, setFriendshipStatuses] = useState<Record<string, string>>({});
+  const [matchingView, setMatchingView] = useState<'grid' | 'swipe'>('grid');
+  const [candidates, setCandidates] = useState<any[]>([]);
 
   const languages = [
     { id: 'en', label: 'English' },
@@ -189,6 +193,7 @@ function DashboardContent() {
       const { data: profiles } = await matchQuery.limit(10);
 
       if (profiles && profileData) {
+        setCandidates(profiles);
         const processedMatches = profiles.map(p => ({
           id: p.id,
           name: p.full_name || 'Anonymous',
@@ -417,50 +422,82 @@ function DashboardContent() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             <div className="lg:col-span-2 space-y-10">
               <section>
-                <div className="flex justify-between items-center mb-8">
+                <div className="flex justify-between items-center mb-8 flex-col sm:flex-row gap-4">
                   <h2 className="text-xl font-black uppercase tracking-tighter text-[#0F172A]">{t('matching.title')}</h2>
-                  <button className="text-primary font-bold text-[10px] uppercase tracking-widest flex items-center gap-2 underline decoration-primary/20">
-                    {t('matching.viewAll')} <ArrowUpRight size={14} />
-                  </button>
+                  
+                  <div className="flex items-center gap-4">
+                    {/* View Switcher Toggle */}
+                    {!showPayment && !isTrialExpired && matches.length > 0 && (
+                      <div className="flex p-1 bg-muted rounded-2xl w-fit border border-gray-100 shadow-sm">
+                        <button 
+                          onClick={() => setMatchingView('grid')} 
+                          className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${matchingView === 'grid' ? 'bg-primary text-white shadow-sm' : 'text-gray-400'}`}
+                        >
+                          Grid View
+                        </button>
+                        <button 
+                          onClick={() => setMatchingView('swipe')} 
+                          className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${matchingView === 'swipe' ? 'bg-primary text-white shadow-sm' : 'text-gray-400'}`}
+                        >
+                          Swipe Deck
+                        </button>
+                      </div>
+                    )}
+                    <button className="text-primary font-bold text-[10px] uppercase tracking-widest flex items-center gap-2 underline decoration-primary/20">
+                      {t('matching.viewAll')} <ArrowUpRight size={14} />
+                    </button>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                  {showPayment && profile ? (
-                    <div className="col-span-full">
-                      <button onClick={() => setShowPayment(false)} className="mb-6 text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">← {t('backToDash')}</button>
-                      <PaymentTab />
-                    </div>
-                  ) : isTrialExpired && paymentStatus !== 'approved' ? (
-                    <div className="col-span-full bg-white p-8 md:p-12 rounded-[2.5rem] md:rounded-[3rem] border border-red-100 text-center space-y-6">
-                      <div className="w-14 h-14 md:w-16 md:h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto">
-                        <AlertCircle className="w-7 h-7 md:w-8 md:h-8" />
+                {matchingView === 'swipe' && !showPayment && !isTrialExpired && matches.length > 0 && profile ? (
+                  <div className="animate-in zoom-in-95 duration-500 py-4">
+                    <SwipeCards 
+                      userProfile={profile} 
+                      candidates={candidates} 
+                      onLike={(id) => setSelectedMatchId(id)}
+                      onPass={(id) => console.log("Passed candidate:", id)}
+                      isPremium={profile?.is_premium}
+                    />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 animate-in fade-in duration-500">
+                    {showPayment && profile ? (
+                      <div className="col-span-full">
+                        <button onClick={() => setShowPayment(false)} className="mb-6 text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">← {t('backToDash')}</button>
+                        <PaymentTab />
                       </div>
-                      <h3 className="text-xl md:text-2xl font-black text-accent italic">{t('trialExpired')}</h3>
-                      <p className="text-xs md:text-gray-500 max-w-sm mx-auto">{t('trialEnded')}</p>
-                      <button onClick={() => setShowPayment(true)} className="w-full md:w-auto bg-primary text-white px-10 py-4 rounded-2xl font-bold uppercase tracking-widest shadow-xl shadow-primary/20">{t('upgradeNow')}</button>
-                    </div>
-                  ) : matches.length === 0 ? (
-                    <div className="col-span-full py-20 text-center text-gray-400 font-bold uppercase tracking-widest text-[10px]">
-                       {t('searching')}
-                    </div>
-                  ) : (
-                    matches.map(match => (
-                      <div 
-                        key={match.id} 
-                        onClick={() => setSelectedMatchId(match.id)}
-                        className="bg-white p-4 md:p-6 rounded-[2.5rem] border border-border shadow-sm group hover:shadow-xl transition-all duration-500 cursor-pointer w-full"
-                      >
-                        <div className="relative aspect-square rounded-[2rem] overflow-hidden mb-5">
-                          <Image src={match.image} alt={match.name} width={400} height={400} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                          <div className={`absolute top-4 ${locale === 'ar' ? 'left-4' : 'right-4'} bg-primary text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg`}>
-                            {match.match_percent}% {t('matching.percent')}
-                          </div>
+                    ) : isTrialExpired && paymentStatus !== 'approved' ? (
+                      <div className="col-span-full bg-white p-8 md:p-12 rounded-[2.5rem] md:rounded-[3rem] border border-red-100 text-center space-y-6">
+                        <div className="w-14 h-14 md:w-16 md:h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto">
+                          <AlertCircle className="w-7 h-7 md:w-8 md:h-8" />
                         </div>
-                        <h3 className="text-base md:text-lg font-black text-[#0F172A] text-center md:text-left">{match.name}</h3>
+                        <h3 className="text-xl md:text-2xl font-black text-accent italic">{t('trialExpired')}</h3>
+                        <p className="text-xs md:text-gray-500 max-w-sm mx-auto">{t('trialEnded')}</p>
+                        <button onClick={() => setShowPayment(true)} className="w-full md:w-auto bg-primary text-white px-10 py-4 rounded-2xl font-bold uppercase tracking-widest shadow-xl shadow-primary/20">{t('upgradeNow')}</button>
                       </div>
-                    ))
-                  )}
-                </div>
+                    ) : matches.length === 0 ? (
+                      <div className="col-span-full py-20 text-center text-gray-400 font-bold uppercase tracking-widest text-[10px]">
+                         {t('searching')}
+                      </div>
+                    ) : (
+                      matches.map(match => (
+                        <div 
+                          key={match.id} 
+                          onClick={() => setSelectedMatchId(match.id)}
+                          className="bg-white p-4 md:p-6 rounded-[2.5rem] border border-border shadow-sm group hover:shadow-xl transition-all duration-500 cursor-pointer w-full"
+                        >
+                          <div className="relative aspect-square rounded-[2rem] overflow-hidden mb-5">
+                            <Image src={match.image} alt={match.name} width={400} height={400} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                            <div className={`absolute top-4 ${locale === 'ar' ? 'left-4' : 'right-4'} bg-primary text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg`}>
+                              {match.match_percent}% {t('matching.percent')}
+                            </div>
+                          </div>
+                          <h3 className="text-base md:text-lg font-black text-[#0F172A] text-center md:text-left">{match.name}</h3>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
               </section>
             </div>
 
