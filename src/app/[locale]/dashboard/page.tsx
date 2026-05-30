@@ -7,6 +7,7 @@ import { useRouter, usePathname } from '@/i18n/routing';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { calculateCompatibility } from '@/lib/compatibility';
+import { OfflineCache } from '@/lib/offline-cache';
 import {
   Home,
   MessageCircle,
@@ -105,11 +106,26 @@ function DashboardContent() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Load Cached Profile if available to show immediately
+      const cachedProfile = OfflineCache.getCachedData(`profile_${user.id}`);
+      if (cachedProfile) {
+        setProfile(cachedProfile);
+        if (cachedProfile.trial_ends_at) {
+          const ends = new Date(cachedProfile.trial_ends_at);
+          const now = new Date();
+          const diff = ends.getTime() - now.getTime();
+          const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+          setTrialDaysLeft(days > 0 ? days : 0);
+          setIsTrialExpired(diff <= 0);
+        }
+      }
+
       // 1. Fetch Profile
       const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
       let currentTrialExpired = false;
       if (profileData) {
         setProfile(profileData as Profile);
+        OfflineCache.cacheData(`profile_${user.id}`, profileData);
         if (profileData.trial_ends_at) {
           const ends = new Date(profileData.trial_ends_at);
           const now = new Date();
@@ -151,6 +167,13 @@ function DashboardContent() {
       setProfile(prev => prev ? { ...prev, is_premium: isPremium } : null);
 
       // 5. Fetch Matches (Gender-Based Logic)
+      // Load Cached Matches if available
+      const cachedMatches = OfflineCache.getCachedData(`matches_${user.id}`);
+      if (cachedMatches) {
+        setMatches(cachedMatches);
+      }
+
+      // 5. Fetch Matches (Gender-Based Logic)
       let matchQuery = supabase.from('profiles')
         .select('*')
         .neq('id', user.id)
@@ -165,13 +188,15 @@ function DashboardContent() {
 
       const { data: profiles } = await matchQuery.limit(10);
 
-      if (profiles) {
-        setMatches(profiles.map(p => ({
+      if (profiles && profileData) {
+        const processedMatches = profiles.map(p => ({
           id: p.id,
           name: p.full_name || 'Anonymous',
           match_percent: calculateCompatibility(profileData, p),
           image: p.avatar_url || 'https://images.unsplash.com/photo-1531123897727-8f129e16fd3c?auto=format&fit=crop&q=80&w=200'
-        })));
+        }));
+        setMatches(processedMatches);
+        OfflineCache.cacheData(`matches_${user.id}`, processedMatches);
       }
 
       // 6. Fetch Pending Friend Requests Count

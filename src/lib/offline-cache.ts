@@ -1,129 +1,98 @@
 import { supabase } from './supabase';
 
-export interface OfflineMessage {
-  id?: string;
-  sender_id: string;
-  receiver_id: string;
-  content: string;
-  created_at: string;
-  is_offline?: boolean;
-}
-
 export const OfflineCache = {
-  // Profiles Caching
-  cacheProfiles: (key: string, data: any): void => {
+  // Caching profile & matches data locally
+  cacheData: (key: string, data: any) => {
     if (typeof window !== 'undefined') {
       try {
-        localStorage.setItem(`beteseb_cache_profiles_${key}`, JSON.stringify(data));
+        localStorage.setItem(`beteseb_cache_${key}`, JSON.stringify(data));
       } catch (e) {
-        console.error("Profile caching failed", e);
+        console.error("Local storage caching failed:", e);
       }
     }
   },
 
-  getCachedProfiles: (key: string): any | null => {
+  getCachedData: (key: string): any | null => {
     if (typeof window !== 'undefined') {
       try {
-        const cached = localStorage.getItem(`beteseb_cache_profiles_${key}`);
+        const cached = localStorage.getItem(`beteseb_cache_${key}`);
         return cached ? JSON.parse(cached) : null;
       } catch (e) {
-        console.error("Reading profile cache failed", e);
+        console.error("Failed to read local storage cache:", e);
       }
     }
     return null;
   },
 
-  // Messages Caching
-  cacheMessages: (chatKey: string, messages: any[]): void => {
+  // Queue offline message
+  queueOfflineMessage: (message: {
+    sender_id: string;
+    receiver_id: string;
+    content: string;
+  }) => {
     if (typeof window !== 'undefined') {
       try {
-        localStorage.setItem(`beteseb_cache_msg_${chatKey}`, JSON.stringify(messages));
+        const queue = JSON.parse(localStorage.getItem('beteseb_offline_messages') || '[]');
+        queue.push({
+          ...message,
+          id: `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          created_at: new Date().toISOString(),
+          is_offline_pending: true
+        });
+        localStorage.setItem('beteseb_offline_messages', JSON.stringify(queue));
       } catch (e) {
-        console.error("Message caching failed", e);
+        console.error("Failed to queue offline message:", e);
       }
     }
   },
 
-  getCachedMessages: (chatKey: string): any[] => {
+  getOfflineQueue: (): any[] => {
     if (typeof window !== 'undefined') {
       try {
-        const cached = localStorage.getItem(`beteseb_cache_msg_${chatKey}`);
-        return cached ? JSON.parse(cached) : [];
+        return JSON.parse(localStorage.getItem('beteseb_offline_messages') || '[]');
       } catch (e) {
-        console.error("Reading message cache failed", e);
-      }
-    }
-    return [];
-  },
-
-  // Offline Message Queueing
-  queueOfflineMessage: (msg: OfflineMessage): void => {
-    if (typeof window !== 'undefined') {
-      try {
-        const queue: OfflineMessage[] = JSON.parse(
-          localStorage.getItem('beteseb_offline_messages_queue') || '[]'
-        );
-        queue.push(msg);
-        localStorage.setItem('beteseb_offline_messages_queue', JSON.stringify(queue));
-      } catch (e) {
-        console.error("Queueing offline message failed", e);
-      }
-    }
-  },
-
-  getOfflineQueue: (): OfflineMessage[] => {
-    if (typeof window !== 'undefined') {
-      try {
-        return JSON.parse(localStorage.getItem('beteseb_offline_messages_queue') || '[]');
-      } catch (e) {
-        console.error("Reading offline queue failed", e);
+        console.error("Failed to read offline message queue:", e);
       }
     }
     return [];
   },
 
-  clearOfflineQueue: (): void => {
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.removeItem('beteseb_offline_messages_queue');
-      } catch (e) {
-        console.error("Clearing offline queue failed", e);
-      }
-    }
-  },
-
-  // Flush Queue to Supabase when back online
+  // Sync / Flush offline queue
   syncOfflineMessages: async (): Promise<boolean> => {
-    if (typeof window === 'undefined' || !navigator.onLine) return false;
-
+    if (typeof window === 'undefined') return false;
+    
     const queue = OfflineCache.getOfflineQueue();
     if (queue.length === 0) return true;
 
-    console.log(`Beteseb Cache: Syncing ${queue.length} offline messages...`);
+    console.log(`Beteseb Offline Sync: Syncing ${queue.length} pending offline messages...`);
+    
     try {
-      // Prepare messages for bulk insert, omitting temporary fields
-      const payload = queue.map(msg => ({
-        sender_id: msg.sender_id,
-        receiver_id: msg.receiver_id,
-        content: msg.content
+      const messagesToSend = queue.map(({ sender_id, receiver_id, content }) => ({
+        sender_id,
+        receiver_id,
+        content
       }));
 
-      const { error } = await supabase.from('messages').insert(payload);
-      if (error) throw error;
-
-      OfflineCache.clearOfflineQueue();
-      console.log("Beteseb Cache: Offline message sync successful!");
-      return true;
+      const { error } = await supabase.from('messages').insert(messagesToSend);
+      
+      if (!error) {
+        localStorage.removeItem('beteseb_offline_messages');
+        console.log("Beteseb Offline Sync: All offline messages successfully synchronized!");
+        return true;
+      } else {
+        console.error("Failed to insert synced offline messages:", error);
+      }
     } catch (e) {
-      console.error("Offline message synchronization failed", e);
-      return false;
+      console.error("Error during offline sync process:", e);
     }
+    return false;
   }
 };
 
-// Initialize automatic synchronization listeners
+// Auto-register online sync listener
 if (typeof window !== 'undefined') {
   window.addEventListener('online', () => {
+    console.log("Beteseb Offline Sync: Internet connection restored. Triggering offline sync...");
     OfflineCache.syncOfflineMessages();
   });
 }

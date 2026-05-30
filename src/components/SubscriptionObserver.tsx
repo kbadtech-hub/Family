@@ -6,6 +6,7 @@ import { useLocale } from 'next-intl';
 import { supabase } from '@/lib/supabase';
 import { getUserSubscriptionInfo, SubscriptionInfo } from '@/lib/subscription';
 import { AlertCircle, ArrowRight, X, Lock, CreditCard } from 'lucide-react';
+import { registerPushNotifications } from '@/lib/push-notifications';
 
 export default function SubscriptionObserver() {
   const [subInfo, setSubInfo] = useState<SubscriptionInfo | null>(null);
@@ -18,6 +19,9 @@ export default function SubscriptionObserver() {
     async function checkSub() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+
+      // Register push notifications for native platforms
+      registerPushNotifications();
 
       const info = await getUserSubscriptionInfo(user.id);
       setSubInfo(info);
