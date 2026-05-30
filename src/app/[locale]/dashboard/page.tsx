@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter, usePathname } from '@/i18n/routing';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { calculateCompatibility } from '@/lib/compatibility';
 import {
   Home,
   MessageCircle,
@@ -168,7 +169,7 @@ function DashboardContent() {
         setMatches(profiles.map(p => ({
           id: p.id,
           name: p.full_name || 'Anonymous',
-          match_percent: 85 + Math.floor(Math.random() * 10),
+          match_percent: calculateCompatibility(profileData, p),
           image: p.avatar_url || 'https://images.unsplash.com/photo-1531123897727-8f129e16fd3c?auto=format&fit=crop&q=80&w=200'
         })));
       }
