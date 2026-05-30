@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from '@/i18n/routing';
+import { OfflineCache } from '@/lib/offline-cache';
 import { useTranslations, useLocale } from 'next-intl';
 import { 
   Send, 
@@ -68,39 +69,48 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
       setCurrentUser(user);
 
       if (user) {
-        // Fetch Matches/Friends
-        const { data: friends } = await supabase
-          .from('friendships')
-          .select(`
-            *,
-            sender:sender_id(id, full_name, avatar_url, star_sign, is_verified),
-            receiver:receiver_id(id, full_name, avatar_url, star_sign, is_verified)
-          `)
-          .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
-        
-        const friendList = (friends || [])
-          .filter(f => f.status === 'accepted')
-          .map(f => f.sender_id === user.id ? f.receiver : f.sender);
-        
-        // Also show some potential matches if no friends
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('*')
-          .neq('id', user.id)
-          .limit(20);
-        
-        // Merge - prioritizing accepted friends
-        const merged = [...friendList, ...(profiles || []).filter(p => !friendList.find(f => f.id === p.id))];
-        setMatches(merged);
+        // Load offline cache first
+        const cachedProfiles = OfflineCache.getCachedProfiles(user.id);
+        if (cachedProfiles) {
+          setMatches(cachedProfiles);
+        }
 
-        // Fetch Pending Requests
-        const { data: requests } = await supabase
-          .from('friendships')
-          .select('*, profiles:sender_id(id, full_name, avatar_url)')
-          .eq('receiver_id', user.id)
-          .eq('status', 'pending');
-        
-        if (requests) setFriendRequests(requests);
+        if (typeof window !== 'undefined' && navigator.onLine) {
+          // Fetch Matches/Friends
+          const { data: friends } = await supabase
+            .from('friendships')
+            .select(`
+              *,
+              sender:sender_id(id, full_name, avatar_url, star_sign, is_verified),
+              receiver:receiver_id(id, full_name, avatar_url, star_sign, is_verified)
+            `)
+            .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
+          
+          const friendList = (friends || [])
+            .filter(f => f.status === 'accepted')
+            .map(f => f.sender_id === user.id ? f.receiver : f.sender);
+          
+          // Also show some potential matches if no friends
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('*')
+            .neq('id', user.id)
+            .limit(20);
+          
+          // Merge - prioritizing accepted friends
+          const merged = [...friendList, ...(profiles || []).filter(p => !friendList.find(f => f.id === p.id))];
+          setMatches(merged);
+          OfflineCache.cacheProfiles(user.id, merged);
+
+          // Fetch Pending Requests
+          const { data: requests } = await supabase
+            .from('friendships')
+            .select('*, profiles:sender_id(id, full_name, avatar_url)')
+            .eq('receiver_id', user.id)
+            .eq('status', 'pending');
+          
+          if (requests) setFriendRequests(requests);
+        }
       }
       setLoading(false);
     };
@@ -122,14 +132,24 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
 
     checkFriendship();
 
+    const chatKey = [currentUser.id, selectedMatch.id].sort().join('_');
+    const cachedMsg = OfflineCache.getCachedMessages(chatKey);
+    if (cachedMsg.length > 0) {
+      setMessages(cachedMsg);
+    }
+
     const fetchMessages = async () => {
+      if (typeof window !== 'undefined' && !navigator.onLine) return;
       const { data } = await supabase
         .from('messages')
         .select('*')
         .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${selectedMatch.id}),and(sender_id.eq.${selectedMatch.id},receiver_id.eq.${currentUser.id})`)
         .order('created_at', { ascending: true });
       
-      if (data) setMessages(data);
+      if (data) {
+        setMessages(data);
+        OfflineCache.cacheMessages(chatKey, data);
+      }
     };
 
     fetchMessages();
@@ -221,10 +241,35 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
       content: newMessage.trim(),
     };
 
+    const chatKey = [currentUser.id, selectedMatch.id].sort().join('_');
+
+    if (typeof window !== 'undefined' && !navigator.onLine) {
+      // Offline fallback
+      const tempId = `temp-${Date.now()}`;
+      const offlineMsg = {
+        id: tempId,
+        sender_id: currentUser.id,
+        receiver_id: selectedMatch.id,
+        content: newMessage.trim(),
+        is_read: false,
+        created_at: new Date().toISOString(),
+        is_offline: true
+      };
+      
+      const updatedMessages = [...messages, offlineMsg];
+      setMessages(updatedMessages);
+      OfflineCache.cacheMessages(chatKey, updatedMessages);
+      OfflineCache.queueOfflineMessage(offlineMsg);
+      setNewMessage('');
+      return;
+    }
+
     const { data, error } = await supabase.from('messages').insert(msgData).select().single();
 
     if (!error && data) {
-      setMessages((prev) => [...prev, data]);
+      const updatedMessages = [...messages, data];
+      setMessages(updatedMessages);
+      OfflineCache.cacheMessages(chatKey, updatedMessages);
       setNewMessage('');
     }
   };
