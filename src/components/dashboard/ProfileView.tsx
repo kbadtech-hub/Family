@@ -34,6 +34,42 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
   const fileInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
+  // Guardian System Addon State
+  const [guardian, setGuardian] = useState<any>(null);
+  const [guardianEmail, setGuardianEmail] = useState('');
+  const [guardianPhone, setGuardianPhone] = useState('');
+  const [isLinking, setIsLinking] = useState(false);
+
+  useEffect(() => {
+    const fetchGuardian = async () => {
+      const { data } = await supabase.from('guardians').select('*').eq('user_id', profile.id).limit(1);
+      if (data && data.length > 0) {
+        setGuardian(data[0]);
+        setGuardianEmail(data[0].guardian_email || '');
+        setGuardianPhone(data[0].guardian_phone || '');
+      }
+    };
+    fetchGuardian();
+  }, [profile.id]);
+
+  const linkGuardian = async () => {
+    setIsLinking(true);
+    const { data, error } = await supabase.from('guardians').insert({
+      user_id: profile.id,
+      guardian_email: guardianEmail,
+      guardian_phone: guardianPhone,
+      status: 'pending'
+    }).select().single();
+    
+    if (!error && data) {
+      setGuardian(data);
+      alert("Guardian connection code generated successfully!");
+    } else {
+      alert("Failed to link guardian: " + (error?.message || "Unknown error"));
+    }
+    setIsLinking(false);
+  };
+
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -326,6 +362,80 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
               {isSaving ? <Loader2 size={24} className="animate-spin" /> : <ShieldCheck size={24} />}
               {t('saveChanges')}
            </button>
+      </div>
+
+      {/* Guardian (Mize) Mediator System Card */}
+      <div className="bg-white rounded-[2rem] md:rounded-[3rem] p-8 md:p-10 border border-gray-100 shadow-xl space-y-8">
+        <div className="space-y-1">
+          <h3 className="text-lg md:text-xl font-black text-accent italic tracking-tighter flex items-center gap-2 justify-center md:justify-start">
+             <ShieldCheck size={20} className="text-primary" /> 
+             {profile?.preferred_language === 'am' ? 'የሚዜ / የአስታራቂ ሲስተም (Mize System)' : 'Guardian / Mediator (Mize) System'}
+          </h3>
+          <p className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-widest">
+            {profile?.preferred_language === 'am' ? 'ባህላዊ እሴትን የጠበቀ የቤተሰብ እቅድ መከታተያ' : 'Culturally Safe Mediator Integration'}
+          </p>
+        </div>
+
+        {guardian ? (
+          <div className="p-8 bg-primary/5 rounded-[2rem] border border-primary/10 space-y-4">
+             <div className="flex justify-between items-center flex-wrap gap-4">
+                <div>
+                   <p className="text-xs font-bold text-accent">
+                      {profile?.preferred_language === 'am' ? 'የአስታራቂ ዝርዝር' : 'Linked Mediator'}
+                   </p>
+                   <p className="text-sm font-medium text-gray-500 mt-1">{guardian.guardian_email || guardian.guardian_phone}</p>
+                </div>
+                <div className="px-4 py-1.5 bg-primary/10 text-primary text-[10px] font-black rounded-full uppercase">
+                   {guardian.status}
+                </div>
+             </div>
+             
+             <div className="p-5 bg-white rounded-2xl border border-primary/20 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div>
+                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                      {profile?.preferred_language === 'am' ? 'የሚዜ መግቢያ ኮድ' : 'Mediator Access Code'}
+                   </p>
+                   <p className="text-2xl font-black tracking-widest text-primary mt-1">{guardian.access_code}</p>
+                </div>
+                <p className="text-[10px] text-gray-400 font-bold max-w-xs leading-relaxed text-center sm:text-left">
+                   {profile?.preferred_language === 'am' 
+                     ? 'ይህንን ኮድ ለአስታራቂዎ (ለምሳሌ ለሚዜ ወይም ለወላጅዎ) ይስጡ። እቃውን እና ተኳኋኝነትዎን በደህንነት ለመከታተል ይጠቀሙበታል።' 
+                     : 'Provide this code to your mediator. They can use it to securely log in and overview your compatibility journey.'}
+                </p>
+             </div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+             <p className="text-xs text-gray-500 leading-relaxed font-bold">
+                {profile?.preferred_language === 'am'
+                  ? 'የኢትዮጵያን ባህል በጠበቀ መልኩ፥ ትዳርን በግልጽነት ለመምረጥ አስታራቂ (የሚዜ ወይም ወላጅ) ማገናኘት ይችላሉ። አስታራቂዎ በመተግበሪያው ላይ ተኳኋኝነትዎን እንዲመለከት ፍቃድ ይሰጡታል።'
+                  : 'In line with our cultural values, you can connect a mediator (such as a parent or mize) to overview your matches. They will receive secure access to guide you.'}
+             </p>
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input 
+                  type="email" 
+                  placeholder="Mediator Email" 
+                  value={guardianEmail}
+                  onChange={(e) => setGuardianEmail(e.target.value)}
+                  className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none"
+                />
+                <input 
+                  type="text" 
+                  placeholder="Mediator Phone (Optional)" 
+                  value={guardianPhone}
+                  onChange={(e) => setGuardianPhone(e.target.value)}
+                  className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none"
+                />
+             </div>
+             <button 
+               onClick={linkGuardian}
+               disabled={isLinking || (!guardianEmail && !guardianPhone)}
+               className="w-full bg-primary text-white py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20 disabled:opacity-50"
+             >
+                {isLinking ? 'GENERATING CODE...' : 'Generate Mediator Access Code (የሚዜ አገናኝ ኮድ ፍጠር)'}
+             </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -17,7 +17,7 @@ import {
   Clock, 
   Loader2 
 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import Image from 'next/image';
 
 interface MatchDetailProps {
@@ -35,6 +35,7 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
   const [friendshipStatus, setFriendshipStatus] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const t = useTranslations('Friendship');
+  const locale = useLocale();
 
   useEffect(() => {
     const fetchMatchDetails = async () => {
@@ -188,19 +189,18 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
            )}
 
            <div className="space-y-4">
-              <h3 className="text-sm font-black text-accent uppercase tracking-widest border-b border-muted pb-2">{t('contactInfo')}</h3>
-              <div className="bg-muted/30 p-6 rounded-[2rem] border border-gray-100 flex justify-between items-center">
-                 <div className="space-y-1">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('directEmail')}</p>
-                    <p className={`text-sm font-bold text-accent ${!isPremium ? 'blur-md select-none' : ''}`}>
-                       {isPremium ? profile?.email : '••••••••@••••.com'}
-                    </p>
-                 </div>
-                 {!isPremium && (
-                    <div className="px-3 py-1 bg-primary/10 text-primary text-[8px] font-black rounded-full uppercase tracking-tighter">
-                       {t('premiumOnly')}
-                    </div>
-                 )}
+              <h3 className="text-sm font-black text-accent uppercase tracking-widest border-b border-muted pb-2">
+                 {locale === 'am' ? 'የግንኙነት መረጃ (Contact Info)' : 'Contact Info'}
+              </h3>
+              <div className="bg-primary/5 p-6 rounded-[2rem] border border-primary/10 space-y-2">
+                 <p className="text-xs font-black text-primary uppercase tracking-widest flex items-center gap-2">
+                    <ShieldCheck size={14} /> {locale === 'am' ? "ደህንነቱ የተጠበቀ ግንኙነት" : "Privacy Shield Enabled"}
+                 </p>
+                 <p className="text-[10px] text-gray-500 leading-relaxed font-bold">
+                    {locale === 'am'
+                      ? "ስልክ ቁጥር እና ኢሜይል ለደህንነት ሲባል ተደብቀዋል። እባክዎ ጥበቃ የተደረገበትን የውስጥ ቻት፣ የድምጽ ወይም የቪዲዮ ጥሪን በመጠቀም ይነጋገሩ።"
+                      : "Direct phone numbers and emails are permanently hidden for privacy. Please use the secure built-in chat, audio call, or video call features."}
+                 </p>
               </div>
            </div>
 

@@ -499,87 +499,100 @@ function OnboardingContent() {
             </label>
           </div>
         );
-      case 5: // Selfie & Simulation
+      case 5: // Selfie Video Verification (Premium Security)
         return (
           <div className="space-y-8 animate-in slide-in-from-right duration-300 text-center">
             <div className="space-y-4">
               <div className="w-20 h-20 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mx-auto">
                  <User size={40} className="text-primary" />
               </div>
-              <h2 className="text-3xl font-black text-accent italic">{t('idVerification.takeSelfie')}</h2>
-              <p className="text-gray-500 max-w-sm mx-auto">{t('idVerification.livePhoto')}</p>
+              <h2 className="text-3xl font-black text-accent italic">{locale === 'am' ? 'የቪዲዮ ሰልፊ ማረጋገጫ (Selfie Video)' : 'Selfie Video Verification'}</h2>
+              <p className="text-gray-500 max-w-sm mx-auto">
+                {locale === 'am' 
+                  ? 'የሌላ ሰው ፎቶ አለመሆኑን ለማረጋገጥ እባክዎ ባለ 3 ሰከንድ አጭር የቪዲዮ ሰልፊ ይጫኑ።' 
+                  : 'Please record or upload a short 3-second selfie video to verify your live identity.'}
+              </p>
             </div>
 
-            <label className="block w-64 h-64 mx-auto rounded-full border-4 border-dashed border-primary/20 bg-muted/30 hover:bg-primary/5 transition-all cursor-pointer relative overflow-hidden group">
+            <label className="block w-64 h-64 mx-auto rounded-[3rem] border-4 border-dashed border-primary/20 bg-muted/30 hover:bg-primary/5 transition-all cursor-pointer relative overflow-hidden group">
                {formData.selfie_photo ? (
-                 <Image src={formData.selfie_photo} fill className="object-cover" alt="Selfie Preview" />
+                 formData.selfie_photo.endsWith('.mp4') || formData.selfie_photo.includes('video') ? (
+                   <video src={formData.selfie_photo} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+                 ) : (
+                   <Image src={formData.selfie_photo} fill className="object-cover" alt="Selfie Preview" />
+                 )
                ) : (
                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
                     <Camera size={32} className="text-primary group-hover:scale-110 transition-all" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t('idVerification.takeSelfie')}</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                      {locale === 'am' ? 'ቪዲዮ ይቅረጹ/ይጫኑ' : 'Record/Upload Video'}
+                    </span>
                  </div>
                )}
                <input 
                  type="file" 
-                 accept="image/*" 
-                 aria-label={t('idVerification.takeSelfie')}
+                 accept="video/*,image/*" 
+                 aria-label="Upload selfie video"
                  className="hidden" 
                  onChange={async (e) => {
-                   const file = e.target.files?.[0];
-                   if (!file || !userId) return;
-                   setIsSubmitting(true);
-                   const fileName = `${userId}/verification-selfie-${Date.now()}.jpg`;
-                   const { error } = await supabase.storage.from('user_photos').upload(fileName, file);
-                   if (!error) {
-                     const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(fileName);
-                     updateField('selfie_photo', publicUrl);
-                     
-                     // Trigger Simulation
-                     setIsVerifying(true);
-                     simulateIdentityVerification(formData.id_photo, publicUrl, {
-                       full_name: formData.full_name,
-                       birth_date: formData.birth_date
-                     }).then(async (result) => {
-                       setIsVerifying(false);
-                       if (result.isMatch) {
-                          // 1. Save verification record
-                          const { error: insError } = await supabase.from('verifications').insert({
-                            user_id: userId,
-                            id_url: formData.id_photo,
-                            selfie_url: publicUrl,
-                            id_data: result.extractedData,
-                            match_score: result.score,
-                            status: 'verified',
-                            verified_at: new Date().toISOString()
-                          });
+                    const file = e.target.files?.[0];
+                    if (!file || !userId) return;
+                    setIsSubmitting(true);
+                    const isVideo = file.type.startsWith('video/');
+                    const fileExt = isVideo ? 'mp4' : 'jpg';
+                    const fileName = `${userId}/verification-selfie-${Date.now()}.${fileExt}`;
+                    const { error } = await supabase.storage.from('user_photos').upload(fileName, file);
+                    if (!error) {
+                      const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(fileName);
+                      updateField('selfie_photo', publicUrl);
+                      
+                      // Trigger Simulation (with GCV back-end)
+                      setIsVerifying(true);
+                      simulateIdentityVerification(formData.id_photo, publicUrl, {
+                        full_name: formData.full_name,
+                        birth_date: formData.birth_date
+                      }).then(async (result) => {
+                        setIsVerifying(false);
+                        if (result.isMatch) {
+                           // Save verification
+                           const { error: insError } = await supabase.from('verifications').insert({
+                             user_id: userId,
+                             id_url: formData.id_photo,
+                             selfie_url: publicUrl,
+                             id_data: result.extractedData,
+                             match_score: result.score,
+                             status: 'verified',
+                             verified_at: new Date().toISOString()
+                           });
 
-                          if (insError) {
-                             console.error("Verification Insert Error:", insError);
-                             setErrorMsg(locale === 'am' ? 'የማረጋገጫ መረጃ መመዝገብ አልተቻለም።' : 'Failed to save verification record.');
-                             return;
-                          }
+                           if (insError) {
+                              console.error("Verification Insert Error:", insError);
+                              setErrorMsg(locale === 'am' ? 'የማረጋገጫ መረጃ መመዝገብ አልተቻለም።' : 'Failed to save verification record.');
+                              return;
+                           }
 
-                          // 2. Update profile status
-                          const { error: upError } = await supabase.from('profiles').update({
-                            verification_status: 'verified',
-                            is_verified: true
-                          }).eq('id', userId);
+                           // Update profile verification status and video_selfie_url
+                           const { error: upError } = await supabase.from('profiles').update({
+                             verification_status: 'verified',
+                             is_verified: true,
+                             video_selfie_url: publicUrl
+                           }).eq('id', userId);
 
-                          if (upError) {
-                             console.error("Profile Status Update Error:", upError);
-                             setErrorMsg(locale === 'am' ? 'የፕሮፋይል ሁኔታን መቀየር አልተቻለም።' : 'Failed to update profile status.');
-                             return;
-                          }
+                           if (upError) {
+                              console.error("Profile Status Update Error:", upError);
+                              setErrorMsg(locale === 'am' ? 'የፕሮፋይል ሁኔታን መቀየር አልተቻለም።' : 'Failed to update profile status.');
+                              return;
+                           }
 
-                          setFormData(prev => ({ ...prev, verification_status: 'verified' }));
-                          setErrorMsg(''); // Clear any previous error
-                       } else {
-                         setFormData(prev => ({ ...prev, verification_status: 'rejected' }));
-                         setErrorMsg(result.reason || t('idVerification.rejected'));
-                       }
-                     });
-                   }
-                   setIsSubmitting(false);
+                           setFormData(prev => ({ ...prev, verification_status: 'verified' }));
+                           setErrorMsg('');
+                        } else {
+                          setFormData(prev => ({ ...prev, verification_status: 'rejected' }));
+                          setErrorMsg(result.reason || t('idVerification.rejected'));
+                        }
+                      });
+                    }
+                    setIsSubmitting(false);
                  }}
                />
             </label>

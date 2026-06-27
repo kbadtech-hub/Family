@@ -18,16 +18,37 @@ export const ZODIAC_COMPATIBILITY: ZodiacMatrix = {
   "Pisces": { "Cancer": 95, "Scorpio": 90, "Virgo": 85, "Sagittarius": 60, "Gemini": 50 }
 };
 
-export function calculateCompatibility(user: any, candidate: any): number {
-  let score = 70; // Base score
+// Map Ethiopian star sign keys to their English counterparts used in ZODIAC_COMPATIBILITY
+export const ETHIOPIAN_TO_ENGLISH_ZODIAC: Record<string, string> = {
+  'Hamel': 'Aries',
+  'Sewr': 'Taurus',
+  'Jauza': 'Gemini',
+  'Sertan': 'Cancer',
+  'Esed': 'Leo',
+  'Sunbula': 'Virgo',
+  'Mizan': 'Libra',
+  'Akreb': 'Scorpio',
+  'Qews': 'Sagittarius',
+  'Jedye': 'Capricorn',
+  'Delwi': 'Aquarius',
+  'Hout': 'Pisces'
+};
 
-  // 1. Zodiac Compatibility - 30% weight
+export function calculateCompatibility(user: any, candidate: any): number {
+  let score = 50; // Base score
+
+  // 1. Zodiac Compatibility - Max 25% weight (at most 25 points contribution)
   if (user.star_sign && candidate.star_sign) {
-    const signScore = ZODIAC_COMPATIBILITY[user.star_sign]?.[candidate.star_sign] || 75;
-    score += (signScore - 70) * 0.5;
+    const userSignEng = ETHIOPIAN_TO_ENGLISH_ZODIAC[user.star_sign] || user.star_sign;
+    const candidateSignEng = ETHIOPIAN_TO_ENGLISH_ZODIAC[candidate.star_sign] || candidate.star_sign;
+    const signScore = ZODIAC_COMPATIBILITY[userSignEng]?.[candidateSignEng] || 75;
+    
+    // Scale zodiac score (which goes up to 95) so it contributes up to 25 points
+    const zodiacContribution = (signScore / 95) * 25;
+    score += zodiacContribution;
   }
 
-  // 2. Shared Hobbies - 30% weight
+  // 2. Shared Hobbies - Max 25% weight (5 points per shared hobby, up to 5)
   if (user.hobbies && candidate.hobbies) {
     const userHobbies = Array.isArray(user.hobbies) 
       ? user.hobbies 
@@ -43,22 +64,43 @@ export function calculateCompatibility(user: any, candidate: any): number {
     const common = userHobbies.filter((h: string) => 
       candidateHobbies.some((ch: string) => ch.trim().toLowerCase() === h.trim().toLowerCase())
     );
-    score += common.length * 5; // +5% per shared hobby
+    score += Math.min(25, common.length * 5);
   }
 
-  // 3. Values & Family Intent - 20% weight
+  // 3. Values & Family Intent - Max 20% weight (10 points each)
   if (user.family_values && candidate.family_values && user.family_values === candidate.family_values) {
-    score += 8;
+    score += 10;
   }
   if (user.conflict_resolution && candidate.conflict_resolution && user.conflict_resolution === candidate.conflict_resolution) {
-    score += 7;
+    score += 10;
   }
 
-  // 4. Age & Location matching - 20% weight
+  // 4. Age matching - Max 15% weight
   if (candidate.birth_date && user.partner_age_min && user.partner_age_max) {
     const age = new Date().getFullYear() - new Date(candidate.birth_date).getFullYear();
     if (age >= user.partner_age_min && age <= user.partner_age_max) {
-      score += 10;
+      score += 15;
+    }
+  }
+
+  // 5. Location matching - Max 15% weight
+  if (user.partner_location && candidate.location) {
+    const candidateCountry = typeof candidate.location === 'string' 
+      ? candidate.location 
+      : candidate.location?.country || '';
+    
+    const partnerLocations = Array.isArray(user.partner_location)
+      ? user.partner_location
+      : typeof user.partner_location === 'string'
+      ? [user.partner_location]
+      : [];
+      
+    const isLocationMatch = partnerLocations.some((loc: string) => 
+      loc.trim().toLowerCase() === 'anywhere' || 
+      loc.trim().toLowerCase() === candidateCountry.trim().toLowerCase()
+    );
+    if (isLocationMatch) {
+      score += 15;
     }
   }
 

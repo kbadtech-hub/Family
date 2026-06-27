@@ -87,12 +87,26 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
           .filter(f => f.status === 'accepted')
           .map(f => f.sender_id === user.id ? f.receiver : f.sender);
         
-        // Also show some potential matches if no friends
-        const { data: profiles } = await supabase
+        // Fetch current user's profile to know their gender
+        const { data: userProfile } = await supabase
+          .from('profiles')
+          .select('gender')
+          .eq('id', user.id)
+          .single();
+
+        // Also show some potential matches if no friends (with strict gender filtering)
+        let profilesQuery = supabase
           .from('profiles')
           .select('*')
-          .neq('id', user.id)
-          .limit(20);
+          .neq('id', user.id);
+        
+        if (userProfile?.gender === 'Male') {
+          profilesQuery = profilesQuery.eq('gender', 'Female');
+        } else if (userProfile?.gender === 'Female') {
+          profilesQuery = profilesQuery.eq('gender', 'Male');
+        }
+        
+        const { data: profiles } = await profilesQuery.limit(20);
         
         // Merge - prioritizing accepted friends
         const merged = [...friendList, ...(profiles || []).filter(p => !friendList.find(f => f.id === p.id))];
@@ -247,10 +261,43 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
     e.preventDefault();
     if (!newMessage.trim() || !selectedMatch || !currentUser) return;
 
+    const messageContent = newMessage.trim();
+
+    // 1. Strict Phone & Email Sharing Block (Permanent Security Rule)
+    const phoneRegex = /(?:\+?251|\b0)[\s-]*[97](?:[\s-]*\d){8}\b/;
+    const digitSequenceRegex = /(?:\d[\s-]*){8,}/; // Blocks long digit sequences to prevent evasion
+    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/i;
+
+    if (phoneRegex.test(messageContent) || digitSequenceRegex.test(messageContent) || emailRegex.test(messageContent)) {
+       alert(locale === 'am' 
+         ? "የደህንነት ደንብ፦ በጽሁፍ ስልክ ቁጥር ወይም ኢሜይል መለዋወጥ በቋሚነት የተከለከለ ነው። እባክዎ በመተግበሪያው ውስጥ ያለውን የድምጽ ወይም የቪዲዮ ጥሪ ይጠቀሙ።" 
+         : "Security Rule: Exchanging phone numbers or emails in chat is permanently prohibited. Please use the built-in audio or video call features.");
+       return;
+    }
+
+    // 2. Content Shield - AI Moderation Call
+    try {
+      const response = await fetch(`/${locale}/api/ai/moderate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: messageContent })
+      });
+      const safety = await response.json();
+      
+      if (!safety.approved) {
+        alert(locale === 'am' 
+          ? `ይህ መልእክት የቤተሰብን ስነ-ምግባር ስለሚጥስ አልተላከም፦ ${safety.reason}` 
+          : `Message blocked due to family values violation: ${safety.reason}`);
+        return;
+      }
+    } catch (err) {
+      console.error("AI Moderation failed in chat, bypassing to fallback", err);
+    }
+
     const msgData = {
       sender_id: currentUser.id,
       receiver_id: selectedMatch.id,
-      content: newMessage.trim(),
+      content: messageContent,
     };
 
     const { data, error } = await supabase.from('messages').insert(msgData).select().single();

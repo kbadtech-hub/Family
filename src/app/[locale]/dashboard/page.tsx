@@ -212,12 +212,19 @@ function DashboardContent() {
       
       setPendingRequestsCount(count || 0);
 
-      // 7. Fetch Friend Suggestions
-      const { data: suggestionsData } = await supabase
+      // 7. Fetch Friend Suggestions (Strict Gender Separation)
+      let suggestionsQuery = supabase
         .from('profiles')
         .select('id, full_name, avatar_url, role')
-        .neq('id', user.id)
-        .limit(10);
+        .neq('id', user.id);
+      
+      if (profileData?.gender === 'Male') {
+        suggestionsQuery = suggestionsQuery.eq('gender', 'Female');
+      } else if (profileData?.gender === 'Female') {
+        suggestionsQuery = suggestionsQuery.eq('gender', 'Male');
+      }
+      
+      const { data: suggestionsData } = await suggestionsQuery.limit(10);
       
       if (suggestionsData) {
         // Check friendship status for suggestions
