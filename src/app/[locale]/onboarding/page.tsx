@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { useRouter } from '@/i18n/routing';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
@@ -81,6 +81,130 @@ function OnboardingContent() {
   });
 
   const searchParams = useSearchParams();
+
+  // Live Selfie Video WebRTC Recording State
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [countdown, setCountdown] = useState(3);
+  const [cameraActive, setCameraActive] = useState(false);
+  const cameraVideoRef = useRef<HTMLVideoElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordedChunksRef = useRef<Blob[]>([]);
+
+  const startCamera = async () => {
+    try {
+      setCameraActive(true);
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'user', width: 400, height: 400 }, 
+        audio: false 
+      });
+      setCameraStream(stream);
+      if (cameraVideoRef.current) {
+        cameraVideoRef.current.srcObject = stream;
+      }
+    } catch (err) {
+      console.error("Error accessing camera:", err);
+      alert(locale === 'am' ? "ካሜራውን መክፈት አልተቻለም። እባክዎ ፍቃድ መስጠትዎን ያረጋግጡ።" : "Could not open camera. Please grant camera permission.");
+      setCameraActive(false);
+    }
+  };
+
+  const recordVideo = async () => {
+    if (!cameraStream) return;
+    recordedChunksRef.current = [];
+    setIsRecording(true);
+    setCountdown(3);
+
+    // Initialize MediaRecorder
+    let recorder: MediaRecorder;
+    const options = { mimeType: 'video/webm;codecs=vp9' };
+    try {
+      recorder = new MediaRecorder(cameraStream, options);
+    } catch (e) {
+      recorder = new MediaRecorder(cameraStream);
+    }
+    
+    mediaRecorderRef.current = recorder;
+    recorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        recordedChunksRef.current.push(event.data);
+      }
+    };
+
+    recorder.onstop = async () => {
+      const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
+      const localUrl = URL.createObjectURL(blob);
+      updateField('selfie_photo', localUrl);
+
+      // Stop camera stream to release hardware
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        setCameraStream(null);
+        setCameraActive(false);
+      }
+
+      if (userId) {
+        setIsSubmitting(true);
+        const fileName = `${userId}/verification-selfie-live-${Date.now()}.webm`;
+        const file = new File([blob], `selfie-live-${Date.now()}.webm`, { type: 'video/webm' });
+        
+        const { error } = await supabase.storage.from('user_photos').upload(fileName, file);
+        if (!error) {
+          const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(fileName);
+          updateField('selfie_photo', publicUrl);
+
+          setIsVerifying(true);
+          simulateIdentityVerification(formData.id_photo, publicUrl, {
+            full_name: formData.full_name,
+            birth_date: formData.birth_date
+          }).then(async (result) => {
+            setIsVerifying(false);
+            if (result.isMatch) {
+              await supabase.from('verifications').insert({
+                user_id: userId,
+                id_url: formData.id_photo,
+                selfie_url: publicUrl,
+                id_data: result.extractedData,
+                match_score: result.score,
+                status: 'verified',
+                verified_at: new Date().toISOString()
+              });
+
+              await supabase.from('profiles').update({
+                verification_status: 'verified',
+                is_verified: true,
+                video_selfie_url: publicUrl
+              }).eq('id', userId);
+
+              setFormData(prev => ({ ...prev, verification_status: 'verified' }));
+              setErrorMsg('');
+            } else {
+              setFormData(prev => ({ ...prev, verification_status: 'rejected' }));
+              setErrorMsg(result.reason || t('idVerification.rejected'));
+            }
+          });
+        } else {
+          console.error("Storage upload failed:", error);
+          alert("Failed to upload selfie video to cloud storage.");
+        }
+        setIsSubmitting(false);
+      }
+      setIsRecording(false);
+    };
+
+    recorder.start();
+
+    // 3-second countdown timer
+    let count = 3;
+    const interval = setInterval(() => {
+      count -= 1;
+      setCountdown(count);
+      if (count === 0) {
+        clearInterval(interval);
+        recorder.stop();
+      }
+    }, 1000);
+  };
 
   const updateField = React.useCallback((field: string, value: string | number | string[]) => {
     setFormData(prev => {
@@ -499,7 +623,7 @@ function OnboardingContent() {
             </label>
           </div>
         );
-      case 5: // Selfie Video Verification (Premium Security)
+      case 5: // Selfie Video Verification (Live camera / file fallback)
         return (
           <div className="space-y-8 animate-in slide-in-from-right duration-300 text-center">
             <div className="space-y-4">
@@ -507,95 +631,133 @@ function OnboardingContent() {
                  <User size={40} className="text-primary" />
               </div>
               <h2 className="text-3xl font-black text-accent italic">{locale === 'am' ? 'የቪዲዮ ሰልፊ ማረጋገጫ (Selfie Video)' : 'Selfie Video Verification'}</h2>
-              <p className="text-gray-500 max-w-sm mx-auto">
+              <p className="text-gray-500 max-w-sm mx-auto text-xs font-medium">
                 {locale === 'am' 
-                  ? 'የሌላ ሰው ፎቶ አለመሆኑን ለማረጋገጥ እባክዎ ባለ 3 ሰከንድ አጭር የቪዲዮ ሰልፊ ይጫኑ።' 
-                  : 'Please record or upload a short 3-second selfie video to verify your live identity.'}
+                  ? 'እባክዎ ካሜራዎን በመክፈት የ3 ሰከንድ ቀጥታ ቪዲዮ ይቅረጹ ወይም አጭር ቪዲዮ ሰልፊ ይጫኑ።' 
+                  : 'Please open your camera to record a 3-second live selfie video, or upload a video file.'}
               </p>
             </div>
 
-            <label className="block w-64 h-64 mx-auto rounded-[3rem] border-4 border-dashed border-primary/20 bg-muted/30 hover:bg-primary/5 transition-all cursor-pointer relative overflow-hidden group">
+            <div className="relative w-64 h-64 mx-auto rounded-[3rem] border-4 border-dashed border-primary/20 bg-muted/30 overflow-hidden flex items-center justify-center group shadow-md">
                {formData.selfie_photo ? (
-                 formData.selfie_photo.endsWith('.mp4') || formData.selfie_photo.includes('video') ? (
+                 formData.selfie_photo.endsWith('.webm') || formData.selfie_photo.endsWith('.mp4') || formData.selfie_photo.includes('video') ? (
                    <video src={formData.selfie_photo} autoPlay loop muted playsInline className="w-full h-full object-cover" />
                  ) : (
                    <Image src={formData.selfie_photo} fill className="object-cover" alt="Selfie Preview" />
                  )
+               ) : cameraActive ? (
+                 <video ref={cameraVideoRef} autoPlay playsInline muted className="w-full h-full object-cover scale-x-[-1]" />
                ) : (
                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
                     <Camera size={32} className="text-primary group-hover:scale-110 transition-all" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                      {locale === 'am' ? 'ቪዲዮ ይቅረጹ/ይጫኑ' : 'Record/Upload Video'}
+                      {locale === 'am' ? 'ላይቭ ካሜራ ዝግጁ ነው' : 'Live Camera Off'}
                     </span>
                  </div>
                )}
-               <input 
-                 type="file" 
-                 accept="video/*,image/*" 
-                 aria-label="Upload selfie video"
-                 className="hidden" 
-                 onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file || !userId) return;
-                    setIsSubmitting(true);
-                    const isVideo = file.type.startsWith('video/');
-                    const fileExt = isVideo ? 'mp4' : 'jpg';
-                    const fileName = `${userId}/verification-selfie-${Date.now()}.${fileExt}`;
-                    const { error } = await supabase.storage.from('user_photos').upload(fileName, file);
-                    if (!error) {
-                      const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(fileName);
-                      updateField('selfie_photo', publicUrl);
-                      
-                      // Trigger Simulation (with GCV back-end)
-                      setIsVerifying(true);
-                      simulateIdentityVerification(formData.id_photo, publicUrl, {
-                        full_name: formData.full_name,
-                        birth_date: formData.birth_date
-                      }).then(async (result) => {
-                        setIsVerifying(false);
-                        if (result.isMatch) {
-                           // Save verification
-                           const { error: insError } = await supabase.from('verifications').insert({
-                             user_id: userId,
-                             id_url: formData.id_photo,
-                             selfie_url: publicUrl,
-                             id_data: result.extractedData,
-                             match_score: result.score,
-                             status: 'verified',
-                             verified_at: new Date().toISOString()
-                           });
 
-                           if (insError) {
-                              console.error("Verification Insert Error:", insError);
-                              setErrorMsg(locale === 'am' ? 'የማረጋገጫ መረጃ መመዝገብ አልተቻለም።' : 'Failed to save verification record.');
-                              return;
-                           }
+               {isRecording && (
+                 <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white z-10">
+                    <p className="text-lg font-black tracking-widest animate-pulse uppercase">{locale === 'am' ? 'እየተቀረጸ ነው' : 'Recording'}</p>
+                    <p className="text-5xl font-black mt-2 text-primary">{countdown}s</p>
+                 </div>
+               )}
+            </div>
 
-                           // Update profile verification status and video_selfie_url
-                           const { error: upError } = await supabase.from('profiles').update({
-                             verification_status: 'verified',
-                             is_verified: true,
-                             video_selfie_url: publicUrl
-                           }).eq('id', userId);
+            {/* Buttons for Camera Control */}
+            <div className="flex justify-center gap-4">
+              {!formData.selfie_photo && !cameraActive && (
+                <button
+                  type="button"
+                  onClick={startCamera}
+                  className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
+                >
+                  {locale === 'am' ? 'ካሜራ ክፈት' : 'Open Live Camera'}
+                </button>
+              )}
 
-                           if (upError) {
-                              console.error("Profile Status Update Error:", upError);
-                              setErrorMsg(locale === 'am' ? 'የፕሮፋይል ሁኔታን መቀየር አልተቻለም።' : 'Failed to update profile status.');
-                              return;
-                           }
+              {cameraActive && !isRecording && (
+                <button
+                  type="button"
+                  onClick={recordVideo}
+                  className="bg-red-500 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-red-500/20 hover:scale-105 active:scale-95 transition-all animate-pulse"
+                >
+                  {locale === 'am' ? 'መቅረጽ ጀምር (3 ሰከንድ)' : 'Record (3s)'}
+                </button>
+              )}
 
-                           setFormData(prev => ({ ...prev, verification_status: 'verified' }));
-                           setErrorMsg('');
-                        } else {
-                          setFormData(prev => ({ ...prev, verification_status: 'rejected' }));
-                          setErrorMsg(result.reason || t('idVerification.rejected'));
-                        }
-                      });
-                    }
-                    setIsSubmitting(false);
-                 }}
-               />
-            </label>
+              {formData.selfie_photo && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateField('selfie_photo', '');
+                    setFormData(prev => ({ ...prev, verification_status: 'unverified' }));
+                    setErrorMsg('');
+                    startCamera();
+                  }}
+                  className="bg-accent text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
+                >
+                  {locale === 'am' ? 'እንደገና ቅረጽ' : 'Retake Video'}
+                </button>
+              )}
+
+              {/* Upload fallback button */}
+              {!cameraActive && !isRecording && (
+                <label className="bg-white text-accent border border-accent/20 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest cursor-pointer hover:bg-muted transition-all flex items-center justify-center">
+                  {locale === 'am' ? 'ፋይል ይምረጡ' : 'Upload File'}
+                  <input
+                    type="file"
+                    accept="video/*,image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file || !userId) return;
+                      setIsSubmitting(true);
+                      const isVideo = file.type.startsWith('video/');
+                      const fileExt = isVideo ? 'mp4' : 'jpg';
+                      const fileName = `${userId}/verification-selfie-${Date.now()}.${fileExt}`;
+                      const { error } = await supabase.storage.from('user_photos').upload(fileName, file);
+                      if (!error) {
+                        const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(fileName);
+                        updateField('selfie_photo', publicUrl);
+                        
+                        setIsVerifying(true);
+                        simulateIdentityVerification(formData.id_photo, publicUrl, {
+                          full_name: formData.full_name,
+                          birth_date: formData.birth_date
+                        }).then(async (result) => {
+                          setIsVerifying(false);
+                          if (result.isMatch) {
+                            await supabase.from('verifications').insert({
+                              user_id: userId,
+                              id_url: formData.id_photo,
+                              selfie_url: publicUrl,
+                              id_data: result.extractedData,
+                              match_score: result.score,
+                              status: 'verified',
+                              verified_at: new Date().toISOString()
+                            });
+
+                            await supabase.from('profiles').update({
+                              verification_status: 'verified',
+                              is_verified: true,
+                              video_selfie_url: publicUrl
+                            }).eq('id', userId);
+
+                            setFormData(prev => ({ ...prev, verification_status: 'verified' }));
+                            setErrorMsg('');
+                          } else {
+                            setFormData(prev => ({ ...prev, verification_status: 'rejected' }));
+                            setErrorMsg(result.reason || t('idVerification.rejected'));
+                          }
+                        });
+                      }
+                      setIsSubmitting(false);
+                    }}
+                  />
+                </label>
+              )}
+            </div>
 
             {(isVerifying || formData.verification_status === 'verified' || errorMsg) && (
               <div className={`p-6 rounded-[2rem] border transition-all ${
