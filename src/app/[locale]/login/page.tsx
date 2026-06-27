@@ -19,6 +19,39 @@ import {
 } from 'lucide-react';
 import { COUNTRIES } from '@/lib/countries';
 
+const getSlogan = (lang: string) => {
+  switch (lang) {
+    case 'am': return 'የኢትዮጵያውያን የትዳር መድረክ';
+    case 'om': return 'Platformii Gaa’ela Habashaa';
+    case 'ti': return 'ናይ መጻምድቲ መድረኽ ኢትዮጵያውያን';
+    case 'ar': return 'منصة الزواج الأثيوبية العالمية';
+    case 'so': return 'Madasha Guurka Ee Habesha';
+    default: return 'Global Habesha Marriage Platform';
+  }
+};
+
+const getEmailLoginLabel = (lang: string) => {
+  switch (lang) {
+    case 'am': return 'በኢሜይል ይግቡ';
+    case 'om': return 'Imeeliin Seenaa';
+    case 'ti': return 'ብኢሜል እተዉ';
+    case 'ar': return 'تسجيل الدخول بالبريد';
+    case 'so': return 'Ku gal Imeelka';
+    default: return 'Sign in with Email';
+  }
+};
+
+const getPhoneLoginLabel = (lang: string) => {
+  switch (lang) {
+    case 'am': return 'በስልክ ቁጥር ይግቡ';
+    case 'om': return 'Bilbilaan Seenaa';
+    case 'ti': return 'ብቁፅሪ ስልኪ እተዉ';
+    case 'ar': return 'تسجيل الدخول بالهاتف';
+    case 'so': return 'Ku gal Nambarka';
+    default: return 'Sign in with Phone';
+  }
+};
+
 function LoginContent() {
   const t = useTranslations('Auth');
   const locale = useLocale();
@@ -77,7 +110,7 @@ function LoginContent() {
             priority
           />
           <p className="text-gray-400 mt-3 font-medium tracking-widest uppercase text-[9px]">
-             {locale === 'am' ? 'የኢትዮጵያውያን የትዳር መድረክ' : 'Global Habesha Matching'}
+             {getSlogan(locale)}
           </p>
         </div>
 
@@ -86,7 +119,7 @@ function LoginContent() {
           <div className="relative">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-bold text-accent italic">
-                {view === 'initial' ? t('signIn') : view === 'email' ? (locale === 'am' ? 'በኢሜይል ይግቡ' : 'Sign in with Email') : (locale === 'am' ? 'በስልክ ይግቡ' : 'Sign in with Phone')}
+                {view === 'initial' ? t('signIn') : view === 'email' ? getEmailLoginLabel(locale) : getPhoneLoginLabel(locale)}
               </h2>
               {view !== 'initial' && (
                 <button 
@@ -116,7 +149,7 @@ function LoginContent() {
                     <Phone size={24} />
                   </div>
                   <span className="font-black uppercase tracking-[0.1em] text-xs">
-                    {locale === 'am' ? 'በስልክ ቁጥር ይግቡ' : 'Sign in with Phone'}
+                    {getPhoneLoginLabel(locale)}
                   </span>
                 </button>
 
@@ -129,7 +162,7 @@ function LoginContent() {
                     <Mail size={24} />
                   </div>
                   <span className="font-black uppercase tracking-[0.1em] text-xs">
-                    {locale === 'am' ? 'በኢሜይል ይግቡ' : 'Sign in with Email'}
+                    {getEmailLoginLabel(locale)}
                   </span>
                 </button>
               </div>

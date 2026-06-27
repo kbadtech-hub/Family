@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link, useRouter, usePathname } from '@/i18n/routing';
-import { Menu, X, Globe, ChevronDown, Heart } from 'lucide-react';
+import { Menu, X, Globe, ChevronDown, Heart, Youtube, Facebook, Send, MessageCircle } from 'lucide-react';
 import { useUI } from '@/context/UIContext';
 import { supabase } from '@/lib/supabase';
 
@@ -78,6 +78,14 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center gap-6">
+             {/* Sticky Social Media Icons in Header */}
+             <div className="flex items-center gap-2 border-r border-border pr-4 hidden lg:flex">
+                <a href="https://facebook.com/betesebhub" target="_blank" rel="noopener noreferrer" className="p-2 bg-[#F8F4F1] hover:bg-primary hover:text-white rounded-full text-gray-500 transition-all" title="Facebook"><Facebook size={13} /></a>
+                <a href="https://www.youtube.com/@betesebhub" target="_blank" rel="noopener noreferrer" className="p-2 bg-[#F8F4F1] hover:bg-primary hover:text-white rounded-full text-gray-500 transition-all" title="YouTube"><Youtube size={13} /></a>
+                <a href="https://t.me/betesebhub" target="_blank" rel="noopener noreferrer" className="p-2 bg-[#F8F4F1] hover:bg-primary hover:text-white rounded-full text-gray-500 transition-all" title="Telegram"><Send size={13} /></a>
+                <a href="https://wa.me/447347663254" target="_blank" rel="noopener noreferrer" className="p-2 bg-[#F8F4F1] hover:bg-primary hover:text-white rounded-full text-gray-500 transition-all" title="WhatsApp"><MessageCircle size={13} /></a>
+             </div>
+
              {/* Language Selector */}
              <div className="relative">
                 <button 

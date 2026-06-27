@@ -252,10 +252,10 @@ function DashboardContent() {
   const isAdmin = ['admin', 'super_admin'].includes((profile as any)?.role);
 
   return (
-    <div className="min-h-screen bg-[#FDFBF9] flex flex-col md:flex-row overflow-x-hidden" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
-      {/* Sidebar */}
-      <aside className={`w-full md:w-64 bg-[#0F172A] text-white flex md:flex-col p-8 sticky top-0 md:h-screen z-50 ${locale === 'ar' ? 'md:border-l' : 'md:border-r'} border-white/5`}>
-        <div className="flex items-center gap-4 mb-12 hidden md:flex group cursor-pointer">
+    <div className="min-h-screen bg-[#FDFBF9] flex flex-col md:flex-row overflow-x-hidden pb-20 md:pb-0" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+      {/* Sidebar - Desktop Only */}
+      <aside className={`hidden md:flex md:w-64 bg-[#0F172A] text-white md:flex-col p-8 sticky top-0 md:h-screen z-50 ${locale === 'ar' ? 'md:border-l' : 'md:border-r'} border-white/5`}>
+        <div className="flex items-center gap-4 mb-12 group cursor-pointer">
           <Heart size={32} className="text-primary fill-primary/10 group-hover:fill-primary transition-all duration-300" />
           <span className="text-xl font-black italic uppercase tracking-tighter">
             {locale === 'am' ? 'ቤተሰብ' : locale === 'ar' ? 'بيتسب' : 'BETESEB'}
@@ -285,13 +285,6 @@ function DashboardContent() {
               )}
             </button>
           ))}
-          <button
-             onClick={handleLogout}
-             aria-label="Logout"
-             className="md:hidden flex-1 flex items-center justify-center p-4 rounded-[1.5rem] text-red-400 hover:bg-red-400/10 transition-all"
-           >
-              <LogOut size={22} />
-           </button>
         </nav>
 
         <div className="mt-auto pt-8 border-t border-white/5 hidden md:block">
@@ -305,51 +298,100 @@ function DashboardContent() {
         </div>
       </aside>
 
+      {/* Mobile Bottom Navigation Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0F172A] text-white z-50 border-t border-white/5 px-6 py-3 flex justify-between items-center shadow-2xl">
+        {[
+          { id: 'dashboard', icon: Home, label: n('dashboard') },
+          { id: 'chat', icon: MessageCircle, label: n('chat') },
+          { id: 'community', icon: Users, label: n('community') },
+          { id: 'workshops', icon: GraduationCap, label: n('workshops') },
+          { id: 'profile', icon: UserCircle, label: n('profile') }
+        ].map((item) => (
+          <button
+            key={item.id}
+            onClick={() => setActiveTab(item.id)}
+            aria-label={item.label}
+            className={`p-3 rounded-2xl transition-all duration-300 relative ${activeTab === item.id ? 'bg-primary text-white scale-110 shadow-lg' : 'text-white/40'}`}
+          >
+            <item.icon size={22} />
+            {item.id === 'chat' && pendingRequestsCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-[#0F172A] animate-pulse">
+                {pendingRequestsCount}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
       {/* Main Content */}
-      <main className="flex-1 p-8 md:p-16 overflow-y-auto">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
-          <div className="text-center md:text-left w-full">
-            <h1 className="text-3xl md:text-5xl font-black text-[#0F172A] italic tracking-tighter">{t('welcome')}</h1>
-            <p className="text-gray-400 mt-2 font-bold text-[10px] md:text-xs uppercase tracking-widest">{t('subtitle')}</p>
-          </div>
-
-          <div className="flex items-center justify-center md:justify-end gap-6 w-full md:w-auto">
-            {/* Language Switcher */}
-            <div className="relative">
-              <button
-                onClick={() => setIsLangOpen(!isLangOpen)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-border hover:border-primary transition-all text-xs font-bold"
-              >
-                <Globe size={16} className="text-primary" />
-                <span className="uppercase">{locale}</span>
-                <ChevronDown size={14} className={`transition-transform ${isLangOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {isLangOpen && (
-                <div className={`absolute top-full ${locale === 'ar' ? 'left-0' : 'right-0'} mt-2 w-40 bg-white border border-border rounded-2xl shadow-xl z-[100] overflow-hidden`}>
-                  {languages.map(lang => (
-                    <button
-                      key={lang.id}
-                      onClick={() => handleLanguageChange(lang.id)}
-                      className={`w-full px-5 py-3 text-left text-xs font-bold hover:bg-[#F8F4F1] transition-all ${locale === lang.id ? 'text-primary bg-[#F8F4F1]' : 'text-gray-600'}`}
-                    >
-                      {lang.label}
-                    </button>
-                  ))}
-                </div>
-              )}
+      <main className="flex-1 p-6 md:p-16 overflow-y-auto">
+        <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-6 w-full border-b border-border pb-6">
+          <div className="flex items-center justify-between w-full">
+            {/* Company Logo in Header */}
+            <div className="flex items-center gap-4">
+              <Image 
+                src="/logo.png" 
+                alt="Beteseb Logo" 
+                width={120} 
+                height={30} 
+                className="h-8 w-auto object-contain"
+                priority
+              />
+              <div className="hidden sm:block h-6 w-[1px] bg-border" />
+              <div className="hidden sm:block">
+                <h1 className="text-xl font-black text-[#0F172A] italic tracking-tight">{t('welcome')}</h1>
+                <p className="text-gray-400 font-bold text-[9px] uppercase tracking-widest">{t('subtitle')}</p>
+              </div>
             </div>
 
-            <button 
-              onClick={() => setActiveTab('profile')}
-              className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-muted border-2 border-primary/20 overflow-hidden shadow-sm hover:border-primary transition-all active:scale-95 flex items-center justify-center"
-            >
-              {profile?.avatar_url ? (
-                <Image src={profile.avatar_url} alt="Avatar" width={56} height={56} className="w-full h-full object-cover" />
-              ) : (
-                <UserCircle size={28} className="text-gray-300" />
-              )}
-            </button>
+            <div className="flex items-center gap-3">
+              {/* Language Switcher */}
+              <div className="relative">
+                <button
+                  onClick={() => setIsLangOpen(!isLangOpen)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-border hover:border-primary transition-all text-xs font-bold"
+                >
+                  <Globe size={14} className="text-primary" />
+                  <span className="uppercase">{locale}</span>
+                  <ChevronDown size={12} className={`transition-transform ${isLangOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isLangOpen && (
+                  <div className={`absolute top-full ${locale === 'ar' ? 'left-0' : 'right-0'} mt-2 w-40 bg-white border border-border rounded-2xl shadow-xl z-[100] overflow-hidden`}>
+                    {languages.map(lang => (
+                      <button
+                        key={lang.id}
+                        onClick={() => handleLanguageChange(lang.id)}
+                        className={`w-full px-5 py-3 text-left text-xs font-bold hover:bg-[#F8F4F1] transition-all ${locale === lang.id ? 'text-primary bg-[#F8F4F1]' : 'text-gray-600'}`}
+                      >
+                        {lang.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Logout Button */}
+              <button 
+                onClick={handleLogout}
+                className="p-2.5 bg-red-500/5 hover:bg-red-500/10 text-red-500 rounded-xl transition-all"
+                title="Logout"
+              >
+                <LogOut size={16} />
+              </button>
+
+              {/* Avatar Link */}
+              <button 
+                onClick={() => setActiveTab('profile')}
+                className="w-10 h-10 rounded-full bg-muted border-2 border-primary/20 overflow-hidden shadow-sm hover:border-primary transition-all active:scale-95 flex items-center justify-center"
+              >
+                {profile?.avatar_url ? (
+                  <Image src={profile.avatar_url} alt="Avatar" width={40} height={40} className="w-full h-full object-cover" />
+                ) : (
+                  <UserCircle size={24} className="text-gray-300" />
+                )}
+              </button>
+            </div>
           </div>
         </header>
 
@@ -598,6 +640,19 @@ function DashboardContent() {
             }}
           />
         )}
+
+        {/* Dashboard Footer */}
+        <footer className="mt-20 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-400 font-medium">
+          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
+            <a href={`/${locale}/terms`} target="_blank" className="hover:text-primary transition-colors">Terms & Policies</a>
+            <span className="hidden md:inline text-gray-200">|</span>
+            <span>Contact Support: +447347663254</span>
+          </div>
+          <div className="text-center md:text-right">
+            <p>© {new Date().getFullYear()} Beteseb. All rights reserved.</p>
+            <p className="text-[10px] text-gray-300 mt-1">Developed by <span className="font-bold text-gray-400">Nolawi Digital Hub</span></p>
+          </div>
+        </footer>
       </main>
     </div>
   );

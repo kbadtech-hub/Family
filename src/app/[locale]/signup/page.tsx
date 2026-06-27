@@ -23,6 +23,39 @@ import {
 import { validatePassword } from '@/lib/password-validator';
 import { COUNTRIES } from '@/lib/countries';
 
+const getSlogan = (lang: string) => {
+  switch (lang) {
+    case 'am': return 'የኢትዮጵያውያን የትዳር መድረክ';
+    case 'om': return 'Platformii Gaa’ela Habashaa';
+    case 'ti': return 'ናይ መጻምድቲ መድረኽ ኢትዮጵያውያን';
+    case 'ar': return 'منصة الزواج الأثይوبية العالمية';
+    case 'so': return 'Madasha Guurka Ee Habesha';
+    default: return 'Global Habesha Marriage Platform';
+  }
+};
+
+const getEmailSignupLabel = (lang: string) => {
+  switch (lang) {
+    case 'am': return 'በኢሜይል ይቀጥሉ';
+    case 'om': return 'Imeeliin Itti Fufa';
+    case 'ti': return 'ብኢሜል ይቀጽሉ';
+    case 'ar': return 'المتابعة بالبريد الإلكتروني';
+    case 'so': return 'Ku sii wad Imeelka';
+    default: return 'Continue with Email';
+  }
+};
+
+const getPhoneSignupLabel = (lang: string) => {
+  switch (lang) {
+    case 'am': return 'በስልክ ይቀጥሉ';
+    case 'om': return 'Bilbilaan Itti Fufa';
+    case 'ti': return 'ብቁፅሪ ስልኪ ይቀጽሉ';
+    case 'ar': return 'المتابعة برقم الهاتف';
+    case 'so': return 'Ku sii wad Nambarka';
+    default: return 'Continue with Phone';
+  }
+};
+
 function SignupContent() {
   const t = useTranslations('Auth');
   const locale = useLocale();
@@ -43,15 +76,16 @@ function SignupContent() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
-  // Auto-redirect on success
+  // Auto-redirect on success to OTP verification page
   React.useEffect(() => {
     if (isSuccess) {
       const timer = setTimeout(() => {
-        window.location.href = `/${locale}/dashboard`;
+        const identifier = view === 'email' ? email : `${countryCode}${phone}`;
+        window.location.href = `/${locale}/verify-otp?email=${encodeURIComponent(identifier)}&type=signup`;
       }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [isSuccess, locale]);
+  }, [isSuccess, locale, view, email, countryCode, phone]);
 
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -107,6 +141,16 @@ function SignupContent() {
       if (authError) throw authError;
 
       if (data.user) {
+        // Send custom OTP code via email
+        try {
+          await fetch('/api/auth/send-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: identifier, locale })
+          });
+        } catch (sendErr) {
+          console.error("Failed to send verification OTP:", sendErr);
+        }
         setIsSuccess(true);
       }
     } catch (err: unknown) {
@@ -152,7 +196,7 @@ function SignupContent() {
             priority
           />
           <p className="text-gray-400 mt-3 font-medium tracking-widest uppercase text-[9px]">
-             {locale === 'am' ? 'የኢትዮጵያውያን የትዳር መድረክ' : 'Global Habesha Matching'}
+             {getSlogan(locale)}
           </p>
         </div>
 
@@ -161,7 +205,7 @@ function SignupContent() {
           <div className="relative">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-bold text-accent italic">
-                {view === 'initial' ? t('signUp') : view === 'email' ? (locale === 'am' ? 'በኢሜይል ይቀጥሉ' : 'Continue with Email') : (locale === 'am' ? 'በስልክ ይቀጥሉ' : 'Continue with Phone')}
+                {view === 'initial' ? t('signUp') : view === 'email' ? getEmailSignupLabel(locale) : getPhoneSignupLabel(locale)}
               </h2>
               {view !== 'initial' && (
                 <button 
@@ -191,7 +235,7 @@ function SignupContent() {
                     <Phone size={24} />
                   </div>
                   <span className="font-black uppercase tracking-[0.1em] text-xs">
-                    {locale === 'am' ? 'በስልክ ቁጥር ይቀጥሉ' : 'Continue with Phone'}
+                    {getPhoneSignupLabel(locale)}
                   </span>
                 </button>
 
@@ -204,7 +248,7 @@ function SignupContent() {
                     <Mail size={24} />
                   </div>
                   <span className="font-black uppercase tracking-[0.1em] text-xs">
-                    {locale === 'am' ? 'በኢሜይል ይቀጥሉ' : 'Continue with Email'}
+                    {getEmailSignupLabel(locale)}
                   </span>
                 </button>
               </div>

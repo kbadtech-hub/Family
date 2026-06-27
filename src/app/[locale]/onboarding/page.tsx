@@ -211,7 +211,7 @@ function OnboardingContent() {
       const next = { ...prev, [field]: value };
       
       // Handle Ethiopian Date Conversion
-      if (field.startsWith('eth_') && (locale === 'am' || locale === 'om' || locale === 'ti' || locale === 'so')) {
+      if (field.startsWith('eth_')) {
         if (next.eth_birth_day && next.eth_birth_month && next.eth_birth_year) {
           try {
             const [gy, gm, gd] = ethiopianDate.toGregorian(
@@ -313,11 +313,17 @@ function OnboardingContent() {
         if (!formData.partner_intent) return t('errors.partnerIntentRequired');
         break;
       case 4: // ID Upload
-        if (!formData.id_photo) return t('idVerification.doc');
+        if (!formData.id_photo) {
+          return locale === 'am' ? 'እባክዎ መጀመሪያ የመታወቂያዎን ፎቶ ይጫኑ።' : 'Please upload your ID document first.';
+        }
         break;
       case 5: // Selfie
-        if (!formData.selfie_photo) return t('idVerification.takeSelfie');
-        if (formData.verification_status !== 'verified') return locale === 'am' ? 'መረጃዎችዎን እያመሳከርን ነው ወይም አልተገጣጠመም። እባክዎ በትክክል ያስገቡ።' : 'We are verifying your data or it did not match. Please enter correctly.';
+        if (!formData.selfie_photo) {
+          return locale === 'am' ? 'እባክዎ በላይቭ ካሜራ የ3 ሰከንድ ቪዲዮ ሰልፊ ይቅረጹ ወይም ፋይል ይጫኑ።' : 'Please record a 3-second live video selfie or upload a file first.';
+        }
+        if (formData.verification_status !== 'verified') {
+          return locale === 'am' ? 'የመታወቂያ እና የሰልፊ ማመሳከሪያው ማረጋገጫ አልተጠናቀቀም ወይም አልተገጣጠመም። እባክዎ በትክክል ያስገቡ።' : 'Identity verification match has not succeeded. Please record again or check details.';
+        }
         break;
       default:
         return null;
@@ -437,12 +443,22 @@ function OnboardingContent() {
                   </div>
                   {formData.calendar_type === 'ethiopian' ? (
                     <div className="grid grid-cols-3 gap-2">
-                       <input type="number" placeholder={t('calendar.day')} value={formData.eth_birth_day} aria-label={t('calendar.day')} onChange={(e) => updateField('eth_birth_day', e.target.value)} className="p-3 bg-muted rounded-xl text-center" />
-                       <select value={formData.eth_birth_month} aria-label={t('calendar.month')} onChange={(e) => updateField('eth_birth_month', e.target.value)} className="p-3 bg-muted rounded-xl">
-                         <option value="">{t('calendar.month')}</option>
+                       <select value={formData.eth_birth_day} aria-label={t('calendar.day')} onChange={(e) => updateField('eth_birth_day', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                         <option value="">{t('calendar.day') || 'Day'}</option>
+                         {Array.from({ length: formData.eth_birth_month === '13' ? 6 : 30 }, (_, i) => i + 1).map(day => (
+                           <option key={day} value={day}>{day}</option>
+                         ))}
+                       </select>
+                       <select value={formData.eth_birth_month} aria-label={t('calendar.month')} onChange={(e) => updateField('eth_birth_month', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                         <option value="">{t('calendar.month') || 'Month'}</option>
                          {['Meskerem', 'Tikemt', 'Hidar', 'Tahsas', 'Tir', 'Yekatit', 'Megabit', 'Miazia', 'Genbot', 'Sene', 'Hamle', 'Nehase', 'Pagume'].map((m, i) => <option key={m} value={i + 1}>{t_const(`Months.${m}`)}</option>)}
                        </select>
-                       <input type="number" placeholder={t('calendar.year')} value={formData.eth_birth_year} aria-label={t('calendar.year')} onChange={(e) => updateField('eth_birth_year', e.target.value)} className="p-3 bg-muted rounded-xl text-center" />
+                       <select value={formData.eth_birth_year} aria-label={t('calendar.year')} onChange={(e) => updateField('eth_birth_year', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                         <option value="">{t('calendar.year') || 'Year'}</option>
+                         {Array.from({ length: 70 }, (_, i) => 2018 - 18 - i).map(year => (
+                           <option key={year} value={year}>{year}</option>
+                         ))}
+                       </select>
                     </div>
                   ) : (
                     <input type="date" value={formData.birth_date} aria-label={t('fields.birthDate')} onChange={(e) => updateField('birth_date', e.target.value)} className="w-full rounded-xl border-gray-300 p-3 bg-muted" />

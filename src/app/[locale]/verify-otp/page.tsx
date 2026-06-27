@@ -67,22 +67,17 @@ function VerifyOtpContent() {
     setIsSubmitting(true);
     setErrorMsg('');
     try {
-      const isEmail = email.includes('@');
-      if (isEmail) {
-        const { error } = await supabase.auth.verifyOtp({
-          email,
-          token: otpValue,
-          type: type === 'recovery' ? 'recovery' : 'signup'
-        });
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.auth.verifyOtp({
-          phone: email,
-          token: otpValue,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          type: 'sms_otp' as any
-        });
-        if (error) throw error;
+      // Direct call to our custom API route for robust custom OTP checks
+      const response = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, token: otpValue })
+      });
+
+      const resData = await response.json();
+      
+      if (!resData.success) {
+        throw new Error(resData.error || 'Invalid code');
       }
       
       setIsSuccess(true);
@@ -96,8 +91,7 @@ function VerifyOtpContent() {
       }, 2000);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        // Simple Amharic translation for common error
-        if (error.message.includes('Token has expired')) {
+        if (error.message.includes('expired')) {
           setErrorMsg(locale === 'am' ? 'ኮዱ ጊዜው አልፎበታል' : locale === 'ti' ? 'ኮድ ግዚኡ ሓሊፉ አሎ' : 'Code has expired');
         } else {
           setErrorMsg(locale === 'am' ? 'የተሳሳተ ኮድ' : locale === 'ti' ? 'ጌጋ ኮድ' : 'Invalid code');

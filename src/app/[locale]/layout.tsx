@@ -10,6 +10,7 @@ import {AuthProvider} from "@/context/AuthContext";
 import Chatbot from "@/components/Chatbot";
 import SubscriptionObserver from "@/components/SubscriptionObserver";
 import AnimatedSplashScreen from "@/components/AnimatedSplashScreen";
+import ZoomBlocker from "@/components/ZoomBlocker";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -52,7 +53,7 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} dir={direction} className={`${poppins.variable} ${notoEthiopic.variable} ${notoArabic.variable} antialiased`}>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
         <meta name="theme-color" content="#FF6B6B" />
@@ -66,6 +67,7 @@ export default async function LocaleLayout({
                 <Chatbot />
                 <SubscriptionObserver />
                 <AnimatedSplashScreen />
+                <ZoomBlocker />
               </ConditionalLayout>
             </UIProvider>
           </AuthProvider>

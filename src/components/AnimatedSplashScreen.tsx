@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useLocale } from 'next-intl';
 
 export default function AnimatedSplashScreen() {
+  const locale = useLocale();
   const [isVisible, setIsVisible] = useState(false);
   const [scale, setScale] = useState(0.9);
   const [greetingIndex, setGreetingIndex] = useState(0);
@@ -17,6 +19,17 @@ export default function AnimatedSplashScreen() {
     "مرحباً بكم في بيتسيب!", // Arabic
     "Ku soo dhowaada Beteseb!" // Somali
   ];
+
+  const getSlogan = (lang: string) => {
+    switch (lang) {
+      case 'am': return 'ቤተሰብን ማገናኘት፣ እሴቶችን ማክበር፣ አስተማማኝ የወደፊት ሕይወትን መገንባት።';
+      case 'om': return 'Maatii walitti fiduu, qulqullina kabajuu, fuuldura amansiisaa ijaaruu.';
+      case 'ti': return 'ስድራቤታት ምትእስሳር፡ እሴታት ምኽባር፡ ድሕንነቱ ዝተሓለወ መጻኢ ምህናፅ።';
+      case 'ar': return 'ربط العائلات، تكريم القيم، بناء مستقبل آمن.';
+      case 'so': return 'Isku xirka qoysaska, dhowridda qiyamka, dhisidda mustaqbal aamin ah.';
+      default: return 'Connecting families, honoring values, building secure futures.';
+    }
+  };
 
   useEffect(() => {
     // Check if splash was already shown in this session
@@ -95,8 +108,8 @@ export default function AnimatedSplashScreen() {
           >
             {greetings[greetingIndex]}
           </h1>
-          <p className="text-[9px] text-gray-500 font-bold max-w-[240px] mx-auto leading-relaxed uppercase tracking-wider">
-            Connecting families, honoring values, building secure futures.
+          <p className="text-[9px] text-gray-500 font-bold max-w-[320px] mx-auto leading-relaxed uppercase tracking-wider">
+            {getSlogan(locale)}
           </p>
         </div>
       </div>

@@ -142,6 +142,9 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 text-center text-white/10 text-xs tracking-[0.5em] uppercase font-black">
         {t('copyright')}
       </div>
+      <div className="text-center text-white/30 text-[10px] mt-2 font-bold uppercase tracking-widest">
+        Developed by Nolawi Digital Hub
+      </div>
     </footer>
   );
 }
