@@ -30,26 +30,26 @@ export default function AnimatedSplashScreen() {
     // Zoom in shortly after mounting
     const scaleUpTimer = setTimeout(() => setScale(1.15), 100);
     
-    // Breathing zoom effect cycle (Zoom in / Zoom out)
+    // Breathing zoom effect cycle (cycles every 2 seconds to match greeting rate)
     const zoomCycle = setInterval(() => {
       setScale(s => (s === 1.15 ? 0.95 : 1.15));
-    }, 1200);
+    }, 2000);
 
-    // Fast greeting cycle (cycles every 550ms through 6 languages)
+    // Multilingual greeting cycle (stays 2 seconds for each language: 12 seconds total)
     const greetingCycle = setInterval(() => {
       setGreetingIndex(idx => (idx + 1) % greetings.length);
-    }, 550);
+    }, 2000);
 
-    // Fade out start at 3.5 seconds
+    // Fade out start at 11.5 seconds
     const fadeOutTimer = setTimeout(() => {
       setOpacity(0);
-    }, 3500);
+    }, 11500);
 
-    // Unmount and finish at 4 seconds
+    // Unmount and finish at 12 seconds
     const endTimer = setTimeout(() => {
       setIsVisible(false);
       sessionStorage.setItem('beteseb_splash_shown', 'true');
-    }, 4000);
+    }, 12000);
 
     return () => {
       clearTimeout(scaleUpTimer);
@@ -70,9 +70,9 @@ export default function AnimatedSplashScreen() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--primary)_0%,_transparent_65%)] opacity-20" />
       
       <div className="relative flex flex-col items-center space-y-10 text-center max-w-md">
-        {/* Animated Logo inside white background rounded container */}
+        {/* Animated Logo Container */}
         <div 
-          className="w-44 h-44 rounded-[3rem] bg-white p-4 shadow-2xl flex items-center justify-center transition-transform duration-1000 ease-in-out"
+          className="w-44 h-44 rounded-[3rem] bg-white p-4 shadow-2xl flex items-center justify-center transition-transform duration-[2000ms] ease-in-out"
           style={{ transform: `scale(${scale})` }}
         >
           <Image 
@@ -85,7 +85,7 @@ export default function AnimatedSplashScreen() {
           />
         </div>
 
-        {/* Multilingual Text Section */}
+        {/* Text Area */}
         <div className="space-y-3">
           <p className="text-[9px] font-black uppercase tracking-[0.3em] text-primary">
             BETESEB SECURE PORTAL
