@@ -12,7 +12,6 @@ import {
   Sparkles
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { useRouter } from '@/i18n/routing';
 
 interface SystemSettings {
   cms_content?: {
@@ -22,10 +21,54 @@ interface SystemSettings {
   system_access_key?: string;
 }
 
+// 6-Language Translation Helpers to prevent any mixed-language bleed-throughs
+const getCtaLabel = (lang: string) => {
+  switch (lang) {
+    case 'am': return 'ነጻ የ7 ቀን ሙከራ ጀምር';
+    case 'om': return 'Yaalii bilisaa guyyaa 7 jalqabi';
+    case 'ti': return 'ናጻ ናይ 7 መዓልቲ ፈተነ ጀምር';
+    case 'ar': return 'ابدأ فترة تجريبية مجانية لمدة 7 أيام';
+    case 'so': return 'Bilow tijaabada bilaashka ah ee 7 maalmood';
+    default: return 'Start 7-Day Free Trial';
+  }
+};
+
+const getVerifiedNodeLabel = (lang: string) => {
+  switch (lang) {
+    case 'am': return 'በቤተሰብ ደህንነት ክፍል የተረጋገጠ';
+    case 'om': return "Noodii Mirkaneessa Betesebiin Mirkanaa'e";
+    case 'ti': return 'ብክፍሊ ድሕንነት ቤተሰብ ዝተረጋገፀ';
+    case 'ar': return 'تم التحقق بواسطة عقدة بيتسيب الآمنة';
+    case 'so': return 'Waxaa xaqiijiyay Nambarka Aaminada Beteseb';
+    default: return 'Verified by Beteseb Secure Node';
+  }
+};
+
+const getPrivacySyncLabel = (lang: string) => {
+  switch (lang) {
+    case 'am': return 'የግላዊነት ማመሳሰል';
+    case 'om': return 'Wal-simannaa Qulqullinaa';
+    case 'ti': return 'ምስጢራውነት ምትዕስሳር';
+    case 'ar': return 'مزامنة الخصوصية';
+    case 'so': return 'Isku xirka Qosolka';
+    default: return 'Privacy Sync';
+  }
+};
+
+const getAiMonitoringLabel = (lang: string) => {
+  switch (lang) {
+    case 'am': return 'በአርቲፊሻል ኢንተለጀንስ ክትትል';
+    case 'om': return 'Hordoffii AI';
+    case 'ti': return 'ክትትል ብአርቲፊሻል ኢንተለጀንስ';
+    case 'ar': return 'مراقبة الذكاء الاصطناعي';
+    case 'so': return 'La-socodka AI';
+    default: return 'AI Monitoring';
+  }
+};
+
 export default function Home() {
   const t = useTranslations('Index');
   const locale = useLocale();
-  const router = useRouter();
   
   const [settings, setSettings] = useState<SystemSettings | null>(null);
 
@@ -50,12 +93,13 @@ export default function Home() {
             {t('Hero.tagline')}
           </div>
           
-          <h1 className="text-4xl md:text-5xl font-black leading-[1.25] tracking-tight text-[#0F172A]">
+          {/* Slogan Title - leading-[1.45] and py-1 prevent overlapping Ethiopic baselines */}
+          <h1 className="text-4xl md:text-6xl font-black leading-[1.45] tracking-wide text-[#0F172A] py-1">
             <span className="block opacity-90">
               {settings?.cms_content?.hero_title || t('Hero.title1')}
             </span> 
             {!settings?.cms_content?.hero_title && (
-              <span className="text-primary italic">
+              <span className="text-primary italic block mt-2">
                  {t('Hero.title2')}
               </span>
             )}
@@ -70,7 +114,7 @@ export default function Home() {
                href="/signup"
                className="w-full sm:w-auto bg-primary text-white py-5 px-12 rounded-[2rem] font-bold text-sm uppercase tracking-widest hover:shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3"
             >
-              {locale === 'am' ? 'ነጻ የ7 ቀን ሙከራ ጀምር' : 'Start Free Trial'} <ArrowRight size={18} className={locale === 'ar' ? 'rotate-180' : ''} />
+              {getCtaLabel(locale)} <ArrowRight size={18} className={locale === 'ar' ? 'rotate-180' : ''} />
             </Link>
             <Link href="/about" className="w-full sm:w-auto px-12 py-5 rounded-[2rem] border-2 border-border text-[#0F172A] font-bold text-sm uppercase tracking-widest hover:bg-[#F8F4F1] transition-all text-center">
                {t('Hero.cta2')}
@@ -155,7 +199,9 @@ export default function Home() {
                   <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-primary">
                      <ShieldCheck size={24} />
                   </div>
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-white/40">Verified by Beteseb Secure Node</div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-white/40">
+                    {getVerifiedNodeLabel(locale)}
+                  </div>
                </div>
             </div>
 
@@ -167,11 +213,15 @@ export default function Home() {
                <div className="grid grid-cols-2 gap-6 pt-4">
                   <div className="p-6 rounded-2xl bg-white/5 border border-white/5">
                      <p className="text-2xl font-black text-primary">100%</p>
-                     <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">Privacy Sync</p>
+                     <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">
+                       {getPrivacySyncLabel(locale)}
+                     </p>
                   </div>
                   <div className="p-6 rounded-2xl bg-white/5 border border-white/5">
                      <p className="text-2xl font-black text-primary">24/7</p>
-                     <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">AI Monitoring</p>
+                     <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">
+                       {getAiMonitoringLabel(locale)}
+                     </p>
                   </div>
                </div>
             </div>
@@ -188,7 +238,7 @@ export default function Home() {
                href="/signup"
                className="inline-flex bg-primary text-white py-6 px-16 rounded-[2.5rem] font-bold text-sm uppercase tracking-[0.2em] hover:shadow-2xl hover:shadow-primary/20 transition-all active:scale-95 items-center gap-4"
             >
-               {locale === 'am' ? 'ነጻ የ7 ቀን ሙከራ ጀምር' : 'Start Free Trial'} <ArrowRight size={20} className={locale === 'ar' ? 'rotate-180' : ''} />
+               {getCtaLabel(locale)} <ArrowRight size={20} className={locale === 'ar' ? 'rotate-180' : ''} />
             </Link>
          </div>
 
