@@ -8,18 +8,33 @@ export default function AnimatedSplashScreen() {
   const locale = useLocale();
   const [isVisible, setIsVisible] = useState(false);
   const [scale, setScale] = useState(0.9);
-  const [greetingIndex, setGreetingIndex] = useState(0);
   const [opacity, setOpacity] = useState(1);
 
-  const greetings = [
-    "እንኳን ወደ ቤተሰብ በደህና መጡ!", // Amharic
-    "Welcome to Beteseb!", // English
-    "Baga gara Beteseb nagaan dhuftan!", // Oromo
-    "እንቋዕ ናብ ቤተሰብ ብደሓን መጻእኩም!", // Tigrinya
-    "مرحباً بكم في بيتسيب!", // Arabic
-    "Ku soo dhowaada Beteseb!" // Somali
-  ];
+  // Localized Header above the greeting
+  const getPortalHeader = (lang: string) => {
+    switch (lang) {
+      case 'am': return 'የቤተሰብ ደህንነቱ የተጠበቀ መግቢያ';
+      case 'om': return 'PORTALII MAATII DEEBANEE CAME';
+      case 'ti': return 'ናይ ቤተሰብ ድሕንነቱ ዝተሓለወ መእተዊ';
+      case 'ar': return 'بوابة بيتسيب الآمنة';
+      case 'so': return 'MINTIDKA AL-AMIN E QOYSKA';
+      default: return 'BETESEB SECURE PORTAL';
+    }
+  };
 
+  // Localized Greeting
+  const getGreeting = (lang: string) => {
+    switch (lang) {
+      case 'am': return 'እንኳን ወደ ቤተሰብ በደህና መጡ!';
+      case 'om': return 'Baga gara Beteseb nagaan dhuftan!';
+      case 'ti': return 'እንቋዕ ናብ ቤተሰብ ብደሓን መጻእኩም!';
+      case 'ar': return 'مرحباً بكم في بيتسيب!';
+      case 'so': return 'Ku soo dhowaada Beteseb!';
+      default: return 'Welcome to Beteseb!';
+    }
+  };
+
+  // Localized Slogan Slogan
   const getSlogan = (lang: string) => {
     switch (lang) {
       case 'am': return 'ቤተሰብን ማገናኘት፣ እሴቶችን ማክበር፣ አስተማማኝ የወደፊት ሕይወትን መገንባት።';
@@ -43,31 +58,25 @@ export default function AnimatedSplashScreen() {
     // Zoom in shortly after mounting
     const scaleUpTimer = setTimeout(() => setScale(1.15), 100);
     
-    // Breathing zoom effect cycle (cycles every 2 seconds to match greeting rate)
+    // Breathing zoom effect cycle (synchronized for smooth pulsing)
     const zoomCycle = setInterval(() => {
       setScale(s => (s === 1.15 ? 0.95 : 1.15));
-    }, 2000);
+    }, 1200);
 
-    // Multilingual greeting cycle (stays 2 seconds for each language: 12 seconds total)
-    const greetingCycle = setInterval(() => {
-      setGreetingIndex(idx => (idx + 1) % greetings.length);
-    }, 2000);
-
-    // Fade out start at 11.5 seconds
+    // Fade out start at 3.5 seconds
     const fadeOutTimer = setTimeout(() => {
       setOpacity(0);
-    }, 11500);
+    }, 3500);
 
-    // Unmount and finish at 12 seconds
+    // Unmount and finish at 4 seconds
     const endTimer = setTimeout(() => {
       setIsVisible(false);
       sessionStorage.setItem('beteseb_splash_shown', 'true');
-    }, 12000);
+    }, 4000);
 
     return () => {
       clearTimeout(scaleUpTimer);
       clearInterval(zoomCycle);
-      clearInterval(greetingCycle);
       clearTimeout(fadeOutTimer);
       clearTimeout(endTimer);
     };
@@ -85,7 +94,7 @@ export default function AnimatedSplashScreen() {
       <div className="relative flex flex-col items-center space-y-10 text-center max-w-md">
         {/* Animated Logo Container */}
         <div 
-          className="w-44 h-44 rounded-[3rem] bg-white p-4 shadow-2xl flex items-center justify-center transition-transform duration-[2000ms] ease-in-out"
+          className="w-44 h-44 rounded-[3rem] bg-white p-4 shadow-2xl flex items-center justify-center transition-transform duration-[1200ms] ease-in-out"
           style={{ transform: `scale(${scale})` }}
         >
           <Image 
@@ -101,12 +110,12 @@ export default function AnimatedSplashScreen() {
         {/* Text Area */}
         <div className="space-y-3">
           <p className="text-[9px] font-black uppercase tracking-[0.3em] text-primary">
-            BETESEB SECURE PORTAL
+            {getPortalHeader(locale)}
           </p>
           <h1 
             className="text-lg md:text-xl font-black min-h-[44px] tracking-tight italic transition-all duration-300 text-white/95 leading-relaxed"
           >
-            {greetings[greetingIndex]}
+            {getGreeting(locale)}
           </h1>
           <p className="text-[9px] text-gray-500 font-bold max-w-[320px] mx-auto leading-relaxed uppercase tracking-wider">
             {getSlogan(locale)}
