@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { autoRefreshToken: false, persistSession: false } }
-);
-
-// PayPal hosted checkout — redirect user to PayPal payment page
 export async function POST(request: NextRequest) {
   try {
+    // Create admin client inside handler (env vars not available at build time)
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+
     const authHeader = request.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -24,14 +24,16 @@ export async function POST(request: NextRequest) {
     const { planId, amount, currency } = body;
 
     if (!planId || !amount || currency !== 'USD') {
-      return NextResponse.json({ error: 'Invalid plan or currency. PayPal only accepts USD.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Invalid plan or currency. PayPal only accepts USD.' },
+        { status: 400 }
+      );
     }
 
-    // Build PayPal.me URL with amount
-    // tx_ref encodes: userId-planId for webhook verification
+    // Build a unique transaction reference: userId-planId-timestamp
     const txRef = `${user.id}-${planId}-${Date.now()}`;
-    
-    // Store pending payment record
+
+    // Store a pending payment record so admin can track it
     await supabaseAdmin.from('payments').insert({
       user_id: user.id,
       plan_type: planId,
@@ -41,16 +43,17 @@ export async function POST(request: NextRequest) {
       receipt_url: `PayPal pending - ref: ${txRef}`,
     });
 
-    // Return PayPal link
     const paypalLink = `https://www.paypal.com/paypalme/beteseb/${amount}USD`;
-    const returnUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://beteseb.com'}/payment/success?ref=${txRef}&plan=${planId}`;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://beteseb.com';
+    const returnUrl = `${appUrl}/payment/success?ref=${txRef}&plan=${planId}`;
 
     return NextResponse.json({
       success: true,
       paypalLink,
       txRef,
       returnUrl,
-      instructions: 'Complete the PayPal payment, then submit your transaction ID below for manual verification.'
+      instructions:
+        'Complete the PayPal payment, then submit your transaction ID for manual verification.',
     });
   } catch (error: any) {
     console.error('PayPal initialize error:', error);
