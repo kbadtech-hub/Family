@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { PhoneOff, Mic, MicOff, Video, VideoOff, PhoneCall, Heart, ShieldCheck, Loader2 } from 'lucide-react';
+import { PhoneOff, Mic, MicOff, Video, VideoOff, PhoneCall, Heart, ShieldCheck, Loader2, Timer } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 interface CallInterfaceProps {
@@ -18,6 +18,10 @@ export default function CallInterface({ matchProfile, onEndCall, isIncoming = fa
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
+  const MAX_CALL_DURATION = 30 * 60; // 30 minutes in seconds
+  const WARNING_TIME = 5 * 60; // 5 minutes warning
+  const [showTimeoutWarning, setShowTimeoutWarning] = useState(false);
+  const [callEndedDueToTimeout, setCallEndedDueToTimeout] = useState(false);
 
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
@@ -36,12 +40,30 @@ export default function CallInterface({ matchProfile, onEndCall, isIncoming = fa
     });
   }, []);
 
-  // 2. Timer for connected call duration
+  // 2. Timer for connected call duration with 30-min timeout limit
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (callState === 'connected') {
       timer = setInterval(() => {
-        setCallDuration(prev => prev + 1);
+        setCallDuration(prev => {
+          const next = prev + 1;
+          
+          // Show 5-minute warning
+          if (next === MAX_CALL_DURATION - WARNING_TIME) {
+            setShowTimeoutWarning(true);
+          }
+          
+          // Auto-end call at 30 minutes
+          if (next >= MAX_CALL_DURATION) {
+            setCallEndedDueToTimeout(true);
+            setCallState('ended');
+            setTimeout(() => {
+              cleanupMedia();
+              onEndCall();
+            }, 3000);
+          }
+          return next;
+        });
       }, 1000);
     }
     return () => clearInterval(timer);
@@ -368,7 +390,16 @@ export default function CallInterface({ matchProfile, onEndCall, isIncoming = fa
                 <Loader2 size={12} className="animate-spin" /> Connecting secure P2P node...
               </span>
             )}
-            {callState === 'connected' && `Connected - ${formatDuration(callDuration)}`}
+            {callState === 'connected' && (
+              <span className="flex items-center justify-center gap-2">
+                Connected - {formatDuration(callDuration)}
+                {MAX_CALL_DURATION - callDuration <= WARNING_TIME && (
+                  <span className="text-orange-400 animate-pulse text-xs ml-1 font-bold">
+                    ({Math.floor((MAX_CALL_DURATION - callDuration) / 60)}m left)
+                  </span>
+                )}
+              </span>
+            )}
             {callState === 'ended' && 'Call ended'}
           </p>
         </div>
@@ -421,6 +452,39 @@ export default function CallInterface({ matchProfile, onEndCall, isIncoming = fa
           </>
         )}
       </div>
+
+      {/* 30-Minute Timeout Warning Overlay */}
+      {showTimeoutWarning && callState === 'connected' && (
+        <div className="absolute bottom-32 left-1/2 -translate-x-1/2 z-50 bg-black/80 backdrop-blur-md text-white rounded-2xl px-6 py-4 text-center shadow-2xl border border-orange-500/30 max-w-xs">
+          <div className="flex items-center gap-2 justify-center mb-2">
+            <Timer size={16} className="text-orange-400 animate-pulse" />
+            <span className="text-xs font-black uppercase tracking-widest text-orange-400">
+              Time Limit Warning
+            </span>
+          </div>
+          <p className="text-xs font-medium mb-3">
+            Your call will end automatically in {Math.floor((MAX_CALL_DURATION - callDuration) / 60)} minutes.
+          </p>
+          <button
+            onClick={() => setShowTimeoutWarning(false)}
+            className="text-[10px] font-black uppercase tracking-widest text-orange-400 hover:text-orange-300"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Call Ended due to timeout */}
+      {callEndedDueToTimeout && (
+        <div className="absolute inset-0 bg-accent/95 backdrop-blur-md z-50 flex items-center justify-center">
+          <div className="bg-white rounded-[2rem] p-10 text-center space-y-4 max-w-xs text-accent">
+            <Timer size={40} className="text-primary mx-auto animate-bounce" />
+            <h3 className="text-xl font-black italic">Time Limit Reached</h3>
+            <p className="text-xs text-gray-500">Your 30-minute call session has ended.</p>
+            <p className="text-[10px] font-black text-primary uppercase tracking-widest">Upgrade to Premium for unlimited calls</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

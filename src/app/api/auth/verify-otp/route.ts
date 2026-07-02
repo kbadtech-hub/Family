@@ -1,14 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
-// Initialize Supabase Admin client using Service Role key to bypass RLS and confirm users
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
 export async function POST(req: Request) {
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !serviceRoleKey) {
+      return NextResponse.json({ success: false, error: 'Supabase configuration is missing' }, { status: 500 });
+    }
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+
     const { email, token } = await req.json();
 
     if (!email || !token) {

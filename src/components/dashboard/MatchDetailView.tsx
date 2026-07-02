@@ -15,7 +15,9 @@ import {
   UserPlus, 
   UserCheck, 
   Clock, 
-  Loader2 
+  Loader2,
+  Flag,
+  Ban
 } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import Image from 'next/image';
@@ -34,6 +36,9 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
   const [loading, setLoading] = useState(true);
   const [friendshipStatus, setFriendshipStatus] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showReportMenu, setShowReportMenu] = useState(false);
+  const [isReporting, setIsReporting] = useState(false);
+  const [isBlocking, setIsBlocking] = useState(false);
   const t = useTranslations('Friendship');
   const locale = useLocale();
 
@@ -109,6 +114,59 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
     }
   };
 
+  const handleReport = async (reason: string) => {
+    setIsReporting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const response = await fetch('/api/moderation/report', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ reported_user_id: matchId, reason })
+      });
+      if (response.ok) {
+        alert(locale === 'am' ? '✅ ሪፖርትዎ በትክክል ደርሷል። በአጭር ጊዜ ውስጥ እንገመግማለን።' : '✅ Report submitted. We will review it shortly.');
+        setShowReportMenu(false);
+      } else {
+        alert('Failed to submit report');
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsReporting(false);
+    }
+  };
+
+  const handleBlock = async () => {
+    if (!confirm(locale === 'am' ? 'ይህንን ተጠቃሚ ማገድ/ብሎክ ማድረግ ይፈልጋሉ?' : 'Do you want to block this user?')) return;
+    setIsBlocking(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const response = await fetch('/api/moderation/block', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ blocked_id: matchId })
+      });
+      if (response.ok) {
+        alert(locale === 'am' ? 'ተጠቃሚው ታግዷል።' : 'User blocked.');
+        onClose();
+      } else {
+        alert('Failed to block user');
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsBlocking(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-accent/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 md:p-10 animate-in fade-in duration-300">
       <div className="bg-white w-full max-w-5xl h-full max-h-[90vh] rounded-[3rem] overflow-hidden shadow-2xl flex flex-col md:flex-row relative">
@@ -119,6 +177,50 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
         >
           <X size={24} />
         </button>
+
+        {/* Report & Block Menu */}
+        <div className="absolute top-6 left-6 z-[110]">
+          <button 
+            onClick={() => setShowReportMenu(!showReportMenu)} 
+            aria-label="Report or block user"
+            className="w-12 h-12 bg-white/20 backdrop-blur-md text-white rounded-2xl flex items-center justify-center hover:bg-white/40 transition-all shadow-xl"
+          >
+            <Flag size={18} />
+          </button>
+          {showReportMenu && (
+            <div className="absolute top-14 left-0 bg-white rounded-2xl shadow-2xl border border-gray-100 p-3 min-w-[220px] space-y-1 z-[120]">
+              <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 px-2 pb-1 border-b border-gray-100">
+                {locale === 'am' ? 'ሪፖርት አድርግ' : 'Take Action'}
+              </p>
+              {[
+                { reason: 'Fake Profile', label: locale === 'am' ? 'የውሸት ፕሮፋይል' : 'Fake Profile' },
+                { reason: 'Harassment', label: locale === 'am' ? 'ተገቢ ያልሆነ ባህሪ' : 'Harassment' },
+                { reason: 'Inappropriate Content', label: locale === 'am' ? 'ያልተገባ ምስል/ጽሑፍ' : 'Inappropriate Content' },
+                { reason: 'Spam', label: 'Spam' },
+              ].map(({ reason, label }) => (
+                <button 
+                  key={reason} 
+                  onClick={() => handleReport(reason)} 
+                  disabled={isReporting}
+                  className="w-full text-left px-3 py-2.5 text-xs font-bold text-gray-600 hover:bg-primary/5 hover:text-primary rounded-xl transition-all flex items-center gap-2"
+                >
+                  <Flag size={12} className="text-orange-400" />
+                  {label}
+                </button>
+              ))}
+              <div className="border-t border-gray-100 pt-1">
+                <button 
+                  onClick={handleBlock} 
+                  disabled={isBlocking}
+                  className="w-full text-left px-3 py-2.5 text-xs font-bold text-red-500 hover:bg-red-50 rounded-xl transition-all flex items-center gap-2"
+                >
+                  <Ban size={12} />
+                  {locale === 'am' ? 'ይህንን ሰው እገድ' : 'Block this User'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Image Slider Section */}
         <div className="relative w-full md:w-1/2 h-2/3 md:h-full bg-accent">

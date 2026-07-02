@@ -11,15 +11,30 @@ interface SwipeCardsProps {
   onLike: (id: string) => void;
   onPass: (id: string) => void;
   isPremium?: boolean;
+  activeFilters?: { religion?: string; location?: string };
 }
 
-export default function SwipeCards({ userProfile, candidates, onLike, onPass, isPremium = false }: SwipeCardsProps) {
+export default function SwipeCards({ 
+  userProfile, 
+  candidates, 
+  onLike, 
+  onPass, 
+  isPremium = false,
+  activeFilters = {}
+}: SwipeCardsProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
   const [swipeOffset, setSwipeOffset] = useState({ x: 0, y: 0 });
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
 
-  const activeCandidate = candidates[currentIndex];
+  // Apply filters on the fly
+  const filteredCandidates = candidates.filter(c => {
+    if (activeFilters.religion && c.religion !== activeFilters.religion) return false;
+    if (activeFilters.location && c.location !== activeFilters.location) return false;
+    return true;
+  });
+
+  const activeCandidate = filteredCandidates[currentIndex];
 
   const handleTouchStart = (e: React.TouchEvent) => {
     const touch = e.touches[0];
@@ -69,14 +84,19 @@ export default function SwipeCards({ userProfile, candidates, onLike, onPass, is
   };
 
   if (!activeCandidate) {
+    const hasActiveFilters = Object.values(activeFilters).some(Boolean);
     return (
       <div className="w-full max-w-md mx-auto aspect-[3/4] bg-white rounded-[3rem] shadow-xl border border-gray-100 flex flex-col items-center justify-center p-8 text-center space-y-6">
         <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center animate-pulse">
           <Heart className="text-primary fill-primary/20" size={36} />
         </div>
-        <h3 className="text-2xl font-black text-accent italic">No More Matches</h3>
+        <h3 className="text-2xl font-black text-accent italic">
+          {hasActiveFilters ? 'No Filtered Matches' : 'No More Matches'}
+        </h3>
         <p className="text-gray-400 text-xs font-bold uppercase tracking-wider max-w-xs leading-relaxed">
-          You have swiped through all available candidates. Check back later for new compatibility recommendations!
+          {hasActiveFilters 
+            ? 'No candidates match your current religion/cultural filters. Try resetting or adjusting them.' 
+            : 'You have swiped through all available candidates. Check back later for new compatibility recommendations!'}
         </p>
       </div>
     );

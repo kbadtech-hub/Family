@@ -8,6 +8,7 @@ import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { calculateCompatibility } from '@/lib/compatibility';
 import { OfflineCache } from '@/lib/offline-cache';
+import { RELIGIONS } from '@/lib/constants';
 import {
   Home,
   MessageCircle,
@@ -75,6 +76,8 @@ function DashboardContent() {
   const [friendshipStatuses, setFriendshipStatuses] = useState<Record<string, string>>({});
   const [matchingView, setMatchingView] = useState<'grid' | 'swipe'>('grid');
   const [candidates, setCandidates] = useState<any[]>([]);
+  const [activeFilters, setActiveFilters] = useState<{ religion?: string; location?: string }>({});
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
 
   const languages = [
     { id: 'en', label: 'English' },
@@ -499,13 +502,65 @@ function DashboardContent() {
                 </div>
 
                 {matchingView === 'swipe' && !showPayment && !isTrialExpired && matches.length > 0 && profile ? (
-                  <div className="animate-in zoom-in-95 duration-500 py-4">
+                  <div className="animate-in zoom-in-95 duration-500 py-4 space-y-4">
+                    {/* Filter Toggle and Panel */}
+                    <div className="flex items-center justify-between mb-3 px-2">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                        {locale === 'am' ? 'ባህልና ሃይማኖት ማጣሪያ' : 'Cultural & Religion Filter'}
+                      </p>
+                      <button
+                        onClick={() => setShowFilterPanel(!showFilterPanel)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                          showFilterPanel || Object.values(activeFilters).some(Boolean)
+                            ? 'bg-primary text-white shadow-md'
+                            : 'bg-primary/10 text-primary hover:bg-primary/20'
+                        }`}
+                      >
+                        <span>{showFilterPanel ? '✕' : '☰'}</span>
+                        {locale === 'am' ? 'አጣራ' : 'Filter'}
+                        {Object.values(activeFilters).some(Boolean) && (
+                          <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                        )}
+                      </button>
+                    </div>
+
+                    {showFilterPanel && (
+                      <div className="bg-white rounded-3xl border border-border p-5 shadow-xl space-y-4 animate-in slide-in-from-top-2 duration-300">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] font-black uppercase tracking-widest text-gray-400">
+                              {locale === 'am' ? 'ሃይማኖት' : 'Religion'}
+                            </label>
+                            <select
+                              value={activeFilters.religion || ''}
+                              onChange={(e) => setActiveFilters(prev => ({ ...prev, religion: e.target.value || undefined }))}
+                              className="w-full px-3 py-2.5 bg-muted rounded-xl text-xs font-bold text-accent outline-none"
+                            >
+                              <option value="">{locale === 'am' ? 'ሁሉም ሃይማኖቶች' : 'Any Religion'}</option>
+                              {RELIGIONS.map(r => (
+                                <option key={r} value={r}>{r}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="flex items-end">
+                            <button
+                              onClick={() => setActiveFilters({})}
+                              className="w-full py-2.5 bg-gray-100 text-gray-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 transition-all"
+                            >
+                              {locale === 'am' ? 'ሁሉንም አፅዳ' : 'Clear Filters'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     <SwipeCards 
                       userProfile={profile} 
                       candidates={candidates} 
                       onLike={(id) => setSelectedMatchId(id)}
                       onPass={(id) => console.log("Passed candidate:", id)}
                       isPremium={profile?.is_premium}
+                      activeFilters={activeFilters}
                     />
                   </div>
                 ) : (
