@@ -647,7 +647,7 @@ function DashboardContent() {
         {/* Tab Components */}
         {activeTab === 'chat' && (
            <div className="mt-10 h-[calc(100vh-200px)]">
-              <SubscriptionGate allowVerifiedView={false}>
+              <SubscriptionGate>
                  <ChatView isPremium={isPremium} />
               </SubscriptionGate>
            </div>
@@ -655,7 +655,7 @@ function DashboardContent() {
 
         {activeTab === 'workshops' && (
            <div className="mt-10">
-              <SubscriptionGate allowVerifiedView={true}>
+              <SubscriptionGate>
                  <LessonsView isPremium={isPremium} />
               </SubscriptionGate>
            </div>
@@ -663,7 +663,7 @@ function DashboardContent() {
 
         {activeTab === 'community' && (
           <div className="mt-10">
-            <SubscriptionGate allowVerifiedView={true}>
+            <SubscriptionGate>
               <CommunityView isVerified={verificationStatus === 'verified'} isPremium={isPremium} isAdmin={isAdmin} />
             </SubscriptionGate>
           </div>

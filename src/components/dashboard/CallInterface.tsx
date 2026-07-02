@@ -19,10 +19,14 @@ export default function CallInterface({ matchProfile, onEndCall, isIncoming = fa
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
-  const MAX_CALL_DURATION = 30 * 60; // 30 minutes in seconds
-  const WARNING_TIME = 5 * 60; // 5 minutes warning
+  const MAX_CALL_DURATION = 30 * 60; // 30 minutes in seconds (premium)
+  const FREE_AUDIO_LIMIT = 120; // 2 minutes (120 seconds) for free users
+  const WARNING_TIME = 5 * 60; // 5 minutes warning for premium
   const [showTimeoutWarning, setShowTimeoutWarning] = useState(false);
   const [callEndedDueToTimeout, setCallEndedDueToTimeout] = useState(false);
+  const [isPremiumUser, setIsPremiumUser] = useState(false);
+  const [freeTimeExhausted, setFreeTimeExhausted] = useState(false);
+  const callStartTimeRef = useRef<number | null>(null);
 
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
@@ -45,6 +49,19 @@ export default function CallInterface({ matchProfile, onEndCall, isIncoming = fa
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) setCurrentUser(user);
+    });
+  }, []);
+
+  // Load subscription status for free/premium quota enforcement
+  useEffect(() => {
+    import('@/lib/subscription').then(({ getUserSubscriptionInfo }) => {
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) {
+          getUserSubscriptionInfo(user.id).then((info: any) => {
+            setIsPremiumUser(info?.tier === 'premium');
+          });
+        }
+      });
     });
   }, []);
 
@@ -78,20 +95,30 @@ export default function CallInterface({ matchProfile, onEndCall, isIncoming = fa
     });
   }, [currentUser, isIncoming, matchProfile, currentUserProfile]);
 
-  // 3. Timer for connected call duration with 30-min timeout limit
+  // 3. Timer for connected call duration with quota enforcement
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setInterval>;
     if (callState === 'connected') {
+      callStartTimeRef.current = Date.now();
       timer = setInterval(() => {
         setCallDuration(prev => {
           const next = prev + 1;
-          
-          // Show 5-minute warning
-          if (next === MAX_CALL_DURATION - WARNING_TIME) {
-            setShowTimeoutWarning(true);
+
+          // Free user: enforce 120s audio limit
+          if (!isPremiumUser && next >= FREE_AUDIO_LIMIT) {
+            const today = new Date().toISOString().split('T')[0];
+            const key = `audio_used_${today}`;
+            const existing = parseInt(localStorage.getItem(key) || '0', 10);
+            localStorage.setItem(key, (existing + next).toString());
+            setFreeTimeExhausted(true);
+            setCallState('ended');
+            setTimeout(() => onEndCall(), 3000);
           }
-          
-          // Auto-end call at 30 minutes
+
+          // Premium user: show 5-minute warning
+          if (next >= MAX_CALL_DURATION - WARNING_TIME) setShowTimeoutWarning(true);
+
+          // Premium user: enforce 30-min max
           if (next >= MAX_CALL_DURATION) {
             setCallEndedDueToTimeout(true);
             setCallState('ended');
@@ -105,7 +132,7 @@ export default function CallInterface({ matchProfile, onEndCall, isIncoming = fa
       }, 1000);
     }
     return () => clearInterval(timer);
-  }, [callState]);
+  }, [callState, isPremiumUser]);
 
   // 4. Initialize WebRTC and Signaling
   useEffect(() => {
@@ -129,10 +156,25 @@ export default function CallInterface({ matchProfile, onEndCall, isIncoming = fa
           localVideoRef.current.srcObject = stream;
         }
 
-        // Initialize Peer Connection (using public Google STUN server)
-        const pc = new RTCPeerConnection({
-          iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-        });
+        // Initialize Peer Connection with STUN + optional TURN
+        const iceServers: RTCIceServer[] = [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' },
+        ];
+
+        // Add TURN server if configured (for production firewall traversal)
+        const turnUrl = process.env.NEXT_PUBLIC_TURN_URL;
+        const turnUsername = process.env.NEXT_PUBLIC_TURN_USERNAME;
+        const turnCredential = process.env.NEXT_PUBLIC_TURN_CREDENTIAL;
+        if (turnUrl && turnUsername && turnCredential) {
+          iceServers.push({
+            urls: turnUrl,
+            username: turnUsername,
+            credential: turnCredential,
+          });
+        }
+
+        const pc = new RTCPeerConnection({ iceServers });
         peerConnectionRef.current = pc;
 
         // Add Local Tracks to Peer Connection
@@ -305,9 +347,23 @@ export default function CallInterface({ matchProfile, onEndCall, isIncoming = fa
           localVideoRef.current.srcObject = stream;
         }
 
-        const pc = peerConnectionRef.current || new RTCPeerConnection({
-          iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-        });
+        // Build ICE server list with optional TURN (same config as caller)
+        const acceptIceServers: RTCIceServer[] = [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' },
+        ];
+        const aTurnUrl = process.env.NEXT_PUBLIC_TURN_URL;
+        const aTurnUsername = process.env.NEXT_PUBLIC_TURN_USERNAME;
+        const aTurnCredential = process.env.NEXT_PUBLIC_TURN_CREDENTIAL;
+        if (aTurnUrl && aTurnUsername && aTurnCredential) {
+          acceptIceServers.push({
+            urls: aTurnUrl,
+            username: aTurnUsername,
+            credential: aTurnCredential,
+          });
+        }
+
+        const pc = peerConnectionRef.current || new RTCPeerConnection({ iceServers: acceptIceServers });
         peerConnectionRef.current = pc;
 
         stream.getTracks().forEach(track => pc.addTrack(track, stream));
@@ -692,8 +748,20 @@ export default function CallInterface({ matchProfile, onEndCall, isIncoming = fa
         </div>
       )}
 
-      {/* Call Ended due to timeout */}
-      {callEndedDueToTimeout && (
+      {/* Free quota exhausted overlay */}
+      {freeTimeExhausted && (
+        <div className="absolute inset-0 bg-[#0F172A]/95 backdrop-blur-md z-50 flex items-center justify-center">
+          <div className="bg-white rounded-[2rem] p-10 text-center space-y-4 max-w-xs text-[#0F172A]">
+            <Timer size={40} className="text-orange-500 mx-auto animate-bounce" />
+            <h3 className="text-xl font-black italic">⏰ Free Limit Reached</h3>
+            <p className="text-xs text-gray-500">Your free 2-minute call session has ended.</p>
+            <p className="text-[10px] font-black text-[#E2725B] uppercase tracking-widest">Upgrade to Premium for unlimited calls</p>
+          </div>
+        </div>
+      )}
+
+      {/* Call Ended due to 30-min timeout (premium) */}
+      {callEndedDueToTimeout && !freeTimeExhausted && (
         <div className="absolute inset-0 bg-[#0F172A]/95 backdrop-blur-md z-50 flex items-center justify-center">
           <div className="bg-white rounded-[2rem] p-10 text-center space-y-4 max-w-xs text-[#0F172A]">
             <Timer size={40} className="text-[#E2725B] mx-auto animate-bounce" />
