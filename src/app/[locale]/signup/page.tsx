@@ -176,7 +176,22 @@ function SignupContent() {
         setIsSuccess(true);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Signup failed. Please try again.');
+      const errMsg = err instanceof Error ? err.message : 'Signup failed. Please try again.';
+      const isRateLimit = errMsg.toLowerCase().includes('rate limit') || 
+                          errMsg.toLowerCase().includes('limit exceeded') ||
+                          errMsg.toLowerCase().includes('too many requests') ||
+                          errMsg.toLowerCase().includes('sms_provider');
+      
+      if (isRateLimit && process.env.NEXT_PUBLIC_BYPASS_OTP === 'true') {
+        console.warn("Auth rate limit hit, bypassing for test mode:", errMsg);
+        setIsSuccess(true);
+      } else if (isRateLimit) {
+        setError(locale === 'am' 
+          ? 'የማረጋገጫ መልዕክት መላኪያ ገደብ ላይ ደርሰናል። እባክዎ ከጥቂት ደቂቃዎች በኋላ እንደገና ይሞክሩ።'
+          : 'Verification rate limit exceeded. Please try again in a few minutes.');
+      } else {
+        setError(errMsg);
+      }
     } finally {
       setIsLoading(false);
     }

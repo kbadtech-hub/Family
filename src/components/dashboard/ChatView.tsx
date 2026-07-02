@@ -64,6 +64,8 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
   const [isFriend, setIsFriend] = useState(false);
   const [isGeneratingIceBreaker, setIsGeneratingIceBreaker] = useState(false);
   const [activeCallMatch, setActiveCallMatch] = useState<Profile | null>(null);
+  const [isIncomingCall, setIsIncomingCall] = useState(false);
+  const [currentUserProfile, setCurrentUserProfile] = useState<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const tf = useTranslations('Friendship');
 
@@ -87,12 +89,16 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
           .filter(f => f.status === 'accepted')
           .map(f => f.sender_id === user.id ? f.receiver : f.sender);
         
-        // Fetch current user's profile to know their gender
+        // Fetch current user's profile to know their gender and details
         const { data: userProfile } = await supabase
           .from('profiles')
-          .select('gender')
+          .select('id, full_name, avatar_url, star_sign, is_verified, gender')
           .eq('id', user.id)
           .single();
+        
+        if (userProfile) {
+          setCurrentUserProfile(userProfile);
+        }
 
         // Also show some potential matches if no friends (with strict gender filtering)
         let profilesQuery = supabase
@@ -177,6 +183,24 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
       supabase.removeChannel(channel);
     };
   }, [selectedMatch, currentUser]);
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const signalingChannel = supabase
+      .channel(`user_signaling_${currentUser.id}`)
+      .on('broadcast', { event: 'call_invite' }, (payload) => {
+        const { callerProfile } = payload.payload;
+        // Launch incoming call screen
+        setIsIncomingCall(true);
+        setActiveCallMatch(callerProfile);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(signalingChannel);
+    };
+  }, [currentUser]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -577,7 +601,12 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
       {activeCallMatch && (
         <CallInterface 
           matchProfile={activeCallMatch} 
-          onEndCall={() => setActiveCallMatch(null)} 
+          currentUserProfile={currentUserProfile}
+          isIncoming={isIncomingCall}
+          onEndCall={() => {
+            setActiveCallMatch(null);
+            setIsIncomingCall(false);
+          }} 
         />
       )}
     </div>
