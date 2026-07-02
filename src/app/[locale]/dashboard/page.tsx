@@ -459,7 +459,7 @@ function DashboardContent() {
                   
                   <div className="flex items-center gap-4">
                     {/* View Switcher Toggle */}
-                    {!showPayment && !isTrialExpired && matches.length > 0 && (
+                    {!showPayment && matches.length > 0 && (
                       <div className="flex p-1 bg-muted rounded-2xl w-fit border border-gray-100 shadow-sm">
                         <button 
                           onClick={() => setMatchingView('grid')} 
@@ -481,7 +481,7 @@ function DashboardContent() {
                   </div>
                 </div>
 
-                {matchingView === 'swipe' && !showPayment && !isTrialExpired && matches.length > 0 && profile ? (
+                {matchingView === 'swipe' && !showPayment && matches.length > 0 && profile ? (
                   <div className="animate-in zoom-in-95 duration-500 py-4 space-y-4">
                     {/* Filter Toggle and Panel */}
                     <div className="flex items-center justify-between mb-3 px-2">
@@ -550,15 +550,6 @@ function DashboardContent() {
                         <button onClick={() => setShowPayment(false)} className="mb-6 text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">← {t('backToDash')}</button>
                         <PaymentTab />
                       </div>
-                    ) : isTrialExpired && paymentStatus !== 'approved' ? (
-                      <div className="col-span-full bg-white p-8 md:p-12 rounded-[2.5rem] md:rounded-[3rem] border border-red-100 text-center space-y-6">
-                        <div className="w-14 h-14 md:w-16 md:h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto">
-                          <AlertCircle className="w-7 h-7 md:w-8 md:h-8" />
-                        </div>
-                        <h3 className="text-xl md:text-2xl font-black text-accent italic">{t('trialExpired')}</h3>
-                        <p className="text-xs md:text-gray-500 max-w-sm mx-auto">{t('trialEnded')}</p>
-                        <button onClick={() => setShowPayment(true)} className="w-full md:w-auto bg-primary text-white px-10 py-4 rounded-2xl font-bold uppercase tracking-widest shadow-xl shadow-primary/20">{t('upgradeNow')}</button>
-                      </div>
                     ) : matches.length === 0 ? (
                       <div className="col-span-full py-20 text-center text-gray-400 font-bold uppercase tracking-widest text-[10px]">
                          {t('searching')}
@@ -602,16 +593,6 @@ function DashboardContent() {
                        <p className="font-black text-xs uppercase tracking-widest text-primary">{t('reviewPending')}</p>
                        <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-tighter">{t('reviewNote')}</p>
                     </div>
-                  </div>
-                ) : profile?.onboarding_completed && !isTrialExpired ? (
-                  <div className="space-y-4">
-                    <div className="p-5 bg-primary/5 rounded-[1.5rem]">
-                      <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">{t('trialStatus')}</p>
-                      <p className="text-xl font-black text-accent italic">{t('daysLeft', { count: trialDaysLeft ?? 0 })}</p>
-                    </div>
-                    <button onClick={() => setShowPayment(true)} className="w-full bg-primary text-white py-5 rounded-[2rem] font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20">
-                      {t('premium.unlock')}
-                    </button>
                   </div>
                 ) : (
                   <button onClick={() => setShowPayment(true)} className="w-full bg-primary text-white py-5 rounded-[2rem] font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20">
