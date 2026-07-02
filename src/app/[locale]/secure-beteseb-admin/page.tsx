@@ -985,7 +985,7 @@ export default function AdminPortal() {
                         value={cmsForm.email} 
                         onChange={(e) => setCmsForm({...cmsForm, email: e.target.value})} 
                         className="input-premium bg-background" 
-                        placeholder="e.g. hello@beteseb.com"
+                        placeholder="e.g. hello@beteseb1.online"
                       />
                     </label>
                     <label className="block">
@@ -1005,7 +1005,7 @@ export default function AdminPortal() {
                         value={cmsForm.website_url} 
                         onChange={(e) => setCmsForm({...cmsForm, website_url: e.target.value})} 
                         className="input-premium bg-background" 
-                        placeholder="https://beteseb.com"
+                        placeholder="https://beteseb1.online"
                       />
                     </label>
                     <label className="block">

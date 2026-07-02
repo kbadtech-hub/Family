@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     });
 
     const paypalLink = `https://www.paypal.com/paypalme/beteseb/${amount}USD`;
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://beteseb.com';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://beteseb1.online';
     const returnUrl = `${appUrl}/payment/success?ref=${txRef}&plan=${planId}`;
 
     return NextResponse.json({

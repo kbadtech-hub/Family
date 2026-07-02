@@ -49,7 +49,7 @@ function DashboardContent() {
     id: string;
     full_name: string | null;
     avatar_url: string | null;
-    trial_ends_at: string | null;
+    premium_until: string | null;
     currency_locked: 'USD' | 'ETB';
     onboarding_completed: boolean;
     role: string;
@@ -68,8 +68,6 @@ function DashboardContent() {
   const [showPayment, setShowPayment] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [verificationStatus, setVerificationStatus] = useState<string>('loading');
-  const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
-  const [isTrialExpired, setIsTrialExpired] = useState(false);
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -117,31 +115,13 @@ function DashboardContent() {
       const cachedProfile = OfflineCache.getCachedData(`profile_${user.id}`);
       if (cachedProfile) {
         setProfile(cachedProfile);
-        if (cachedProfile.trial_ends_at) {
-          const ends = new Date(cachedProfile.trial_ends_at);
-          const now = new Date();
-          const diff = ends.getTime() - now.getTime();
-          const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-          setTrialDaysLeft(days > 0 ? days : 0);
-          setIsTrialExpired(diff <= 0);
-        }
       }
 
       // 1. Fetch Profile
       const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-      let currentTrialExpired = false;
       if (profileData) {
         setProfile(profileData as Profile);
         OfflineCache.cacheData(`profile_${user.id}`, profileData);
-        if (profileData.trial_ends_at) {
-          const ends = new Date(profileData.trial_ends_at);
-          const now = new Date();
-          const diff = ends.getTime() - now.getTime();
-          const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-          setTrialDaysLeft(days > 0 ? days : 0);
-          currentTrialExpired = diff <= 0;
-          setIsTrialExpired(currentTrialExpired);
-        }
       }
 
       // 2. Fetch Verification
@@ -166,11 +146,11 @@ function DashboardContent() {
       const currentPaymentApproved = paymentData?.status === 'approved';
       if (paymentData) setPaymentStatus(paymentData.status);
 
-      // 4. Calculate Premium Status
-      const isPremium = currentPaymentApproved || 
-                       (profileData?.trial_ends_at && new Date(profileData.trial_ends_at) > new Date()) ||
+      // 4. Calculate Premium Status (feature-based — no trial)
+      const isPremium = currentPaymentApproved ||
+                       (profileData?.premium_until && new Date(profileData.premium_until) > new Date()) ||
                        ['admin', 'super_admin', 'expert'].includes(profileData?.role);
-      
+
       setProfile(prev => prev ? { ...prev, is_premium: isPremium } : null);
 
       // 5. Fetch Matches (Gender-Based Logic)
@@ -249,8 +229,8 @@ function DashboardContent() {
     fetchData();
   }, []);
 
-  const isPremium = profile?.trial_ends_at && new Date(profile.trial_ends_at) > new Date() || 
-                    paymentStatus === 'approved' || 
+  const isPremium = (profile?.premium_until && new Date(profile.premium_until) > new Date()) ||
+                    paymentStatus === 'approved' ||
                     ['admin', 'super_admin', 'expert'].includes((profile as any)?.role);
   const isAdmin = ['admin', 'super_admin'].includes((profile as any)?.role);
 
