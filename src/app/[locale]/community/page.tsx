@@ -28,6 +28,7 @@ interface Profile {
   role: string;
   is_premium?: boolean;
   trial_ends_at?: string;
+  premium_until?: string;
 }
 
 interface PostComment {
