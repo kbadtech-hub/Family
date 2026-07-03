@@ -11,11 +11,13 @@ interface SubscriptionGateProps {
   children: React.ReactNode;
   /**
    * The feature to gate. If the user lacks this feature, show the upgrade modal.
-   * If omitted, gate is disabled (children always shown).
+   * If omitted, gate is based on premium/verification status.
    */
   feature?: keyof FeatureQuota;
   /** If true, render children blurred with an overlay instead of blocking entirely */
   blurMode?: boolean;
+  /** If true, verified users can view the children (but interaction will trigger upgrade popup) */
+  allowVerifiedView?: boolean;
 }
 
 const FEATURE_LABELS: Record<keyof FeatureQuota, { icon: React.ReactNode; en: string; am: string }> = {
@@ -27,7 +29,12 @@ const FEATURE_LABELS: Record<keyof FeatureQuota, { icon: React.ReactNode; en: st
   profilePhotosBlurred: { icon: <ShieldCheck size={24} />, en: 'Profile Photos', am: 'የፕሮፋይል ፎቶ' },
 };
 
-export default function SubscriptionGate({ children, feature, blurMode = false }: SubscriptionGateProps) {
+export default function SubscriptionGate({ 
+  children, 
+  feature, 
+  blurMode = false, 
+  allowVerifiedView = false 
+}: SubscriptionGateProps) {
   const [loading, setLoading] = useState(true);
   const [subInfo, setSubInfo] = useState<SubscriptionInfo | null>(null);
   const [showPopup, setShowPopup] = useState(false);
@@ -79,9 +86,67 @@ export default function SubscriptionGate({ children, feature, blurMode = false }
     );
   }
 
-  // If no feature gate set, always render children
+  const isPremium = subInfo?.tier === 'premium';
+  const isVerified = subInfo?.isVerified || false;
+
+  // If no feature gate set, perform tier-based (Premium/Verified) gating
   if (!feature) {
-    return <>{children}</>;
+    if (isPremium) {
+      return <>{children}</>;
+    }
+
+    if (isVerified && allowVerifiedView) {
+      return (
+        <div className="relative w-full h-full">
+          <div>{children}</div>
+          <div
+            className="absolute inset-0 z-20 cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setShowPopup(true);
+            }}
+          />
+          {showPopup && (
+            <PremiumModal
+              locale={locale}
+              onClose={() => setShowPopup(false)}
+              onUpgrade={() => router.push('/dashboard?tab=payment')}
+              featureMeta={{
+                icon: <Sparkles size={24} />,
+                en: 'Premium Access',
+                am: 'ፕሪሚየም አገልግሎት',
+              }}
+            />
+          )}
+        </div>
+      );
+    }
+
+    // Hard block
+    return (
+      <div className="bg-white p-8 rounded-[2rem] border border-primary/20 shadow-xl text-center space-y-6">
+        <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto text-primary">
+          <Sparkles size={32} />
+        </div>
+        <div>
+          <h2 className="text-xl font-black text-accent uppercase tracking-tight">
+            {locale === 'am' ? 'ፕሪሚየም ብቻ' : 'Premium Only'}
+          </h2>
+          <p className="text-sm text-gray-500 mt-2">
+            {locale === 'am'
+              ? 'ይህን ገጽ ለማየት ፕሪሚየም አባል ይሁኑ።'
+              : 'Upgrade to Premium to unlock this tab and access exclusive content.'}
+          </p>
+        </div>
+        <button
+          onClick={() => router.push('/dashboard?tab=payment')}
+          className="btn-primary w-full py-4 rounded-xl font-black uppercase tracking-widest text-xs"
+        >
+          {locale === 'am' ? 'ፕሪሚየም ይሁኑ' : 'Become Premium'}
+        </button>
+      </div>
+    );
   }
 
   const hasAccess = canUseFeature(subInfo, feature);
