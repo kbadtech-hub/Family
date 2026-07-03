@@ -18,12 +18,10 @@ import {
   Phone, 
   Globe, 
   User, 
-  ArrowLeft,
-  Calendar
+  ArrowLeft 
 } from 'lucide-react';
 import { validatePassword } from '@/lib/password-validator';
 import { COUNTRIES } from '@/lib/countries';
-import { isOver18 } from '@/lib/age-validator';
 
 const getSlogan = (lang: string) => {
   switch (lang) {
@@ -77,9 +75,6 @@ function SignupContent() {
   const [error, setError] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [birthDate, setBirthDate] = useState('');
-  const [agreedToAge, setAgreedToAge] = useState(false);
-  const [agreedToCommunity, setAgreedToCommunity] = useState(false);
 
   // Auto-redirect on success to OTP verification page
   React.useEffect(() => {
@@ -97,18 +92,6 @@ function SignupContent() {
     e.preventDefault();
     if (!agreedToTerms) {
       setError(locale === 'am' ? 'እባክዎ መጀመሪያ በደንቦቹ ላይ ይስማሙ' : 'Please agree to the terms first');
-      return;
-    }
-    if (!agreedToAge) {
-      setError(locale === 'am' ? 'እድሜዎ 18+ መሆኑን ማረጋገጥ አለብዎት' : 'You must confirm you are 18 or older');
-      return;
-    }
-    if (birthDate && !isOver18(birthDate)) {
-      setError(locale === 'am' ? 'ይህ አፕሊኬሽን ለ18 ዓመት እና ከዚያ በላይ ብቻ ነው' : 'This app is for users 18 years and older only');
-      return;
-    }
-    if (!agreedToCommunity) {
-      setError(locale === 'am' ? 'የማህበረሰብ ህጎቻችንን ማረጋገጥ አለብዎት' : 'You must agree to our community guidelines');
       return;
     }
     setIsLoading(true);
@@ -133,7 +116,6 @@ function SignupContent() {
               options: {
                 data: {
                   full_name: fullName,
-                  birth_date: birthDate,
                   is_onboarded: false,
                   verification_status: 'unverified',
                   pref_location: searchParams.get('pref_location') || 'Local',
@@ -147,7 +129,6 @@ function SignupContent() {
               options: {
                 data: {
                   full_name: fullName,
-                  birth_date: birthDate,
                   is_onboarded: false,
                   verification_status: 'unverified',
                   pref_location: searchParams.get('pref_location') || 'Local',
@@ -291,26 +272,6 @@ function SignupContent() {
                   </div>
                 </div>
 
-                {/* Date of Birth — Age Verification */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">
-                    {locale === 'am' ? '📅 የልደት ቀን (18+ ማረጋገጫ)' : '📅 Date of Birth (18+ Verification)'}
-                  </label>
-                  <div className="relative group">
-                    <input
-                      type="date"
-                      required
-                      value={birthDate}
-                      onChange={(e) => setBirthDate(e.target.value)}
-                      max={new Date(Date.now() - 18 * 365.25 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
-                      className="w-full px-4 py-4 bg-[#F8F4F1] border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all font-medium text-accent"
-                    />
-                  </div>
-                  <p className="text-[9px] text-gray-400 ml-2 font-medium">
-                    {locale === 'am' ? '🔒 ይህ አፕሊኬሽን ለ18 ዓመት እና ከዚያ በላይ ብቻ ነው' : '🔒 This platform is strictly 18+ only'}
-                  </p>
-                </div>
-
                 {view === 'email' ? (
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">{t('email')}</label>
@@ -380,7 +341,7 @@ function SignupContent() {
 
                 <button
                   type="submit"
-                  disabled={isLoading || !agreedToTerms || !agreedToAge || !agreedToCommunity}
+                  disabled={isLoading || !agreedToTerms}
                   className="w-full bg-primary text-white py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl shadow-primary/20 hover:shadow-2xl hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale-[0.5] disabled:cursor-not-allowed mt-4"
                 >
                   {isLoading ? (
@@ -394,72 +355,46 @@ function SignupContent() {
               </form>
             )}
 
-            {/* Agreement checkboxes */}
-            <div className="mt-8 space-y-4 px-2">
-              {/* 1. Age Verification */}
-              <div className="flex items-start gap-3 cursor-pointer" onClick={() => setAgreedToAge(!agreedToAge)}>
-                <div className="relative flex items-center justify-center mt-0.5">
-                  <input
-                    id="agreedToAge"
-                    type="checkbox"
-                    checked={agreedToAge}
-                    onChange={(e) => setAgreedToAge(e.target.checked)}
-                    className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border-2 border-border transition-all checked:bg-primary checked:border-primary"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                  <CheckCircle2 size={14} className="absolute text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" />
-                </div>
-                <label htmlFor="agreedToAge" className="text-xs text-gray-500 font-bold cursor-pointer leading-tight select-none">
-                  {locale === 'am'
-                    ? '✅ እድሜዬ 18 ዓመት ወይም ከዚያ በላይ ነው'
-                    : '✅ I confirm I am 18 years of age or older'}
-                </label>
+            {/* Agreement - Always visible at bottom */}
+            <div className="mt-8 flex items-start gap-3 px-2 group cursor-pointer" onClick={() => setAgreedToTerms(!agreedToTerms)}>
+              <div className="relative flex items-center justify-center mt-0.5">
+                <input
+                  id="agreedToTerms"
+                  type="checkbox"
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border-2 border-border transition-all checked:bg-primary checked:border-primary hover:border-primary/50"
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <CheckCircle2 
+                  size={14} 
+                  className="absolute text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" 
+                />
               </div>
-
-              {/* 2. Terms & Privacy */}
-              <div className="flex items-start gap-3 cursor-pointer" onClick={() => setAgreedToTerms(!agreedToTerms)}>
-                <div className="relative flex items-center justify-center mt-0.5">
-                  <input
-                    id="agreedToTerms"
-                    type="checkbox"
-                    checked={agreedToTerms}
-                    onChange={(e) => setAgreedToTerms(e.target.checked)}
-                    className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border-2 border-border transition-all checked:bg-primary checked:border-primary"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                  <CheckCircle2 size={14} className="absolute text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" />
-                </div>
-                <label htmlFor="agreedToTerms" className="text-xs text-gray-500 font-medium cursor-pointer leading-tight select-none">
-                  {t.rich('agreement', {
-                    terms: (chunks) => (
-                      <a href={`/${locale}/terms`} target="_blank" className="text-primary hover:underline font-bold" onClick={(e) => e.stopPropagation()}>{chunks}</a>
-                    ),
-                    privacy: (chunks) => (
-                      <a href={`/${locale}/privacy`} target="_blank" className="text-primary hover:underline font-bold" onClick={(e) => e.stopPropagation()}>{chunks}</a>
-                    )
-                  })}
-                </label>
-              </div>
-
-              {/* 3. Community Guidelines */}
-              <div className="flex items-start gap-3 cursor-pointer" onClick={() => setAgreedToCommunity(!agreedToCommunity)}>
-                <div className="relative flex items-center justify-center mt-0.5">
-                  <input
-                    id="agreedToCommunity"
-                    type="checkbox"
-                    checked={agreedToCommunity}
-                    onChange={(e) => setAgreedToCommunity(e.target.checked)}
-                    className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border-2 border-border transition-all checked:bg-primary checked:border-primary"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                  <CheckCircle2 size={14} className="absolute text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" />
-                </div>
-                <label htmlFor="agreedToCommunity" className="text-xs text-gray-500 font-medium cursor-pointer leading-tight select-none">
-                  {locale === 'am'
-                    ? '📋 በኮሚኒቲው ላይ መጥፎ ቃላት፣ የብልግና ምስሎች ወይም ሰዎችን የሚያንቋሽሹ ነገሮችን አልፖስትም — የማህበረሰብ ህጎቻችንን ተቀበልኩ'
-                    : '📋 I agree not to post inappropriate content, offensive language, or abusive material — I accept the Community Guidelines'}
-                </label>
-              </div>
+              <label htmlFor="agreedToTerms" className="text-xs text-gray-500 font-medium cursor-pointer leading-tight select-none">
+                {t.rich('agreement', {
+                  terms: (chunks) => (
+                    <a 
+                      href={`/${locale}/terms`} 
+                      target="_blank" 
+                      className="text-primary hover:underline font-bold"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {chunks}
+                    </a>
+                  ),
+                  privacy: (chunks) => (
+                    <a 
+                      href={`/${locale}/privacy`} 
+                      target="_blank" 
+                      className="text-primary hover:underline font-bold"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {chunks}
+                    </a>
+                  )
+                })}
+              </label>
             </div>
 
             <div className="mt-8 text-center pt-6 border-t border-border">
