@@ -75,6 +75,7 @@ function SignupContent() {
   const [error, setError] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
 
   // Auto-redirect on success to dashboard
   React.useEffect(() => {
@@ -315,6 +316,8 @@ function SignupContent() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      onFocus={() => setIsPasswordFocused(true)}
+                      onBlur={() => setIsPasswordFocused(false)}
                       className="w-full pl-12 pr-12 py-4 bg-[#F8F4F1] border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all font-medium text-accent"
                       placeholder="••••••••"
                     />
@@ -326,6 +329,21 @@ function SignupContent() {
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
+                  {isPasswordFocused && !password && (
+                    <div className="p-3.5 bg-blue-50/50 border border-blue-100/70 rounded-2xl mt-2 text-xs text-gray-600 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                      <p className="font-bold text-accent">
+                        {locale === 'am' ? 'የይለፍ ቃል ምክር' : 'Password Recommendation'}
+                      </p>
+                      <p className="leading-relaxed text-[11px]">
+                        {locale === 'am' 
+                          ? 'ለደህንነትዎ ሲባል የሚያስገቡት የይለፍ ቃል ርዝመቱ 8 ወይም ከዚያ በላይ ሆኖ፣ ትልልቅና ትንንሽ ፊደላትን፣ ቁጥሮችን እና ልዩ ምልክቶችን (እንደ @፣ #፣ $) ያካተተ እንዲሁም በቀላሉ የሚያስታውሱት ቢሆን ይመከራል።'
+                          : 'For your security, it is recommended that your password is at least 8 characters long, includes uppercase & lowercase letters, numbers, and special characters (like @, #, $), and is easy to remember.'}
+                      </p>
+                      <p className="text-[10px] text-gray-400 font-semibold italic">
+                        {locale === 'am' ? 'ምሳሌ፡ P@ssword123' : 'Example: P@ssword123'}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <button
