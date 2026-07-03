@@ -9,6 +9,7 @@ export default function EulaGate() {
   const [isVisible, setIsVisible] = useState(false);
   const [agreedToEula, setAgreedToEula] = useState(false);
   const [confirmAge, setConfirmAge] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   useEffect(() => {
     // Check if EULA was accepted
@@ -30,6 +31,7 @@ export default function EulaGate() {
           zeroDesc: 'በዚህ መድረክ ላይ ማናቸውንም የስድብ፣ ፆታዊ ትንኮሳ፣ የሀሰት መለያ፣ ማጭበርበር ወይም የስነ-ምግባር መርሆዎችን የሚጥሱ አካውንቶች ያለምንም ቅድመ-ማስጠንቀቂያ ወዲያውኑ ይዘጋሉ (terminated)።',
           confirmAge: 'እድሜዬ 18 ወይም ከዚያ በላይ መሆኑን አረጋግጣለሁ።',
           confirmEula: 'በዜሮ-ታገስ ፖሊሲው እና በአጠቃቀም ስምምነቱ (EULA) ላይ ሙሉ ለሙሉ እስማማለሁ።',
+          confirmTerms: 'የአጠቃቀም መመሪያዎችን እና የደህንነት ፖሊሲውን (Terms & Privacy) አንብቤ ተስማምቻለሁ።',
           btn: 'ስምምነቱን አፅድቄ ልግባ',
           termsLink: 'የአጠቃቀም ደንብ',
           privacyLink: 'የደህንነት ፖሊሲ'
@@ -42,6 +44,7 @@ export default function EulaGate() {
           zeroDesc: 'Arrabsachuu, qaanessuu, profile sobaa, fi gochaalee nagaa booressan kamiyyuu irratti obsa hin qabnu. Malleen kun battalatti adabamu.',
           confirmAge: 'Umriin koo 18 fi isaa ol ta\'uu isaa nan mirkaneessa.',
           confirmEula: 'Waliigaltee EULA fi Imaammata Obsa-Zero irratti walii nan gala.',
+          confirmTerms: 'Shuruudaha Adeegga fi Imaammata Nageenyaa nan fudhadha.',
           btn: 'Waliigaltee nan fudhadha',
           termsLink: 'Waliigaltee fayyadamaa',
           privacyLink: 'Imaammata Nageenyaa'
@@ -54,6 +57,7 @@ export default function EulaGate() {
           zeroDesc: 'ዝኾነ ፀርፊ፣ ፆታዊ ትንኮሳ፣ ናይ ሓሶት መለያ፣ ወይ ካልእ ንሕጊ ዘይእዘዝ አካውንት ብዘይ ዝኾነ መጠንቀቕታ ብቕጽበት ክዕጾ እዩ።',
           confirmAge: 'ዕድመይ 18 ወይ ካብኡ ንላዕሊ ምዃኑ አረጋግጽ።',
           confirmEula: 'ኣብዚ ፖሊሲ ዜሮ-ተፃዋርነትን ውዕል ኣጠቓቕማን (EULA) ምሉእ ብምሉእ እሰማማዕ።',
+          confirmTerms: 'ኣብዚ ውዕል ኣጠቓቕማን ፖሊሲ ደህንነትን እሰማማዕ።',
           btn: 'ነዚ ውዕል አፅዲቐ ክኣቱ',
           termsLink: 'ውዕል ኣጠቓቕማ',
           privacyLink: 'ፖሊሲ ደህንነት'
@@ -66,6 +70,7 @@ export default function EulaGate() {
           zeroDesc: 'Xadgudub kasta, sawiro qaawan, profiles been abuur ah iyo khiyaano ayaa keeni doona in koontada isla markaaba la xiro digniin la\'aan.',
           confirmAge: 'Waxaan xaqiijinayaa inaan ahay 18 sano ama ka weyn.',
           confirmEula: 'Waxaan ogolahay heshiiska EULA iyo Siyaasadda Dulqaad-La\'aanta.',
+          confirmTerms: 'Waxaan ogolahay Shuruudaha Adeegga iyo Siyaasadda Khaaska ah.',
           btn: 'Aqbal oo Gal',
           termsLink: 'Shuruudaha Adeegga',
           privacyLink: 'Siyaasadda Khaaska ah'
@@ -78,6 +83,7 @@ export default function EulaGate() {
           zeroDesc: 'نحن نتبع سياسة صارمة ضد الإساءة أو المحتوى الفاضح أو الحسابات المزيفة. سيتم إغلاق أي حساب مخالف فوراً ودون إنذار مسبق.',
           confirmAge: 'أؤكد أن عمري 18 عاماً أو أكثر.',
           confirmEula: 'أوافق على سياسة عدم التسامح المطلق وشروط الاستخدام.',
+          confirmTerms: 'أوافق على شروط الخدمة وسياسة الخصوصية.',
           btn: 'قبول ومتابعة',
           termsLink: 'شروط الخدمة',
           privacyLink: 'سياسة الخصوصية'
@@ -90,6 +96,7 @@ export default function EulaGate() {
           zeroDesc: 'We enforce an absolute zero-tolerance policy against abusive behavior, harassment, explicit content, scamming, or fake profiles. Any account engaging in non-compliant behavior will be terminated instantly without prior warning or refund.',
           confirmAge: 'I confirm that I am 18 years of age or older.',
           confirmEula: 'I agree to the Zero-Tolerance Policy and the EULA Terms.',
+          confirmTerms: 'I agree to the Terms of Service and Privacy Policy.',
           btn: 'Accept & Enter Beteseb',
           termsLink: 'Terms of Service',
           privacyLink: 'Privacy Policy'
@@ -100,7 +107,7 @@ export default function EulaGate() {
   const texts = getTexts(locale);
 
   const handleAccept = () => {
-    if (agreedToEula && confirmAge) {
+    if (agreedToEula && confirmAge && agreedToTerms) {
       localStorage.setItem('beteseb_eula_accepted', 'true');
       setIsVisible(false);
     }
@@ -185,12 +192,35 @@ export default function EulaGate() {
                 {texts.confirmEula}
               </span>
             </div>
+
+            {/* Terms & Privacy Policy Checkbox */}
+            <div 
+              onClick={() => setAgreedToTerms(!agreedToTerms)} 
+              className="flex items-start gap-3.5 cursor-pointer group"
+            >
+              <div className="relative flex items-center justify-center mt-0.5 shrink-0">
+                <input
+                  type="checkbox"
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  className="peer h-5.5 w-5.5 cursor-pointer appearance-none rounded-md border-2 border-slate-200 dark:border-slate-700 transition-all checked:bg-primary checked:border-primary"
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <Check 
+                  size={14} 
+                  className="absolute text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none stroke-[3]" 
+                />
+              </div>
+              <span className="text-xs text-slate-600 dark:text-slate-300 font-bold select-none leading-snug">
+                {texts.confirmTerms}
+              </span>
+            </div>
           </div>
 
           {/* Accept Button */}
           <button
             onClick={handleAccept}
-            disabled={!agreedToEula || !confirmAge}
+            disabled={!agreedToEula || !confirmAge || !agreedToTerms}
             className="w-full bg-primary text-white py-4.5 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 mt-4 flex items-center justify-center gap-2"
           >
             <ShieldCheck size={16} />
