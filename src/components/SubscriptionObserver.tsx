@@ -27,12 +27,13 @@ export default function SubscriptionObserver() {
       setSubInfo(info);
 
       // FORCE LOCK LOGIC: Redirect to payment if locked and not on dashboard
-      if (info?.status === 'locked' && !pathname.includes('dashboard')) {
+      if (info?.tier === 'locked' && !pathname.includes('dashboard')) {
          router.push('/dashboard?tab=payment');
       }
 
       // Mock Email Notification logic (Run once per session)
-      if (info?.status === 'expired' || info?.status === 'locked') {
+      const isExpired = info?.tier === 'free' && info?.premiumUntil !== null;
+      if (isExpired || info?.tier === 'locked') {
          const lastNotified = localStorage.getItem('last_sub_notify');
          const today = new Date().toDateString();
          if (lastNotified !== today) {
@@ -47,7 +48,7 @@ export default function SubscriptionObserver() {
   if (!subInfo) return null;
 
   // 1. LOCKED OVERLAY (Full Screen Block)
-  if (subInfo.status === 'locked' && !pathname.includes('onboarding')) {
+  if (subInfo.tier === 'locked' && !pathname.includes('onboarding')) {
     return (
       <div className="fixed inset-0 z-[9999] bg-accent/95 backdrop-blur-xl flex items-center justify-center p-6 text-white text-center">
         <div className="max-w-md w-full space-y-8 animate-in zoom-in duration-500">
@@ -74,7 +75,8 @@ export default function SubscriptionObserver() {
   }
 
   // 2. EXPIRED BANNER (Floating Pop-up)
-  if (subInfo.status === 'expired' && !dismissed) {
+  const hasExpired = subInfo.tier === 'free' && subInfo.premiumUntil !== null;
+  if (hasExpired && !dismissed) {
     return (
       <div className="fixed bottom-8 right-8 left-8 md:left-auto md:w-96 z-[999] animate-in slide-in-from-bottom-8 duration-500">
         <div className="bg-white rounded-3xl p-6 shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-primary/10 relative overflow-hidden group">
