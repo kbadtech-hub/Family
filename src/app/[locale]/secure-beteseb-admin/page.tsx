@@ -156,6 +156,7 @@ export default function AdminPortal() {
   const [verifications, setVerifications] = useState<VerificationRequest[]>([]);
   const [payments, setPayments] = useState<PaymentRequest[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [reports, setReports] = useState<any[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [password, setPassword] = useState('');
@@ -164,6 +165,7 @@ export default function AdminPortal() {
   
   // Messaging & Staff State
   const [users, setUsers] = useState<UserProfile[]>([]);
+  const [userSearchQuery, setUserSearchQuery] = useState('');
   const [broadcastMessage, setBroadcastMessage] = useState('');
   const [sentMessages, setSentMessages] = useState<ChatMessage[]>([]);
   const [newAdminPassword, setNewAdminPassword] = useState('');
@@ -374,6 +376,9 @@ export default function AdminPortal() {
       } else if (activeTab === 'support') {
         const { data } = await supabase.from('support_tickets').select('*, profiles(full_name)').order('created_at', { ascending: false });
         if (data) setSupportTickets(data);
+      } else if (activeTab === 'reports') {
+        const { data } = await supabase.from('reports').select('*, reporter:reporter_id(full_name), reported:reported_id(full_name)').order('created_at', { ascending: false });
+        if (data) setReports(data || []);
       }
     };
     fetchAdminData();
@@ -562,6 +567,36 @@ export default function AdminPortal() {
     }
   };
 
+  const handleDeleteReportedUser = async (profileId: string, reportId: string) => {
+    const confirmDelete = confirm("Are you sure you want to permanently delete this reported user profile? This cascades to delete their account data.");
+    if (!confirmDelete) return;
+
+    setIsSaving(true);
+    const { error } = await supabase.from('profiles').delete().eq('id', profileId);
+    if (!error) {
+      alert("User profile deleted successfully.");
+      setReports(prev => prev.filter(r => r.id !== reportId));
+    } else {
+      alert("Failed to delete user: " + error.message);
+    }
+    setIsSaving(false);
+  };
+
+  const handleDismissReport = async (reportId: string) => {
+    const confirmDismiss = confirm("Are you sure you want to dismiss this report?");
+    if (!confirmDismiss) return;
+
+    setIsSaving(true);
+    const { error } = await supabase.from('reports').delete().eq('id', reportId);
+    if (!error) {
+      alert("Report dismissed successfully.");
+      setReports(prev => prev.filter(r => r.id !== reportId));
+    } else {
+      alert("Failed to dismiss report: " + error.message);
+    }
+    setIsSaving(false);
+  };
+
   const handleBroadcast = async () => {
     if (!broadcastMessage.trim()) return;
     setIsSaving(true);
@@ -717,6 +752,7 @@ export default function AdminPortal() {
             { id: 'posts', icon: Film, label: 'Articles & News' },
             { id: 'lessons', icon: Video, label: 'Lessons' },
             { id: 'support', icon: MessageSquare, label: 'Support' },
+            { id: 'reports', icon: ShieldAlert, label: 'Safety Reports' },
             { id: 'matches', icon: Heart, label: 'Matches' },
             { id: 'staff', icon: Users, label: 'Manage Staff' },
             { id: 'security', icon: ShieldAlert, label: 'Access Control' },
@@ -1165,6 +1201,70 @@ export default function AdminPortal() {
              </div>
            </div>
          )}
+
+        {activeTab === 'staff' && (
+            <div className="space-y-8 animate-in fade-in duration-500">
+              <header className="flex justify-between items-center flex-wrap gap-4">
+                <div>
+                  <h2 className="text-3xl font-bold text-accent italic">Manage Staff & Users</h2>
+                  <p className="text-gray-500">Assign roles and permissions to users. Search by name, ID, phone, or email.</p>
+                </div>
+                <div className="relative w-full max-w-sm">
+                   <input 
+                     type="text"
+                     value={userSearchQuery}
+                     onChange={(e) => setUserSearchQuery(e.target.value)}
+                     placeholder="Search ID, phone, email, name..."
+                     className="w-full bg-white border border-gray-200 rounded-2xl p-4 pl-12 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-accent"
+                   />
+                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                </div>
+              </header>
+
+              <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
+                 <table className="w-full text-left">
+                    <thead className="bg-muted/50 border-b border-gray-100">
+                       <tr>
+                         <th className="p-6 text-xs font-bold text-gray-400 uppercase">User Details</th>
+                         <th className="p-6 text-xs font-bold text-gray-400 uppercase">Current Role</th>
+                         <th className="p-6 text-xs font-bold text-gray-400 uppercase text-center">Assign Role</th>
+                       </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                       {users.filter(user => 
+                         user.full_name?.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+                         user.id.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+                         (user as any).phone?.includes(userSearchQuery) ||
+                         (user as any).email?.toLowerCase().includes(userSearchQuery.toLowerCase())
+                       ).map(user => (
+                         <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
+                            <td className="p-6">
+                              <div className="font-bold text-accent">{user.full_name || 'Anonymous'}</div>
+                              <div className="text-[10px] text-gray-400 font-semibold select-all">ID: {user.id}</div>
+                            </td>
+                            <td className="p-6">
+                               <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter border ${
+                                 user.role === 'admin' ? 'bg-primary/10 text-primary border-primary/20' : 
+                                 user.role === 'moderator' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' : 
+                                 'bg-gray-100 text-gray-500 border-gray-200'
+                               }`}>
+                                 {user.role}
+                               </span>
+                            </td>
+                            <td className="p-6">
+                               <div className="flex gap-2 justify-center">
+                                  <button onClick={() => handleUpdateRole(user.id, 'user')} className="text-[10px] font-bold px-3 py-1 bg-muted rounded-lg hover:bg-gray-200">User</button>
+                                  <button onClick={() => handleUpdateRole(user.id, 'expert')} className="text-[10px] font-bold px-3 py-1 bg-purple-500/10 text-purple-500 rounded-lg hover:bg-purple-500 hover:text-white">Expert</button>
+                                  <button onClick={() => handleUpdateRole(user.id, 'admin')} className="text-[10px] font-bold px-3 py-1 bg-primary/10 text-primary rounded-lg hover:bg-primary hover:text-white">Admin</button>
+                               </div>
+                            </td>
+                         </tr>
+                       ))}
+                    </tbody>
+                 </table>
+              </div>
+            </div>
+          )}
 
         {activeTab === 'verification' && (
            <div className="space-y-8 animate-in fade-in duration-500">
@@ -1708,6 +1808,73 @@ export default function AdminPortal() {
              </div>
            </div>
          )}
+          {activeTab === 'reports' && (
+            <div className="space-y-8 animate-in fade-in duration-500">
+              <header>
+                <h2 className="text-3xl font-bold text-accent italic">Safety Reports Queue</h2>
+                <p className="text-gray-500">Review community moderation flags and user safety complaints.</p>
+              </header>
+
+              <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
+                 {reports.length === 0 ? (
+                    <div className="p-20 text-center text-gray-400 bg-white rounded-[3rem] border border-gray-100 italic">No safety reports submitted yet.</div>
+                 ) : (
+                    <table className="w-full text-left">
+                       <thead className="bg-muted/50 border-b border-gray-100">
+                          <tr>
+                            <th className="p-6 text-xs font-bold text-gray-400 uppercase">Reporter</th>
+                            <th className="p-6 text-xs font-bold text-gray-400 uppercase">Reported User</th>
+                            <th className="p-6 text-xs font-bold text-gray-400 uppercase">Reason & Details</th>
+                            <th className="p-6 text-xs font-bold text-gray-400 uppercase">Date</th>
+                            <th className="p-6 text-xs font-bold text-gray-400 uppercase text-center">Actions</th>
+                          </tr>
+                       </thead>
+                       <tbody className="divide-y divide-gray-100">
+                          {reports.map((report) => (
+                            <tr key={report.id} className="hover:bg-gray-50/50 transition-colors">
+                               <td className="p-6">
+                                 <div className="font-bold text-accent">{report.reporter?.full_name || 'Anonymous'}</div>
+                                 <div className="text-[10px] text-gray-400 font-semibold select-all">ID: {report.reporter_id}</div>
+                               </td>
+                               <td className="p-6">
+                                 <div className="font-bold text-red-600">{report.reported?.full_name || 'Anonymous'}</div>
+                                 <div className="text-[10px] text-gray-400 font-semibold select-all">ID: {report.reported_id}</div>
+                               </td>
+                               <td className="p-6 max-w-xs">
+                                 <span className="px-2.5 py-1 bg-red-100 text-red-600 text-[10px] font-black rounded-full uppercase tracking-tighter border border-red-200">
+                                   {report.reason}
+                                 </span>
+                                 <p className="text-xs text-gray-500 font-medium italic mt-2 leading-relaxed">&quot;{report.details || 'No additional details'}&quot;</p>
+                               </td>
+                               <td className="p-6 text-xs text-gray-400 font-semibold">
+                                 {new Date(report.created_at).toLocaleString()}
+                               </td>
+                               <td className="p-6">
+                                 <div className="flex flex-col gap-2 items-center justify-center">
+                                    <button 
+                                      onClick={() => handleDeleteReportedUser(report.reported_id, report.id)}
+                                      disabled={isSaving}
+                                      className="px-4 py-2 bg-red-600 text-white text-[10px] font-black rounded-xl hover:bg-red-700 transition-all uppercase tracking-widest"
+                                    >
+                                      Suspend & Delete
+                                    </button>
+                                    <button 
+                                      onClick={() => handleDismissReport(report.id)}
+                                      disabled={isSaving}
+                                      className="px-4 py-2 bg-muted text-gray-500 text-[10px] font-black rounded-xl hover:bg-gray-200 transition-all uppercase tracking-widest border border-gray-200"
+                                    >
+                                      Dismiss
+                                    </button>
+                                 </div>
+                               </td>
+                            </tr>
+                          ))}
+                       </tbody>
+                    </table>
+                 )}
+              </div>
+            </div>
+          )}
          {activeTab === 'lessons' && (
            <div className="space-y-8 animate-in fade-in duration-500">
              <header className="flex justify-between items-end">

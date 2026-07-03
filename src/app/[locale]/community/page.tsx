@@ -103,6 +103,16 @@ function CommunityContent() {
   ];
 
   const fetchPosts = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    let blockedIds: string[] = [];
+    if (user) {
+      const { data: blockedData } = await supabase
+        .from('blocks')
+        .select('blocker_id, blocked_id')
+        .or(`blocker_id.eq.${user.id},blocked_id.eq.${user.id}`);
+      blockedIds = (blockedData || []).map(b => b.blocker_id === user.id ? b.blocked_id : b.blocker_id);
+    }
+
     let query = supabase
       .from('community_posts')
       .select(`
@@ -120,9 +130,19 @@ function CommunityContent() {
       query = query.eq('category', activeCategory);
     }
 
+    if (blockedIds.length > 0) {
+      query = query.not('author_id', 'in', `(${blockedIds.join(',')})`);
+    }
+
     const { data } = await query;
     if (data) {
-      setPosts(data as unknown as CommunityPost[]);
+      const filteredData = data.map((post: any) => {
+        if (post.post_comments) {
+          post.post_comments = post.post_comments.filter((comment: any) => !blockedIds.includes(comment.author_id));
+        }
+        return post;
+      });
+      setPosts(filteredData as unknown as CommunityPost[]);
     }
   }, [activeCategory]);
 

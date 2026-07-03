@@ -86,7 +86,12 @@ export async function POST(req: Request) {
         /سياسة/i, /حكومة/i, /انتخابات/i, // Arabic
         /siyaasadda/i, /doorasho/i, // Somali
         /siyaasa/i, /mootummaa/i, // Oromiffa
-        /ፖለቲካ/i, /መንግስቲ/i // Tigrinya
+        /ፖለቲካ/i, /መንግስቲ/i, // Tigrinya
+        // Contact leakage prevention
+        /(?:\+?251|\b0)[\s-]*[97](?:[\s-]*\d){8}\b/, // Ethiopia phone
+        /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/, // Email
+        /\b(telegram|t\.me|whatsapp|wa\.me|instagram|ig|snapchat|snap|tiktok|facebook|fb)\b/i, // Socials
+        /(?:\d[\s-]*){8,}/ // Long digit sequences (evasion)
       ];
 
       const isUnsafe = forbiddenPatterns.some(pattern => pattern.test(content));
@@ -94,7 +99,7 @@ export async function POST(req: Request) {
       if (isUnsafe) {
         return NextResponse.json({
           approved: false,
-          reason: "Content contains prohibited topics (politics, hate speech, or non-family values)."
+          reason: "Prohibited topics (politics/hate speech) or illegal contact sharing (phone, email, or socials)."
         });
       }
 
@@ -110,6 +115,7 @@ export async function POST(req: Request) {
           content: `You are a strict family-oriented content moderator for the Beteseb platform.
           The platform is dedicated to Marriage, Parenting, and Family Finance.
           Reject any content related to politics, racism, hate speech, or anything that violates family values.
+          CRITICAL: Exchanging contact information (such as phone numbers, email addresses, Telegram, WhatsApp, Snapchat, Instagram, or other social media handles/links) is strictly prohibited. Reject any text attempting to share or request such contact details.
           Support multiple languages: Amharic, English, Oromiffa, Arabic, Tigrinya, and Somali.
           Output JSON ONLY: { "approved": boolean, "reason": "short explanation in English" }`
         },

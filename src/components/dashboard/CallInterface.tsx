@@ -4,14 +4,23 @@ import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { PhoneOff, Mic, MicOff, Video, VideoOff, PhoneCall, Heart, ShieldCheck, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { getIceServers } from '@/lib/turn';
 
 interface CallInterfaceProps {
   matchProfile: any;
   onEndCall: () => void;
   isIncoming?: boolean;
+  isVideo?: boolean;
+  isPremium?: boolean;
 }
 
-export default function CallInterface({ matchProfile, onEndCall, isIncoming = false }: CallInterfaceProps) {
+export default function CallInterface({ 
+  matchProfile, 
+  onEndCall, 
+  isIncoming = false,
+  isVideo = false,
+  isPremium = false
+}: CallInterfaceProps) {
   const [callState, setCallState] = useState<'incoming' | 'ringing' | 'connecting' | 'connected' | 'ended'>(
     isIncoming ? 'incoming' : 'ringing'
   );
@@ -36,16 +45,7 @@ export default function CallInterface({ matchProfile, onEndCall, isIncoming = fa
     });
   }, []);
 
-  // 2. Timer for connected call duration
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (callState === 'connected') {
-      timer = setInterval(() => {
-        setCallDuration(prev => prev + 1);
-      }, 1000);
-    }
-    return () => clearInterval(timer);
-  }, [callState]);
+  // Connected call duration timer is defined below handleEndAndReport.
 
   // 3. Initialize WebRTC and Signaling
   useEffect(() => {
@@ -60,7 +60,7 @@ export default function CallInterface({ matchProfile, onEndCall, isIncoming = fa
       try {
         // Access Local Devices
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
+          video: isVideo,
           audio: true
         });
         setLocalStream(stream);
@@ -69,9 +69,9 @@ export default function CallInterface({ matchProfile, onEndCall, isIncoming = fa
           localVideoRef.current.srcObject = stream;
         }
 
-        // Initialize Peer Connection (using public Google STUN server)
+        // Initialize Peer Connection (using STUN/TURN traversal configurations)
         const pc = new RTCPeerConnection({
-          iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+          iceServers: getIceServers()
         });
         peerConnectionRef.current = pc;
 
@@ -286,6 +286,27 @@ export default function CallInterface({ matchProfile, onEndCall, isIncoming = fa
       alert('Call ended. User has been blocked and reported.');
     }
   };
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (callState === 'connected') {
+      timer = setInterval(() => {
+        setCallDuration(prev => {
+          const nextDuration = prev + 1;
+          if (!isPremium && nextDuration >= 120) {
+            alert(
+              navigator.language.startsWith('am')
+                ? 'የ120 ሰከንድ የድምጽ ጥሪ ገደብ አልፏል። እባክዎ አካውንትዎን ያሳድጉ!' 
+                : 'Free daily audio call limit of 120 seconds reached. Please upgrade to premium!'
+            );
+            handleEndCall();
+          }
+          return nextDuration;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [callState, isPremium]);
 
   const toggleMute = () => {
     if (localStream) {
