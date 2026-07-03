@@ -64,6 +64,11 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
   const [isFriend, setIsFriend] = useState(false);
   const [isGeneratingIceBreaker, setIsGeneratingIceBreaker] = useState(false);
   const [activeCallMatch, setActiveCallMatch] = useState<Profile | null>(null);
+  const [showMenu, setShowMenu] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState<'abuse' | 'explicit content' | 'scam' | 'other'>('abuse');
+  const [reportDetails, setReportDetails] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const tf = useTranslations('Friendship');
 
@@ -73,6 +78,14 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
       setCurrentUser(user);
 
       if (user) {
+        // Fetch Blocked User IDs
+        const { data: blockedData } = await supabase
+          .from('blocks')
+          .select('blocker_id, blocked_id')
+          .or(`blocker_id.eq.${user.id},blocked_id.eq.${user.id}`);
+        
+        const blockedIds = (blockedData || []).map(b => b.blocker_id === user.id ? b.blocked_id : b.blocker_id);
+
         // Fetch Matches/Friends
         const { data: friends } = await supabase
           .from('friendships')
@@ -85,7 +98,8 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
         
         const friendList = (friends || [])
           .filter(f => f.status === 'accepted')
-          .map(f => f.sender_id === user.id ? f.receiver : f.sender);
+          .map(f => f.sender_id === user.id ? f.receiver : f.sender)
+          .filter((f: any) => f && !blockedIds.includes(f.id));
         
         // Fetch current user's profile to know their gender
         const { data: userProfile } = await supabase
@@ -99,6 +113,10 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
           .from('profiles')
           .select('*')
           .neq('id', user.id);
+        
+        if (blockedIds.length > 0) {
+          profilesQuery = profilesQuery.not('id', 'in', `(${blockedIds.join(',')})`);
+        }
         
         if (userProfile?.gender === 'Male') {
           profilesQuery = profilesQuery.eq('gender', 'Female');
@@ -321,6 +339,51 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
     }
   };
 
+  const handleReportUser = async () => {
+    if (!selectedMatch || !currentUser) return;
+    setIsProcessing(true);
+    const { error } = await supabase.from('reports').insert({
+      reporter_id: currentUser.id,
+      reported_id: selectedMatch.id,
+      reason: reportReason,
+      details: reportDetails.trim()
+    });
+    if (!error) {
+      alert(locale === 'am' ? 'ተጠቃሚው ሪፖርት ተደርጓል።' : 'User reported successfully.');
+      setIsReportOpen(false);
+      setReportDetails('');
+      setShowMenu(false);
+    } else {
+      alert("Report failed: " + error.message);
+    }
+    setIsProcessing(false);
+  };
+
+  const handleBlockUser = async () => {
+    if (!selectedMatch || !currentUser) return;
+    const confirmBlock = confirm(
+      locale === 'am' 
+        ? 'በእርግጥ ይህንን ተጠቃሚ ማገድ ይፈልጋሉ? ከእንግዲህ መገናኘት አይችሉም።' 
+        : 'Are you sure you want to block this user? You will no longer be able to communicate.'
+    );
+    if (!confirmBlock) return;
+
+    setIsProcessing(true);
+    const { error } = await supabase.from('blocks').insert({
+      blocker_id: currentUser.id,
+      blocked_id: selectedMatch.id
+    });
+    if (!error) {
+      alert(locale === 'am' ? 'ተጠቃሚው ታግዷል።' : 'User blocked successfully.');
+      setMatches(prev => prev.filter(m => m.id !== selectedMatch.id));
+      setSelectedMatch(null);
+      setShowMenu(false);
+    } else {
+      alert("Block failed: " + error.message);
+    }
+    setIsProcessing(false);
+  };
+
   if (loading) return <div className="flex-1 flex items-center justify-center">{t('loading')}</div>;
 
   return (
@@ -462,9 +525,82 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                 >
                   <Video size={20} />
                 </button>
-                <button aria-label="More options" className="hover:text-primary transition-colors"><MoreVertical size={20} /></button>
+                <div className="relative">
+                  <button 
+                    onClick={() => setShowMenu(!showMenu)}
+                    aria-label="More options" 
+                    className="hover:text-primary transition-colors"
+                  >
+                    <MoreVertical size={20} />
+                  </button>
+                  
+                  {showMenu && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white border border-border rounded-2xl shadow-xl z-30 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                      <button 
+                        onClick={() => { setIsReportOpen(true); setShowMenu(false); }}
+                        className="w-full text-left px-5 py-3 hover:bg-muted text-xs font-bold text-amber-700 flex items-center gap-2"
+                      >
+                        ⚠️ {locale === 'am' ? 'ሪፖርት አድርግ (Report)' : 'Report User'}
+                      </button>
+                      <button 
+                        onClick={handleBlockUser}
+                        className="w-full text-left px-5 py-3 hover:bg-muted text-xs font-bold text-red-600 flex items-center gap-2 border-t border-muted"
+                      >
+                        🚫 {locale === 'am' ? 'አግድ (Block)' : 'Block User'}
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </header>
+
+            {isReportOpen && (
+              <div className="p-6 bg-amber-50/50 border-b border-amber-200 space-y-4 animate-in slide-in-from-top-2 z-20 relative">
+                <div className="flex justify-between items-center">
+                  <h4 className="text-xs font-black text-accent uppercase tracking-wider">⚠️ {locale === 'am' ? 'ተጠቃሚውን ሪፖርት ያድርጉ' : 'Report User'}</h4>
+                  <button onClick={() => setIsReportOpen(false)} className="text-gray-400 hover:text-accent"><CloseIcon size={16} /></button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{locale === 'am' ? 'ሪፖርት የማድረጊያ ምክንያት' : 'Reason for Report'}</p>
+                    <select 
+                      value={reportReason} 
+                      onChange={(e) => setReportReason(e.target.value as any)}
+                      className="w-full p-3 bg-white border border-amber-200 rounded-xl font-bold text-xs"
+                    >
+                      <option value="abuse">{locale === 'am' ? 'ማስፈራራት ወይም ስድብ (Abuse / Harassment)' : 'Abuse or Harassment'}</option>
+                      <option value="explicit content">{locale === 'am' ? 'ያልተገባ ምስል ወይም ፅሁፍ (Explicit Content)' : 'Explicit Content'}</option>
+                      <option value="scam">{locale === 'am' ? 'ማጭበርበር (Scam / Fraud)' : 'Scam or Fraud'}</option>
+                      <option value="other">{locale === 'am' ? 'ሌላ ምክንያት (Other Reason)' : 'Other Reason'}</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{locale === 'am' ? 'ተጨማሪ ማብራሪያ' : 'Details'}</p>
+                    <textarea
+                      value={reportDetails}
+                      onChange={(e) => setReportDetails(e.target.value)}
+                      placeholder={locale === 'am' ? 'ዝርዝር ማብራሪያ እዚህ ይፃፉ...' : 'Please provide details...'}
+                      className="w-full bg-white border border-amber-200 rounded-xl p-3 text-xs min-h-[44px] resize-none"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <button
+                    onClick={() => setIsReportOpen(false)}
+                    className="px-4 py-2 bg-white border border-border text-gray-500 rounded-xl font-bold text-[10px] uppercase tracking-widest"
+                  >
+                    {locale === 'am' ? 'ሰርዝ' : 'Cancel'}
+                  </button>
+                  <button
+                    onClick={handleReportUser}
+                    disabled={isProcessing}
+                    className="px-6 py-2 bg-accent text-white rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-md"
+                  >
+                    {isProcessing ? 'Sending...' : (locale === 'am' ? 'ሪፖርት ላክ' : 'Submit Report')}
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Messages */}
             <div 

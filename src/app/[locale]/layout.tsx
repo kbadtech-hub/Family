@@ -11,6 +11,8 @@ import Chatbot from "@/components/Chatbot";
 import SubscriptionObserver from "@/components/SubscriptionObserver";
 import AnimatedSplashScreen from "@/components/AnimatedSplashScreen";
 import ZoomBlocker from "@/components/ZoomBlocker";
+import EulaGate from "@/components/EulaGate";
+import PrivacyBlurOverlay from "@/components/PrivacyBlurOverlay";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -68,6 +70,8 @@ export default async function LocaleLayout({
                 <SubscriptionObserver />
                 <AnimatedSplashScreen />
                 <ZoomBlocker />
+                <EulaGate />
+                <PrivacyBlurOverlay />
               </ConditionalLayout>
             </UIProvider>
           </AuthProvider>

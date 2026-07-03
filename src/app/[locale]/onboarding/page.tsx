@@ -286,6 +286,21 @@ function OnboardingContent() {
       case 1: // Basic Profile
         if (!formData.full_name) return t('errors.fullNameRequired');
         if (!formData.birth_date) return t('errors.birthDateRequired');
+        
+        // Calculate Age
+        const birthDate = new Date(formData.birth_date);
+        const today = new Date();
+        let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+          calculatedAge--;
+        }
+        if (calculatedAge < 18) {
+          return locale === 'am'
+            ? 'ይህን መተግበሪያ ለመጠቀም እድሜዎ 18 ወይም ከዚያ በላይ መሆን አለበት።'
+            : 'You must be at least 18 years old to use this platform.';
+        }
+
         if (!formData.gender) return t('errors.genderRequired');
         if (!formData.location) return t('errors.locationRequired');
         
@@ -647,10 +662,10 @@ function OnboardingContent() {
                  <User size={40} className="text-primary" />
               </div>
               <h2 className="text-3xl font-black text-accent italic">{locale === 'am' ? 'የቪዲዮ ሰልፊ ማረጋገጫ (Selfie Video)' : 'Selfie Video Verification'}</h2>
-              <p className="text-gray-500 max-w-sm mx-auto text-xs font-medium">
+              <p className="text-gray-500 max-w-sm mx-auto text-xs font-medium leading-relaxed">
                 {locale === 'am' 
-                  ? 'እባክዎ ካሜራዎን በመክፈት የ3 ሰከንድ ቀጥታ ቪዲዮ ይቅረጹ ወይም አጭር ቪዲዮ ሰልፊ ይጫኑ።' 
-                  : 'Please open your camera to record a 3-second live selfie video, or upload a video file.'}
+                  ? 'ካሜራዎ መለያዎን ለማረጋገጥ በጥብቅ ያስፈልጋል። እባክዎ ካሜራውን በመክፈት የ3 ሰከንድ ቀጥታ ቪዲዮ ይቅረጹ ወይም አጭር የሰልፊ ቪዲዮ ይጫኑ። የተመዘገበው ቪዲዮ ከላኩት መታወቂያ ጋር የሚስማማ መሆኑን ለማረጋገጥ ብቻ ያገለግላል።' 
+                  : 'Your camera is strictly required to capture your profile verification image and record identity verification media. Please record a 3-second live selfie video or upload a video file. Your camera is used solely to verify profile authenticity.'}
               </p>
             </div>
 
@@ -800,6 +815,13 @@ function OnboardingContent() {
                            <AlertCircle size={16} /> {locale === 'am' ? 'Verification Failed' : 'Verification Failed'}
                         </div>
                         <p className="text-[10px] text-red-600 font-medium px-4">{errorMsg}</p>
+                        <button 
+                           type="button" 
+                           onClick={() => setStep(1)} 
+                           className="text-[10px] font-black text-primary uppercase tracking-widest underline mt-1 hover:text-primary/80 transition-colors"
+                         >
+                           {locale === 'am' ? 'ስም ወይም የልደት ቀን ለማስተካከል ወደ ደረጃ 1 ይመለሱ' : 'Return to Step 1 to correct profile details'}
+                         </button>
                     </div>
                  ) : null}
               </div>
@@ -812,6 +834,11 @@ function OnboardingContent() {
              <div className="space-y-2">
                 <h2 className="text-3xl font-black text-accent italic">{t('gallery')}</h2>
                 <p className="text-gray-500">{t('gallerySubtitle')}</p>
+                <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-2xl text-[10px] text-amber-800 dark:text-amber-400 font-bold uppercase tracking-wider max-w-sm mx-auto leading-relaxed">
+                   ⚠️ {locale === 'am' 
+                     ? 'ጥብቅ መመሪያ፡ እባክዎ የእርስዎን ትክክለኛ ፎቶ ብቻ ይጫኑ። የካርቱን፣ ተፈጥሮ (ልክ እንደ መልክዓ ምድር)፣ ወይም የታዋቂ ሰዎች ፎቶዎችን መጫን በጥብቅ የተከለከለ ነው!' 
+                     : 'Strict Guidelines: Only upload authentic photos of yourself. Cartoons, landscapes, or celebrity photos are strictly blocked!'}
+                </div>
              </div>
              <div className="grid grid-cols-3 gap-3">
                 {formData.gallery_photos.map((url, i) => (
@@ -827,6 +854,7 @@ function OnboardingContent() {
                       const files = Array.from(e.target.files || []);
                       if (!files.length || !userId) return;
                       setIsSubmitting(true);
+                      setErrorMsg('');
                       const urls = [...formData.gallery_photos];
                       for (const file of files) {
                         if (urls.length >= 5) break;
@@ -834,7 +862,26 @@ function OnboardingContent() {
                         const { error } = await supabase.storage.from('user_photos').upload(fileName, file);
                         if (!error) {
                           const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(fileName);
-                          urls.push(publicUrl);
+                          
+                          // Run AI Image Moderation Check
+                          try {
+                            const modResponse = await fetch(`/${locale}/api/ai/moderate`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ imageUrl: publicUrl })
+                            });
+                            const moderationResult = await modResponse.json();
+                            if (moderationResult.approved) {
+                              urls.push(publicUrl);
+                            } else {
+                              setErrorMsg(locale === 'am' 
+                                ? `ምስሉ ውድቅ ተደርጓል፡ ${moderationResult.reason || 'የካርቱን፣ ተፈጥሮ ወይም የታዋቂ ሰዎች ምስሎች አይፈቀዱም።'}`
+                                : `Image rejected: ${moderationResult.reason || 'Cartoons, landscapes, or celebrity photos are not allowed.'}`);
+                            }
+                          } catch (modErr) {
+                            console.error("Image moderation call failed:", modErr);
+                            urls.push(publicUrl); // Fallback to allow if API fails
+                          }
                         }
                       }
                       updateField('gallery_photos', urls);

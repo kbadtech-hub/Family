@@ -34,6 +34,9 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
   const [loading, setLoading] = useState(true);
   const [friendshipStatus, setFriendshipStatus] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState<'abuse' | 'explicit content' | 'scam' | 'other'>('abuse');
+  const [reportDetails, setReportDetails] = useState('');
   const t = useTranslations('Friendship');
   const locale = useLocale();
 
@@ -107,6 +110,53 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
     } finally {
       setIsProcessing(false);
     }
+  const handleReportUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    
+    setIsProcessing(true);
+    const { error } = await supabase.from('reports').insert({
+      reporter_id: user.id,
+      reported_id: matchId,
+      reason: reportReason,
+      details: reportDetails.trim()
+    });
+    
+    if (!error) {
+      alert(locale === 'am' ? 'ተጠቃሚው ሪፖርት ተደርጓል።' : 'User reported successfully.');
+      setIsReportOpen(false);
+      setReportDetails('');
+    } else {
+      alert("Report failed: " + error.message);
+    }
+    setIsProcessing(false);
+  };
+
+  const handleBlockUser = async () => {
+    const confirmBlock = confirm(
+      locale === 'am' 
+        ? 'በእርግጥ ይህንን ተጠቃሚ ማገድ ይፈልጋሉ? ይህ ተጠቃሚ ከጓደኛ ዝርዝርዎ እና ከምርጫዎችዎ ውስጥ ወዲያውኑ ይወገዳል።' 
+        : 'Are you sure you want to block this user? They will be removed from your match feed and chat list immediately.'
+    );
+    if (!confirmBlock) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    setIsProcessing(true);
+    const { error } = await supabase.from('blocks').insert({
+      blocker_id: user.id,
+      blocked_id: matchId
+    });
+
+    if (!error) {
+      alert(locale === 'am' ? 'ተጠቃሚው ታግዷል።' : 'User blocked successfully.');
+      onClose(); // Close details view
+      window.location.reload(); // Refresh candidates feed
+    } else {
+      alert("Block failed: " + error.message);
+    }
+    setIsProcessing(false);
   };
 
   return (
@@ -227,28 +277,87 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
                  </button>
                )}
 
-               {isPremium || friendshipStatus === 'accepted' ? (
-                 <button 
-                   onClick={() => onStartChat(matchId)}
-                   className="w-full bg-primary text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4"
-                 >
-                    <MessageCircle size={24} />
-                    {friendshipStatus === 'accepted' ? t('openChat') : t('startConnection')}
-                 </button>
-               ) : (
-                 <div className="p-8 bg-muted rounded-[2.5rem] border border-primary/20 text-center space-y-4">
-                    <ShieldCheck className="mx-auto text-primary" size={32} />
-                    <p className="text-xs font-black text-accent uppercase tracking-widest">{t('premiumFriendsOnly')}</p>
-                    <p className="text-[10px] text-gray-500">{t('upgradeOrFriendSub')}</p>
-                    <button 
-                       onClick={() => window.location.reload()}
-                       className="text-primary font-black text-[10px] uppercase tracking-[0.2em] underline"
-                    >
-                       {t('upgradeNow')}
-                    </button>
-                 </div>
-               )}
-            </div>
+                {isPremium || friendshipStatus === 'accepted' ? (
+                  <button 
+                    onClick={() => onStartChat(matchId)}
+                    className="w-full bg-primary text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4"
+                  >
+                     <MessageCircle size={24} />
+                     {friendshipStatus === 'accepted' ? t('openChat') : t('startConnection')}
+                  </button>
+                ) : (
+                  <div className="p-8 bg-muted rounded-[2.5rem] border border-primary/20 text-center space-y-4">
+                     <ShieldCheck className="mx-auto text-primary" size={32} />
+                     <p className="text-xs font-black text-accent uppercase tracking-widest">{t('premiumFriendsOnly')}</p>
+                     <p className="text-[10px] text-gray-500">{t('upgradeOrFriendSub')}</p>
+                     <button 
+                        onClick={() => window.location.reload()}
+                        className="text-primary font-black text-[10px] uppercase tracking-[0.2em] underline"
+                     >
+                        {t('upgradeNow')}
+                     </button>
+                  </div>
+                )}
+
+                {/* Block and Report Panel */}
+                <div className="flex gap-4 pt-4 border-t border-muted">
+                  <button
+                    onClick={() => setIsReportOpen(!isReportOpen)}
+                    className="flex-1 bg-amber-50 hover:bg-amber-100 text-amber-700 py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] border border-amber-200 transition-all flex items-center justify-center gap-2"
+                  >
+                    ⚠️ {locale === 'am' ? 'ሪፖርት አድርግ (Report)' : 'Report User'}
+                  </button>
+                  <button
+                    onClick={handleBlockUser}
+                    className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] border border-red-200 transition-all flex items-center justify-center gap-2"
+                  >
+                    🚫 {locale === 'am' ? 'አግድ (Block)' : 'Block User'}
+                  </button>
+                </div>
+
+                {/* Inline Report Dialog */}
+                {isReportOpen && (
+                  <div className="p-6 bg-amber-50/50 border border-amber-200 rounded-3xl space-y-4 animate-in slide-in-from-top-2">
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold text-accent uppercase tracking-wider">{locale === 'am' ? 'ሪፖርት የማድረጊያ ምክንያት' : 'Select Reason for Report'}</p>
+                      <select 
+                        value={reportReason} 
+                        onChange={(e) => setReportReason(e.target.value as any)}
+                        className="w-full p-3 bg-white border border-amber-200 rounded-xl font-bold text-xs"
+                      >
+                        <option value="abuse">{locale === 'am' ? 'ማስፈራራት ወይም ስድብ (Abuse / Harassment)' : 'Abuse or Harassment'}</option>
+                        <option value="explicit content">{locale === 'am' ? 'ያልተገባ ምስል ወይም ፅሁፍ (Explicit Content)' : 'Explicit Content'}</option>
+                        <option value="scam">{locale === 'am' ? 'ማጭበርበር (Scam / Fraud)' : 'Scam or Fraud'}</option>
+                        <option value="other">{locale === 'am' ? 'ሌላ ምክንያት (Other Reason)' : 'Other Reason'}</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold text-accent uppercase tracking-wider">{locale === 'am' ? 'ተጨማሪ ማብራሪያ' : 'Details / Explanation'}</p>
+                      <textarea
+                        value={reportDetails}
+                        onChange={(e) => setReportDetails(e.target.value)}
+                        placeholder={locale === 'am' ? 'ስለ ሁኔታው በዝርዝር ይፃፉ...' : 'Please describe the behavior...'}
+                        className="w-full bg-white border border-amber-200 rounded-xl p-3 text-xs min-h-[80px] resize-none"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleReportUser}
+                        disabled={isProcessing}
+                        className="flex-1 bg-accent text-white py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-md"
+                      >
+                        {isProcessing ? 'Submitting...' : (locale === 'am' ? 'ሪፖርት ላክ' : 'Submit Report')}
+                      </button>
+                      <button
+                        onClick={() => setIsReportOpen(false)}
+                        className="px-4 bg-white border border-border text-gray-500 rounded-xl font-bold text-[10px] uppercase tracking-widest"
+                      >
+                        {locale === 'am' ? 'ሰርዝ' : 'Cancel'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+             </div>
         </div>
       </div>
     </div>

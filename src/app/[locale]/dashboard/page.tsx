@@ -177,11 +177,23 @@ function DashboardContent() {
         setMatches(cachedMatches);
       }
 
+      // Fetch Blocked User IDs
+      const { data: blockedData } = await supabase
+        .from('blocks')
+        .select('blocker_id, blocked_id')
+        .or(`blocker_id.eq.${user.id},blocked_id.eq.${user.id}`);
+      
+      const blockedIds = (blockedData || []).map(b => b.blocker_id === user.id ? b.blocked_id : b.blocker_id);
+
       // 5. Fetch Matches (Gender-Based Logic)
       let matchQuery = supabase.from('profiles')
         .select('*')
         .neq('id', user.id)
         .eq('onboarding_completed', true);
+      
+      if (blockedIds.length > 0) {
+        matchQuery = matchQuery.not('id', 'in', `(${blockedIds.join(',')})`);
+      }
       
       // Apply Gender Filter: Men see Women, Women see Men
       if (profileData?.gender === 'Male') {
@@ -217,6 +229,10 @@ function DashboardContent() {
         .from('profiles')
         .select('id, full_name, avatar_url, role')
         .neq('id', user.id);
+      
+      if (blockedIds.length > 0) {
+        suggestionsQuery = suggestionsQuery.not('id', 'in', `(${blockedIds.join(',')})`);
+      }
       
       if (profileData?.gender === 'Male') {
         suggestionsQuery = suggestionsQuery.eq('gender', 'Female');

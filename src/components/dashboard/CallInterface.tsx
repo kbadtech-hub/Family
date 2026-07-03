@@ -270,6 +270,23 @@ export default function CallInterface({ matchProfile, onEndCall, isIncoming = fa
     setTimeout(onEndCall, 1000);
   };
 
+  const handleEndAndReport = async () => {
+    handleEndCall();
+    if (currentUser) {
+      await supabase.from('reports').insert({
+        reporter_id: currentUser.id,
+        reported_id: matchProfile.id,
+        reason: 'abuse',
+        details: 'Flagged during active secure video/audio call'
+      });
+      await supabase.from('blocks').insert({
+        blocker_id: currentUser.id,
+        blocked_id: matchProfile.id
+      });
+      alert('Call ended. User has been blocked and reported.');
+    }
+  };
+
   const toggleMute = () => {
     if (localStream) {
       localStream.getAudioTracks().forEach(track => {
@@ -405,9 +422,17 @@ export default function CallInterface({ matchProfile, onEndCall, isIncoming = fa
             {/* End Call */}
             <button 
               onClick={handleEndCall}
-              className="px-8 py-5 bg-red-500 hover:bg-red-600 text-white rounded-3xl font-black text-xs uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-red-500/20 hover:scale-105 active:scale-95 transition-all"
+              className="px-5 py-5 bg-slate-700 hover:bg-slate-800 text-white rounded-3xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 hover:scale-105 active:scale-95 transition-all"
             >
-              <PhoneOff size={18} /> End Call
+              <PhoneOff size={16} /> End Call
+            </button>
+
+            {/* End & Report */}
+            <button 
+              onClick={handleEndAndReport}
+              className="px-5 py-5 bg-red-600 hover:bg-red-700 text-white rounded-3xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-red-500/20 hover:scale-105 active:scale-95 transition-all"
+            >
+              ⚠️ End & Report
             </button>
 
             {/* Toggle Video */}

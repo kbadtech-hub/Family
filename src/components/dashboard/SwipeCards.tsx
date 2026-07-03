@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Heart, X, Sparkles, MapPin, Star, ShieldCheck } from 'lucide-react';
+import { Heart, X, Sparkles, MapPin, Star, ShieldCheck, MoreVertical } from 'lucide-react';
 import { calculateCompatibility } from '@/lib/compatibility';
+import { supabase } from '@/lib/supabase';
 
 interface SwipeCardsProps {
   userProfile: any;
@@ -18,6 +19,7 @@ export default function SwipeCards({ userProfile, candidates, onLike, onPass, is
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
   const [swipeOffset, setSwipeOffset] = useState({ x: 0, y: 0 });
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
+  const [showCardMenu, setShowCardMenu] = useState(false);
 
   const activeCandidate = candidates[currentIndex];
 
@@ -124,11 +126,72 @@ export default function SwipeCards({ userProfile, candidates, onLike, onPass, is
             <Sparkles size={14} className="fill-white" />
             {matchPercent}% Compatibility
           </div>
-          {activeCandidate.is_verified && (
-            <div className="bg-white/20 backdrop-blur-xl border border-white/20 p-2.5 rounded-full text-white shadow-lg flex items-center justify-center">
-              <ShieldCheck size={18} className="fill-primary" />
+          <div className="flex items-center gap-2">
+            {activeCandidate.is_verified && (
+              <div className="bg-white/20 backdrop-blur-xl border border-white/20 p-2.5 rounded-full text-white shadow-lg flex items-center justify-center">
+                <ShieldCheck size={18} className="fill-primary" />
+              </div>
+            )}
+            
+            {/* Quick Report/Block Menu */}
+            <div className="relative">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowCardMenu(!showCardMenu);
+                }}
+                className="bg-black/40 backdrop-blur-xl border border-white/25 p-2.5 rounded-full text-white shadow-lg flex items-center justify-center hover:bg-black/60 transition-colors"
+                aria-label="Safety menu"
+              >
+                <MoreVertical size={18} />
+              </button>
+              
+              {showCardMenu && (
+                <div className="absolute right-0 mt-2 w-40 bg-white rounded-2xl shadow-2xl z-30 overflow-hidden border border-border">
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      const reason = prompt("Report User - Enter reason (abuse, explicit content, scam, other):", "abuse");
+                      if (!reason) return;
+                      const details = prompt("Enter report details:") || "";
+                      const { error } = await supabase.from('reports').insert({
+                        reporter_id: userProfile.id,
+                        reported_id: activeCandidate.id,
+                        reason: ['abuse', 'explicit content', 'scam', 'other'].includes(reason) ? reason : 'other',
+                        details
+                      });
+                      if (!error) {
+                        alert("Report submitted successfully.");
+                        setShowCardMenu(false);
+                      }
+                    }}
+                    className="w-full text-left px-4 py-2.5 hover:bg-muted text-[10px] font-bold text-amber-700 flex items-center gap-1.5"
+                  >
+                    ⚠️ Report User
+                  </button>
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (confirm("Block User - Are you sure? They will disappear from your feed.")) {
+                        const { error } = await supabase.from('blocks').insert({
+                          blocker_id: userProfile.id,
+                          blocked_id: activeCandidate.id
+                        });
+                        if (!error) {
+                          alert("User blocked.");
+                          setShowCardMenu(false);
+                          window.location.reload();
+                        }
+                      }
+                    }}
+                    className="w-full text-left px-4 py-2.5 hover:bg-muted text-[10px] font-bold text-red-600 flex items-center gap-1.5 border-t border-muted"
+                  >
+                    🚫 Block User
+                  </button>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
         {/* Dynamic bottom info panel */}

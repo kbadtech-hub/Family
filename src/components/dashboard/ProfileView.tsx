@@ -436,6 +436,48 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
              </button>
           </div>
         )}
+      {/* Account Lifecycle & Security Compliance */}
+      <div className="bg-white rounded-[2rem] md:rounded-[3rem] p-8 md:p-10 border border-red-100 shadow-xl space-y-8">
+        <div className="space-y-1">
+          <h3 className="text-lg md:text-xl font-black text-red-600 italic tracking-tighter flex items-center gap-2 justify-center md:justify-start">
+             {profile?.preferred_language === 'am' ? 'አካውንት በዘላቂነት ማጥፊያ (Danger Zone)' : 'Account Lifecycle (Danger Zone)'}
+          </h3>
+          <p className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-widest">
+            {profile?.preferred_language === 'am' ? 'የአካውንት መረጃዎችን ሙሉ በሙሉ ማጥፊያ' : 'Unconditional Account Deletion'}
+          </p>
+        </div>
+        
+        <div className="space-y-6">
+           <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+              {profile?.preferred_language === 'am'
+                ? 'ማስጠንቀቂያ፦ አካውንቶን ማጥፋት የእርስዎን መገለጫ ፎቶዎች፣ ውይይቶች እና ሁሉንም መረጃዎች ከዳታቤዝ ውስጥ ሙሉ በሙሉ ያጠፋል። ይህ ድርጊት ወደ ኋላ መመለስ አይቻልም።'
+                : 'Warning: Deleting your account will completely and permanently expunge all associated user data, profile images, and chat logs from the database. This action is irreversible.'}
+           </p>
+           
+           <button 
+             onClick={async () => {
+               const confirmMsg = profile?.preferred_language === 'am'
+                 ? 'በእርግጥ አካውንትዎን በዘላቂነት ማጥፋት ይፈልጋሉ? ይህ ድርጊት ሊመለስ አይችልም!'
+                 : 'Are you absolutely sure you want to permanently delete your account? This will erase all your messages, profile details, and files. This action is irreversible.';
+               
+               if (confirm(confirmMsg)) {
+                 const { error } = await supabase.rpc('delete_own_user_account');
+                 if (!error) {
+                   await supabase.auth.signOut();
+                   alert(profile?.preferred_language === 'am' 
+                     ? 'አካውንትዎ በደህንነት ተሰርዟል።' 
+                     : 'Your account and all associated data have been permanently deleted.');
+                   window.location.href = '/';
+                 } else {
+                   alert("Deletion failed: " + error.message);
+                 }
+               }
+             }}
+             className="w-full bg-red-600 hover:bg-red-700 text-white py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-red-500/20"
+           >
+              {profile?.preferred_language === 'am' ? 'አካውንት በዘላቂነት ሰርዝ' : 'Permanently Delete My Account'}
+           </button>
+        </div>
       </div>
     </div>
   );
