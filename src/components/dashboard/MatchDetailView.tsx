@@ -110,6 +110,8 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
     } finally {
       setIsProcessing(false);
     }
+  };
+
   const handleReportUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;

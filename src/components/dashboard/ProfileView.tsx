@@ -436,6 +436,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
              </button>
           </div>
         )}
+      </div>
       {/* Account Lifecycle & Security Compliance */}
       <div className="bg-white rounded-[2rem] md:rounded-[3rem] p-8 md:p-10 border border-red-100 shadow-xl space-y-8">
         <div className="space-y-1">
