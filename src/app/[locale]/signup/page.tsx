@@ -78,13 +78,26 @@ function SignupContent() {
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const [toast, setToast] = useState<{ message: string; show: boolean }>({ message: '', show: false });
 
-  const handleSocialLogin = (provider: string) => {
-    setToast({
-      message: locale === 'am' 
-        ? `በ ${provider} መግባት በቅርቡ ይመጣል። እባክዎ ለጊዜው በኢሜይል ወይም በስልክ ቁጥር ይጠቀሙ።` 
-        : `${provider} login is coming soon. Please use Email or Phone for now.`,
-      show: true
+  const handleSocialLogin = async (provider: 'google' | 'facebook' | 'apple') => {
+    if (provider === 'apple') {
+      setToast({
+        message: locale === 'am'
+          ? 'Apple ID መግባት በቅርቡ ይመጣል። እባክዎ ለጊዜው በኢሜይል ወይም በስልክ ቁጥር ይጠቀሙ።'
+          : 'Apple ID login is coming soon. Please use Email or Phone for now.',
+        show: true
+      });
+      return;
+    }
+    setError('');
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`
+      }
     });
+    if (oauthError) {
+      setError(oauthError.message);
+    }
   };
 
   React.useEffect(() => {
@@ -288,7 +301,7 @@ function SignupContent() {
                   {/* Google Button */}
                   <button
                     type="button"
-                    onClick={() => handleSocialLogin('Google')}
+                    onClick={() => handleSocialLogin('google')}
                     className="flex-1 flex items-center justify-center gap-2 py-4 border-2 border-border hover:border-primary/30 rounded-2xl hover:bg-primary/5 transition-all text-accent group"
                   >
                     <svg className="w-5 h-5 transition-transform group-hover:scale-110" viewBox="0 0 24 24" fill="currentColor">
@@ -303,7 +316,7 @@ function SignupContent() {
                   {/* Facebook Button */}
                   <button
                     type="button"
-                    onClick={() => handleSocialLogin('Facebook')}
+                    onClick={() => handleSocialLogin('facebook')}
                     className="flex-1 flex items-center justify-center gap-2 py-4 border-2 border-border hover:border-primary/30 rounded-2xl hover:bg-primary/5 transition-all text-accent group"
                   >
                     <svg className="w-5 h-5 text-[#1877F2] transition-transform group-hover:scale-110" viewBox="0 0 24 24" fill="currentColor">
@@ -315,7 +328,7 @@ function SignupContent() {
                   {/* Apple Button */}
                   <button
                     type="button"
-                    onClick={() => handleSocialLogin('Apple ID')}
+                    onClick={() => handleSocialLogin('apple')}
                     className="flex-1 flex items-center justify-center gap-2 py-4 border-2 border-border hover:border-primary/30 rounded-2xl hover:bg-primary/5 transition-all text-accent group"
                   >
                     <svg className="w-5 h-5 text-black transition-transform group-hover:scale-110" viewBox="0 0 24 24" fill="currentColor">
