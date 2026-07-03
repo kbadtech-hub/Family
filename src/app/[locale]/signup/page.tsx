@@ -76,16 +76,15 @@ function SignupContent() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
-  // Auto-redirect on success to OTP verification page
+  // Auto-redirect on success to dashboard
   React.useEffect(() => {
     if (isSuccess) {
       const timer = setTimeout(() => {
-        const identifier = view === 'email' ? email : `${countryCode}${phone}`;
-        window.location.href = `/${locale}/verify-otp?email=${encodeURIComponent(identifier)}&type=signup`;
+        router.push('/dashboard');
       }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [isSuccess, locale, view, email, countryCode, phone]);
+  }, [isSuccess, router]);
 
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -141,16 +140,6 @@ function SignupContent() {
       if (authError) throw authError;
 
       if (data.user) {
-        // Send custom OTP code via email
-        try {
-          await fetch('/api/auth/send-otp', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: identifier, locale })
-          });
-        } catch (sendErr) {
-          console.error("Failed to send verification OTP:", sendErr);
-        }
         setIsSuccess(true);
       }
     } catch (err: unknown) {
@@ -171,11 +160,11 @@ function SignupContent() {
             {locale === 'am' ? 'እንኳን ደስ አለዎት!' : 'Registration Successful!'}
           </h2>
           <p className="text-gray-500 mb-8 font-medium">
-            {locale === 'am' ? 'ወደ ዳሽቦርድ በመግባት ላይ ነዎት...' : 'You are being logged in to your dashboard...'}
+            {locale === 'am' ? 'ወደ ዳሽቦርድ በመውሰድ ላይ...' : 'Redirecting you to your dashboard...'}
           </p>
           <div className="flex items-center justify-center gap-2 text-primary font-bold animate-pulse">
              <Loader2 className="animate-spin" size={18} />
-             <span>{locale === 'am' ? 'ወደ ዳሽቦርድ በመውሰድ ላይ...' : 'Redirecting to Dashboard...'}</span>
+             <span>{locale === 'am' ? 'እባክዎ ይጠብቁ...' : 'Please wait...'}</span>
           </div>
         </div>
       </div>
