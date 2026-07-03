@@ -218,6 +218,9 @@ export default function SwipeCards({ userProfile, candidates, onLike, onPass, is
                 </span>
               )}
             </div>
+            <p className="text-[7.5px] text-white/50 font-bold italic leading-none pt-0.5">
+              *Supplementary cultural indicator only; not a scientific guarantee of relationship outcome.
+            </p>
           </div>
 
           <p className={`text-xs text-white/70 italic leading-relaxed font-medium line-clamp-2 ${!isPremium ? 'blur-sm select-none pointer-events-none' : ''}`}>

@@ -29,7 +29,8 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
     username: profile?.username || '',
     bio: profile?.bio || '',
     interests: profile?.interests || '',
-    preferred_language: profile?.preferred_language || 'en'
+    preferred_language: profile?.preferred_language || 'en',
+    enable_abushakir: profile?.enable_abushakir !== false
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -271,19 +272,40 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
               </div>
            </div>
 
-           <div className="space-y-2">
-              <label className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">{t('systemLanguage')}</label>
-              <select 
-                value={formData.preferred_language}
-                onChange={(e) => handleLanguageChange(e.target.value)}
-                className="w-full bg-muted/30 border border-muted rounded-xl md:rounded-2xl p-4 md:p-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all appearance-none"
-              >
-                 {languages.map(lang => (
-                   <option key={lang.id} value={lang.id}>{lang.label}</option>
-                 ))}
-              </select>
-           </div>
-        </div>
+            <div className="space-y-2">
+               <label className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">{t('systemLanguage')}</label>
+               <select 
+                 value={formData.preferred_language}
+                 onChange={(e) => handleLanguageChange(e.target.value)}
+                 className="w-full bg-muted/30 border border-muted rounded-xl md:rounded-2xl p-4 md:p-5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all appearance-none"
+               >
+                  {languages.map(lang => (
+                    <option key={lang.id} value={lang.id}>{lang.label}</option>
+                  ))}
+               </select>
+            </div>
+
+            <div className="space-y-4 pt-2 col-span-full">
+               <label className="flex items-center gap-3 cursor-pointer">
+                 <input 
+                   type="checkbox"
+                   checked={formData.enable_abushakir}
+                   onChange={(e) => setFormData({...formData, enable_abushakir: e.target.checked})}
+                   className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary"
+                 />
+                 <span className="text-xs font-bold text-slate-600">
+                   {profile?.preferred_language === 'am' 
+                     ? 'የአቡሻህር ባህላዊ የኮከብ ምልክት ተኳኋኝነትን አሳይ (Enable Abushakir Star Matching)'
+                     : 'Enable Abushakir Star Sign Matching (Optional)'}
+                 </span>
+               </label>
+               <p className="text-[10px] text-gray-400 font-semibold italic pl-8">
+                 {profile?.preferred_language === 'am'
+                   ? '*ሲበራ የኮከብ ምልክትዎን በኢትዮጵያ ዘመን አቆጣጠር መሰረት በማስላት ተጨማሪ ባህላዊ ተኳኋኝነትን ያሳያል።'
+                   : '*Allows supplementary cultural/heritage calculations based on the Ethiopian calendar.'}
+               </p>
+            </div>
+         </div>
       </div>
 
       <div className="bg-white rounded-[2rem] md:rounded-[3rem] p-8 md:p-10 border border-gray-100 shadow-xl space-y-8">

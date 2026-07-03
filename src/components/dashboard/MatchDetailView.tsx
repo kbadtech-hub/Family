@@ -215,6 +215,11 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
                     <MapPin size={12} /> {profile?.location}
                  </span>
               </div>
+              <p className="text-[9px] text-gray-400 font-bold italic leading-relaxed">
+                 {locale === 'am' 
+                   ? '*የአቡሻህር ባህላዊ የኮከብ ምልክት ግንዛቤዎች ለተጨማሪ መረጃ ብቻ የሚያገለግሉ ሲሆን ለትዳር ስኬት ፍጹም ዋስትና አይደሉም።'
+                   : '*Abushakir star sign insights are supplementary cultural indicators only and do not guarantee relationship or marriage success.'}
+               </p>
            </div>
 
            <div className="space-y-4">

@@ -342,7 +342,7 @@
   "Chatbot": {
     "welcome": "Welcome to Beteseb! How can I help you find your perfect match today?",
     "faq": {
-      "abushakir": "Our unique matching engine logic is based on the Abushakir...",
+      "abushakir": "Our matching insights incorporate optional cultural calculations based on the traditional Ethiopian Abushakir calendar to compute star signs. This is designed to serve as a supplementary heritage-focused compatibility signal and does not constitute a scientific guarantee of relationship success or marital outcome.",
       "pricing": "We offer tiered pricing tailored to your location...",
       "verified": "Verification is mandatory to keep our family safe...",
       "hello": "Hello! I'm your Beteseb Support AI...",

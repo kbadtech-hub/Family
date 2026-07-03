@@ -23,8 +23,8 @@ export async function getUserSubscriptionInfo(userId: string): Promise<Subscript
   const trialEnds = new Date(data.trial_ends_at);
   const premiumUntil = data.premium_until ? new Date(data.premium_until) : null;
   
-  // Calculate status
-  let status: UserSubscriptionStatus = 'trial';
+  // Calculate status (No trials permitted)
+  let status: UserSubscriptionStatus = 'locked';
   let daysRemaining = 0;
 
   if (data.is_locked) {
@@ -32,13 +32,9 @@ export async function getUserSubscriptionInfo(userId: string): Promise<Subscript
   } else if (premiumUntil && premiumUntil > now) {
     status = 'premium';
     daysRemaining = Math.ceil((premiumUntil.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  } else if (trialEnds > now) {
-    status = 'trial';
-    daysRemaining = Math.ceil((trialEnds.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  } else {
-    // Check for grace period (3 days after expiration)
-    const expirationDate = premiumUntil || trialEnds;
-    const gracePeriodEnd = new Date(expirationDate.getTime() + (3 * 24 * 60 * 60 * 1000));
+  } else if (premiumUntil) {
+    // Check for grace period (3 days after premium expiration)
+    const gracePeriodEnd = new Date(premiumUntil.getTime() + (3 * 24 * 60 * 60 * 1000));
     
     if (now < gracePeriodEnd) {
       status = 'expired';
@@ -46,6 +42,8 @@ export async function getUserSubscriptionInfo(userId: string): Promise<Subscript
     } else {
       status = 'locked';
     }
+  } else {
+    status = 'locked';
   }
 
   // Check if there is a pending payment

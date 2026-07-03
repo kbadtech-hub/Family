@@ -185,7 +185,7 @@ function CommunityContent() {
     }
 
     const isPremium = currentUser.profile?.is_premium || 
-                     (currentUser.profile?.trial_ends_at && new Date(currentUser.profile.trial_ends_at) > new Date()) ||
+                     (currentUser.profile?.premium_until && new Date(currentUser.profile.premium_until) > new Date()) ||
                      ['admin', 'super_admin', 'expert'].includes(currentUser.profile?.role);
 
     if (!isPremium) {

@@ -37,14 +37,16 @@ export const ETHIOPIAN_TO_ENGLISH_ZODIAC: Record<string, string> = {
 export function calculateCompatibility(user: any, candidate: any): number {
   let score = 50; // Base score
 
-  // 1. Zodiac Compatibility - Max 25% weight (at most 25 points contribution)
-  if (user.star_sign && candidate.star_sign) {
+  // 1. Optional Abushakir Zodiac Compatibility - Max 10% weight (at most 10 points contribution)
+  // De-weighted to serve as an optional cultural insight signal rather than a guarantee.
+  const isAbushakirEnabled = user.enable_abushakir !== false && candidate.enable_abushakir !== false;
+  if (isAbushakirEnabled && user.star_sign && candidate.star_sign) {
     const userSignEng = ETHIOPIAN_TO_ENGLISH_ZODIAC[user.star_sign] || user.star_sign;
     const candidateSignEng = ETHIOPIAN_TO_ENGLISH_ZODIAC[candidate.star_sign] || candidate.star_sign;
     const signScore = ZODIAC_COMPATIBILITY[userSignEng]?.[candidateSignEng] || 75;
     
-    // Scale zodiac score (which goes up to 95) so it contributes up to 25 points
-    const zodiacContribution = (signScore / 95) * 25;
+    // Scale zodiac score (which goes up to 95) so it contributes up to 10 points
+    const zodiacContribution = (signScore / 95) * 10;
     score += zodiacContribution;
   }
 
@@ -67,23 +69,23 @@ export function calculateCompatibility(user: any, candidate: any): number {
     score += Math.min(25, common.length * 5);
   }
 
-  // 3. Values & Family Intent - Max 20% weight (10 points each)
+  // 3. Values & Family Intent - Max 25% weight (12.5 points each)
   if (user.family_values && candidate.family_values && user.family_values === candidate.family_values) {
-    score += 10;
+    score += 12.5;
   }
   if (user.conflict_resolution && candidate.conflict_resolution && user.conflict_resolution === candidate.conflict_resolution) {
-    score += 10;
+    score += 12.5;
   }
 
-  // 4. Age matching - Max 15% weight
+  // 4. Age matching - Max 20% weight
   if (candidate.birth_date && user.partner_age_min && user.partner_age_max) {
     const age = new Date().getFullYear() - new Date(candidate.birth_date).getFullYear();
     if (age >= user.partner_age_min && age <= user.partner_age_max) {
-      score += 15;
+      score += 20;
     }
   }
 
-  // 5. Location matching - Max 15% weight
+  // 5. Location matching - Max 20% weight
   if (user.partner_location && candidate.location) {
     const candidateCountry = typeof candidate.location === 'string' 
       ? candidate.location 
@@ -100,7 +102,7 @@ export function calculateCompatibility(user: any, candidate: any): number {
       loc.trim().toLowerCase() === candidateCountry.trim().toLowerCase()
     );
     if (isLocationMatch) {
-      score += 15;
+      score += 20;
     }
   }
 

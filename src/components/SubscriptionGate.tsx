@@ -60,8 +60,8 @@ export default function SubscriptionGate({ children, allowVerifiedView = false }
     );
   }
 
-  // If premium or trial, all good
-  if (subInfo?.status === 'premium' || subInfo?.status === 'trial') {
+  // If premium, all good
+  if (subInfo?.status === 'premium') {
     return <>{children}</>;
   }
 

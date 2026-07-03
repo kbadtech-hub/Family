@@ -151,7 +151,7 @@ function SignupContent() {
                   is_onboarded: false,
                   verification_status: 'unverified',
                   pref_location: searchParams.get('pref_location') || 'Local',
-                  trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+                  trial_ends_at: new Date().toISOString()
                 }
               }
             }
@@ -164,7 +164,7 @@ function SignupContent() {
                   is_onboarded: false,
                   verification_status: 'unverified',
                   pref_location: searchParams.get('pref_location') || 'Local',
-                  trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+                  trial_ends_at: new Date().toISOString()
                 }
               }
             }

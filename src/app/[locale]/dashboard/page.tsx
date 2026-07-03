@@ -114,31 +114,13 @@ function DashboardContent() {
       const cachedProfile = OfflineCache.getCachedData(`profile_${user.id}`);
       if (cachedProfile) {
         setProfile(cachedProfile);
-        if (cachedProfile.trial_ends_at) {
-          const ends = new Date(cachedProfile.trial_ends_at);
-          const now = new Date();
-          const diff = ends.getTime() - now.getTime();
-          const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-          setTrialDaysLeft(days > 0 ? days : 0);
-          setIsTrialExpired(diff <= 0);
-        }
       }
 
       // 1. Fetch Profile
       const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-      let currentTrialExpired = false;
       if (profileData) {
         setProfile(profileData as Profile);
         OfflineCache.cacheData(`profile_${user.id}`, profileData);
-        if (profileData.trial_ends_at) {
-          const ends = new Date(profileData.trial_ends_at);
-          const now = new Date();
-          const diff = ends.getTime() - now.getTime();
-          const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-          setTrialDaysLeft(days > 0 ? days : 0);
-          currentTrialExpired = diff <= 0;
-          setIsTrialExpired(currentTrialExpired);
-        }
       }
 
       // 2. Fetch Verification
@@ -163,12 +145,13 @@ function DashboardContent() {
       const currentPaymentApproved = paymentData?.status === 'approved';
       if (paymentData) setPaymentStatus(paymentData.status);
 
-      // 4. Calculate Premium Status
+      // 4. Calculate Premium Status (Strictly premium_until based; no trials)
       const isPremium = currentPaymentApproved || 
-                       (profileData?.trial_ends_at && new Date(profileData.trial_ends_at) > new Date()) ||
+                       (profileData?.premium_until && new Date(profileData.premium_until) > new Date()) ||
                        ['admin', 'super_admin', 'expert'].includes(profileData?.role);
       
       setProfile(prev => prev ? { ...prev, is_premium: isPremium } : null);
+      setIsTrialExpired(!isPremium);
 
       // 5. Fetch Matches (Gender-Based Logic)
       // Load Cached Matches if available
@@ -262,7 +245,7 @@ function DashboardContent() {
     fetchData();
   }, []);
 
-  const isPremium = profile?.trial_ends_at && new Date(profile.trial_ends_at) > new Date() || 
+  const isPremium = ((profile as any)?.premium_until && new Date((profile as any).premium_until) > new Date()) || 
                     paymentStatus === 'approved' || 
                     ['admin', 'super_admin', 'expert'].includes((profile as any)?.role);
   const isAdmin = ['admin', 'super_admin'].includes((profile as any)?.role);
@@ -583,16 +566,6 @@ function DashboardContent() {
                        <p className="font-black text-xs uppercase tracking-widest text-primary">{t('reviewPending')}</p>
                        <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-tighter">{t('reviewNote')}</p>
                     </div>
-                  </div>
-                ) : profile?.onboarding_completed && !isTrialExpired ? (
-                  <div className="space-y-4">
-                    <div className="p-5 bg-primary/5 rounded-[1.5rem]">
-                      <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">{t('trialStatus')}</p>
-                      <p className="text-xl font-black text-accent italic">{t('daysLeft', { count: trialDaysLeft ?? 0 })}</p>
-                    </div>
-                    <button onClick={() => setShowPayment(true)} className="w-full bg-primary text-white py-5 rounded-[2rem] font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20">
-                      {t('premium.unlock')}
-                    </button>
                   </div>
                 ) : (
                   <button onClick={() => setShowPayment(true)} className="w-full bg-primary text-white py-5 rounded-[2rem] font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20">
