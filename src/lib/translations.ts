@@ -5,7 +5,7 @@ export const translations: any = {
       about: 'About Us',
       classes: 'Classes',
       login: 'Login / Create Account',
-      startTrial: 'Start 3-Day Trial'
+      startTrial: 'Get Premium'
     },
     hero: {
       tagline: 'Traditional warmth, modern matching',
@@ -31,7 +31,7 @@ export const translations: any = {
       premium: {
         active: 'Premium Active',
         pending: 'Review Pending',
-        expired: 'Trial Expired',
+        expired: 'Premium Expired',
         unlock: 'Unlock Premium'
       }
     },
@@ -50,7 +50,7 @@ export const translations: any = {
     modal: {
       step1: 'Step 1: Join The Family',
       where: 'Where are you located?',
-      currencyNote: 'Your location allows us to set your preferred currency and start your 3-day trial.',
+      currencyNote: 'Your location allows us to set your preferred currency and show local payment options.',
       localTitle: 'Inside Ethiopia',
       localSub: 'Payments in ETB',
       globalTitle: 'Global Diaspora',
@@ -63,13 +63,13 @@ export const translations: any = {
       about: 'ስለ እኛ',
       classes: 'ትምህርቶች',
       login: 'ይግቡ / አካውንት ይፍጠሩ',
-      startTrial: 'የ3 ቀን የነጻ ሙከራ ይጀምሩ'
+      startTrial: 'ፕሪሚየም ያግኙ'
     },
     hero: {
       tagline: 'ባህላዊ ሙቀት፣ ዘመናዊ ትውውቅ',
       title1: 'ጠንካራ ትዳር፣',
       title2: 'ለትውልድ የሚተርፍ ቤተሰብ!',
-      subtitle: 'የቤተሰብ እሴቶችን መሰረት በማድረግ እና በዘመናዊ ቴክኖሎጂ የታገዘ ዘላቂ የኢትዮጵያ ቤተሰቦችን ለመገንባት የተቋቋመ ቀዳሚ የዓለም አቀፍ መድረክ።',
+      subtitle: 'የቤተሰብ እሴቶችን መሰረት በማድረግ እና በዘಮናዊ ቴክኖሎጂ የታገዘ ዘላቂ የኢትዮጵያ ቤተሰቦችን ለመገንባት የተቋቋመ ቀዳሚ የዓለም አቀፍ መድረክ።',
       cta1: 'አካውንት ይፍጠሩ',
       cta2: 'ራእያችን',
       verify1: 'ፓስፖርት የተረጋገጠ',
@@ -89,7 +89,7 @@ export const translations: any = {
       premium: {
         active: 'ፕሪሚየም አገልግሎት በርቷል',
         pending: 'ግምገማ ላይ',
-        expired: 'የሙከራ ጊዜ አልፏል',
+        expired: 'ፕሪሚየም አልቋል',
         unlock: 'ፕሪሚየምን ይክፈቱ'
       }
     },
@@ -108,7 +108,7 @@ export const translations: any = {
     modal: {
       step1: 'ደረጃ 1፡ ቤተሰቡን ይቀላቀሉ',
       where: 'የት ነው የሚገኙት?',
-      currencyNote: 'ለአገልግሎቱ የሚከፍሉበትን ገንዘብ ለመወሰን እና የነጻ ሙከራዎን ለመጀመር ያግዘናል።',
+      currencyNote: 'ለአገልግሎቱ የሚከፍሉበትን የክፍያ አማራጭ ለመወሰን ያግዘናል።',
       localTitle: 'ኢትዮጵያ ውስጥ',
       localSub: 'ክፍያ በብር (ETB)',
       globalTitle: 'በውጭ ሀገር',

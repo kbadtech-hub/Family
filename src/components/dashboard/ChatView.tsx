@@ -64,6 +64,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
   const [isFriend, setIsFriend] = useState(false);
   const [isGeneratingIceBreaker, setIsGeneratingIceBreaker] = useState(false);
   const [activeCallMatch, setActiveCallMatch] = useState<Profile | null>(null);
+  const [isCallVideo, setIsCallVideo] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState<'abuse' | 'explicit content' | 'scam' | 'other'>('abuse');
@@ -278,6 +279,24 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !selectedMatch || !currentUser) return;
+
+    // Non-premium daily message limit check (5 messages/day)
+    if (!isPremium) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const { count, error: countError } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('sender_id', currentUser.id)
+        .gte('created_at', today.toISOString());
+        
+      if (!countError && count !== null && count >= 5) {
+        alert(locale === 'am'
+          ? "በቀን መላክ የሚችሉት 5 መልእክቶች ብቻ ነው። እባክዎ ሁሉንም ለማግኘት አካውንትዎን ያሳድጉ!"
+          : "You have reached the free limit of 5 messages per day. Please upgrade to Premium to chat unlimitedly!");
+        return;
+      }
+    }
 
     const messageContent = newMessage.trim();
 
@@ -512,14 +531,26 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
               </div>
               <div className="flex items-center gap-4 text-gray-400">
                 <button 
-                  onClick={() => setActiveCallMatch(selectedMatch)}
+                  onClick={() => {
+                    setIsCallVideo(false);
+                    setActiveCallMatch(selectedMatch);
+                  }}
                   aria-label="Start phone call" 
                   className="hover:text-primary transition-colors"
                 >
                   <Phone size={20} />
                 </button>
                 <button 
-                  onClick={() => setActiveCallMatch(selectedMatch)}
+                  onClick={() => {
+                    if (!isPremium) {
+                      alert(locale === 'am' 
+                        ? "የቪዲዮ ጥሪዎችን ለመጠቀም እባክዎ ፕሪሚየም አባል ይሁኑ!" 
+                        : "Video calling is a premium feature. Please upgrade to Premium!");
+                      return;
+                    }
+                    setIsCallVideo(true);
+                    setActiveCallMatch(selectedMatch);
+                  }}
                   aria-label="Start video call" 
                   className="hover:text-primary transition-colors"
                 >
@@ -714,6 +745,8 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
         <CallInterface 
           matchProfile={activeCallMatch} 
           onEndCall={() => setActiveCallMatch(null)} 
+          isVideo={isCallVideo}
+          isPremium={isPremium}
         />
       )}
     </div>
