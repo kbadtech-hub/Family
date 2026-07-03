@@ -8,7 +8,6 @@ import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { calculateCompatibility } from '@/lib/compatibility';
 import { OfflineCache } from '@/lib/offline-cache';
-import { RELIGIONS } from '@/lib/constants';
 import {
   Home,
   MessageCircle,
@@ -49,7 +48,7 @@ function DashboardContent() {
     id: string;
     full_name: string | null;
     avatar_url: string | null;
-    premium_until: string | null;
+    trial_ends_at: string | null;
     currency_locked: 'USD' | 'ETB';
     onboarding_completed: boolean;
     role: string;
@@ -68,14 +67,14 @@ function DashboardContent() {
   const [showPayment, setShowPayment] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [verificationStatus, setVerificationStatus] = useState<string>('loading');
+  const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
+  const [isTrialExpired, setIsTrialExpired] = useState(false);
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [friendshipStatuses, setFriendshipStatuses] = useState<Record<string, string>>({});
   const [matchingView, setMatchingView] = useState<'grid' | 'swipe'>('grid');
   const [candidates, setCandidates] = useState<any[]>([]);
-  const [activeFilters, setActiveFilters] = useState<{ religion?: string; location?: string }>({});
-  const [showFilterPanel, setShowFilterPanel] = useState(false);
 
   const languages = [
     { id: 'en', label: 'English' },
@@ -115,13 +114,31 @@ function DashboardContent() {
       const cachedProfile = OfflineCache.getCachedData(`profile_${user.id}`);
       if (cachedProfile) {
         setProfile(cachedProfile);
+        if (cachedProfile.trial_ends_at) {
+          const ends = new Date(cachedProfile.trial_ends_at);
+          const now = new Date();
+          const diff = ends.getTime() - now.getTime();
+          const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+          setTrialDaysLeft(days > 0 ? days : 0);
+          setIsTrialExpired(diff <= 0);
+        }
       }
 
       // 1. Fetch Profile
       const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+      let currentTrialExpired = false;
       if (profileData) {
         setProfile(profileData as Profile);
         OfflineCache.cacheData(`profile_${user.id}`, profileData);
+        if (profileData.trial_ends_at) {
+          const ends = new Date(profileData.trial_ends_at);
+          const now = new Date();
+          const diff = ends.getTime() - now.getTime();
+          const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+          setTrialDaysLeft(days > 0 ? days : 0);
+          currentTrialExpired = diff <= 0;
+          setIsTrialExpired(currentTrialExpired);
+        }
       }
 
       // 2. Fetch Verification
@@ -146,11 +163,11 @@ function DashboardContent() {
       const currentPaymentApproved = paymentData?.status === 'approved';
       if (paymentData) setPaymentStatus(paymentData.status);
 
-      // 4. Calculate Premium Status (feature-based — no trial)
-      const isPremium = currentPaymentApproved ||
-                       (profileData?.premium_until && new Date(profileData.premium_until) > new Date()) ||
+      // 4. Calculate Premium Status
+      const isPremium = currentPaymentApproved || 
+                       (profileData?.trial_ends_at && new Date(profileData.trial_ends_at) > new Date()) ||
                        ['admin', 'super_admin', 'expert'].includes(profileData?.role);
-
+      
       setProfile(prev => prev ? { ...prev, is_premium: isPremium } : null);
 
       // 5. Fetch Matches (Gender-Based Logic)
@@ -229,8 +246,8 @@ function DashboardContent() {
     fetchData();
   }, []);
 
-  const isPremium = (profile?.premium_until && new Date(profile.premium_until) > new Date()) ||
-                    paymentStatus === 'approved' ||
+  const isPremium = profile?.trial_ends_at && new Date(profile.trial_ends_at) > new Date() || 
+                    paymentStatus === 'approved' || 
                     ['admin', 'super_admin', 'expert'].includes((profile as any)?.role);
   const isAdmin = ['admin', 'super_admin'].includes((profile as any)?.role);
 
@@ -459,7 +476,7 @@ function DashboardContent() {
                   
                   <div className="flex items-center gap-4">
                     {/* View Switcher Toggle */}
-                    {!showPayment && matches.length > 0 && (
+                    {!showPayment && !isTrialExpired && matches.length > 0 && (
                       <div className="flex p-1 bg-muted rounded-2xl w-fit border border-gray-100 shadow-sm">
                         <button 
                           onClick={() => setMatchingView('grid')} 
@@ -481,66 +498,14 @@ function DashboardContent() {
                   </div>
                 </div>
 
-                {matchingView === 'swipe' && !showPayment && matches.length > 0 && profile ? (
-                  <div className="animate-in zoom-in-95 duration-500 py-4 space-y-4">
-                    {/* Filter Toggle and Panel */}
-                    <div className="flex items-center justify-between mb-3 px-2">
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                        {locale === 'am' ? 'ባህልና ሃይማኖት ማጣሪያ' : 'Cultural & Religion Filter'}
-                      </p>
-                      <button
-                        onClick={() => setShowFilterPanel(!showFilterPanel)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                          showFilterPanel || Object.values(activeFilters).some(Boolean)
-                            ? 'bg-primary text-white shadow-md'
-                            : 'bg-primary/10 text-primary hover:bg-primary/20'
-                        }`}
-                      >
-                        <span>{showFilterPanel ? '✕' : '☰'}</span>
-                        {locale === 'am' ? 'አጣራ' : 'Filter'}
-                        {Object.values(activeFilters).some(Boolean) && (
-                          <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-                        )}
-                      </button>
-                    </div>
-
-                    {showFilterPanel && (
-                      <div className="bg-white rounded-3xl border border-border p-5 shadow-xl space-y-4 animate-in slide-in-from-top-2 duration-300">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-1.5">
-                            <label className="text-[9px] font-black uppercase tracking-widest text-gray-400">
-                              {locale === 'am' ? 'ሃይማኖት' : 'Religion'}
-                            </label>
-                            <select
-                              value={activeFilters.religion || ''}
-                              onChange={(e) => setActiveFilters(prev => ({ ...prev, religion: e.target.value || undefined }))}
-                              className="w-full px-3 py-2.5 bg-muted rounded-xl text-xs font-bold text-accent outline-none"
-                            >
-                              <option value="">{locale === 'am' ? 'ሁሉም ሃይማኖቶች' : 'Any Religion'}</option>
-                              {RELIGIONS.map(r => (
-                                <option key={r} value={r}>{r}</option>
-                              ))}
-                            </select>
-                          </div>
-                          <div className="flex items-end">
-                            <button
-                              onClick={() => setActiveFilters({})}
-                              className="w-full py-2.5 bg-gray-100 text-gray-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 transition-all"
-                            >
-                              {locale === 'am' ? 'ሁሉንም አፅዳ' : 'Clear Filters'}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
+                {matchingView === 'swipe' && !showPayment && !isTrialExpired && matches.length > 0 && profile ? (
+                  <div className="animate-in zoom-in-95 duration-500 py-4">
                     <SwipeCards 
                       userProfile={profile} 
                       candidates={candidates} 
                       onLike={(id) => setSelectedMatchId(id)}
                       onPass={(id) => console.log("Passed candidate:", id)}
                       isPremium={profile?.is_premium}
-                      activeFilters={activeFilters}
                     />
                   </div>
                 ) : (
@@ -549,6 +514,15 @@ function DashboardContent() {
                       <div className="col-span-full">
                         <button onClick={() => setShowPayment(false)} className="mb-6 text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">← {t('backToDash')}</button>
                         <PaymentTab />
+                      </div>
+                    ) : isTrialExpired && paymentStatus !== 'approved' ? (
+                      <div className="col-span-full bg-white p-8 md:p-12 rounded-[2.5rem] md:rounded-[3rem] border border-red-100 text-center space-y-6">
+                        <div className="w-14 h-14 md:w-16 md:h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto">
+                          <AlertCircle className="w-7 h-7 md:w-8 md:h-8" />
+                        </div>
+                        <h3 className="text-xl md:text-2xl font-black text-accent italic">{t('trialExpired')}</h3>
+                        <p className="text-xs md:text-gray-500 max-w-sm mx-auto">{t('trialEnded')}</p>
+                        <button onClick={() => setShowPayment(true)} className="w-full md:w-auto bg-primary text-white px-10 py-4 rounded-2xl font-bold uppercase tracking-widest shadow-xl shadow-primary/20">{t('upgradeNow')}</button>
                       </div>
                     ) : matches.length === 0 ? (
                       <div className="col-span-full py-20 text-center text-gray-400 font-bold uppercase tracking-widest text-[10px]">
@@ -594,6 +568,16 @@ function DashboardContent() {
                        <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-tighter">{t('reviewNote')}</p>
                     </div>
                   </div>
+                ) : profile?.onboarding_completed && !isTrialExpired ? (
+                  <div className="space-y-4">
+                    <div className="p-5 bg-primary/5 rounded-[1.5rem]">
+                      <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">{t('trialStatus')}</p>
+                      <p className="text-xl font-black text-accent italic">{t('daysLeft', { count: trialDaysLeft ?? 0 })}</p>
+                    </div>
+                    <button onClick={() => setShowPayment(true)} className="w-full bg-primary text-white py-5 rounded-[2rem] font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20">
+                      {t('premium.unlock')}
+                    </button>
+                  </div>
                 ) : (
                   <button onClick={() => setShowPayment(true)} className="w-full bg-primary text-white py-5 rounded-[2rem] font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20">
                     {t('premium.unlock')}
@@ -608,7 +592,7 @@ function DashboardContent() {
         {/* Tab Components */}
         {activeTab === 'chat' && (
            <div className="mt-10 h-[calc(100vh-200px)]">
-              <SubscriptionGate>
+              <SubscriptionGate allowVerifiedView={false}>
                  <ChatView isPremium={isPremium} />
               </SubscriptionGate>
            </div>
@@ -616,7 +600,7 @@ function DashboardContent() {
 
         {activeTab === 'workshops' && (
            <div className="mt-10">
-              <SubscriptionGate>
+              <SubscriptionGate allowVerifiedView={true}>
                  <LessonsView isPremium={isPremium} />
               </SubscriptionGate>
            </div>
@@ -624,7 +608,7 @@ function DashboardContent() {
 
         {activeTab === 'community' && (
           <div className="mt-10">
-            <SubscriptionGate>
+            <SubscriptionGate allowVerifiedView={true}>
               <CommunityView isVerified={verificationStatus === 'verified'} isPremium={isPremium} isAdmin={isAdmin} />
             </SubscriptionGate>
           </div>

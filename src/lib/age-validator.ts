@@ -7,10 +7,10 @@ export function isOver18(birthDateStr: string): boolean {
   const birth = new Date(birthDateStr);
   if (isNaN(birth.getTime())) return false;
   const today = new Date();
-  let age = today.getFullYear() - birth.getFullYear();
+  const age = today.getFullYear() - birth.getFullYear();
   const monthDiff = today.getMonth() - birth.getMonth();
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-    age--;
+    return age - 1 >= 18;
   }
   return age >= 18;
 }

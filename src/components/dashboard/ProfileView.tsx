@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useRouter, usePathname } from '@/i18n/routing';
 import { 
   User, 
@@ -13,8 +13,7 @@ import {
   CheckCircle2, 
   ShieldCheck,
   Star,
-  Sparkles,
-  AlertTriangle
+  Sparkles
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -40,10 +39,6 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
   const [guardianEmail, setGuardianEmail] = useState('');
   const [guardianPhone, setGuardianPhone] = useState('');
   const [isLinking, setIsLinking] = useState(false);
-  const locale = useLocale();
-  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
   useEffect(() => {
     const fetchGuardian = async () => {
@@ -73,39 +68,6 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
       alert("Failed to link guardian: " + (error?.message || "Unknown error"));
     }
     setIsLinking(false);
-  };
-
-  const handleDeleteAccount = async () => {
-    if (deleteConfirmText !== 'DELETE') {
-      alert(locale === 'am' ? 'እባክዎ DELETE የሚለውን ቃል በትክክል ይጻፉ' : 'Please type DELETE to confirm');
-      return;
-    }
-    setIsDeletingAccount(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        alert('Session expired. Please log in again.');
-        return;
-      }
-      const response = await fetch('/api/account/delete', {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      const result = await response.json();
-      if (response.ok && result.success) {
-        await supabase.auth.signOut();
-        window.location.href = '/';
-      } else {
-        alert('Deletion failed: ' + (result.error || 'Unknown error'));
-      }
-    } catch (err: any) {
-      alert('Error: ' + err.message);
-    } finally {
-      setIsDeletingAccount(false);
-    }
   };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -472,60 +434,6 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
              >
                 {isLinking ? 'GENERATING CODE...' : 'Generate Mediator Access Code (የሚዜ አገናኝ ኮድ ፍጠር)'}
              </button>
-          </div>
-        )}
-      </div>
-
-      {/* ⚠️ Danger Zone — Delete Account */}
-      <div className="bg-red-50 rounded-[2rem] md:rounded-[3rem] p-8 md:p-10 border border-red-200 space-y-6">
-        <div className="flex items-center gap-3">
-          <AlertTriangle size={20} className="text-red-500" />
-          <h3 className="text-lg font-black text-red-600 uppercase tracking-widest">
-            {locale === 'am' ? '⚠️ አደገኛ ቀጠና — አካውንት ማጥፊያ' : '⚠️ Danger Zone — Delete Account'}
-          </h3>
-        </div>
-        <p className="text-xs text-red-500 leading-relaxed font-medium">
-          {locale === 'am'
-            ? 'አካውንትዎን ካጠፉ በኋላ ፎቶዎችዎ፣ መልእክቶችዎ፣ ተኳኋኝነት መረጃዎችዎ እና ሌሎች ማናቸውም ነገሮች ሙሉ በሙሉ ከሲስተማችን ይጠፋሉ። ይህንን ድርጊት መመለስ አይቻልም።'
-            : 'Deleting your account will permanently remove all your photos, messages, compatibility records, and all other details from our system. This action cannot be undone.'}
-        </p>
-
-        {!showDeleteConfirm ? (
-          <button
-            onClick={() => setShowDeleteConfirm(true)}
-            className="w-full bg-red-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all flex items-center justify-center gap-2"
-          >
-            <Trash2 size={16} />
-            {locale === 'am' ? 'አካውንቴን ሙሉ ለሙሉ አጥፋ' : 'Delete My Account'}
-          </button>
-        ) : (
-          <div className="space-y-4">
-            <p className="text-xs font-black text-red-600 uppercase tracking-widest">
-              {locale === 'am' ? 'እባክዎ ለማረጋገጥ DELETE ብለው ይጻፉ:' : 'Type DELETE to confirm:'}
-            </p>
-            <input
-              type="text"
-              value={deleteConfirmText}
-              onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
-              placeholder="DELETE"
-              className="w-full px-4 py-3 bg-white border-2 border-red-300 rounded-xl font-black text-red-600 text-center tracking-[0.3em] outline-none focus:border-red-500"
-            />
-            <div className="flex gap-3">
-              <button
-                onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); }}
-                className="flex-1 bg-gray-100 text-gray-600 py-3 rounded-xl font-black uppercase tracking-widest text-[10px]"
-              >
-                {locale === 'am' ? 'አቋርጥ' : 'Cancel'}
-              </button>
-              <button
-                onClick={handleDeleteAccount}
-                disabled={isDeletingAccount || deleteConfirmText !== 'DELETE'}
-                className="flex-1 bg-red-600 text-white py-3 rounded-xl font-black uppercase tracking-widest text-[10px] disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {isDeletingAccount ? <Loader2 size={14} className="animate-spin" /> : <AlertTriangle size={14} />}
-                {locale === 'am' ? 'አሁን አጥፋ' : 'Delete Now'}
-              </button>
-            </div>
           </div>
         )}
       </div>

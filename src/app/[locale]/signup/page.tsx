@@ -22,8 +22,8 @@ import {
   Calendar
 } from 'lucide-react';
 import { validatePassword } from '@/lib/password-validator';
-import { isOver18 } from '@/lib/age-validator';
 import { COUNTRIES } from '@/lib/countries';
+import { isOver18 } from '@/lib/age-validator';
 
 const getSlogan = (lang: string) => {
   switch (lang) {
@@ -76,9 +76,9 @@ function SignupContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [birthDate, setBirthDate] = useState('');
   const [agreedToAge, setAgreedToAge] = useState(false);
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [agreedToCommunity, setAgreedToCommunity] = useState(false);
 
   // Auto-redirect on success to OTP verification page
@@ -95,24 +95,20 @@ function SignupContent() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!agreedToAge) {
-      setError(locale === 'am' ? 'እባክዎ እድሜዎ 18 ዓመት ወይም ከዚያ በላይ መሆኑን ያረጋግጡ' : 'Please confirm you are 18 years of age or older');
-      return;
-    }
-    if (!birthDate) {
-      setError(locale === 'am' ? 'እባክዎ የልደት ቀንዎን ያስገቡ' : 'Please enter your birth date');
-      return;
-    }
-    if (!isOver18(birthDate)) {
-      setError(locale === 'am' ? 'ይህ አፕሊኬሽን እድሜያቸው ከ18 ዓመት በላይ ለሆኑ ብቻ ነው' : 'This application is strictly for users 18 years of age or older');
-      return;
-    }
     if (!agreedToTerms) {
       setError(locale === 'am' ? 'እባክዎ መጀመሪያ በደንቦቹ ላይ ይስማሙ' : 'Please agree to the terms first');
       return;
     }
+    if (!agreedToAge) {
+      setError(locale === 'am' ? 'እድሜዎ 18+ መሆኑን ማረጋገጥ አለብዎት' : 'You must confirm you are 18 or older');
+      return;
+    }
+    if (birthDate && !isOver18(birthDate)) {
+      setError(locale === 'am' ? 'ይህ አፕሊኬሽን ለ18 ዓመት እና ከዚያ በላይ ብቻ ነው' : 'This app is for users 18 years and older only');
+      return;
+    }
     if (!agreedToCommunity) {
-      setError(locale === 'am' ? 'እባክዎ መጀመሪያ የማህበረሰብ ደንቦቹን ይቀበሉ' : 'Please agree to the community guidelines first');
+      setError(locale === 'am' ? 'የማህበረሰብ ህጎቻችንን ማረጋገጥ አለብዎት' : 'You must agree to our community guidelines');
       return;
     }
     setIsLoading(true);
@@ -125,6 +121,7 @@ function SignupContent() {
       return;
     }
 
+    const prefLocation = searchParams.get('pref_location');
     const identifier = view === 'email' ? email : `${countryCode}${phone}`;
  
     try {
@@ -153,7 +150,8 @@ function SignupContent() {
                   birth_date: birthDate,
                   is_onboarded: false,
                   verification_status: 'unverified',
-                  pref_location: searchParams.get('pref_location') || 'Local'
+                  pref_location: searchParams.get('pref_location') || 'Local',
+                  trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
                 }
               }
             }
@@ -175,22 +173,7 @@ function SignupContent() {
         setIsSuccess(true);
       }
     } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : 'Signup failed. Please try again.';
-      const isRateLimit = errMsg.toLowerCase().includes('rate limit') || 
-                          errMsg.toLowerCase().includes('limit exceeded') ||
-                          errMsg.toLowerCase().includes('too many requests') ||
-                          errMsg.toLowerCase().includes('sms_provider');
-      
-      if (isRateLimit && process.env.NEXT_PUBLIC_BYPASS_OTP === 'true') {
-        console.warn("Auth rate limit hit, bypassing for test mode:", errMsg);
-        setIsSuccess(true);
-      } else if (isRateLimit) {
-        setError(locale === 'am' 
-          ? 'የማረጋገጫ መልዕክት መላኪያ ገደብ ላይ ደርሰናል። እባክዎ ከጥቂት ደቂቃዎች በኋላ እንደገና ይሞክሩ።'
-          : 'Verification rate limit exceeded. Please try again in a few minutes.');
-      } else {
-        setError(errMsg);
-      }
+      setError(err instanceof Error ? err.message : 'Signup failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -314,14 +297,13 @@ function SignupContent() {
                     {locale === 'am' ? '📅 የልደት ቀን (18+ ማረጋገጫ)' : '📅 Date of Birth (18+ Verification)'}
                   </label>
                   <div className="relative group">
-                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-primary transition-colors" size={20} />
                     <input
                       type="date"
                       required
                       value={birthDate}
                       onChange={(e) => setBirthDate(e.target.value)}
                       max={new Date(Date.now() - 18 * 365.25 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
-                      className="w-full pl-12 pr-4 py-4 bg-[#F8F4F1] border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all font-medium text-accent"
+                      className="w-full px-4 py-4 bg-[#F8F4F1] border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all font-medium text-accent"
                     />
                   </div>
                   <p className="text-[9px] text-gray-400 ml-2 font-medium">
@@ -412,7 +394,7 @@ function SignupContent() {
               </form>
             )}
 
-            {/* Agreement - Always visible at bottom */}
+            {/* Agreement checkboxes */}
             <div className="mt-8 space-y-4 px-2">
               {/* 1. Age Verification */}
               <div className="flex items-start gap-3 cursor-pointer" onClick={() => setAgreedToAge(!agreedToAge)}>
@@ -422,20 +404,19 @@ function SignupContent() {
                     type="checkbox"
                     checked={agreedToAge}
                     onChange={(e) => setAgreedToAge(e.target.checked)}
-                    className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border-2 border-border transition-all checked:bg-primary checked:border-primary hover:border-primary/50"
+                    className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border-2 border-border transition-all checked:bg-primary checked:border-primary"
                     onClick={(e) => e.stopPropagation()}
                   />
-                  <CheckCircle2 
-                    size={14} 
-                    className="absolute text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" 
-                  />
+                  <CheckCircle2 size={14} className="absolute text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" />
                 </div>
                 <label htmlFor="agreedToAge" className="text-xs text-gray-500 font-bold cursor-pointer leading-tight select-none">
-                  {locale === 'am' ? '✅ እድሜዬ 18 ዓመት ወይም ከዚያ በላይ መሆኑን አረጋግጣለሁ' : '✅ I confirm I am 18 years of age or older'}
+                  {locale === 'am'
+                    ? '✅ እድሜዬ 18 ዓመት ወይም ከዚያ በላይ ነው'
+                    : '✅ I confirm I am 18 years of age or older'}
                 </label>
               </div>
 
-              {/* 2. Terms and Privacy */}
+              {/* 2. Terms & Privacy */}
               <div className="flex items-start gap-3 cursor-pointer" onClick={() => setAgreedToTerms(!agreedToTerms)}>
                 <div className="relative flex items-center justify-center mt-0.5">
                   <input
@@ -443,13 +424,10 @@ function SignupContent() {
                     type="checkbox"
                     checked={agreedToTerms}
                     onChange={(e) => setAgreedToTerms(e.target.checked)}
-                    className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border-2 border-border transition-all checked:bg-primary checked:border-primary hover:border-primary/50"
+                    className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border-2 border-border transition-all checked:bg-primary checked:border-primary"
                     onClick={(e) => e.stopPropagation()}
                   />
-                  <CheckCircle2 
-                    size={14} 
-                    className="absolute text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" 
-                  />
+                  <CheckCircle2 size={14} className="absolute text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" />
                 </div>
                 <label htmlFor="agreedToTerms" className="text-xs text-gray-500 font-medium cursor-pointer leading-tight select-none">
                   {t.rich('agreement', {

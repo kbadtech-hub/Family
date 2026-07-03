@@ -20,10 +20,8 @@ import {
   Share2,
   ChevronDown,
   MessageCircle,
-  MoreVertical,
-  Flag
+  MoreVertical
 } from 'lucide-react';
-import { filterText } from '@/lib/bad-words-filter';
 
 interface Post {
   id: string;
@@ -176,7 +174,7 @@ export default function CommunityView({
       post_id: postId,
       author_id: user.id,
       parent_id: replyingToId,
-      content: filterText(commentContent.trim())
+      content: commentContent.trim()
     });
 
     if (!error) {
@@ -191,33 +189,6 @@ export default function CommunityView({
     textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
-
-  const handleReportPost = async (postId: string) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      alert(locale === 'am' ? 'እባክዎ መጀመሪያ ይግቡ' : 'Please log in first');
-      return;
-    }
-    const reason = prompt(locale === 'am' ? 'የሪፖርት ምክንያት (ለምሳሌ፡ ስድብ፣ የውሸት፣ ስፓም):' : 'Reason for report (e.g. Spam, Abuse, Harassment):');
-    if (!reason) return;
-    try {
-      const response = await fetch('/api/moderation/report', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ reported_post_id: postId, reason })
-      });
-      if (response.ok) {
-        alert(locale === 'am' ? '✅ ሪፖርትዎ ደርሷል፤ እናመሰግናለን።' : '✅ Report submitted. Thank you.');
-      } else {
-        alert('Failed to submit report');
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
   const handlePostSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -262,7 +233,7 @@ export default function CommunityView({
 
     const { error } = await supabase.from('community_posts').insert({
       author_id: user.id,
-      content: filterText(newPostContent.trim()),
+      content: newPostContent.trim(),
       topic: selectedTopic,
       media_url: mediaUrl,
       media_type: mediaType === 'none' && hasLinks ? 'link' : mediaType,
@@ -353,26 +324,15 @@ export default function CommunityView({
                     {t(`topics.${topic}`)}
                  </button>
                ))}
-             </div>
-             
-             {/* Community Guidelines Banner */}
-             <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-2.5 text-amber-700">
-               <span className="text-amber-500 font-bold text-sm mt-0.5">📋</span>
-               <p className="text-[10px] font-medium leading-relaxed">
-                 {locale === 'am'
-                   ? 'የማህበረሰብ ህግጋት፦ በኮሚኒቲው ላይ መጥፎ ቃላት፣ የብልግና ምስሎች ወይም ሰዎችን የሚያንቋሽሹ ነገሮችን መጻፍ የተከለከለ ነው። ደንቡን የማይከተሉ ተጠቃሚዎች ለአንዴና ለመጨረሻ ጊዜ ይታገዳሉ።'
-                   : 'Community Guidelines: Posting inappropriate content, hate speech, bad words, or harassing others is strictly prohibited and will lead to permanent ban.'}
-               </p>
-             </div>
-
-             <textarea 
-               ref={textareaRef}
-               value={newPostContent}
-               onChange={(e) => setNewPostContent(e.target.value)}
-               placeholder={t('newPostPlaceholder')} 
-               aria-label="Post content"
-               className="w-full bg-background/30 border border-border rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-6 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[120px] resize-none text-foreground"
-             />
+            </div>
+            <textarea 
+              ref={textareaRef}
+              value={newPostContent}
+              onChange={(e) => setNewPostContent(e.target.value)}
+              placeholder={t('newPostPlaceholder')} 
+              aria-label="Post content"
+              className="w-full bg-background/30 border border-border rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-6 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[120px] resize-none text-foreground"
+            />
 
             {mediaUrl && (
               <div className="relative w-full aspect-video rounded-3xl overflow-hidden border border-border">
@@ -468,13 +428,7 @@ export default function CommunityView({
                     </div>
                   </div>
               </div>
-              <button 
-                onClick={() => handleReportPost(post.id)}
-                className="text-gray-400 hover:text-orange-500 transition-colors p-2"
-                title={locale === 'am' ? 'ሪፖርት አድርግ' : 'Report Post'}
-              >
-                <Flag size={16} />
-              </button>
+              <button className="text-gray-400 hover:text-primary transition-colors p-2"><MoreVertical size={16} /></button>
             </div>
 
             <div className="mb-6 pl-4 border-l-4 border-primary/20">

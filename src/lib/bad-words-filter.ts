@@ -3,54 +3,57 @@
  * Censors inappropriate content in posts and messages
  */
 
-// Combined English + Amharic inappropriate words list (Ethiopic & Romanized)
+// Combined English + Amharic inappropriate words list
 const BAD_WORDS: string[] = [
-  // English
+  // English profanity
   'fuck', 'shit', 'ass', 'bitch', 'bastard', 'damn', 'crap', 'piss',
   'cock', 'dick', 'pussy', 'whore', 'slut', 'nigger', 'faggot',
   'idiot', 'stupid', 'moron', 'retard', 'kill yourself', 'kys',
-  'hate you', 'ugly', 'loser', 'freak', 'porn', 'sex', 'asshole',
-  // Amharic Ethiopic
-  'ሸርሙጣ', 'ሴሰኛ', 'ቂጥ', 'ቂንጥር', 'ዲክ', 'እንክርት', 'በላተኛ',
-  'ደደብ', 'ሌባ', 'በግ', 'አህያ', 'ሉጥ', 'ውሻ', 'ጅብ', 'ጣኦት',
-  // Amharic phonetic equivalents (romanized)
-  'leba', 'dedeb', 'shermuta', 'kit', 'kintir', 'lut', 'wusha',
-  'ye-aba', 'yeaba', 'dingay', 'azmari'
+  'hate you', 'ugly', 'loser', 'freak', 'dumbass', 'jackass',
+  'asshole', 'bullshit', 'motherfucker', 'cunt',
+  // Amharic/Tigrinya phonetic equivalents (romanized)
+  'leba', 'dedeb', 'bahre', 'dingay', 'yeaba', 'azmari',
+  'gematam', 'wusha', 'ahiya', 'tibs', 'kesel',
 ];
 
+/**
+ * Escape special regex characters in a string
+ */
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Returns true if the text contains any bad words (case-insensitive, whole-word matching)
+ */
 export function containsBadWords(text: string): boolean {
   if (!text) return false;
-  const lowerText = text.toLowerCase();
   return BAD_WORDS.some(word => {
-    // Escape special regex chars
-    const escapedWord = word.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&');
-    // Using word boundary for latin words, but simple inclusion for non-latin Ethiopic since word boundary \b doesn't work for Ethiopic characters in standard JS regex
-    const isEthiopic = /[\u1200-\u137F]/.test(word);
-    const regex = isEthiopic 
-      ? new RegExp(escapedWord, 'gi')
-      : new RegExp(`\\b${escapedWord}\\b`, 'gi');
-    return regex.test(lowerText);
+    const regex = new RegExp(`\\b${escapeRegex(word)}\\b`, 'gi');
+    return regex.test(text);
   });
 }
 
+/**
+ * Replaces all bad words in the text with *** (case-insensitive, whole-word matching)
+ */
 export function filterText(text: string): string {
   if (!text) return text;
   let filtered = text;
   BAD_WORDS.forEach(word => {
-    const escapedWord = word.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&');
-    const isEthiopic = /[\u1200-\u137F]/.test(word);
-    const regex = isEthiopic 
-      ? new RegExp(escapedWord, 'gi')
-      : new RegExp(`\\b${escapedWord}\\b`, 'gi');
+    const regex = new RegExp(`\\b${escapeRegex(word)}\\b`, 'gi');
     filtered = filtered.replace(regex, '***');
   });
   return filtered;
 }
 
+/**
+ * Filters text and reports whether bad words were found
+ */
 export function filterAndWarn(text: string): { filtered: string; hadBadWords: boolean } {
   const hadBadWords = containsBadWords(text);
   return {
     filtered: filterText(text),
-    hadBadWords
+    hadBadWords,
   };
 }

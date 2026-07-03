@@ -11,7 +11,6 @@ export async function POST(request: NextRequest) {
     const result = filterAndWarn(text);
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Filter API error:', error);
     return NextResponse.json({ error: 'Filter failed' }, { status: 500 });
   }
 }

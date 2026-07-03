@@ -29,9 +29,7 @@ import {
   Sparkles,
   CheckCircle2,
   Send,
-  Languages,
-  Flag,
-  Ban
+  Languages
 } from 'lucide-react';
 
 interface UserProfile {
@@ -163,21 +161,6 @@ export default function AdminPortal() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  
-  interface Report {
-    id: string;
-    reporter_id: string;
-    reported_user_id: string | null;
-    reported_post_id: string | null;
-    reason: string;
-    details: string | null;
-    status: 'pending' | 'reviewed' | 'resolved' | 'dismissed';
-    admin_notes: string | null;
-    created_at: string;
-    reporter?: { full_name: string } | null;
-    reported_user?: { full_name: string } | null;
-  }
-  const [reports, setReports] = useState<Report[]>([]);
   
   // Messaging & Staff State
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -391,9 +374,6 @@ export default function AdminPortal() {
       } else if (activeTab === 'support') {
         const { data } = await supabase.from('support_tickets').select('*, profiles(full_name)').order('created_at', { ascending: false });
         if (data) setSupportTickets(data);
-      } else if (activeTab === 'reports') {
-        const { data } = await supabase.from('reports').select('*, reporter:reporter_id(full_name), reported_user:reported_user_id(full_name)').order('created_at', { ascending: false });
-        if (data) setReports(data as any[]);
       }
     };
     fetchAdminData();
@@ -435,25 +415,6 @@ export default function AdminPortal() {
     const { error } = await supabase.from('site_posts').delete().eq('id', id);
     if (error) alert('Error deleting post: ' + error.message);
     else setPosts(prev => prev.filter(p => p.id !== id));
-  };
-
-  const handleResolveReport = async (reportId: string, status: 'resolved' | 'dismissed', notes: string) => {
-    const { error } = await supabase.from('reports').update({ status, admin_notes: notes }).eq('id', reportId);
-    if (error) {
-      alert('Error updating report: ' + error.message);
-    } else {
-      alert('Report status updated!');
-      setReports(prev => prev.map(r => r.id === reportId ? { ...r, status, admin_notes: notes } : r));
-    }
-  };
-
-  const handleBanUser = async (userId: string, reason: string) => {
-    const { error } = await supabase.from('banned_users').insert({ user_id: userId, reason });
-    if (error) {
-      alert('Error banning user: ' + error.message);
-    } else {
-      alert('User successfully banned!');
-    }
   };
 
   const handleSaveCMS = async () => {
@@ -758,7 +719,6 @@ export default function AdminPortal() {
             { id: 'support', icon: MessageSquare, label: 'Support' },
             { id: 'matches', icon: Heart, label: 'Matches' },
             { id: 'staff', icon: Users, label: 'Manage Staff' },
-            { id: 'reports', icon: Flag, label: 'User Reports' },
             { id: 'security', icon: ShieldAlert, label: 'Access Control' },
           ].map(item => (
             <button
@@ -985,7 +945,7 @@ export default function AdminPortal() {
                         value={cmsForm.email} 
                         onChange={(e) => setCmsForm({...cmsForm, email: e.target.value})} 
                         className="input-premium bg-background" 
-                        placeholder="e.g. hello@beteseb1.online"
+                        placeholder="e.g. hello@beteseb.com"
                       />
                     </label>
                     <label className="block">
@@ -1005,7 +965,7 @@ export default function AdminPortal() {
                         value={cmsForm.website_url} 
                         onChange={(e) => setCmsForm({...cmsForm, website_url: e.target.value})} 
                         className="input-premium bg-background" 
-                        placeholder="https://beteseb1.online"
+                        placeholder="https://beteseb.com"
                       />
                     </label>
                     <label className="block">
@@ -1888,106 +1848,6 @@ export default function AdminPortal() {
              )}
            </div>
          )}
-        {activeTab === 'reports' && (
-           <div className="space-y-8 animate-in fade-in duration-500 text-accent">
-             <header>
-               <h2 className="text-3xl font-bold italic text-accent dark:text-white">User & Content Reports</h2>
-               <p className="text-gray-500">Moderation center to review user flags, inappropriate posts, and ban requests.</p>
-             </header>
-
-             <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
-                <table className="w-full text-left">
-                   <thead>
-                      <tr className="bg-muted/50 border-b border-gray-100">
-                         <th className="p-6 text-xs font-bold text-gray-400 uppercase">Reporter</th>
-                         <th className="p-6 text-xs font-bold text-gray-400 uppercase">Reported Entity</th>
-                         <th className="p-6 text-xs font-bold text-gray-400 uppercase">Reason</th>
-                         <th className="p-6 text-xs font-bold text-gray-400 uppercase">Details</th>
-                         <th className="p-6 text-xs font-bold text-gray-400 uppercase">Status</th>
-                         <th className="p-6 text-xs font-bold text-gray-400 uppercase text-center">Actions</th>
-                      </tr>
-                   </thead>
-                   <tbody className="divide-y divide-gray-100">
-                      {reports.length === 0 ? (
-                        <tr><td colSpan={6} className="p-10 text-center text-gray-400 italic">No reports found.</td></tr>
-                      ) : (
-                        reports.map((r) => (
-                          <tr key={r.id} className="hover:bg-gray-50/50 transition-colors">
-                             <td className="p-6">
-                                <div className="font-bold text-accent">{r.reporter?.full_name || 'Reporter'}</div>
-                                <div className="text-[10px] text-gray-400 font-bold uppercase">{r.reporter_id.substring(0, 8)}...</div>
-                             </td>
-                             <td className="p-6">
-                                {r.reported_user_id ? (
-                                  <div>
-                                    <span className="text-xs font-black text-primary bg-primary/10 px-2 py-0.5 rounded">USER</span>
-                                    <div className="font-bold mt-1">{r.reported_user?.full_name}</div>
-                                  </div>
-                                ) : (
-                                  <div>
-                                    <span className="text-xs font-black text-orange-500 bg-orange-100 px-2 py-0.5 rounded">POST</span>
-                                    <div className="text-[10px] text-gray-400 mt-1">Post ID: {r.reported_post_id?.substring(0, 8)}...</div>
-                                  </div>
-                                )}
-                             </td>
-                             <td className="p-6">
-                                <span className="text-xs font-bold text-gray-600 bg-gray-100 px-2 py-1 rounded">
-                                  {r.reason}
-                                </span>
-                             </td>
-                             <td className="p-6 text-xs text-gray-500">{r.details || 'No details provided'}</td>
-                             <td className="p-6">
-                                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter border ${
-                                   r.status === 'resolved' ? 'bg-green-500/10 text-green-600 border-green-200' : 
-                                   r.status === 'dismissed' ? 'bg-gray-100 text-gray-500 border-gray-200' : 
-                                   'bg-primary/10 text-primary border-primary/20 animate-pulse'
-                                }`}>
-                                   {r.status}
-                                </span>
-                             </td>
-                             <td className="p-6">
-                                <div className="flex gap-2 justify-center">
-                                   {r.status === 'pending' && (
-                                      <>
-                                         <button 
-                                           onClick={() => handleResolveReport(r.id, 'resolved', 'Reviewed by admin')}
-                                           className="p-2 bg-green-500/10 text-green-600 rounded-lg hover:bg-green-500 hover:text-white transition-all shadow-sm"
-                                           title="Resolve report"
-                                         >
-                                            <Check size={14} />
-                                         </button>
-                                         <button 
-                                           onClick={() => handleResolveReport(r.id, 'dismissed', 'Dismissed by admin')}
-                                           className="p-2 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-500 hover:text-white transition-all shadow-sm"
-                                           title="Dismiss report"
-                                         >
-                                            <X size={14} />
-                                         </button>
-                                         {r.reported_user_id && (
-                                            <button 
-                                              onClick={() => {
-                                                const reason = prompt('Reason for ban:');
-                                                if (reason && r.reported_user_id) handleBanUser(r.reported_user_id, reason);
-                                              }}
-                                              className="p-2 bg-red-500/10 text-red-600 rounded-lg hover:bg-red-50 hover:text-white transition-all shadow-sm"
-                                              title="Ban reported user"
-                                            >
-                                               <Ban size={14} />
-                                            </button>
-                                         )}
-                                      </>
-                                   )}
-                                </div>
-                             </td>
-                          </tr>
-                        ))
-                      )}
-                   </tbody>
-                </table>
-             </div>
-           </div>
-         )}
-
         {activeTab === 'matches' && (
           <div className="space-y-8 animate-in fade-in duration-500">
             <header className="flex justify-between items-end">

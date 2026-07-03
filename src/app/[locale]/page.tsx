@@ -24,12 +24,12 @@ interface SystemSettings {
 // 6-Language Translation Helpers to prevent any mixed-language bleed-throughs
 const getCtaLabel = (lang: string) => {
   switch (lang) {
-    case 'am': return 'ነጻ አካውንት ይፍጠሩ';
-    case 'om': return 'Herrega bilisaa uumi';
-    case 'ti': return 'ናጻ ሕሳብ ፍጠር';
-    case 'ar': return 'إنشاء حساب مجاني';
-    case 'so': return 'Samee xisaab bilaash ah';
-    default: return 'Create Free Account';
+    case 'am': return 'ነጻ የ7 ቀን ሙከራ ጀምር';
+    case 'om': return 'Yaalii bilisaa guyyaa 7 jalqabi';
+    case 'ti': return 'ናጻ ናይ 7 መዓልቲ ፈተነ ጀምር';
+    case 'ar': return 'ابدأ فترة تجريبية مجانية لمدة 7 أيام';
+    case 'so': return 'Bilow tijaabada bilaashka ah ee 7 maalmood';
+    default: return 'Start 7-Day Free Trial';
   }
 };
 
