@@ -38,10 +38,13 @@ export default function EulaGate({ onAccept, forceShow = false }: EulaGateProps 
   const privacyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    console.log("EulaGate useEffect triggered. forceShow:", forceShow);
     if (forceShow) {
+      console.log("EulaGate forcing visibility to true");
       setIsVisible(true);
     } else {
       const accepted = localStorage.getItem('beteseb_eula_accepted');
+      console.log("EulaGate checked beteseb_eula_accepted in localStorage:", accepted);
       if (!accepted) {
         setIsVisible(true);
       }
@@ -52,6 +55,7 @@ export default function EulaGate({ onAccept, forceShow = false }: EulaGateProps 
   const checkScrollable = (ref: React.RefObject<HTMLDivElement | null>, setRead: (read: boolean) => void) => {
     if (ref.current) {
       const el = ref.current;
+      console.log("EulaGate checkScrollable. scrollHeight:", el.scrollHeight, "clientHeight:", el.clientHeight);
       if (el.scrollHeight <= el.clientHeight) {
         setRead(true);
       }
@@ -68,12 +72,17 @@ export default function EulaGate({ onAccept, forceShow = false }: EulaGateProps 
     const target = e.currentTarget;
     // Calculate if scrolled to bottom with 15px buffer
     const isAtBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 15;
+    console.log("EulaGate handleScroll. scrollHeight:", target.scrollHeight, "scrollTop:", target.scrollTop, "clientHeight:", target.clientHeight, "isAtBottom:", isAtBottom);
     if (isAtBottom) {
       setRead(true);
     }
   };
 
-  if (!isVisible) return null;
+  console.log("EulaGate rendering. isVisible:", isVisible);
+  if (!isVisible) {
+    console.log("EulaGate is NOT visible, returning null");
+    return null;
+  }
 
   const getTexts = (lang: string) => {
     switch (lang) {

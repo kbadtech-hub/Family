@@ -108,6 +108,7 @@ function SignupContent() {
   }, [ethBirthDay, ethBirthMonth, ethBirthYear, calendarType]);
 
   const handleSocialLogin = async (provider: 'google' | 'facebook' | 'apple') => {
+    console.log("handleSocialLogin called with provider:", provider);
     if (provider === 'apple') {
       setToast({
         message: locale === 'am'
@@ -118,6 +119,7 @@ function SignupContent() {
       return;
     }
     setError('');
+    console.log("Calling supabase.auth.signInWithOAuth for:", provider);
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -125,6 +127,7 @@ function SignupContent() {
       }
     });
     if (oauthError) {
+      console.error("Supabase signInWithOAuth error:", oauthError);
       setError(oauthError.message);
     }
   };
@@ -138,22 +141,28 @@ function SignupContent() {
   const [showEulaModal, setShowEulaModal] = useState(false);
 
   const selectSignupMethod = (method: 'google' | 'facebook' | 'apple' | 'phone' | 'email') => {
+    console.log("selectSignupMethod called with:", method);
     if (method === 'apple') {
       handleSocialLogin('apple');
       return;
     }
     
     const accepted = localStorage.getItem('beteseb_eula_accepted') === 'true';
+    console.log("beteseb_eula_accepted status:", accepted);
     if (accepted) {
       if (method === 'phone' || method === 'email') {
+        console.log("EULA already accepted. Setting view to:", method);
         setView(method);
       } else {
+        console.log("EULA already accepted. Initiating social login for:", method);
         handleSocialLogin(method);
       }
     } else {
       if (method === 'phone' || method === 'email') {
+        console.log("EULA not accepted. Deferring direct signup view:", method);
         setPendingAction({ type: 'direct', view: method });
       } else {
+        console.log("EULA not accepted. Deferring social provider login:", method);
         setPendingAction({ type: 'social', provider: method });
       }
       setShowEulaModal(true);
@@ -161,12 +170,15 @@ function SignupContent() {
   };
 
   const handleEulaAccept = () => {
+    console.log("handleEulaAccept triggered. Pending action:", pendingAction);
     localStorage.setItem('beteseb_eula_accepted', 'true');
     setShowEulaModal(false);
     if (pendingAction) {
       if (pendingAction.type === 'direct' && pendingAction.view) {
+        console.log("Executing pending direct signup view:", pendingAction.view);
         setView(pendingAction.view);
       } else if (pendingAction.type === 'social' && pendingAction.provider) {
+        console.log("Executing pending social login provider:", pendingAction.provider);
         handleSocialLogin(pendingAction.provider);
       }
       setPendingAction(null);
