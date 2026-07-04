@@ -121,11 +121,55 @@ function SignupContent() {
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`
+        redirectTo: `${window.location.origin}/auth/callback?next=/onboarding`
       }
     });
     if (oauthError) {
       setError(oauthError.message);
+    }
+  };
+
+  // Pending Action state to defer OAuth or direct signup until EULA is accepted
+  const [pendingAction, setPendingAction] = useState<{
+    type: 'social' | 'direct';
+    provider?: 'google' | 'facebook' | 'apple';
+    view?: 'phone' | 'email';
+  } | null>(null);
+  const [showEulaModal, setShowEulaModal] = useState(false);
+
+  const selectSignupMethod = (method: 'google' | 'facebook' | 'apple' | 'phone' | 'email') => {
+    if (method === 'apple') {
+      handleSocialLogin('apple');
+      return;
+    }
+    
+    const accepted = localStorage.getItem('beteseb_eula_accepted') === 'true';
+    if (accepted) {
+      if (method === 'phone' || method === 'email') {
+        setView(method);
+      } else {
+        handleSocialLogin(method);
+      }
+    } else {
+      if (method === 'phone' || method === 'email') {
+        setPendingAction({ type: 'direct', view: method });
+      } else {
+        setPendingAction({ type: 'social', provider: method });
+      }
+      setShowEulaModal(true);
+    }
+  };
+
+  const handleEulaAccept = () => {
+    localStorage.setItem('beteseb_eula_accepted', 'true');
+    setShowEulaModal(false);
+    if (pendingAction) {
+      if (pendingAction.type === 'direct' && pendingAction.view) {
+        setView(pendingAction.view);
+      } else if (pendingAction.type === 'social' && pendingAction.provider) {
+        handleSocialLogin(pendingAction.provider);
+      }
+      setPendingAction(null);
     }
   };
 
@@ -313,7 +357,7 @@ function SignupContent() {
                 {/* Phone */}
                 <button
                   type="button"
-                  onClick={() => setView('phone')}
+                  onClick={() => selectSignupMethod('phone')}
                   className="w-full relative flex items-center justify-center py-[14px] border-2 border-border hover:border-primary/40 rounded-2xl hover:bg-[#F8F4F1]/60 transition-all group"
                 >
                   <div className="absolute left-5 text-gray-400 group-hover:text-primary transition-colors">
@@ -327,7 +371,7 @@ function SignupContent() {
                 {/* Email */}
                 <button
                   type="button"
-                  onClick={() => setView('email')}
+                  onClick={() => selectSignupMethod('email')}
                   className="w-full relative flex items-center justify-center py-[14px] border-2 border-border hover:border-primary/40 rounded-2xl hover:bg-[#F8F4F1]/60 transition-all group"
                 >
                   <div className="absolute left-5 text-gray-400 group-hover:text-primary transition-colors">
@@ -341,7 +385,7 @@ function SignupContent() {
                 {/* Google */}
                 <button
                   type="button"
-                  onClick={() => handleSocialLogin('google')}
+                  onClick={() => selectSignupMethod('google')}
                   className="w-full relative flex items-center justify-center py-[14px] border-2 border-border hover:border-primary/40 rounded-2xl hover:bg-[#F8F4F1]/60 transition-all group"
                 >
                   <div className="absolute left-5">
@@ -360,7 +404,7 @@ function SignupContent() {
                 {/* Facebook */}
                 <button
                   type="button"
-                  onClick={() => handleSocialLogin('facebook')}
+                  onClick={() => selectSignupMethod('facebook')}
                   className="w-full relative flex items-center justify-center py-[14px] border-2 border-border hover:border-primary/40 rounded-2xl hover:bg-[#F8F4F1]/60 transition-all group"
                 >
                   <div className="absolute left-5 text-[#1877F2]">
@@ -376,7 +420,7 @@ function SignupContent() {
                 {/* Apple */}
                 <button
                   type="button"
-                  onClick={() => handleSocialLogin('apple')}
+                  onClick={() => selectSignupMethod('apple')}
                   className="w-full relative flex items-center justify-center py-[14px] border-2 border-border hover:border-primary/40 rounded-2xl hover:bg-[#F8F4F1]/60 transition-all group"
                 >
                   <div className="absolute left-5 text-gray-800">
@@ -594,7 +638,9 @@ function SignupContent() {
                 </button>
               </p>
             </div>
-            {(view === 'phone' || view === 'email') && <EulaGate />}
+            {(view === 'phone' || view === 'email' || showEulaModal) && (
+              <EulaGate onAccept={handleEulaAccept} forceShow={showEulaModal} />
+            )}
           </div>
         </div>
       </div>

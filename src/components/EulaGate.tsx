@@ -4,7 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import { ShieldCheck, Heart, AlertOctagon, Check } from 'lucide-react';
 
-export default function EulaGate() {
+interface EulaGateProps {
+  onAccept?: () => void;
+  forceShow?: boolean;
+}
+
+export default function EulaGate({ onAccept, forceShow = false }: EulaGateProps = {}) {
   const locale = useLocale();
   const [isVisible, setIsVisible] = useState(false);
   const [agreedToEula, setAgreedToEula] = useState(false);
@@ -12,12 +17,15 @@ export default function EulaGate() {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   useEffect(() => {
-    // Check if EULA was accepted
-    const accepted = localStorage.getItem('beteseb_eula_accepted');
-    if (!accepted) {
+    if (forceShow) {
       setIsVisible(true);
+    } else {
+      const accepted = localStorage.getItem('beteseb_eula_accepted');
+      if (!accepted) {
+        setIsVisible(true);
+      }
     }
-  }, []);
+  }, [forceShow]);
 
   if (!isVisible) return null;
 
@@ -110,6 +118,9 @@ export default function EulaGate() {
     if (agreedToEula && confirmAge && agreedToTerms) {
       localStorage.setItem('beteseb_eula_accepted', 'true');
       setIsVisible(false);
+      if (onAccept) {
+        onAccept();
+      }
     }
   };
 
