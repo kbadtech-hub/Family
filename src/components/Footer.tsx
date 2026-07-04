@@ -96,8 +96,13 @@ export default function Footer() {
           <div className="space-y-6">
             <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{t('connect')}</h3>
             <div className="space-y-4 text-white/50 text-sm font-medium">
-              <div className="flex items-center gap-3 hover:text-white transition-colors cursor-pointer">
-                <Phone size={16} /> +447347663254
+              <div className="flex flex-col gap-2 text-white/50 text-xs">
+                <a href="tel:+966501558268" className="flex items-center gap-3 hover:text-white transition-colors">
+                  <Phone size={16} /> <span>🇸🇦 +966 50 155 8268</span>
+                </a>
+                <a href="tel:+251946414018" className="flex items-center gap-3 hover:text-white transition-colors">
+                  <Phone size={16} /> <span>🇪🇹 +251 946 414018</span>
+                </a>
               </div>
               <div className="flex items-start gap-3 hover:text-white transition-colors cursor-pointer">
                 <MapPin size={16} /> {t('address')}

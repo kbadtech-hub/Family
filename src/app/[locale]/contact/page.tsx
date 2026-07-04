@@ -49,11 +49,12 @@ export default function ContactPage() {
       icon: Phone, 
       label: t('phone'), 
       value: (
-        <div className="space-y-1">
-          <p>{t('phone1')}</p>
+        <div className="space-y-1.5 text-sm">
+          <p>🇸🇦 +966 50 155 8268</p>
+          <p>🇪🇹 +251 946 414018</p>
         </div>
       ),
-      href: `tel:${t('phone1').replace(/\s/g, '')}` 
+      href: '#' 
     },
     { 
       id: 'email', 
@@ -67,10 +68,24 @@ export default function ContactPage() {
       icon: MapPin, 
       label: t('address'), 
       value: (
-        <div className="space-y-2">
+        <div className="space-y-4 text-xs font-semibold">
           <div>
-            <span className="text-[10px] text-primary font-black uppercase block opacity-70 mb-0.5">{t('hqLabel')}</span>
-            <p>{t('hqAddress')}</p>
+            <span className="text-[9px] text-primary font-black uppercase block opacity-70 mb-0.5">
+              {locale === 'am' ? 'ዋና መሥሪያ ቤት (London)' : 'Headquarters (London)'}
+            </span>
+            <p>London, England</p>
+          </div>
+          <div>
+            <span className="text-[9px] text-primary font-black uppercase block opacity-70 mb-0.5">
+              {locale === 'am' ? 'የሐረር ቅርንጫፍ (Ethiopia)' : 'Harar Branch (Ethiopia)'}
+            </span>
+            <p>Harar, Ethiopia</p>
+          </div>
+          <div>
+            <span className="text-[9px] text-primary font-black uppercase block opacity-70 mb-0.5">
+              {locale === 'am' ? 'የመዲና ቅርንጫፍ (Saudi Arabia)' : 'Medina Branch (Saudi Arabia)'}
+            </span>
+            <p>Medina, Saudi Arabia</p>
           </div>
         </div>
       ),
@@ -131,11 +146,11 @@ export default function ContactPage() {
           ))}
           
           {/* Maps Section */}
-          <div className="md:col-span-2 grid grid-cols-1 gap-6 animate-in fade-in duration-1000 delay-500">
+          <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in duration-1000 delay-500">
             {/* London Map */}
-            <div className="rounded-[2rem] overflow-hidden border border-border h-[400px] relative shadow-lg group">
-              <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-primary border border-primary/20">
-                {t('hqLabel')}
+            <div className="rounded-[2rem] overflow-hidden border border-border h-[300px] relative shadow-lg group">
+              <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest text-primary border border-primary/20">
+                London, UK
               </div>
               <iframe 
                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d158857.7281065113!2d-0.2416815494246067!3d51.528771840875414!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47d8a00baf21de75%3A0x52963a5addd52a99!2sLondon%2C%20UK!5e0!3m2!1sen!2suk!4v1620000000000!5m2!1sen!2suk" 
@@ -143,6 +158,34 @@ export default function ContactPage() {
                  allowFullScreen
                  loading="lazy"
                  title="London, UK Map"
+              />
+            </div>
+            
+            {/* Harar Map */}
+            <div className="rounded-[2rem] overflow-hidden border border-border h-[300px] relative shadow-lg group">
+              <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest text-primary border border-primary/20">
+                Harar, Ethiopia
+              </div>
+              <iframe 
+                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15764.551104863955!2d42.11586749999999!3d9.311124499999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x163101c569f622d1%3A0x4fae8705fa9bbd41!2sHarar%2C%20Ethiopia!5e0!3m2!1sen!2set!4v1620000000000!5m2!1sen!2set" 
+                 className="absolute inset-0 w-full h-full border-0 grayscale hover:grayscale-0 transition-all duration-700"
+                 allowFullScreen
+                 loading="lazy"
+                 title="Harar, Ethiopia Map"
+              />
+            </div>
+
+            {/* Medina Map */}
+            <div className="rounded-[2rem] overflow-hidden border border-border h-[300px] relative shadow-lg group">
+              <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest text-primary border border-primary/20">
+                Medina, Saudi Arabia
+              </div>
+              <iframe 
+                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d116239.81308331393!2d39.52988167389852!3d24.468609590822606!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x15eec2a0da05928d%3A0x1d582098679ca72!2sMedina%20Saudi%20Arabia!5e0!3m2!1sen!2ssa!4v1620000000000!5m2!1sen!2ssa" 
+                 className="absolute inset-0 w-full h-full border-0 grayscale hover:grayscale-0 transition-all duration-700"
+                 allowFullScreen
+                 loading="lazy"
+                 title="Medina, Saudi Arabia Map"
               />
             </div>
           </div>
