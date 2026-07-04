@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { validatePassword } from '@/lib/password-validator';
 import { COUNTRIES } from '@/lib/countries';
+import ethiopianDate from 'ethiopian-date';
 
 const getSlogan = (lang: string) => {
   switch (lang) {
@@ -58,6 +59,8 @@ const getPhoneSignupLabel = (lang: string) => {
 
 function SignupContent() {
   const t = useTranslations('Auth');
+  const t_onboard = useTranslations('Onboarding');
+  const t_const = useTranslations('Constants');
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -74,9 +77,34 @@ function SignupContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(true);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const [toast, setToast] = useState<{ message: string; show: boolean }>({ message: '', show: false });
+
+  // Birth Date and Calendar Selection States
+  const [calendarType, setCalendarType] = useState<'gregorian' | 'ethiopian'>((locale === 'am' || locale === 'om' || locale === 'ti' || locale === 'so') ? 'ethiopian' : 'gregorian');
+  const [birthDate, setBirthDate] = useState('');
+  const [ethBirthDay, setEthBirthDay] = useState('');
+  const [ethBirthMonth, setEthBirthMonth] = useState('');
+  const [ethBirthYear, setEthBirthYear] = useState('');
+
+  // Handle Ethiopian Date Conversion
+  React.useEffect(() => {
+    if (calendarType === 'ethiopian') {
+      if (ethBirthDay && ethBirthMonth && ethBirthYear) {
+        try {
+          const [gy, gm, gd] = ethiopianDate.toGregorian(
+            parseInt(ethBirthYear),
+            parseInt(ethBirthMonth),
+            parseInt(ethBirthDay)
+          );
+          setBirthDate(`${gy}-${String(gm).padStart(2, '0')}-${String(gd).padStart(2, '0')}`);
+        } catch (e) {
+          console.error("Invalid Ethiopian date", e);
+        }
+      }
+    }
+  }, [ethBirthDay, ethBirthMonth, ethBirthYear, calendarType]);
 
   const handleSocialLogin = async (provider: 'google' | 'facebook' | 'apple') => {
     if (provider === 'apple') {
@@ -122,12 +150,29 @@ function SignupContent() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!agreedToTerms) {
-      setError(locale === 'am' ? 'እባክዎ መጀመሪያ በደንቦቹ ላይ ይስማሙ' : 'Please agree to the terms first');
-      return;
-    }
     setIsLoading(true);
     setError('');
+
+    if (!birthDate) {
+      setError(locale === 'am' ? 'እባክዎ የልደት ቀንዎን ያስገቡ' : 'Please select your birth date');
+      setIsLoading(false);
+      return;
+    }
+    // Calculate Age
+    const bDate = new Date(birthDate);
+    const today = new Date();
+    let calculatedAge = today.getFullYear() - bDate.getFullYear();
+    const m = today.getMonth() - bDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < bDate.getDate())) {
+      calculatedAge--;
+    }
+    if (calculatedAge < 18) {
+      setError(locale === 'am'
+        ? 'ይህን መተግበሪያ ለመጠቀም እድሜዎ 18 ወይም ከዚያ በላይ መሆን አለበት።'
+        : 'You must be at least 18 years old to use this platform.');
+      setIsLoading(false);
+      return;
+    }
 
     const { isValid, errorKey } = validatePassword(password);
     if (!isValid) {
@@ -148,6 +193,7 @@ function SignupContent() {
               options: {
                 data: {
                   full_name: fullName,
+                  birth_date: birthDate,
                   is_onboarded: false,
                   verification_status: 'unverified',
                   pref_location: searchParams.get('pref_location') || 'Local',
@@ -161,6 +207,7 @@ function SignupContent() {
               options: {
                 data: {
                   full_name: fullName,
+                  birth_date: birthDate,
                   is_onboarded: false,
                   verification_status: 'unverified',
                   pref_location: searchParams.get('pref_location') || 'Local',
@@ -173,6 +220,10 @@ function SignupContent() {
       if (authError) throw authError;
 
       if (data.user) {
+        // Update the profiles row with the birth_date directly
+        await supabase.from('profiles').update({
+          birth_date: birthDate
+        }).eq('id', data.user.id);
         setIsSuccess(true);
       }
     } catch (err: unknown) {
@@ -340,23 +391,94 @@ function SignupContent() {
               </div>
             ) : (
               <form onSubmit={handleSignup} className="space-y-5">
-                {/* Full Name */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">
-                    {locale === 'am' ? 'ሙሉ ስም' : 'Full Name'}
-                  </label>
-                  <div className="relative group">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-primary transition-colors" size={20} />
-                    <input
-                      type="text"
-                      required
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      className="w-full pl-12 pr-4 py-4 bg-[#F8F4F1] border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all font-medium text-accent"
-                      placeholder={locale === 'am' ? 'ለምሳሌ፡ አበበ በልቻ' : 'e.g. Abebe Balcha'}
-                    />
-                  </div>
-                </div>
+                 {/* Full Name */}
+                 <div className="space-y-1.5">
+                   <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">
+                     {locale === 'am' ? 'ሙሉ ስም' : 'Full Name'}
+                   </label>
+                   <div className="relative group">
+                     <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-primary transition-colors" size={20} />
+                     <input
+                       type="text"
+                       required
+                       value={fullName}
+                       onChange={(e) => setFullName(e.target.value)}
+                       className="w-full pl-12 pr-4 py-4 bg-[#F8F4F1] border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all font-medium text-accent"
+                       placeholder={locale === 'am' ? 'ለምሳሌ፡ አበበ በልቻ' : 'e.g. Abebe Balcha'}
+                     />
+                   </div>
+                 </div>
+
+                 {/* Birth Date / Age Gating */}
+                 <div className="space-y-2">
+                   <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">
+                     {locale === 'am' ? 'የትውልድ ቀን (እድሜ ለመወሰን)' : 'Birth Date (For Age Verification)'}
+                   </label>
+                   
+                   <div className="flex gap-2 p-1 bg-[#F8F4F1] rounded-2xl w-fit mb-3">
+                     <button 
+                       type="button" 
+                       onClick={() => setCalendarType('gregorian')} 
+                       className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${calendarType === 'gregorian' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'}`}
+                     >
+                       {locale === 'am' ? 'እ.ኤ.አ (European)' : 'Gregorian'}
+                     </button>
+                     <button 
+                       type="button" 
+                       onClick={() => setCalendarType('ethiopian')} 
+                       className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${calendarType === 'ethiopian' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'}`}
+                     >
+                       {locale === 'am' ? 'ኢትዮጵያ (Ethiopian)' : 'Ethiopian'}
+                     </button>
+                   </div>
+
+                   {calendarType === 'ethiopian' ? (
+                     <div className="grid grid-cols-3 gap-2">
+                        <select 
+                          value={ethBirthDay} 
+                          aria-label="Day" 
+                          onChange={(e) => setEthBirthDay(e.target.value)} 
+                          className="p-3 bg-[#F8F4F1] rounded-xl font-bold text-xs text-accent outline-none focus:ring-2 focus:ring-primary/20"
+                        >
+                          <option value="">{locale === 'am' ? 'ቀን' : 'Day'}</option>
+                          {Array.from({ length: ethBirthMonth === '13' ? 6 : 30 }, (_, i) => i + 1).map(day => (
+                            <option key={day} value={day}>{day}</option>
+                          ))}
+                        </select>
+                        <select 
+                          value={ethBirthMonth} 
+                          aria-label="Month" 
+                          onChange={(e) => setEthBirthMonth(e.target.value)} 
+                          className="p-3 bg-[#F8F4F1] rounded-xl font-bold text-xs text-accent outline-none focus:ring-2 focus:ring-primary/20"
+                        >
+                          <option value="">{locale === 'am' ? 'ወር' : 'Month'}</option>
+                          {['Meskerem', 'Tikemt', 'Hidar', 'Tahsas', 'Tir', 'Yekatit', 'Megabit', 'Miazia', 'Genbot', 'Sene', 'Hamle', 'Nehase', 'Pagume'].map((m, i) => (
+                            <option key={m} value={i + 1}>
+                              {locale === 'am' ? ['መስከረም', 'ጥቅምት', 'ህዳር', 'ታህሳስ', 'ጥር', 'የካቲት', 'መጋቢት', 'ሚያዝያ', 'ግንቦት', 'ሰኔ', 'ሐምሌ', 'ነሐሴ', 'ጳጉሜ'][i] : m}
+                            </option>
+                          ))}
+                        </select>
+                        <select 
+                          value={ethBirthYear} 
+                          aria-label="Year" 
+                          onChange={(e) => setEthBirthYear(e.target.value)} 
+                          className="p-3 bg-[#F8F4F1] rounded-xl font-bold text-xs text-accent outline-none focus:ring-2 focus:ring-primary/20"
+                        >
+                          <option value="">{locale === 'am' ? 'ዓ.ም' : 'Year'}</option>
+                          {Array.from({ length: 70 }, (_, i) => 2018 - 18 - i).map(year => (
+                            <option key={year} value={year}>{year}</option>
+                          ))}
+                        </select>
+                     </div>
+                   ) : (
+                     <input 
+                       type="date" 
+                       value={birthDate} 
+                       onChange={(e) => setBirthDate(e.target.value)} 
+                       className="w-full rounded-xl border-transparent p-4 bg-[#F8F4F1] text-sm text-accent font-medium outline-none focus:border-primary focus:bg-white transition-all" 
+                     />
+                   )}
+                 </div>
 
                 {view === 'email' ? (
                   <div className="space-y-1.5">
@@ -458,47 +580,7 @@ function SignupContent() {
               </form>
             )}
 
-            {/* Agreement - Always visible at bottom */}
-            <div className="mt-8 flex items-start gap-3 px-2 group cursor-pointer" onClick={() => setAgreedToTerms(!agreedToTerms)}>
-              <div className="relative flex items-center justify-center mt-0.5">
-                <input
-                  id="agreedToTerms"
-                  type="checkbox"
-                  checked={agreedToTerms}
-                  onChange={(e) => setAgreedToTerms(e.target.checked)}
-                  className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border-2 border-border transition-all checked:bg-primary checked:border-primary hover:border-primary/50"
-                  onClick={(e) => e.stopPropagation()}
-                />
-                <CheckCircle2 
-                  size={14} 
-                  className="absolute text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" 
-                />
-              </div>
-              <label htmlFor="agreedToTerms" className="text-xs text-gray-500 font-medium cursor-pointer leading-tight select-none">
-                {t.rich('agreement', {
-                  terms: (chunks) => (
-                    <a 
-                      href={`/${locale}/terms`} 
-                      target="_blank" 
-                      className="text-primary hover:underline font-bold"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {chunks}
-                    </a>
-                  ),
-                  privacy: (chunks) => (
-                    <a 
-                      href={`/${locale}/privacy`} 
-                      target="_blank" 
-                      className="text-primary hover:underline font-bold"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {chunks}
-                    </a>
-                  )
-                })}
-              </label>
-            </div>
+
 
             <div className="mt-8 text-center pt-6 border-t border-border">
               <p className="text-gray-400 text-xs font-medium">
