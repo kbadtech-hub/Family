@@ -27,11 +27,13 @@ import {
   CheckCircle2,
   X as CloseIcon,
   Sparkles,
-  Loader2
+  Loader2,
+  Gift
 } from 'lucide-react';
 import Image from 'next/image';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import CallInterface from '@/components/dashboard/CallInterface';
+import GiftModal from '@/components/dashboard/GiftModal';
 
 interface Message {
   id: string;
@@ -66,6 +68,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
   const [activeCallMatch, setActiveCallMatch] = useState<Profile | null>(null);
   const [isCallVideo, setIsCallVideo] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showGiftModal, setShowGiftModal] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState<'abuse' | 'explicit content' | 'scam' | 'other'>('abuse');
   const [reportDetails, setReportDetails] = useState('');
@@ -531,6 +534,13 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
               </div>
               <div className="flex items-center gap-4 text-gray-400">
                 <button 
+                  onClick={() => setShowGiftModal(true)}
+                  aria-label="Send a gift" 
+                  className="hover:text-primary transition-colors text-primary/80"
+                >
+                  <Gift size={20} />
+                </button>
+                <button 
                   onClick={() => {
                     setIsCallVideo(false);
                     setActiveCallMatch(selectedMatch);
@@ -747,6 +757,14 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
           onEndCall={() => setActiveCallMatch(null)} 
           isVideo={isCallVideo}
           isPremium={isPremium}
+        />
+      )}
+      {showGiftModal && selectedMatch && (
+        <GiftModal 
+          recipientId={selectedMatch.id}
+          recipientName={selectedMatch.full_name}
+          locale={locale}
+          onClose={() => setShowGiftModal(false)}
         />
       )}
     </div>

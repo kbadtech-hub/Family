@@ -37,6 +37,7 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState<'abuse' | 'explicit content' | 'scam' | 'other'>('abuse');
   const [reportDetails, setReportDetails] = useState('');
+  const [guardianEndorsement, setGuardianEndorsement] = useState<any>(null);
   const t = useTranslations('Friendship');
   const locale = useLocale();
 
@@ -67,6 +68,25 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
         
         if (friendship) {
           setFriendshipStatus(friendship.status);
+        }
+
+        const { data: myGuardians } = await supabase
+          .from('guardians')
+          .select('id')
+          .eq('user_id', user.id);
+        
+        if (myGuardians && myGuardians.length > 0) {
+          const guardianIds = myGuardians.map(g => g.id);
+          const { data: endorsement } = await supabase
+            .from('guardian_endorsements')
+            .select('*')
+            .in('guardian_id', guardianIds)
+            .eq('match_id', matchId)
+            .maybeSingle();
+          
+          if (endorsement) {
+            setGuardianEndorsement(endorsement);
+          }
         }
       }
       setLoading(false);
@@ -221,6 +241,22 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
                    : '*Abushakir star sign insights are supplementary cultural indicators only and do not guarantee relationship or marriage success.'}
                </p>
            </div>
+
+           {guardianEndorsement && (
+              <div className={`p-6 rounded-[2rem] border flex items-start gap-4 shadow-md ${guardianEndorsement.status === 'endorsed' ? 'bg-green-50/50 border-green-100 text-green-800' : 'bg-red-50/50 border-red-100 text-red-800'}`}>
+                 <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                    {guardianEndorsement.status === 'endorsed' ? <CheckCircle2 className="text-green-600" size={20} /> : <X className="text-red-600" size={20} />}
+                 </div>
+                 <div>
+                    <h4 className="text-[10px] font-black uppercase tracking-[0.15em]">
+                       {locale === 'am' ? 'የሚዜ ምክርና ምርቃት' : 'Mediator Approval Note'}
+                    </h4>
+                    <p className="text-xs font-bold mt-1 italic">
+                       « {guardianEndorsement.note} »
+                    </p>
+                 </div>
+              </div>
+            )}
 
            <div className="space-y-4">
               <h3 className="text-sm font-black text-accent uppercase tracking-widest border-b border-muted pb-2">{t('about')}</h3>

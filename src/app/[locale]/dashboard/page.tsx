@@ -22,12 +22,14 @@ import {
   ChevronDown,
   AlertCircle,
   LogOut,
-  ChevronRight
+  ChevronRight,
+  Gift
 } from 'lucide-react';
 import CommunityView from '@/components/dashboard/CommunityView';
 import PaymentTab from '@/components/dashboard/PaymentTab';
 import ChatView from '@/components/dashboard/ChatView';
 import ProfileView from '@/components/dashboard/ProfileView';
+import GiftsView from '@/components/dashboard/GiftsView';
 import MatchDetailView from '@/components/dashboard/MatchDetailView';
 import SwipeCards from '@/components/dashboard/SwipeCards';
 import LessonsView from '@/components/dashboard/LessonsView';
@@ -268,6 +270,7 @@ function DashboardContent() {
             { id: 'chat', icon: MessageCircle, label: n('chat') },
             { id: 'community', icon: Users, label: n('community') },
             { id: 'workshops', icon: GraduationCap, label: n('workshops') },
+            { id: 'gifts', icon: Gift, label: locale === 'am' ? 'ስጦታዎች' : 'Gifts' },
             { id: 'profile', icon: UserCircle, label: n('profile') }
           ].map((item) => (
             <button
@@ -305,6 +308,7 @@ function DashboardContent() {
           { id: 'chat', icon: MessageCircle, label: n('chat') },
           { id: 'community', icon: Users, label: n('community') },
           { id: 'workshops', icon: GraduationCap, label: n('workshops') },
+          { id: 'gifts', icon: Gift, label: locale === 'am' ? 'ስጦታዎች' : 'Gifts' },
           { id: 'profile', icon: UserCircle, label: n('profile') }
         ].map((item) => (
           <button
@@ -601,6 +605,12 @@ function DashboardContent() {
             <SubscriptionGate allowVerifiedView={true}>
               <CommunityView isVerified={verificationStatus === 'verified'} isPremium={isPremium} isAdmin={isAdmin} />
             </SubscriptionGate>
+          </div>
+        )}
+
+        {activeTab === 'gifts' && (
+          <div className="mt-10">
+             <GiftsView locale={locale} />
           </div>
         )}
 

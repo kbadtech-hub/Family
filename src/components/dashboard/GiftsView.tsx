@@ -1,0 +1,589 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import { 
+  Gift, 
+  Coins, 
+  Truck, 
+  ArrowUpRight, 
+  ArrowDownLeft, 
+  CheckCircle2, 
+  Clock, 
+  AlertCircle, 
+  Loader2, 
+  MapPin, 
+  Phone,
+  MessageSquare,
+  User,
+  Calendar,
+  X
+} from 'lucide-react';
+import Image from 'next/image';
+
+interface GiftRecord {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  catalog_gift_id: string;
+  gift_type: string;
+  amount: number;
+  message: string | null;
+  delivery_address: string | null;
+  delivery_phone: string | null;
+  delivery_status: 'none' | 'requested' | 'processing' | 'delivered' | 'failed';
+  created_at: string;
+  sender?: {
+    full_name: string;
+    avatar_url: string | null;
+  };
+  receiver?: {
+    full_name: string;
+    avatar_url: string | null;
+  };
+  gift_catalog?: {
+    name_en: string;
+    name_am: string;
+    image_url: string;
+  };
+}
+
+export default function GiftsView({ locale }: { locale: string }) {
+  const [activeSubTab, setActiveSubTab] = useState<'received' | 'sent' | 'topup'>('received');
+  const [receivedGifts, setReceivedGifts] = useState<GiftRecord[]>([]);
+  const [sentGifts, setSentGifts] = useState<GiftRecord[]>([]);
+  const [coinBalance, setCoinBalance] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+  
+  // Delivery Modal State
+  const [deliveryGift, setDeliveryGift] = useState<GiftRecord | null>(null);
+  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [deliveryPhone, setDeliveryPhone] = useState('');
+  const [deliveryLoading, setDeliveryLoading] = useState(false);
+  const [deliveryError, setDeliveryError] = useState('');
+  const [deliverySuccess, setDeliverySuccess] = useState('');
+
+  // Topup State
+  const [loadingTopup, setLoadingTopup] = useState(false);
+  const coinPacks = [
+    { id: 'coins_50', coins: 50, priceEtb: 50, priceUsd: 1.0 },
+    { id: 'coins_100', coins: 100, priceEtb: 100, priceUsd: 2.0 },
+    { id: 'coins_500', coins: 500, priceEtb: 450, priceUsd: 8.0, discount: '10% OFF' },
+    { id: 'coins_1000', coins: 1000, priceEtb: 800, priceUsd: 15.0, discount: '20% OFF' }
+  ];
+  const [selectedPack, setSelectedPack] = useState<any>(coinPacks[1]);
+  const [isMobileNative, setIsMobileNative] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any).Capacitor) {
+      setIsMobileNative(true);
+    }
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    setUserId(user.id);
+
+    // 1. Fetch wallet balance
+    const { data: wallet } = await supabase
+      .from('user_wallets')
+      .select('coin_balance')
+      .eq('id', user.id)
+      .maybeSingle();
+    
+    if (wallet) {
+      setCoinBalance(Number(wallet.coin_balance));
+    }
+
+    // 2. Fetch Received Gifts
+    const { data: received } = await supabase
+      .from('gifts')
+      .select(`
+        *,
+        sender:sender_id(full_name, avatar_url),
+        gift_catalog:catalog_gift_id(name_en, name_am, image_url)
+      `)
+      .eq('receiver_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (received) {
+      setReceivedGifts(received as any[]);
+    }
+
+    // 3. Fetch Sent Gifts
+    const { data: sent } = await supabase
+      .from('gifts')
+      .select(`
+        *,
+        receiver:receiver_id(full_name, avatar_url),
+        gift_catalog:catalog_gift_id(name_en, name_am, image_url)
+      `)
+      .eq('sender_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (sent) {
+      setSentGifts(sent as any[]);
+    }
+
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleRequestDelivery = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!deliveryGift || !deliveryAddress || !deliveryPhone) return;
+
+    setDeliveryLoading(true);
+    setDeliveryError('');
+    setDeliverySuccess('');
+
+    try {
+      const { error } = await supabase
+        .from('gifts')
+        .update({
+          delivery_address: deliveryAddress,
+          delivery_phone: deliveryPhone,
+          delivery_status: 'requested',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', deliveryGift.id);
+
+      if (error) throw error;
+
+      setDeliverySuccess(locale === 'am' 
+        ? 'የአካል አቅርቦት ጥያቄዎ በተሳካ ሁኔታ ቀርቧል! በአስተዳዳሪው ጸድቆ በቅርቡ ይደርሶታል።' 
+        : 'Physical delivery requested successfully! Admins will process it shortly.');
+      
+      // Update local state
+      setReceivedGifts(prev => prev.map(g => g.id === deliveryGift.id ? {
+        ...g,
+        delivery_address: deliveryAddress,
+        delivery_phone: deliveryPhone,
+        delivery_status: 'requested'
+      } : g));
+
+      setTimeout(() => {
+        setDeliveryGift(null);
+        setDeliveryAddress('');
+        setDeliveryPhone('');
+        setDeliverySuccess('');
+      }, 2000);
+
+    } catch (err: any) {
+      setDeliveryError(err.message);
+    } finally {
+      setDeliveryLoading(false);
+    }
+  };
+
+  const topupCoins = async () => {
+    if (!userId) return;
+    setLoadingTopup(true);
+
+    try {
+      // Simulate top-up
+      const { error } = await supabase
+        .from('coin_transactions')
+        .insert({
+          user_id: userId,
+          amount: selectedPack.coins,
+          type: 'purchase'
+        });
+
+      if (error) throw error;
+
+      setCoinBalance(prev => prev + selectedPack.coins);
+      alert(locale === 'am' ? 'ሳንቲሞች በተሳካ ሁኔታ ተገዝተዋል!' : 'Top-up completed successfully!');
+      setActiveSubTab('received');
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    } finally {
+      setLoadingTopup(false);
+    }
+  };
+
+  const getGiftIcon = (imgUrl: string) => {
+    switch (imgUrl) {
+      case 'sini_coffee': return '☕';
+      case 'habesha_flower': return '🌹';
+      case 'shamma_candle': return '🕯️';
+      case 'jebena_pot': return '🏺';
+      default: return '🎁';
+    }
+  };
+
+  const getDeliveryStatusBadge = (status: string) => {
+    switch (status) {
+      case 'requested':
+        return (
+          <span className="px-3 py-1 bg-yellow-50 text-yellow-600 border border-yellow-100 text-[9px] font-black rounded-full uppercase flex items-center gap-1">
+            <Clock size={10} /> {locale === 'am' ? 'በሂደት ላይ' : 'Requested'}
+          </span>
+        );
+      case 'processing':
+        return (
+          <span className="px-3 py-1 bg-blue-50 text-blue-600 border border-blue-100 text-[9px] font-black rounded-full uppercase flex items-center gap-1 animate-pulse">
+            <Truck size={10} /> {locale === 'am' ? 'በማጓጓዝ ላይ' : 'Shipping'}
+          </span>
+        );
+      case 'delivered':
+        return (
+          <span className="px-3 py-1 bg-green-50 text-green-600 border border-green-100 text-[9px] font-black rounded-full uppercase flex items-center gap-1">
+            <CheckCircle2 size={10} /> {locale === 'am' ? 'ደርሷል' : 'Delivered'}
+          </span>
+        );
+      case 'failed':
+        return (
+          <span className="px-3 py-1 bg-red-50 text-red-600 border border-red-100 text-[9px] font-black rounded-full uppercase flex items-center gap-1">
+            <AlertCircle size={10} /> {locale === 'am' ? 'ያልተሳካ' : 'Failed'}
+          </span>
+        );
+      default:
+        return null;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <Loader2 className="animate-spin text-primary" size={36} />
+        <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
+           {locale === 'am' ? 'መረጃዎችን እያዘጋጀን ነው...' : 'Loading Gifting Suite...'}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-10">
+      
+      {/* Wallet Card */}
+      <div className="bg-[#0F172A] text-white rounded-[2.5rem] p-8 md:p-10 border border-white/5 shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden">
+         <div className="absolute right-0 top-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
+         <div className="flex items-center gap-6 relative z-10">
+            <div className="w-16 h-16 bg-primary/15 rounded-2xl flex items-center justify-center text-primary shadow-xl">
+               <Coins size={32} className="animate-pulse" />
+            </div>
+            <div>
+               <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">
+                  {locale === 'am' ? 'የኮይን ሂሳብ ቀሪ' : 'Beteseb Coin Balance'}
+               </p>
+               <h2 className="text-4xl font-black text-white italic mt-1 tracking-tight">
+                  {coinBalance} <span className="text-xs text-primary font-bold uppercase not-italic tracking-widest">{locale === 'am' ? 'ሳንቲሞች' : 'Coins'}</span>
+               </h2>
+            </div>
+         </div>
+         <button 
+           onClick={() => setActiveSubTab('topup')}
+           className="btn-primary py-4 px-8 rounded-2xl font-black uppercase tracking-widest text-[10px] relative z-10 shadow-xl shadow-primary/20 hover:scale-105 transition-transform"
+         >
+           🪙 {locale === 'am' ? 'ሳንቲም ግዛ' : 'Top Up Wallet'}
+         </button>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex bg-white rounded-3xl p-1.5 border border-muted shadow-sm max-w-md">
+         <button 
+           onClick={() => setActiveSubTab('received')}
+           className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all ${activeSubTab === 'received' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-accent'}`}
+         >
+            📥 {locale === 'am' ? 'የደረሱኝ ስጦታዎች' : 'Received'}
+         </button>
+         <button 
+           onClick={() => setActiveSubTab('sent')}
+           className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all ${activeSubTab === 'sent' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-accent'}`}
+         >
+            📤 {locale === 'am' ? 'የላክኳቸው' : 'Sent'}
+         </button>
+         <button 
+           onClick={() => setActiveSubTab('topup')}
+           className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all ${activeSubTab === 'topup' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-accent'}`}
+         >
+            🪙 {locale === 'am' ? 'የሳንቲም ጥቅሎች' : 'Packs'}
+         </button>
+      </div>
+
+      {/* Tab Panels */}
+      {activeSubTab === 'received' && (
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {receivedGifts.length === 0 ? (
+               <div className="col-span-full bg-white p-12 rounded-[2.5rem] border border-muted text-center space-y-4">
+                  <Gift className="text-gray-300 mx-auto" size={48} />
+                  <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
+                     {locale === 'am' ? 'ምንም የደረሶት ስጦታ የለም።' : 'No received gifts yet.'}
+                  </p>
+               </div>
+            ) : (
+               receivedGifts.map((gift) => (
+                 <div key={gift.id} className="bg-white rounded-[2.5rem] p-6 border border-muted shadow-lg hover:shadow-xl transition-all flex flex-col justify-between space-y-4">
+                    <div className="flex justify-between items-start gap-4">
+                       <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-lg">
+                             {getGiftIcon(gift.gift_catalog?.image_url || gift.gift_type)}
+                          </div>
+                          <div>
+                             <h4 className="text-xs font-black text-accent uppercase">
+                                {locale === 'am' ? gift.gift_catalog?.name_am : gift.gift_catalog?.name_en}
+                             </h4>
+                             <p className="text-[9px] text-gray-400 font-bold flex items-center gap-1 uppercase tracking-widest">
+                                <User size={10} /> {gift.sender?.full_name}
+                             </p>
+                          </div>
+                       </div>
+                       
+                       <div className="text-right text-[8px] text-gray-400 font-bold uppercase flex items-center gap-1">
+                          <Calendar size={10} /> {new Date(gift.created_at).toLocaleDateString()}
+                       </div>
+                    </div>
+
+                    {gift.message && (
+                       <div className="p-4 bg-muted/30 rounded-2xl border border-muted text-[11px] font-medium text-gray-600 flex items-start gap-2 italic">
+                          <MessageSquare size={14} className="text-gray-400 flex-shrink-0 mt-0.5" />
+                          <p>« {gift.message} »</p>
+                       </div>
+                    )}
+
+                    {/* Delivery Status & Action */}
+                    <div className="pt-4 border-t border-muted/50 flex justify-between items-center flex-wrap gap-3">
+                       {gift.delivery_status !== 'none' ? (
+                          <>
+                             <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Delivery Status:</span>
+                             {getDeliveryStatusBadge(gift.delivery_status)}
+                          </>
+                       ) : (
+                          <>
+                             <p className="text-[10px] text-gray-400 font-bold max-w-[200px] leading-relaxed">
+                                {locale === 'am' 
+                                  ? 'ይህንን ስጦታ በአካል ቤተሰብ ዲሊቨሪ በኩል ማስረከብ ይፈልጋሉ?' 
+                                  : 'Request real physical delivery of this gift straight to your address?'}
+                             </p>
+                             <button
+                               onClick={() => setDeliveryGift(gift)}
+                               className="px-4 py-2 border border-primary text-primary hover:bg-primary hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-colors flex items-center gap-1.5"
+                             >
+                                <Truck size={12} /> {locale === 'am' ? 'አካል አቅርቦት' : 'Request Delivery'}
+                             </button>
+                          </>
+                       )}
+                    </div>
+                 </div>
+               ))
+            )}
+         </div>
+      )}
+
+      {activeSubTab === 'sent' && (
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {sentGifts.length === 0 ? (
+               <div className="col-span-full bg-white p-12 rounded-[2.5rem] border border-muted text-center space-y-4">
+                  <Gift className="text-gray-300 mx-auto" size={48} />
+                  <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
+                     {locale === 'am' ? 'ምንም የላኩት ስጦታ የለም።' : 'No sent gifts yet.'}
+                  </p>
+               </div>
+            ) : (
+               sentGifts.map((gift) => (
+                 <div key={gift.id} className="bg-white rounded-[2.5rem] p-6 border border-muted shadow-lg hover:shadow-xl transition-all flex flex-col justify-between space-y-4">
+                    <div className="flex justify-between items-start gap-4">
+                       <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-lg">
+                             {getGiftIcon(gift.gift_catalog?.image_url || gift.gift_type)}
+                          </div>
+                          <div>
+                             <h4 className="text-xs font-black text-accent uppercase">
+                                {locale === 'am' ? gift.gift_catalog?.name_am : gift.gift_catalog?.name_en}
+                             </h4>
+                             <p className="text-[9px] text-gray-400 font-bold flex items-center gap-1 uppercase tracking-widest">
+                                <User size={10} /> To: {gift.receiver?.full_name}
+                             </p>
+                          </div>
+                       </div>
+                       
+                       <div className="text-right text-[8px] text-gray-400 font-bold uppercase flex items-center gap-1">
+                          <Calendar size={10} /> {new Date(gift.created_at).toLocaleDateString()}
+                       </div>
+                    </div>
+
+                    {gift.message && (
+                       <div className="p-4 bg-muted/30 rounded-2xl border border-muted text-[11px] font-medium text-gray-600 flex items-start gap-2 italic">
+                          <MessageSquare size={14} className="text-gray-400 flex-shrink-0 mt-0.5" />
+                          <p>« {gift.message} »</p>
+                       </div>
+                    )}
+
+                    {/* Delivery Status */}
+                    {gift.delivery_status !== 'none' && (
+                       <div className="pt-4 border-t border-muted/50 flex justify-between items-center">
+                          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Delivery Status:</span>
+                          {getDeliveryStatusBadge(gift.delivery_status)}
+                       </div>
+                    )}
+                 </div>
+               ))
+            )}
+         </div>
+      )}
+
+      {activeSubTab === 'topup' && (
+         <div className="bg-white rounded-[2.5rem] p-8 border border-muted shadow-xl max-w-2xl mx-auto space-y-8 animate-in fade-in duration-300">
+            <div className="text-center max-w-md mx-auto space-y-2">
+               <Coins className="text-primary mx-auto animate-bounce animate-duration-1000" size={36} />
+               <h3 className="font-black text-accent uppercase italic text-lg tracking-tight">{locale === 'am' ? 'የሳንቲም ጥቅል መምረጫ' : 'Select Coin Package'}</h3>
+               <p className="text-xs text-gray-400 leading-relaxed italic font-medium">
+                  {locale === 'am'
+                    ? 'ሳንቲሞች በቤተሰብ መድረክ ውስጥ ለስጦታዎች መግዣ ብቻ የሚያገለግሉ ሲሆኑ፥ ተመልሰው ወደ እውነተኛ ገንዘብ አይለወጡም።'
+                    : 'Coins are spend-only internal tokens used to buy virtual gifts. Coins cannot be cashed out or refunded.'}
+               </p>
+            </div>
+
+            {/* Packs Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+               {coinPacks.map((pack) => (
+                 <button
+                   key={pack.id}
+                   onClick={() => setSelectedPack(pack)}
+                   className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center justify-center text-center space-y-2 relative group ${selectedPack?.id === pack.id ? 'border-primary bg-primary/5 shadow-lg scale-102' : 'border-muted hover:border-primary/20'}`}
+                 >
+                   {pack.discount && (
+                     <span className="absolute -top-3 px-3 py-1 bg-primary text-white text-[8px] font-black rounded-full uppercase tracking-widest shadow-md">
+                        {pack.discount}
+                     </span>
+                   )}
+                   <div className="flex items-center gap-1.5 font-black text-accent text-xl italic">
+                      <Coins size={20} className="text-primary" /> {pack.coins}
+                   </div>
+                   <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                      {locale === 'am' ? `${pack.priceEtb} ብር` : `$${pack.priceUsd}`}
+                   </span>
+                 </button>
+               ))}
+            </div>
+
+            {/* Checkout Options */}
+            {isMobileNative ? (
+              <div className="bg-primary/5 p-6 rounded-[2rem] border border-primary/10 text-center space-y-4">
+                 <p className="text-[10px] text-gray-500 leading-relaxed italic">
+                    {locale === 'am'
+                      ? 'ክፍያዎን በአፕል አፕ ስቶር ወይም ጎግል ፕሌይ የውስጥ የክፍያ ሥርዓት በኩል በደህንነት ይፈጽማሉ።'
+                      : 'Purchase securely through your Apple App Store or Google Play account.'}
+                 </p>
+                 <button
+                   disabled={loadingTopup}
+                   onClick={topupCoins}
+                   className="w-full btn-primary py-4.5 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2"
+                 >
+                   {loadingTopup ? <Loader2 className="animate-spin text-white" /> : <CheckCircle2 size={14} />} 
+                   {locale === 'am' ? 'በሱቁ በኩል ይክፈሉ' : 'Checkout Natively'}
+                 </button>
+              </div>
+            ) : (
+              <div className="bg-muted p-6 rounded-[2rem] border border-muted text-center space-y-4">
+                 <div className="flex items-center justify-center gap-2 text-primary font-bold text-[9px] uppercase tracking-widest">
+                    <MapPin size={12} /> Secure Web Checkout (Stripe & Chapa)
+                 </div>
+                 <button
+                   disabled={loadingTopup}
+                   onClick={topupCoins}
+                   className="w-full btn-primary py-4.5 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2"
+                 >
+                   {loadingTopup ? <Loader2 className="animate-spin text-white" /> : <ArrowUpRight size={14} />} 
+                   {locale === 'am' ? 'በኦንላይን በደህንነት ይክፈሉ' : 'Pay Securely Online'}
+                 </button>
+              </div>
+            )}
+         </div>
+      )}
+
+      {/* Delivery Request Modal Overlay */}
+      {deliveryGift && (
+         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-accent/60 backdrop-blur-sm animate-in fade-in duration-300">
+           <div className="bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl border border-primary/10 flex flex-col animate-in zoom-in-95 duration-300">
+             
+             {/* Header */}
+             <div className="p-6 border-b border-muted flex justify-between items-center bg-accent text-white">
+                <div className="flex items-center gap-3">
+                   <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center">
+                      <Truck className="text-primary animate-pulse" size={20} />
+                   </div>
+                   <div>
+                      <h3 className="font-black italic uppercase tracking-tight text-sm">
+                         {locale === 'am' ? 'የአካል ማድረሻ አድራሻ ማስገቢያ' : 'Request Physical Delivery'}
+                      </h3>
+                      <p className="text-[9px] text-primary font-bold uppercase tracking-widest">
+                         {locale === 'am' ? 'ለአበባ እና ተዛማጅ ስጦታዎች ማቅረቢያ' : 'For Real Gift Items'}
+                      </p>
+                   </div>
+                </div>
+                <button onClick={() => setDeliveryGift(null)} className="p-2 hover:bg-white/10 rounded-full text-white/60 hover:text-white">
+                   <X size={20} />
+                </button>
+             </div>
+
+             {/* Modal Content */}
+             <form onSubmit={handleRequestDelivery} className="p-6 space-y-6">
+                
+                {deliveryError && (
+                  <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 text-xs font-bold animate-shake">
+                    <AlertCircle size={16} />
+                    <p>{deliveryError}</p>
+                  </div>
+                )}
+                {deliverySuccess && (
+                  <div className="p-4 bg-green-50 border border-green-100 rounded-2xl flex items-center gap-3 text-green-600 text-xs font-bold animate-pulse">
+                    <CheckCircle2 size={16} />
+                    <p>{deliverySuccess}</p>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                   <div className="space-y-2">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2 flex items-center gap-1.5">
+                         <MapPin size={12} className="text-primary" /> {locale === 'am' ? 'የማድረሻ ሙሉ አድራሻ (ከተማ፣ ሰፈር)' : 'Complete Shipping Address'}
+                      </label>
+                      <input 
+                        type="text" 
+                        required
+                        value={deliveryAddress}
+                        onChange={(e) => setDeliveryAddress(e.target.value)}
+                        placeholder={locale === 'am' ? 'ለምሳሌ፡ አዲስ አበባ፣ ቦሌ ክፍለ ከተማ፣ ወረዳ 3፣ የቤት ቁጥር 123' : 'e.g. Addis Ababa, Bole Subcity, Woreda 03, House 123'}
+                        className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs font-medium focus:outline-none"
+                      />
+                   </div>
+
+                   <div className="space-y-2">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2 flex items-center gap-1.5">
+                         <Phone size={12} className="text-primary" /> {locale === 'am' ? 'የተቀባይ ስልክ ቁጥር' : 'Contact Phone Number'}
+                      </label>
+                      <input 
+                        type="tel" 
+                        required
+                        value={deliveryPhone}
+                        onChange={(e) => setDeliveryPhone(e.target.value)}
+                        placeholder="0911223344"
+                        className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs font-medium focus:outline-none"
+                      />
+                   </div>
+                </div>
+
+                <button 
+                  disabled={deliveryLoading || !deliveryAddress || !deliveryPhone}
+                  type="submit"
+                  className="w-full btn-primary py-4.5 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2"
+                >
+                  {deliveryLoading ? <Loader2 className="animate-spin text-white" /> : <Truck size={14} />} 
+                  {locale === 'am' ? 'ጥያቄውን አሁኑኑ ላክ' : 'Submit Delivery Request'}
+                </button>
+             </form>
+           </div>
+         </div>
+      )}
+
+    </div>
+  );
+}

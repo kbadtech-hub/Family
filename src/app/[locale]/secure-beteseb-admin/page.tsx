@@ -29,7 +29,12 @@ import {
   Sparkles,
   CheckCircle2,
   Send,
-  Languages
+  Languages,
+  Gift,
+  Truck,
+  Coins,
+  MapPin,
+  Phone
 } from 'lucide-react';
 
 interface UserProfile {
@@ -158,7 +163,7 @@ export default function AdminPortal() {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [reports, setReports] = useState<any[]>([]);
   const [isSaving, setIsSaving] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -196,6 +201,21 @@ export default function AdminPortal() {
     category: 'Relationship',
     is_premium_only: true
   });
+
+  // Gifts & Catalog State
+  const [adminGifts, setAdminGifts] = useState<any[]>([]);
+  const [adminCatalog, setAdminCatalog] = useState<any[]>([]);
+  const [newCatalogItem, setNewCatalogItem] = useState({
+    name_en: '',
+    name_am: '',
+    name_om: '',
+    name_ti: '',
+    name_so: '',
+    name_ar: '',
+    image_url: 'sini_coffee',
+    coin_price: 20
+  });
+  const [loadingGifts, setLoadingGifts] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -379,6 +399,21 @@ export default function AdminPortal() {
       } else if (activeTab === 'reports') {
         const { data } = await supabase.from('reports').select('*, reporter:reporter_id(full_name), reported:reported_id(full_name)').order('created_at', { ascending: false });
         if (data) setReports(data || []);
+      } else if (activeTab === 'gifts') {
+        setLoadingGifts(true);
+        const { data: giftsData } = await supabase
+          .from('gifts')
+          .select('*, sender:sender_id(full_name), receiver:receiver_id(full_name), gift_catalog:catalog_gift_id(name_en, name_am, image_url)')
+          .neq('delivery_status', 'none')
+          .order('updated_at', { ascending: false });
+        if (giftsData) setAdminGifts(giftsData);
+
+        const { data: catalogData } = await supabase
+          .from('gift_catalog')
+          .select('*')
+          .order('coin_price', { ascending: true });
+        if (catalogData) setAdminCatalog(catalogData);
+        setLoadingGifts(false);
       }
     };
     fetchAdminData();
@@ -632,6 +667,81 @@ export default function AdminPortal() {
     }
   };
 
+  const handleAddCatalogItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCatalogItem.name_en || !newCatalogItem.name_am) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('gift_catalog')
+        .insert([newCatalogItem])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      setAdminCatalog(prev => [...prev, data].sort((a, b) => a.coin_price - b.coin_price));
+      setNewCatalogItem({
+        name_en: '',
+        name_am: '',
+        name_om: '',
+        name_ti: '',
+        name_so: '',
+        name_ar: '',
+        image_url: 'sini_coffee',
+        coin_price: 20
+      });
+      alert('Gift Catalog Item Added Successfully!');
+    } catch (err: any) {
+      alert('Error adding catalog item: ' + err.message);
+    }
+  };
+
+  const handleToggleCatalogStatus = async (itemId: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('gift_catalog')
+        .update({ is_active: !currentStatus })
+        .eq('id', itemId);
+      
+      if (error) throw error;
+      setAdminCatalog(prev => prev.map(item => item.id === itemId ? { ...item, is_active: !currentStatus } : item));
+    } catch (err: any) {
+      alert('Error updating catalog status: ' + err.message);
+    }
+  };
+
+  const handleUpdateDeliveryStatus = async (gift: any, newStatus: string) => {
+    const confirmMsg = `Are you sure you want to update delivery status to "${newStatus}"?` + 
+      (newStatus === 'failed' ? ' This will automatically refund the coins back to the sender.' : '');
+    
+    if (!confirm(confirmMsg)) return;
+
+    try {
+      const { error } = await supabase
+        .from('gifts')
+        .update({ delivery_status: newStatus, updated_at: new Date().toISOString() })
+        .eq('id', gift.id);
+
+      if (error) throw error;
+
+      if (newStatus === 'failed') {
+        const { error: refundError } = await supabase
+          .from('coin_transactions')
+          .insert({
+            user_id: gift.sender_id,
+            amount: gift.amount,
+            type: 'admin_adjustment'
+          });
+        if (refundError) throw refundError;
+        alert('Delivery marked as failed. Coins refunded to sender.');
+      }
+
+      setAdminGifts(prev => prev.map(g => g.id === gift.id ? { ...g, delivery_status: newStatus } : g));
+    } catch (err: any) {
+      alert('Error updating delivery status: ' + err.message);
+    }
+  };
+
   const handleUpdateAdminPassword = async () => {
     if (!settings) return;
     if (newAdminPassword.length < 8) {
@@ -753,6 +863,7 @@ export default function AdminPortal() {
             { id: 'lessons', icon: Video, label: 'Lessons' },
             { id: 'support', icon: MessageSquare, label: 'Support' },
             { id: 'reports', icon: ShieldAlert, label: 'Safety Reports' },
+            { id: 'gifts', icon: Gift, label: 'Gifts & Delivery' },
             { id: 'matches', icon: Heart, label: 'Matches' },
             { id: 'staff', icon: Users, label: 'Manage Staff' },
             { id: 'security', icon: ShieldAlert, label: 'Access Control' },
@@ -2015,6 +2126,207 @@ export default function AdminPortal() {
              )}
            </div>
          )}
+        {activeTab === 'gifts' && (
+          <div className="space-y-8 animate-in fade-in duration-500">
+             <header className="flex justify-between items-end">
+               <div>
+                 <h2 className="text-3xl font-bold italic uppercase tracking-tighter text-accent">Gifts & Delivery Management</h2>
+                 <p className="text-foreground/40 mt-1">Configure virtual gifts and process physical fulfillment requests.</p>
+               </div>
+             </header>
+
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                {/* 1. Add New Gift Form */}
+                <div className="bg-card p-8 rounded-[3rem] shadow-2xl border border-white/5 space-y-6">
+                   <h3 className="text-lg font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                      <Gift size={20} /> Create Gift Item
+                   </h3>
+                   <form onSubmit={handleAddCatalogItem} className="space-y-4">
+                      <div className="space-y-1">
+                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">English Name</label>
+                         <input 
+                           type="text" 
+                           required 
+                           value={newCatalogItem.name_en}
+                           onChange={(e) => setNewCatalogItem({ ...newCatalogItem, name_en: e.target.value })}
+                           placeholder="e.g. Traditional Sini" 
+                           className="w-full bg-background border-none rounded-xl p-3 text-xs font-semibold focus:ring-1 focus:ring-primary"
+                         />
+                      </div>
+                      <div className="space-y-1">
+                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Amharic Name (አማርኛ)</label>
+                         <input 
+                           type="text" 
+                           required 
+                           value={newCatalogItem.name_am}
+                           onChange={(e) => setNewCatalogItem({ ...newCatalogItem, name_am: e.target.value })}
+                           placeholder="e.g. የሀበሻ ሲኒ" 
+                           className="w-full bg-background border-none rounded-xl p-3 text-xs font-semibold focus:ring-1 focus:ring-primary"
+                         />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                         <div className="space-y-1">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Icon Type</label>
+                            <select 
+                              value={newCatalogItem.image_url}
+                              onChange={(e) => setNewCatalogItem({ ...newCatalogItem, image_url: e.target.value })}
+                              className="w-full bg-background border-none rounded-xl p-3 text-xs font-bold focus:ring-1 focus:ring-primary"
+                            >
+                               <option value="sini_coffee">☕ Coffee Sini</option>
+                               <option value="habesha_flower">🌹 Flower</option>
+                               <option value="shamma_candle">🕯️ Candle</option>
+                               <option value="jebena_pot">🏺 Jebena Pot</option>
+                            </select>
+                         </div>
+                         <div className="space-y-1">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Coin Cost</label>
+                            <input 
+                              type="number" 
+                              required 
+                              min="1"
+                              value={newCatalogItem.coin_price}
+                              onChange={(e) => setNewCatalogItem({ ...newCatalogItem, coin_price: Number(e.target.value) })}
+                              className="w-full bg-background border-none rounded-xl p-3 text-xs font-bold focus:ring-1 focus:ring-primary"
+                            />
+                         </div>
+                      </div>
+                      <button type="submit" className="w-full btn-primary py-3.5 rounded-xl font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-1.5 shadow-lg">
+                         <Plus size={14} /> Add to Catalog
+                      </button>
+                   </form>
+                </div>
+
+                {/* 2. Gift Catalog List */}
+                <div className="bg-card p-8 rounded-[3rem] shadow-2xl border border-white/5 space-y-6 lg:col-span-2">
+                   <h3 className="text-lg font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                      🎨 Active Catalog List
+                   </h3>
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                      {adminCatalog.map(item => (
+                         <div key={item.id} className="p-4 bg-background rounded-2xl border border-white/5 flex items-center justify-between group">
+                            <div className="flex items-center gap-3">
+                               <span className="text-3xl">
+                                  {item.image_url === 'sini_coffee' ? '☕' : item.image_url === 'habesha_flower' ? '🌹' : item.image_url === 'shamma_candle' ? '🕯️' : '🏺'}
+                               </span>
+                               <div>
+                                  <p className="font-black text-xs uppercase text-accent">{item.name_en}</p>
+                                  <p className="text-[10px] text-gray-400 font-semibold">{item.name_am}</p>
+                                  <div className="flex items-center gap-1 text-[9px] font-black text-primary uppercase mt-1">
+                                     <Coins size={10} /> {item.coin_price} Coins
+                                  </div>
+                               </div>
+                            </div>
+                            <button 
+                              onClick={() => handleToggleCatalogStatus(item.id, item.is_active)}
+                              className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-full transition-colors ${item.is_active ? 'bg-green-500/10 text-green-500 hover:bg-red-500/10 hover:text-red-500' : 'bg-red-500/10 text-red-500 hover:bg-green-500/10 hover:text-green-500'}`}
+                            >
+                               {item.is_active ? 'Active' : 'Disabled'}
+                            </button>
+                         </div>
+                      ))}
+                   </div>
+                </div>
+
+                {/* 3. Physical Delivery Queue */}
+                <div className="bg-card p-8 rounded-[3rem] shadow-2xl border border-white/5 space-y-6 lg:col-span-3">
+                   <h3 className="text-lg font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                      <Truck size={20} /> Real Delivery Requests Queue
+                   </h3>
+                   <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                      {adminGifts.length === 0 ? (
+                         <div className="p-8 text-center text-xs text-gray-400 font-bold uppercase tracking-widest">
+                            No delivery requests pending.
+                         </div>
+                      ) : (
+                         adminGifts.map(gift => (
+                            <div key={gift.id} className="p-6 bg-background rounded-3xl border border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-primary/20 transition-all">
+                               <div className="space-y-2">
+                                  <div className="flex items-center gap-2">
+                                     <span className="text-xl">
+                                        {gift.gift_catalog?.image_url === 'sini_coffee' ? '☕' : gift.gift_catalog?.image_url === 'habesha_flower' ? '🌹' : gift.gift_catalog?.image_url === 'shamma_candle' ? '🕯️' : '🏺'}
+                                     </span>
+                                     <h4 className="font-black text-xs uppercase text-accent">
+                                        {gift.gift_catalog?.name_en} ({gift.gift_catalog?.name_am})
+                                     </h4>
+                                     <span className="px-2 py-0.5 bg-primary/10 text-primary text-[8px] font-black rounded-md uppercase">
+                                        {gift.amount} Coins
+                                     </span>
+                                  </div>
+                                  <p className="text-[10px] text-gray-400 font-semibold">
+                                     Sender: <span className="text-accent font-bold">{gift.sender?.full_name}</span> | Recipient: <span className="text-accent font-bold">{gift.receiver?.full_name}</span>
+                                  </p>
+                                  <div className="p-3 bg-card rounded-xl text-[10px] font-medium text-gray-500 border border-white/5 max-w-lg">
+                                     <strong>Message:</strong> « {gift.message || 'No custom message.'} »
+                                  </div>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                                     <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold uppercase">
+                                        <MapPin size={12} className="text-primary" /> Address: <span className="text-accent normal-case">{gift.delivery_address}</span>
+                                     </div>
+                                     <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold uppercase">
+                                        <Phone size={12} className="text-primary" /> Phone: <span className="text-accent">{gift.delivery_phone}</span>
+                                     </div>
+                                  </div>
+                               </div>
+
+                               <div className="flex flex-col items-end gap-3 self-center md:self-auto">
+                                  <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
+                                     Fulfillment Status:
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                     {gift.delivery_status === 'requested' && (
+                                        <>
+                                           <button 
+                                             onClick={() => handleUpdateDeliveryStatus(gift, 'processing')}
+                                             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all"
+                                           >
+                                              Accept & Ship
+                                           </button>
+                                           <button 
+                                             onClick={() => handleUpdateDeliveryStatus(gift, 'failed')}
+                                             className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all"
+                                           >
+                                              Reject / Refund
+                                           </button>
+                                        </>
+                                     )}
+                                     {gift.delivery_status === 'processing' && (
+                                        <>
+                                           <button 
+                                             onClick={() => handleUpdateDeliveryStatus(gift, 'delivered')}
+                                             className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all"
+                                           >
+                                              Mark Delivered
+                                           </button>
+                                           <button 
+                                             onClick={() => handleUpdateDeliveryStatus(gift, 'failed')}
+                                             className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all"
+                                           >
+                                              Fail / Refund
+                                           </button>
+                                        </>
+                                     )}
+                                     {gift.delivery_status === 'delivered' && (
+                                        <span className="px-3 py-1 bg-green-500/10 text-green-500 text-[10px] font-black uppercase rounded-full">
+                                           Delivered Successfully
+                                        </span>
+                                     )}
+                                     {gift.delivery_status === 'failed' && (
+                                        <span className="px-3 py-1 bg-red-500/10 text-red-500 text-[10px] font-black uppercase rounded-full">
+                                           Failed & Refunded
+                                        </span>
+                                     )}
+                                  </div>
+                               </div>
+                            </div>
+                         ))
+                      )}
+                   </div>
+                </div>
+
+             </div>
+          </div>
+        )}
         {activeTab === 'matches' && (
           <div className="space-y-8 animate-in fade-in duration-500">
             <header className="flex justify-between items-end">
