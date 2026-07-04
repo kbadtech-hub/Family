@@ -532,7 +532,8 @@ export default function AdminPortal() {
        trialEndsAt.setDate(trialEndsAt.getDate() + days);
 
        await supabase.from('profiles').update({ 
-          trial_ends_at: trialEndsAt.toISOString() 
+          trial_ends_at: trialEndsAt.toISOString(),
+          premium_until: trialEndsAt.toISOString()
        }).eq('id', userId);
     }
 

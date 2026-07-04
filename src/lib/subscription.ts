@@ -20,10 +20,10 @@ export async function getUserSubscriptionInfo(userId: string): Promise<Subscript
   if (error || !data) return null;
 
   const now = new Date();
-  const trialEnds = new Date(data.trial_ends_at);
+  const trialEnds = data.trial_ends_at ? new Date(data.trial_ends_at) : null;
   const premiumUntil = data.premium_until ? new Date(data.premium_until) : null;
   
-  // Calculate status (No trials permitted)
+  // Calculate status
   let status: UserSubscriptionStatus = 'locked';
   let daysRemaining = 0;
 
@@ -32,6 +32,9 @@ export async function getUserSubscriptionInfo(userId: string): Promise<Subscript
   } else if (premiumUntil && premiumUntil > now) {
     status = 'premium';
     daysRemaining = Math.ceil((premiumUntil.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  } else if (trialEnds && trialEnds > now) {
+    status = 'trial';
+    daysRemaining = Math.ceil((trialEnds.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   } else if (premiumUntil) {
     // Check for grace period (3 days after premium expiration)
     const gracePeriodEnd = new Date(premiumUntil.getTime() + (3 * 24 * 60 * 60 * 1000));
