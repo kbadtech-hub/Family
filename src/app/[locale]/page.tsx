@@ -93,13 +93,13 @@ export default function Home() {
             {t('Hero.tagline')}
           </div>
           
-          {/* Slogan Title - leading-[1.45] and py-1 prevent overlapping Ethiopic baselines */}
-          <h1 className="text-4xl md:text-6xl font-black leading-[1.45] tracking-wide text-[#0F172A] py-1">
-            <span className="block opacity-90">
+          {/* Slogan Title — generous leading prevents Ethiopic/Arabic baseline collision */}
+          <h1 className="text-4xl md:text-6xl font-black tracking-wide text-[#0F172A]" style={{ lineHeight: '1.6' }}>
+            <span className="block mb-3">
               {settings?.cms_content?.hero_title || t('Hero.title1')}
-            </span> 
+            </span>
             {!settings?.cms_content?.hero_title && (
-              <span className="text-primary italic block mt-2">
+              <span className="text-primary italic block mt-1">
                  {t('Hero.title2')}
               </span>
             )}
