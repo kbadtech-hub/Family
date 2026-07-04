@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   UserPlus,
   UserCheck,
+  Users,
   UserX,
   Bell,
   Check,
@@ -75,6 +76,45 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
   const [isProcessing, setIsProcessing] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const tf = useTranslations('Friendship');
+
+  // Wali Room State
+  const [showWaliModal, setShowWaliModal] = useState(false);
+  const [activeWaliRoomId, setActiveWaliRoomId] = useState<string | null>(null);
+  const [waliMessages, setWaliMessages] = useState<any[]>([]);
+  const [newWaliMessage, setNewWaliMessage] = useState('');
+  const [isWaliLoading, setIsWaliLoading] = useState(false);
+
+  useEffect(() => {
+    if (!activeWaliRoomId || !showWaliModal) return;
+
+    // Load initial messages
+    const loadWaliMessages = async () => {
+      const { data } = await supabase
+        .from('wali_messages')
+        .select('*')
+        .eq('room_id', activeWaliRoomId)
+        .order('created_at', { ascending: true });
+      if (data) setWaliMessages(data);
+    };
+    loadWaliMessages();
+
+    // Subscribe to new messages
+    const channel = supabase
+      .channel(`wali-messages-${activeWaliRoomId}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'wali_messages',
+        filter: `room_id=eq.${activeWaliRoomId}`
+      }, (payload) => {
+        setWaliMessages(prev => [...prev, payload.new]);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [activeWaliRoomId, showWaliModal]);
 
   useEffect(() => {
     const init = async () => {
@@ -277,6 +317,77 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
         [targetLang]: `[AI ${targetLang.toUpperCase()}]: ${msg.content} (Translated)`
       }
     }).eq('id', messageId);
+  };
+
+  const handleOpenWaliRoom = async () => {
+    if (!currentUser || !selectedMatch) return;
+    setIsWaliLoading(true);
+    try {
+      // 1. Check if room exists
+      let { data: room, error } = await supabase
+        .from('wali_rooms')
+        .select('*')
+        .or(`and(candidate1_id.eq.${currentUser.id},candidate2_id.eq.${selectedMatch.id}),and(candidate1_id.eq.${selectedMatch.id},candidate2_id.eq.${currentUser.id})`)
+        .limit(1);
+
+      if (room && room.length > 0) {
+        setActiveWaliRoomId(room[0].id);
+        setShowWaliModal(true);
+      } else {
+        // 2. Fetch guardians if any
+        const { data: g1 } = await supabase.from('guardians').select('id').eq('user_id', currentUser.id).eq('status', 'approved').limit(1);
+        const { data: g2 } = await supabase.from('guardians').select('id').eq('user_id', selectedMatch.id).eq('status', 'approved').limit(1);
+
+        const { data: newRoom, error: createError } = await supabase
+          .from('wali_rooms')
+          .insert({
+            candidate1_id: currentUser.id,
+            candidate2_id: selectedMatch.id,
+            guardian1_id: g1?.[0]?.id || null,
+            guardian2_id: g2?.[0]?.id || null,
+            status: 'active'
+          })
+          .select()
+          .single();
+
+        if (createError) throw createError;
+        setActiveWaliRoomId(newRoom.id);
+        setShowWaliModal(true);
+      }
+    } catch (err: any) {
+      alert("Failed to initialize Wali Room: " + err.message);
+    } finally {
+      setIsWaliLoading(false);
+    }
+  };
+
+  const handleSendWaliMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newWaliMessage.trim() || !activeWaliRoomId || !currentUser) return;
+
+    // Load sender full_name
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', currentUser.id)
+      .single();
+
+    const senderName = profile?.full_name || 'Candidate';
+
+    const { error } = await supabase
+      .from('wali_messages')
+      .insert({
+        room_id: activeWaliRoomId,
+        sender_id: currentUser.id,
+        sender_name: senderName,
+        content: newWaliMessage
+      });
+
+    if (!error) {
+      setNewWaliMessage('');
+    } else {
+      alert("Failed to send message: " + error.message);
+    }
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -532,7 +643,16 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                   <p className="text-[10px] text-green-500 font-bold uppercase tracking-widest">{t('activeNow')}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-4 text-gray-400">
+               <div className="flex items-center gap-4 text-gray-400">
+                <button 
+                  onClick={handleOpenWaliRoom}
+                  aria-label="Wali Meeting Room" 
+                  className="hover:text-primary transition-colors text-primary flex items-center gap-1.5 font-black text-[10px] uppercase tracking-wider bg-primary/5 px-3 py-1.5 rounded-xl border border-primary/10"
+                  title="Wali Room (የቤተሰብ/የሚዜ መድረክ)"
+                >
+                  <Users size={16} />
+                  <span>Wali Room</span>
+                </button>
                 <button 
                   onClick={() => setShowGiftModal(true)}
                   aria-label="Send a gift" 
@@ -766,6 +886,83 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
           locale={locale}
           onClose={() => setShowGiftModal(false)}
         />
+      )}
+      {showWaliModal && selectedMatch && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] flex items-center justify-center p-6 animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-2xl h-[600px] rounded-[3.5rem] border border-muted p-8 md:p-10 relative shadow-2xl flex flex-col justify-between animate-in slide-in-from-bottom-8 duration-500">
+            {/* Header */}
+            <div>
+              <button 
+                onClick={() => setShowWaliModal(false)}
+                className="absolute top-8 right-8 p-3 bg-muted/30 hover:bg-muted rounded-full transition-all text-gray-500"
+              >
+                <CloseIcon size={18} />
+              </button>
+
+              <div className="text-center space-y-2 border-b border-muted pb-4">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary text-[10px] font-black uppercase tracking-[0.2em]">
+                  <Users size={14} /> Wali Meeting Room
+                </div>
+                <h3 className="text-2xl font-black text-accent italic tracking-tighter">
+                  {locale === 'am' ? 'የቤተሰብ ማሳተፊያ የጋራ መድረክ' : 'Family-Integrated Dialogue'}
+                </h3>
+                <p className="text-[10px] text-amber-600 font-bold uppercase tracking-wide">
+                  ⚠️ {locale === 'am' ? 'ማስጠንቀቂያ፡ በዚህ የቡድን ውይይት ውስጥ አስታራቂዎች (Walis) ይገኛሉ' : 'Note: Linked family guardians/mediators are present in this chat'}
+                </p>
+              </div>
+            </div>
+
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto my-6 space-y-4 pr-2 custom-scrollbar">
+              {waliMessages.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-center p-6 text-gray-400 space-y-2">
+                  <MessageCircle size={36} className="opacity-30" />
+                  <p className="text-xs uppercase tracking-widest font-bold">No messages yet</p>
+                  <p className="text-[10px] max-w-xs leading-relaxed">Guardians and candidates can start the discussion on marriage plans here.</p>
+                </div>
+              ) : (
+                waliMessages.map(msg => {
+                  const isOwn = msg.sender_id === currentUser?.id;
+                  return (
+                    <div key={msg.id} className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className="text-[10px] font-bold text-gray-500">{msg.sender_name}</span>
+                        {/* Check if sender is not one of the candidates (must be a guardian) */}
+                        {msg.sender_id !== currentUser?.id && msg.sender_id !== selectedMatch.id && (
+                          <span className="px-1.5 py-0.5 bg-amber-500/10 text-amber-600 rounded text-[9px] font-black uppercase">Guardian / አስታራቂ</span>
+                        )}
+                      </div>
+                      <div className={`p-4 rounded-2xl max-w-md text-xs font-semibold leading-relaxed shadow-sm ${
+                        isOwn ? 'bg-primary text-white rounded-tr-none' : 'bg-muted/50 text-accent rounded-tl-none border border-muted'
+                      }`}>
+                        {msg.content}
+                      </div>
+                      <span className="text-[9px] text-gray-400 mt-1">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Form Input */}
+            <form onSubmit={handleSendWaliMessage} className="flex gap-4 items-center border-t border-muted pt-4">
+              <input 
+                type="text" 
+                placeholder={locale === 'am' ? 'መልእክትዎን እዚህ ይጻፉ...' : 'Type message here...'}
+                value={newWaliMessage}
+                onChange={(e) => setNewWaliMessage(e.target.value)}
+                className="flex-1 bg-muted/30 border border-muted rounded-2xl p-4 text-xs focus:outline-none"
+              />
+              <button 
+                type="submit"
+                disabled={!newWaliMessage.trim()}
+                className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center hover:scale-105 transition-transform disabled:opacity-50 disabled:hover:scale-100 shadow-lg shadow-primary/20 shrink-0"
+              >
+                <Send size={18} className="ml-0.5" />
+              </button>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

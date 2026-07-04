@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 import { 
   Users, 
   Calendar, 
@@ -9,7 +10,8 @@ import {
   Sparkles,
   ArrowRight,
   ShieldCheck,
-  CheckCircle2
+  CheckCircle2,
+  X
 } from 'lucide-react';
 
 interface Workshop {
@@ -48,6 +50,51 @@ const UPCOMING_WORKSHOPS: Workshop[] = [
 
 export default function WorkshopsView({ currency }: { currency: 'ETB' | 'USD' }) {
   const [selectedWorkshop, setSelectedWorkshop] = useState<Workshop | null>(null);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [expertName, setExpertName] = useState('Ato Abebe');
+  const [bookingTopic, setBookingTopic] = useState<'Pre-Marriage' | 'Finance' | 'Conflict Resolution' | 'General'>('Pre-Marriage');
+  const [bookingDate, setBookingDate] = useState('');
+  const [bookingTime, setBookingTime] = useState('10:00 AM');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getSession = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) setUserId(user.id);
+    };
+    getSession();
+  }, []);
+
+  const handleCreateBooking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userId) {
+      alert('You must be logged in to book counselor services.');
+      return;
+    }
+    if (!bookingDate) {
+      alert('Please select a date.');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.from('counselor_bookings').insert({
+        user_id: userId,
+        expert_name: expertName,
+        topic: bookingTopic,
+        scheduled_date: bookingDate,
+        scheduled_time: bookingTime,
+        status: 'pending'
+      });
+      if (error) throw error;
+      alert('Your booking request has been submitted successfully! Check back later for approval status.');
+      setShowBookingModal(false);
+    } catch (err: any) {
+      alert('Booking failed: ' + err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto space-y-12 pb-24">
@@ -126,10 +173,99 @@ export default function WorkshopsView({ currency }: { currency: 'ETB' | 'USD' })
          <p className="text-gray-500 leading-relaxed mb-8">
             Prefer a private session? Speak directly with our senior family advisors for personalized guidance on your journey to marriage.
          </p>
-         <button className="px-12 py-5 bg-accent text-white rounded-full font-bold uppercase text-[10px] tracking-[0.2em] hover:bg-primary transition-colors shadow-xl shadow-accent/20">
+         <button 
+           onClick={() => setShowBookingModal(true)}
+           className="px-12 py-5 bg-accent text-white rounded-full font-bold uppercase text-[10px] tracking-[0.2em] hover:bg-primary transition-colors shadow-xl shadow-accent/20"
+         >
             Book a Provider
          </button>
       </section>
+
+      {/* Booking Modal */}
+      {showBookingModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] flex items-center justify-center p-6 animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-lg rounded-[3.5rem] border border-muted p-10 md:p-12 relative shadow-2xl space-y-8 animate-in slide-in-from-bottom-8 duration-500">
+            <button 
+              onClick={() => setShowBookingModal(false)}
+              className="absolute top-8 right-8 p-3 bg-muted/30 hover:bg-muted rounded-full transition-all text-gray-500"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="text-center space-y-2">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary text-[10px] font-black uppercase tracking-[0.2em]">
+                <Sparkles size={14} /> Counselor Marketplace
+              </div>
+              <h3 className="text-3xl font-black text-accent italic tracking-tighter">Book Consultation</h3>
+              <p className="text-xs text-gray-500 max-w-xs mx-auto">Select your preferred advisor, counseling topic, date and slot.</p>
+            </div>
+
+            <form onSubmit={handleCreateBooking} className="space-y-6">
+              <label className="block">
+                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Choose Expert</span>
+                <select 
+                  value={expertName} 
+                  onChange={(e) => setExpertName(e.target.value)}
+                  className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none"
+                >
+                  <option value="Ato Abebe">Ato Abebe (Pre-Marriage Specialist)</option>
+                  <option value="W/ro Selam">W/ro Selam (Family Conflict Advisor)</option>
+                  <option value="Dr. Girma Bekele">Dr. Girma Bekele (Household Financial Planner)</option>
+                </select>
+              </label>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <label className="block">
+                  <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Topic</span>
+                  <select 
+                    value={bookingTopic} 
+                    onChange={(e) => setBookingTopic(e.target.value as any)}
+                    className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none"
+                  >
+                    <option value="Pre-Marriage">Pre-Marriage Guidance</option>
+                    <option value="Finance">Family Finance Planning</option>
+                    <option value="Conflict Resolution">Conflict Resolution</option>
+                    <option value="General">General Consultation</option>
+                  </select>
+                </label>
+
+                <label className="block">
+                  <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Time Slot</span>
+                  <select 
+                    value={bookingTime} 
+                    onChange={(e) => setBookingTime(e.target.value)}
+                    className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none"
+                  >
+                    <option value="10:00 AM - 11:00 AM">10:00 AM EAT</option>
+                    <option value="11:30 AM - 12:30 PM">11:30 AM EAT</option>
+                    <option value="02:00 PM - 03:00 PM">02:00 PM EAT</option>
+                    <option value="04:00 PM - 05:00 PM">04:00 PM EAT</option>
+                  </select>
+                </label>
+              </div>
+
+              <label className="block">
+                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Scheduled Date</span>
+                <input 
+                  type="date" 
+                  required
+                  value={bookingDate} 
+                  onChange={(e) => setBookingDate(e.target.value)}
+                  className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none"
+                />
+              </label>
+
+              <button 
+                type="submit"
+                disabled={isSubmitting || !bookingDate}
+                className="w-full btn-primary py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] disabled:opacity-50"
+              >
+                {isSubmitting ? 'BOOKING APPOINTMENT...' : 'Request Booking Appointment'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

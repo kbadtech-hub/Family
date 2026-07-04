@@ -1,12 +1,12 @@
 -- =========================================================================
 -- BETESEB UNIFIED MASTER DATABASE SCHEMA
--- VERSION: 2.1 (Production Consolidation)
+-- VERSION: 3.0 (Consolidated Production Master)
 -- DATE: 2026-07-04
 -- AUTHOR: Antigravity AI & Nolawi Digital Hub
 -- DESCRIPTION: This file contains the complete consolidated database schema
 --              for the Beteseb platform, combining all structural updates,
---              monetization features, security layers, gift systems, and 
---              family participation controls in the correct logical execution order.
+--              monetization features, security layers, gift systems, 
+--              vouching system, counseling, and Wali rooms.
 -- =========================================================================
 
 -- =========================================================================
@@ -261,7 +261,55 @@ CREATE TABLE public.coin_transactions (
 );
 
 -- =========================================================================
--- PART 4: SECURITY DEFINERS, PROCEDURES & TRIGGERS
+-- PART 4: PHASE-3 EXPANSION (VOUCHING, COUNSELING, WALI ROOMS)
+-- =========================================================================
+
+CREATE TABLE public.vouch_records (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  voucher_name TEXT NOT NULL,
+  voucher_email TEXT NOT NULL,
+  voucher_phone TEXT,
+  relationship TEXT NOT NULL CHECK (relationship IN ('friend', 'clergy', 'family_elder', 'colleague')),
+  know_duration_years INTEGER NOT NULL,
+  vouch_status TEXT DEFAULT 'pending' CHECK (vouch_status IN ('pending', 'approved', 'rejected')),
+  witness_statement TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE public.counselor_bookings (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  expert_name TEXT NOT NULL,
+  topic TEXT NOT NULL CHECK (topic IN ('Pre-Marriage', 'Finance', 'Conflict Resolution', 'General')),
+  scheduled_date DATE NOT NULL,
+  scheduled_time TEXT NOT NULL,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'completed', 'cancelled')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE public.wali_rooms (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  candidate1_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  candidate2_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  guardian1_id UUID REFERENCES public.guardians(id) ON DELETE SET NULL,
+  guardian2_id UUID REFERENCES public.guardians(id) ON DELETE SET NULL,
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'closed')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(candidate1_id, candidate2_id)
+);
+
+CREATE TABLE public.wali_messages (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  room_id UUID REFERENCES public.wali_rooms(id) ON DELETE CASCADE NOT NULL,
+  sender_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  sender_name TEXT NOT NULL,
+  content TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- =========================================================================
+-- PART 5: SECURITY DEFINERS, PROCEDURES & TRIGGERS
 -- =========================================================================
 
 -- 1. SECURE ACCOUNT SELF-DELETION
@@ -343,7 +391,7 @@ CREATE OR REPLACE TRIGGER update_friendships_updated_at
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- =========================================================================
--- PART 5: SECURITY POLICIES (ROW LEVEL SECURITY)
+-- PART 6: SECURITY POLICIES (ROW LEVEL SECURITY)
 -- =========================================================================
 
 -- Enable RLS across all tables
@@ -363,6 +411,10 @@ ALTER TABLE public.reports ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.blocks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_wallets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.coin_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vouch_records ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.counselor_bookings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.wali_rooms ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.wali_messages ENABLE ROW LEVEL SECURITY;
 
 -- 1. Profiles Policies
 CREATE POLICY "Public Profiles Select" ON public.profiles FOR SELECT USING (true);
@@ -424,8 +476,37 @@ CREATE POLICY "Users can unblock other users" ON public.blocks FOR DELETE USING 
 CREATE POLICY "Users can view own wallet balance" ON public.user_wallets FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "Users can view own transactions" ON public.coin_transactions FOR SELECT USING (auth.uid() = user_id);
 
+-- 15. Vouch Records Policies
+CREATE POLICY "Users can manage own vouch requests" ON public.vouch_records FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Public select and update access for invited vouchers" ON public.vouch_records FOR ALL USING (true) WITH CHECK (true);
+
+-- 16. Counselor Bookings Policies
+CREATE POLICY "Users can manage own counselor bookings" ON public.counselor_bookings FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Admin full access for bookings" ON public.counselor_bookings FOR ALL USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'super_admin')));
+
+-- 17. Wali Rooms Policies
+CREATE POLICY "Participants can access Wali Rooms" ON public.wali_rooms FOR ALL USING (
+  auth.uid() = candidate1_id OR 
+  auth.uid() = candidate2_id OR 
+  EXISTS (SELECT 1 FROM public.guardians WHERE id = guardian1_id AND user_id = auth.uid()) OR
+  EXISTS (SELECT 1 FROM public.guardians WHERE id = guardian2_id AND user_id = auth.uid())
+);
+
+-- 18. Wali Messages Policies
+CREATE POLICY "Participants can manage messages in their Wali Room" ON public.wali_messages FOR ALL USING (
+  EXISTS (
+    SELECT 1 FROM public.wali_rooms r
+    WHERE r.id = room_id AND (
+      auth.uid() = r.candidate1_id OR 
+      auth.uid() = r.candidate2_id OR 
+      EXISTS (SELECT 1 FROM public.guardians WHERE id = r.guardian1_id AND user_id = auth.uid()) OR
+      EXISTS (SELECT 1 FROM public.guardians WHERE id = r.guardian2_id AND user_id = auth.uid())
+    )
+  )
+);
+
 -- =========================================================================
--- PART 6: SECURITY ROLE GRANTS
+-- PART 7: SECURITY ROLE GRANTS
 -- =========================================================================
 
 GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO authenticated;
@@ -438,9 +519,16 @@ GRANT SELECT ON public.user_wallets TO authenticated;
 GRANT SELECT ON public.coin_transactions TO authenticated;
 GRANT SELECT, INSERT ON public.reports TO authenticated;
 GRANT SELECT, INSERT, DELETE ON public.blocks TO authenticated;
+GRANT ALL ON public.vouch_records TO authenticated;
+GRANT ALL ON public.counselor_bookings TO authenticated;
+GRANT ALL ON public.wali_rooms TO authenticated;
+GRANT ALL ON public.wali_messages TO authenticated;
+GRANT ALL ON public.vouch_records TO anon;
+GRANT ALL ON public.wali_rooms TO anon;
+GRANT ALL ON public.wali_messages TO anon;
 
 -- =========================================================================
--- PART 7: DATA SEEDING
+-- PART 8: DATA SEEDING
 -- =========================================================================
 
 -- SEED DATA FOR CULTURAL GIFT CATALOG
@@ -457,7 +545,7 @@ SELECT id, 0 FROM public.profiles
 ON CONFLICT (id) DO NOTHING;
 
 -- =========================================================================
--- PART 8: SYSTEM PERFORMANCE INDEXES
+-- PART 9: SYSTEM PERFORMANCE INDEXES
 -- =========================================================================
 
 CREATE INDEX IF NOT EXISTS idx_profiles_username ON public.profiles(username);
@@ -466,3 +554,7 @@ CREATE INDEX IF NOT EXISTS idx_messages_sender_receiver ON public.messages(sende
 CREATE INDEX IF NOT EXISTS idx_reports_reporter_reported ON public.reports(reporter_id, reported_id);
 CREATE INDEX IF NOT EXISTS idx_blocks_blocker_blocked ON public.blocks(blocker_id, blocked_id);
 CREATE INDEX IF NOT EXISTS idx_coin_transactions_user_id ON public.coin_transactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_vouch_records_user_id ON public.vouch_records(user_id);
+CREATE INDEX IF NOT EXISTS idx_counselor_bookings_user_id ON public.counselor_bookings(user_id);
+CREATE INDEX IF NOT EXISTS idx_wali_rooms_candidates ON public.wali_rooms(candidate1_id, candidate2_id);
+CREATE INDEX IF NOT EXISTS idx_wali_messages_room_id ON public.wali_messages(room_id);

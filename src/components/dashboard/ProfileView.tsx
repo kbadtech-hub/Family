@@ -41,6 +41,14 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
   const [guardianPhone, setGuardianPhone] = useState('');
   const [isLinking, setIsLinking] = useState(false);
 
+  // Vouching System State
+  const [vouchRequests, setVouchRequests] = useState<any[]>([]);
+  const [vouchName, setVouchName] = useState('');
+  const [vouchEmail, setVouchEmail] = useState('');
+  const [vouchRelationship, setVouchRelationship] = useState<'friend' | 'clergy' | 'family_elder' | 'colleague'>('friend');
+  const [vouchDuration, setVouchDuration] = useState(1);
+  const [isSendingVouchInvite, setIsSendingVouchInvite] = useState(false);
+
   useEffect(() => {
     const fetchGuardian = async () => {
       const { data } = await supabase.from('guardians').select('*').eq('user_id', profile.id).limit(1);
@@ -50,7 +58,12 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
         setGuardianPhone(data[0].guardian_phone || '');
       }
     };
+    const fetchVouches = async () => {
+      const { data } = await supabase.from('vouch_records').select('*').eq('user_id', profile.id);
+      if (data) setVouchRequests(data);
+    };
     fetchGuardian();
+    fetchVouches();
   }, [profile.id]);
 
   const linkGuardian = async () => {
@@ -69,6 +82,29 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
       alert("Failed to link guardian: " + (error?.message || "Unknown error"));
     }
     setIsLinking(false);
+  };
+
+  const sendVouchInvite = async () => {
+    if (!vouchName || !vouchEmail) return;
+    setIsSendingVouchInvite(true);
+    const { data, error } = await supabase.from('vouch_records').insert({
+      user_id: profile.id,
+      voucher_name: vouchName,
+      voucher_email: vouchEmail,
+      relationship: vouchRelationship,
+      know_duration_years: vouchDuration,
+      vouch_status: 'pending'
+    }).select().single();
+
+    if (!error && data) {
+      setVouchRequests(prev => [data, ...prev]);
+      setVouchName('');
+      setVouchEmail('');
+      alert(profile?.preferred_language === 'am' ? 'የምስክርነት ግብዣ ጥያቄ በተሳካ ሁኔታ ተልኳል!' : 'Character witness request sent successfully!');
+    } else {
+      alert("Failed to send invite: " + (error?.message || "Unknown error"));
+    }
+    setIsSendingVouchInvite(false);
   };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -458,6 +494,100 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
              </button>
           </div>
         )}
+      </div>
+      {/* Vouching & Character References */}
+      <div className="bg-white rounded-[2rem] md:rounded-[3rem] p-8 md:p-10 border border-muted shadow-xl space-y-8">
+        <div className="space-y-1">
+          <h3 className="text-lg md:text-xl font-black text-accent italic tracking-tighter flex items-center gap-2 justify-center md:justify-start">
+             {profile?.preferred_language === 'am' ? 'የታማኝነት ምስክርነት (Character Reference)' : 'Character Vouching & References'}
+          </h3>
+          <p className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-widest">
+            {profile?.preferred_language === 'am' ? 'ባህላዊ እና ማህበረሰባዊ እምነት ማረጋገጫ' : 'Invite Witnesses to Verify Intent'}
+          </p>
+        </div>
+
+        <div className="space-y-6">
+           <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+              {profile?.preferred_language === 'am'
+                ? 'የሚያምኑትን ጓደኛ፣ የሃይማኖት አባት ወይም የቅርብ የስራ ባልደረባ በመጋበዝ ምስክርነት እንዲሰጡዎት ማድረግ ይችላሉ። ምስክርነቱ ሲረጋገጥ በመገለጫዎ ላይ የታማኝነት ባጅ ይታያል።'
+                : 'Build credit by inviting a trusted friend, spiritual leader, family elder, or colleague to vouch for your serious marriage intent.'}
+           </p>
+
+           {vouchRequests.length > 0 && (
+             <div className="space-y-3">
+               <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2">
+                 {profile?.preferred_language === 'am' ? 'የምስክርነቶች ሁኔታ' : 'References Status'}
+               </h4>
+               <div className="grid grid-cols-1 gap-3">
+                 {vouchRequests.map(vouch => (
+                   <div key={vouch.id} className="p-4 bg-muted/20 border border-muted rounded-2xl flex justify-between items-center text-xs">
+                     <div>
+                       <p className="font-bold">{vouch.voucher_name} <span className="text-[10px] text-gray-400 font-medium capitalize">({vouch.relationship})</span></p>
+                       <p className="text-[10px] text-gray-400">{vouch.voucher_email}</p>
+                       {vouch.witness_statement && <p className="mt-2 italic text-accent font-medium">« {vouch.witness_statement} »</p>}
+                     </div>
+                     <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                       vouch.vouch_status === 'approved' ? 'bg-green-500/10 text-green-500' :
+                       vouch.vouch_status === 'rejected' ? 'bg-red-500/10 text-red-500' :
+                       'bg-yellow-500/10 text-yellow-500'
+                     }`}>
+                       {vouch.vouch_status}
+                     </span>
+                   </div>
+                 ))}
+               </div>
+             </div>
+           )}
+
+           <div className="border-t border-muted pt-6 space-y-4">
+              <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">
+                {profile?.preferred_language === 'am' ? 'አዲስ ምስክር ጋብዝ' : 'Invite a New Witness'}
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                 <input 
+                   type="text" 
+                   placeholder="Witness Full Name" 
+                   value={vouchName}
+                   onChange={(e) => setVouchName(e.target.value)}
+                   className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none"
+                 />
+                 <input 
+                   type="email" 
+                   placeholder="Witness Email Address" 
+                   value={vouchEmail}
+                   onChange={(e) => setVouchEmail(e.target.value)}
+                   className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none"
+                 />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                 <select 
+                   value={vouchRelationship}
+                   onChange={(e) => setVouchRelationship(e.target.value as any)}
+                   className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none"
+                 >
+                   <option value="friend">Friend / ጓደኛ</option>
+                   <option value="clergy">Spiritual Leader / የሃይማኖት አባት</option>
+                   <option value="family_elder">Family Elder / የቤተሰብ ሽማግሌ</option>
+                   <option value="colleague">Colleague / የስራ ባልደረባ</option>
+                 </select>
+                 <input 
+                   type="number" 
+                   min={1}
+                   placeholder="Years Known" 
+                   value={vouchDuration}
+                   onChange={(e) => setVouchDuration(parseInt(e.target.value) || 1)}
+                   className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none"
+                 />
+              </div>
+              <button 
+                onClick={sendVouchInvite}
+                disabled={isSendingVouchInvite || !vouchName || !vouchEmail}
+                className="w-full btn-primary py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] disabled:opacity-50"
+              >
+                 {isSendingVouchInvite ? 'SENDING INVITATION...' : 'Send Vouch Invite (የምስክርነት ግብዣ ላክ)'}
+              </button>
+           </div>
+        </div>
       </div>
       {/* Account Lifecycle & Security Compliance */}
       <div className="bg-white rounded-[2rem] md:rounded-[3rem] p-8 md:p-10 border border-red-100 shadow-xl space-y-8">

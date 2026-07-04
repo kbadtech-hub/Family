@@ -28,6 +28,7 @@ import {
   Edit,
   Sparkles,
   CheckCircle2,
+  Calendar,
   Send,
   Languages,
   Gift,
@@ -205,6 +206,8 @@ export default function AdminPortal() {
   // Gifts & Catalog State
   const [adminGifts, setAdminGifts] = useState<any[]>([]);
   const [adminCatalog, setAdminCatalog] = useState<any[]>([]);
+  const [vouchRecords, setVouchRecords] = useState<any[]>([]);
+  const [counselorBookings, setCounselorBookings] = useState<any[]>([]);
   const [newCatalogItem, setNewCatalogItem] = useState({
     name_en: '',
     name_am: '',
@@ -414,6 +417,12 @@ export default function AdminPortal() {
           .order('coin_price', { ascending: true });
         if (catalogData) setAdminCatalog(catalogData);
         setLoadingGifts(false);
+      } else if (activeTab === 'vouching') {
+        const { data } = await supabase.from('vouch_records').select('*, profiles:user_id(full_name)').order('created_at', { ascending: false });
+        if (data) setVouchRecords(data);
+      } else if (activeTab === 'bookings') {
+        const { data } = await supabase.from('counselor_bookings').select('*, profiles:user_id(full_name)').order('created_at', { ascending: false });
+        if (data) setCounselorBookings(data);
       }
     };
     fetchAdminData();
@@ -743,6 +752,34 @@ export default function AdminPortal() {
     }
   };
 
+  const handleUpdateVouch = async (id: string, status: 'approved' | 'rejected') => {
+    setIsSaving(true);
+    try {
+      const { error } = await supabase.from('vouch_records').update({ vouch_status: status }).eq('id', id);
+      if (error) throw error;
+      setVouchRecords(prev => prev.map(v => v.id === id ? { ...v, vouch_status: status } : v));
+      alert(`Vouch request marked as ${status}`);
+    } catch (err: any) {
+      alert('Error updating vouch status: ' + err.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleUpdateBooking = async (id: string, status: 'approved' | 'completed' | 'cancelled') => {
+    setIsSaving(true);
+    try {
+      const { error } = await supabase.from('counselor_bookings').update({ status }).eq('id', id);
+      if (error) throw error;
+      setCounselorBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b));
+      alert(`Booking status updated to ${status}`);
+    } catch (err: any) {
+      alert('Error updating booking status: ' + err.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleUpdateAdminPassword = async () => {
     if (!settings) return;
     if (newAdminPassword.length < 8) {
@@ -853,22 +890,26 @@ export default function AdminPortal() {
 
         <nav className="space-y-1 flex-1">
           {[
-            { id: 'stats', icon: BarChart3, label: 'Analytics' },
+            { id: 'stats', icon: BarChart3, label: 'Analytics', superOnly: true },
             { id: 'cms', icon: Layout, label: 'Standard CMS' },
-            { id: 'business', icon: SettingsIcon, label: 'Business Settings' },
-            { id: 'social', icon: Globe, label: 'Social Media Links' },
+            { id: 'business', icon: SettingsIcon, label: 'Business Settings', superOnly: true },
+            { id: 'social', icon: Globe, label: 'Social Media Links', superOnly: true },
             { id: 'verification', icon: ShieldCheck, label: 'Verifications' },
-            { id: 'payments', icon: Heart, label: 'Payment Review' },
+            { id: 'vouching', icon: ShieldCheck, label: 'Vouch Reviews' },
+            { id: 'bookings', icon: Calendar, label: 'Counselor Bookings' },
+            { id: 'payments', icon: Heart, label: 'Payment Review', superOnly: true },
             { id: 'messaging', icon: MessageSquare, label: 'Communication' },
             { id: 'posts', icon: Film, label: 'Articles & News' },
             { id: 'lessons', icon: Video, label: 'Lessons' },
             { id: 'support', icon: MessageSquare, label: 'Support' },
             { id: 'reports', icon: ShieldAlert, label: 'Safety Reports' },
-            { id: 'gifts', icon: Gift, label: 'Gifts & Delivery' },
+            { id: 'gifts', icon: Gift, label: 'Gifts & Delivery', superOnly: true },
             { id: 'matches', icon: Heart, label: 'Matches' },
-            { id: 'staff', icon: Users, label: 'Manage Staff' },
-            { id: 'security', icon: ShieldAlert, label: 'Access Control' },
-          ].map(item => (
+            { id: 'staff', icon: Users, label: 'Manage Staff', superOnly: true },
+            { id: 'security', icon: ShieldAlert, label: 'Access Control', superOnly: true },
+          ]
+          .filter(item => !item.superOnly || currentUser?.role === 'super_admin' || currentUser?.role === 'superadmin')
+          .map(item => (
             <button
               key={item.id}
               onClick={() => {
@@ -1064,14 +1105,14 @@ export default function AdminPortal() {
               </div>
               <button 
                  onClick={handleSaveCMS} 
-                 disabled={isSaving || !settings || (currentUser?.role !== 'superadmin' && process.env.NODE_ENV !== 'development')}
+                 disabled={isSaving || !settings || (currentUser?.role !== 'super_admin' && currentUser?.role !== 'superadmin' && process.env.NODE_ENV !== 'development')}
                  className="btn-primary flex items-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50"
               >
                 <Plus size={20} /> {isSaving ? 'Saving...' : 'Save Business Details'}
               </button>
             </header>
 
-            {currentUser?.role !== 'superadmin' && process.env.NODE_ENV !== 'development' ? (
+            {currentUser?.role !== 'super_admin' && currentUser?.role !== 'superadmin' && process.env.NODE_ENV !== 'development' ? (
               <div className="bg-red-500/10 border border-red-500/20 rounded-[2.5rem] p-12 text-center space-y-4">
                  <ShieldAlert className="text-red-500 mx-auto" size={48} />
                  <h3 className="text-2xl font-bold text-red-500">Super Admin Access Required</h3>
@@ -2373,6 +2414,146 @@ export default function AdminPortal() {
                   </div>
                   <button disabled className="btn-primary opacity-50 cursor-not-allowed">Forge Manual Match</button>
                </div>
+            </div>
+          </div>
+        )}
+        {activeTab === 'vouching' && (
+          <div className="space-y-8 animate-in fade-in duration-500">
+            <header className="flex justify-between items-end">
+              <div>
+                <h2 className="text-3xl font-bold italic uppercase tracking-tighter">Vouch & References</h2>
+                <p className="text-foreground/40 mt-1">Review character witness statements and vouch statuses.</p>
+              </div>
+            </header>
+
+            <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5 space-y-6">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-semibold">
+                  <thead>
+                    <tr className="border-b border-white/5 text-gray-500 uppercase tracking-widest">
+                      <th className="pb-4">Candidate</th>
+                      <th className="pb-4">Witness / Contact</th>
+                      <th className="pb-4">Relationship</th>
+                      <th className="pb-4">Statement</th>
+                      <th className="pb-4">Status</th>
+                      <th className="pb-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {vouchRecords.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-8 text-center text-gray-500 uppercase tracking-widest">No vouch requests found</td>
+                      </tr>
+                    ) : (
+                      vouchRecords.map(vouch => (
+                        <tr key={vouch.id} className="align-top">
+                          <td className="py-4 font-bold text-accent">{vouch.profiles?.full_name || 'Anonymous'}</td>
+                          <td className="py-4">
+                            <p className="font-bold">{vouch.voucher_name}</p>
+                            <p className="text-gray-500">{vouch.voucher_email}</p>
+                          </td>
+                          <td className="py-4 capitalize">
+                            <span className="text-primary">{vouch.relationship}</span>
+                            <span className="text-gray-500 text-[10px] block">Duration: {vouch.know_duration_years} Years</span>
+                          </td>
+                          <td className="py-4 max-w-xs truncate" title={vouch.witness_statement || 'No statement yet'}>
+                            {vouch.witness_statement || <em className="text-gray-500">Pending statement submission</em>}
+                          </td>
+                          <td className="py-4">
+                            <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                              vouch.vouch_status === 'approved' ? 'bg-green-500/10 text-green-500' :
+                              vouch.vouch_status === 'rejected' ? 'bg-red-500/10 text-red-500' :
+                              'bg-yellow-500/10 text-yellow-500'
+                            }`}>
+                              {vouch.vouch_status}
+                            </span>
+                          </td>
+                          <td className="py-4 text-right">
+                            {vouch.vouch_status === 'pending' && (
+                              <div className="flex gap-2 justify-end">
+                                <button onClick={() => handleUpdateVouch(vouch.id, 'approved')} className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-[10px] font-bold">Approve</button>
+                                <button onClick={() => handleUpdateVouch(vouch.id, 'rejected')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[10px] font-bold">Reject</button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+        {activeTab === 'bookings' && (
+          <div className="space-y-8 animate-in fade-in duration-500">
+            <header className="flex justify-between items-end">
+              <div>
+                <h2 className="text-3xl font-bold italic uppercase tracking-tighter">Counselor Bookings</h2>
+                <p className="text-foreground/40 mt-1">Manage expert consultation appointments and schedules.</p>
+              </div>
+            </header>
+
+            <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5 space-y-6">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-semibold">
+                  <thead>
+                    <tr className="border-b border-white/5 text-gray-500 uppercase tracking-widest">
+                      <th className="pb-4">Client</th>
+                      <th className="pb-4">Expert</th>
+                      <th className="pb-4">Topic</th>
+                      <th className="pb-4">Date / Time</th>
+                      <th className="pb-4">Status</th>
+                      <th className="pb-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {counselorBookings.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-8 text-center text-gray-500 uppercase tracking-widest">No bookings found</td>
+                      </tr>
+                    ) : (
+                      counselorBookings.map(booking => (
+                        <tr key={booking.id} className="align-middle">
+                          <td className="py-4 font-bold text-accent">{booking.profiles?.full_name || 'Anonymous'}</td>
+                          <td className="py-4 font-bold">{booking.expert_name}</td>
+                          <td className="py-4">
+                            <span className="px-2 py-0.5 bg-primary/10 text-primary rounded text-[10px] font-bold uppercase">{booking.topic}</span>
+                          </td>
+                          <td className="py-4">
+                            <p>{booking.scheduled_date}</p>
+                            <p className="text-gray-500">{booking.scheduled_time}</p>
+                          </td>
+                          <td className="py-4">
+                            <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                              booking.status === 'approved' ? 'bg-blue-500/10 text-blue-500' :
+                              booking.status === 'completed' ? 'bg-green-500/10 text-green-500' :
+                              booking.status === 'cancelled' ? 'bg-red-500/10 text-red-500' :
+                              'bg-yellow-500/10 text-yellow-500'
+                            }`}>
+                              {booking.status}
+                            </span>
+                          </td>
+                          <td className="py-4 text-right">
+                            {booking.status === 'pending' && (
+                              <div className="flex gap-2 justify-end">
+                                <button onClick={() => handleUpdateBooking(booking.id, 'approved')} className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-bold">Approve</button>
+                                <button onClick={() => handleUpdateBooking(booking.id, 'cancelled')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[10px] font-bold">Cancel</button>
+                              </div>
+                            )}
+                            {booking.status === 'approved' && (
+                              <div className="flex gap-2 justify-end">
+                                <button onClick={() => handleUpdateBooking(booking.id, 'completed')} className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-[10px] font-bold">Complete</button>
+                                <button onClick={() => handleUpdateBooking(booking.id, 'cancelled')} className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[10px] font-bold">Cancel</button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
