@@ -50,6 +50,7 @@ export default function ContactPage() {
       label: t('phone'), 
       value: (
         <div className="space-y-1.5 text-sm">
+          <p>🇬🇧 +44 7347 663254</p>
           <p>🇸🇦 +966 50 155 8268</p>
           <p>🇪🇹 +251 946 414018</p>
         </div>
