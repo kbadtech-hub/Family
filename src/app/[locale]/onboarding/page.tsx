@@ -438,6 +438,62 @@ function OnboardingContent() {
             <h2 className="text-3xl font-bold text-accent italic">{t('demographics')}</h2>
             
             <div className="space-y-4">
+              {(!formData.full_name || !formData.birth_date) && (
+                <div className="space-y-4 p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-primary">
+                    {locale === 'am' ? 'እባክዎ የእርስዎን ሙሉ ስም እና የልደት ቀን ያስገቡ' : 'Please complete your name and birth date'}
+                  </p>
+                  
+                  {!formData.full_name && (
+                    <label className="block">
+                      <span className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">{t('fields.fullName')}</span>
+                      <input 
+                         type="text" 
+                         value={formData.full_name}
+                         aria-label={t('fields.fullName')}
+                         onChange={(e) => updateField('full_name', e.target.value)}
+                         className="mt-1 block w-full rounded-xl border-gray-200 shadow-sm focus:border-primary focus:ring-primary p-3 bg-white text-sm font-medium" 
+                         placeholder={t('fields.fullNamePlaceholder')}
+                      />
+                    </label>
+                  )}
+
+                  {!formData.birth_date && (
+                    <div className="space-y-2">
+                      <label className="block">
+                        <span className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">{locale === 'am' ? 'የልደት ቀን' : 'Birth Date'}</span>
+                      </label>
+                      <div className="flex gap-2 p-1 bg-muted rounded-2xl w-fit">
+                        <button type="button" onClick={() => updateField('calendar_type', 'gregorian')} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${formData.calendar_type === 'gregorian' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'}`}>{t('calendar.gregorian')}</button>
+                        <button type="button" onClick={() => updateField('calendar_type', 'ethiopian')} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${formData.calendar_type === 'ethiopian' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'}`}>{t('calendar.ethiopian')}</button>
+                      </div>
+                      {formData.calendar_type === 'ethiopian' ? (
+                        <div className="grid grid-cols-3 gap-2">
+                           <select value={formData.eth_birth_day} aria-label={t('calendar.day')} onChange={(e) => updateField('eth_birth_day', e.target.value)} className="p-3 bg-white border border-gray-100 rounded-xl font-bold text-xs">
+                             <option value="">{t('calendar.day') || 'Day'}</option>
+                             {Array.from({ length: formData.eth_birth_month === '13' ? 6 : 30 }, (_, i) => i + 1).map(day => (
+                               <option key={day} value={day}>{day}</option>
+                             ))}
+                           </select>
+                           <select value={formData.eth_birth_month} aria-label={t('calendar.month')} onChange={(e) => updateField('eth_birth_month', e.target.value)} className="p-3 bg-white border border-gray-100 rounded-xl font-bold text-xs">
+                             <option value="">{t('calendar.month') || 'Month'}</option>
+                             {['Meskerem', 'Tikemt', 'Hidar', 'Tahsas', 'Tir', 'Yekatit', 'Megabit', 'Miazia', 'Genbot', 'Sene', 'Hamle', 'Nehase', 'Pagume'].map((m, i) => <option key={m} value={i + 1}>{t_const(`Months.${m}`)}</option>)}
+                           </select>
+                           <select value={formData.eth_birth_year} aria-label={t('calendar.year')} onChange={(e) => updateField('eth_birth_year', e.target.value)} className="p-3 bg-white border border-gray-100 rounded-xl font-bold text-xs">
+                             <option value="">{t('calendar.year') || 'Year'}</option>
+                             {Array.from({ length: 70 }, (_, i) => 2018 - 18 - i).map(year => (
+                               <option key={year} value={year}>{year}</option>
+                             ))}
+                           </select>
+                        </div>
+                      ) : (
+                        <input type="date" value={formData.birth_date} aria-label={t('fields.birthDate')} onChange={(e) => updateField('birth_date', e.target.value)} className="w-full rounded-xl border-gray-200 p-3 bg-white text-sm font-medium" />
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <select value={formData.gender} aria-label={t('fields.gender')} onChange={(e) => updateField('gender', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
                   <option value="">{t('fields.gender')}</option>

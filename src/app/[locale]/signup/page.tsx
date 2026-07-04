@@ -23,6 +23,7 @@ import {
 import { validatePassword } from '@/lib/password-validator';
 import { COUNTRIES } from '@/lib/countries';
 import ethiopianDate from 'ethiopian-date';
+import EulaGate from '@/components/EulaGate';
 
 const getSlogan = (lang: string) => {
   switch (lang) {
@@ -593,6 +594,7 @@ function SignupContent() {
                 </button>
               </p>
             </div>
+            {(view === 'phone' || view === 'email') && <EulaGate />}
           </div>
         </div>
       </div>

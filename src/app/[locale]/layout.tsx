@@ -70,7 +70,6 @@ export default async function LocaleLayout({
                 <SubscriptionObserver />
                 <AnimatedSplashScreen />
                 <ZoomBlocker />
-                <EulaGate />
                 <PrivacyBlurOverlay />
               </ConditionalLayout>
             </UIProvider>
