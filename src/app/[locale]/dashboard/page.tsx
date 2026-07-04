@@ -32,6 +32,7 @@ import MatchDetailView from '@/components/dashboard/MatchDetailView';
 import SwipeCards from '@/components/dashboard/SwipeCards';
 import LessonsView from '@/components/dashboard/LessonsView';
 import SubscriptionGate from '@/components/SubscriptionGate';
+import EulaGate from '@/components/EulaGate';
 
 function DashboardContent() {
   const t = useTranslations('Dashboard');
@@ -642,6 +643,7 @@ function DashboardContent() {
             <p className="text-[10px] text-gray-300 mt-1">Developed by <span className="font-bold text-gray-400">Nolawi Digital Hub</span></p>
           </div>
         </footer>
+        <EulaGate />
       </main>
     </div>
   );
