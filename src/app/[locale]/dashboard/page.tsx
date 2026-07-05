@@ -34,7 +34,7 @@ import GiftsView from '@/components/dashboard/GiftsView';
 import WeddingPlannerView from '@/components/dashboard/WeddingPlannerView';
 import MatchDetailView from '@/components/dashboard/MatchDetailView';
 import SwipeCards from '@/components/dashboard/SwipeCards';
-import LessonsView from '@/components/dashboard/LessonsView';
+import AcademyView from '@/components/dashboard/AcademyView';
 import SubscriptionGate from '@/components/SubscriptionGate';
 import EulaGate from '@/components/EulaGate';
 import { getUserTier, calculateCompletionRate } from '@/lib/tiers';
@@ -61,6 +61,7 @@ function DashboardContent() {
     is_premium?: boolean;
     gender: string | null;
     premium_until?: string | null;
+    coins?: number;
   }
 
   interface Match {
@@ -747,7 +748,7 @@ function DashboardContent() {
         {activeTab === 'workshops' && (
            <div className="mt-10">
               <SubscriptionGate allowVerifiedView={true}>
-                 <LessonsView isPremium={isPremium} />
+                 <AcademyView isPremium={isPremium} userCoins={profile?.coins || 0} />
               </SubscriptionGate>
            </div>
         )}
@@ -755,7 +756,12 @@ function DashboardContent() {
         {activeTab === 'community' && (
           <div className="mt-10">
             <SubscriptionGate allowVerifiedView={true}>
-              <CommunityView isVerified={verificationStatus === 'verified'} isPremium={isPremium} isAdmin={isAdmin} />
+              <CommunityView 
+                isVerified={verificationStatus === 'verified'} 
+                isPremium={isPremium} 
+                isAdmin={isAdmin} 
+                userCoins={profile?.coins || 0} 
+              />
             </SubscriptionGate>
           </div>
         )}
@@ -799,18 +805,6 @@ function DashboardContent() {
           />
         )}
 
-        {/* Dashboard Footer */}
-        <footer className="mt-20 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-400 font-medium">
-          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
-            <a href={`/${locale}/terms`} target="_blank" className="hover:text-primary transition-colors">Terms & Policies</a>
-            <span className="hidden md:inline text-gray-200">|</span>
-            <span>Contact Support: +447347663254</span>
-          </div>
-          <div className="text-center md:text-right">
-            <p>© {new Date().getFullYear()} Beteseb. All rights reserved.</p>
-            <p className="text-[10px] text-gray-300 mt-1">Developed by <span className="font-bold text-gray-400">Nolawi Digital Hub</span></p>
-          </div>
-        </footer>
         <EulaGate />
       </main>
     </div>
