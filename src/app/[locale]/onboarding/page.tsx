@@ -19,7 +19,6 @@ import {
 } from 'lucide-react';
 import { calculateStarSign } from '@/lib/abushakir';
 import { simulateIdentityVerification } from '@/lib/verification';
-import EulaGate from '@/components/EulaGate';
 import { 
   RELIGIONS, 
   GENDERS, 
@@ -1265,7 +1264,6 @@ function OnboardingContent() {
            />
            <p className="text-sm">{t('footerTagline')}</p>
         </div>
-        <EulaGate />
       </div>
     </div>
   );

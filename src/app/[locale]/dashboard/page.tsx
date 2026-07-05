@@ -36,7 +36,6 @@ import MatchDetailView from '@/components/dashboard/MatchDetailView';
 import SwipeCards from '@/components/dashboard/SwipeCards';
 import AcademyView from '@/components/dashboard/AcademyView';
 import SubscriptionGate from '@/components/SubscriptionGate';
-import EulaGate from '@/components/EulaGate';
 import { getUserTier, calculateCompletionRate } from '@/lib/tiers';
 
 function DashboardContent() {
@@ -823,7 +822,6 @@ function DashboardContent() {
             }} 
           />
         )}
-
         {selectedMatchId && (
           <MatchDetailView 
             matchId={selectedMatchId} 
@@ -835,8 +833,6 @@ function DashboardContent() {
             }}
           />
         )}
-
-        <EulaGate />
       </main>
     </div>
   );
