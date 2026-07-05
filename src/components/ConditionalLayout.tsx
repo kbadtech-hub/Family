@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import Header from './Header';
 import TopHeader from './TopHeader';
 import Footer from './Footer';
-import AIChatbot from './AIChatbot';
 
 export default function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -35,7 +34,6 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
         {children}
       </main>
       {!isInternalPage && <Footer />}
-      <AIChatbot />
     </>
   );
 }

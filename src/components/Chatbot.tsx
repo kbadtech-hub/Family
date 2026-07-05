@@ -10,7 +10,10 @@ import {
   Sparkles, 
   Headphones, 
   Loader2, 
-  ChevronDown
+  ChevronDown,
+  Star,
+  CreditCard,
+  ShieldCheck
 } from 'lucide-react';
 import { aiSupport, ChatMessage } from '@/lib/ai-support';
 import { supabase } from '@/lib/supabase';
@@ -73,6 +76,33 @@ export default function Chatbot() {
     const userMessage: ChatMessage = { role: 'user', content: input };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
+    setIsLoading(true);
+
+    try {
+      const response = await aiSupport.chat([...messages, userMessage], locale);
+      setMessages(prev => [...prev, { role: 'assistant', content: response }]);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleQuickQuestion = async (questionKey: string) => {
+    let questionText = '';
+    if (questionKey === 'abushakir') {
+      questionText = locale === 'am' ? 'ስለ አቡሻኪር (የኢትዮጵያ ቀን መቁጠሪያ) አጠቃቀም ንገረኝ' : 'Explain Abu Shakir calendar integration';
+    } else if (questionKey === 'pricing') {
+      questionText = locale === 'am' ? 'ስለ ክፍያ እና ሰብስክሪፕሽን ዋጋዎች ንገረኝ' : 'Explain subscription pricing';
+    } else if (questionKey === 'verified') {
+      questionText = locale === 'am' ? 'እንዴት መለያዬን ማረጋገጥ (Verify) እችላለሁ?' : 'How do I verify my profile?';
+    } else {
+      questionText = questionKey;
+    }
+    
+    if (isLoading) return;
+    const userMessage: ChatMessage = { role: 'user', content: questionText };
+    setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
 
     try {
@@ -257,7 +287,25 @@ export default function Chatbot() {
 
           {/* Input (only for AI mode) */}
           {mode === 'ai' && (
-            <div className="p-4 border-t border-gray-100 bg-gray-50/30">
+            <div className="p-4 border-t border-gray-100 bg-gray-50/30 space-y-3">
+              {/* Quick FAQ Suggestion Buttons */}
+              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                {[
+                  { icon: Star, label: locale === 'am' ? 'አቡሻኪር' : 'Abu Shakir', key: 'abushakir' },
+                  { icon: CreditCard, label: locale === 'am' ? 'ሰብስክሪፕሽን' : 'Pricing', key: 'pricing' },
+                  { icon: ShieldCheck, label: locale === 'am' ? 'ማረጋገጫ' : 'Verification', key: 'verified' }
+                ].map(btn => (
+                  <button 
+                    key={btn.key}
+                    type="button"
+                    onClick={() => handleQuickQuestion(btn.key)}
+                    className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-100 rounded-full text-[9px] font-black text-accent hover:bg-primary/10 hover:text-primary hover:border-primary/20 transition-all uppercase tracking-widest shadow-sm"
+                  >
+                    <btn.icon size={10} className="text-primary" /> {btn.label}
+                  </button>
+                ))}
+              </div>
+
               <div className="relative flex items-center">
                 <input
                   type="text"
@@ -276,7 +324,7 @@ export default function Chatbot() {
                   <Send size={18} />
                 </button>
               </div>
-              <div className="flex items-center justify-center gap-2 mt-4 opacity-30">
+              <div className="flex items-center justify-center gap-2 mt-2 opacity-30">
                 <Sparkles size={10} />
                 <span className="text-[8px] font-bold uppercase tracking-widest">AI Powered by Beteseb Engine</span>
               </div>
