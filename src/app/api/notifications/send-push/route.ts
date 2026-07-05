@@ -1,10 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase with service role for admin bypass
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 /**
  * Generates an OAuth2 access token for Firebase v1 API.
@@ -70,6 +66,13 @@ export async function POST(request: Request) {
     if (!userId || !title || !body) {
       return NextResponse.json({ error: 'Missing required parameters: userId, title, body' }, { status: 400 });
     }
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return NextResponse.json({ error: 'Supabase credentials are not configured on the server.' }, { status: 500 });
+    }
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // 1. Get user's FCM tokens
     const { data: profile, error: profileError } = await supabase
