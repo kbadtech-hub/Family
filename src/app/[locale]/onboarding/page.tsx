@@ -81,6 +81,182 @@ function OnboardingContent() {
     verification_status: 'unverified'
   });
 
+  // Cascading Location Picker States
+  const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedRegion, setSelectedRegion] = useState('');
+  const [selectedCity, setSelectedCity] = useState('');
+  const [manualCountry, setManualCountry] = useState('');
+  const [manualRegion, setManualRegion] = useState('');
+  const [manualCity, setManualCity] = useState('');
+
+  // Dropdown list arrays for 6 supported languages
+  const countriesList = [
+    { id: 'Ethiopia', label: locale === 'am' ? 'ኢትዮጵያ' : 'Ethiopia' },
+    { id: 'USA', label: locale === 'am' ? 'አሜሪካ (USA)' : 'USA' },
+    { id: 'Canada', label: locale === 'am' ? 'ካናዳ (Canada)' : 'Canada' },
+    { id: 'Saudi Arabia', label: locale === 'am' ? 'ሳውዲ አረቢያ (Saudi Arabia)' : 'Saudi Arabia' },
+    { id: 'United Kingdom', label: locale === 'am' ? 'እንግሊዝ (UK)' : 'United Kingdom' },
+    { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+  ];
+
+  const regionsMap: Record<string, { id: string; label: string }[]> = {
+    'Ethiopia': [
+      { id: 'Addis Ababa', label: locale === 'am' ? 'አዲስ አበባ' : 'Addis Ababa' },
+      { id: 'Harar', label: locale === 'am' ? 'ሐረር' : 'Harar' },
+      { id: 'Oromia', label: locale === 'am' ? 'ኦሮሚያ' : 'Oromia' },
+      { id: 'Amhara', label: locale === 'am' ? 'አማራ' : 'Amhara' },
+      { id: 'Tigray', label: locale === 'am' ? 'ትግራይ' : 'Tigray' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ],
+    'USA': [
+      { id: 'Minnesota', label: 'Minnesota' },
+      { id: 'Texas', label: 'Texas' },
+      { id: 'Virginia', label: 'Virginia' },
+      { id: 'California', label: 'California' },
+      { id: 'Washington', label: 'Washington' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ],
+    'Canada': [
+      { id: 'Ontario', label: 'Ontario' },
+      { id: 'Quebec', label: 'Quebec' },
+      { id: 'Alberta', label: 'Alberta' },
+      { id: 'British Columbia', label: 'British Columbia' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ],
+    'Saudi Arabia': [
+      { id: 'Riyadh Province', label: 'Riyadh Province' },
+      { id: 'Makkah Province', label: 'Makkah Province' },
+      { id: 'Eastern Province', label: 'Eastern Province' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ],
+    'United Kingdom': [
+      { id: 'England', label: 'England' },
+      { id: 'Scotland', label: 'Scotland' },
+      { id: 'Wales', label: 'Wales' },
+      { id: 'Northern Ireland', label: 'Northern Ireland' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ]
+  };
+
+  const citiesMap: Record<string, { id: string; label: string }[]> = {
+    'Addis Ababa': [
+      { id: 'Addis Ababa', label: locale === 'am' ? 'አዲስ አበባ' : 'Addis Ababa' }
+    ],
+    'Harar': [
+      { id: 'Harar', label: locale === 'am' ? 'ሐረር' : 'Harar' }
+    ],
+    'Oromia': [
+      { id: 'Adama', label: 'Adama' },
+      { id: 'Jimma', label: 'Jimma' },
+      { id: 'Bishoftu', label: 'Bishoftu' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ],
+    'Amhara': [
+      { id: 'Bahir Dar', label: 'Bahir Dar' },
+      { id: 'Gondar', label: 'Gondar' },
+      { id: 'Dessie', label: 'Dessie' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ],
+    'Tigray': [
+      { id: 'Mekelle', label: 'Mekelle' },
+      { id: 'Adigrat', label: 'Adigrat' },
+      { id: 'Shire', label: 'Shire' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ],
+    'Minnesota': [
+      { id: 'Minneapolis', label: 'Minneapolis' },
+      { id: 'Saint Paul', label: 'Saint Paul' },
+      { id: 'Rochester', label: 'Rochester' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ],
+    'Texas': [
+      { id: 'Houston', label: 'Houston' },
+      { id: 'Dallas', label: 'Dallas' },
+      { id: 'Austin', label: 'Austin' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ],
+    'Virginia': [
+      { id: 'Fairfax', label: 'Fairfax' },
+      { id: 'Richmond', label: 'Richmond' },
+      { id: 'Arlington', label: 'Arlington' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ],
+    'California': [
+      { id: 'Los Angeles', label: 'Los Angeles' },
+      { id: 'San Francisco', label: 'San Francisco' },
+      { id: 'San Diego', label: 'San Diego' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ],
+    'Washington': [
+      { id: 'Seattle', label: 'Seattle' },
+      { id: 'Spokane', label: 'Spokane' },
+      { id: 'Tacoma', label: 'Tacoma' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ],
+    'Ontario': [
+      { id: 'Toronto', label: 'Toronto' },
+      { id: 'Ottawa', label: 'Ottawa' },
+      { id: 'Mississauga', label: 'Mississauga' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ],
+    'Quebec': [
+      { id: 'Montreal', label: 'Montreal' },
+      { id: 'Quebec City', label: 'Quebec City' },
+      { id: 'Laval', label: 'Laval' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ],
+    'Alberta': [
+      { id: 'Calgary', label: 'Calgary' },
+      { id: 'Edmonton', label: 'Edmonton' },
+      { id: 'Red Deer', label: 'Red Deer' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ],
+    'British Columbia': [
+      { id: 'Vancouver', label: 'Vancouver' },
+      { id: 'Victoria', label: 'Victoria' },
+      { id: 'Burnaby', label: 'Burnaby' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ],
+    'Riyadh Province': [
+      { id: 'Riyadh', label: 'Riyadh' },
+      { id: 'Al-Kharj', label: 'Al-Kharj' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ],
+    'Makkah Province': [
+      { id: 'Jeddah', label: 'Jeddah' },
+      { id: 'Makkah', label: 'Makkah' },
+      { id: 'Taif', label: 'Taif' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ],
+    'Eastern Province': [
+      { id: 'Dammam', label: 'Dammam' },
+      { id: 'Khobar', label: 'Khobar' },
+      { id: 'Jubail', label: 'Jubail' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ],
+    'England': [
+      { id: 'London', label: 'London' },
+      { id: 'Manchester', label: 'Manchester' },
+      { id: 'Birmingham', label: 'Birmingham' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ],
+    'Scotland': [
+      { id: 'Edinburgh', label: 'Edinburgh' },
+      { id: 'Glasgow', label: 'Glasgow' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ],
+    'Wales': [
+      { id: 'Cardiff', label: 'Cardiff' },
+      { id: 'Swansea', label: 'Swansea' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ],
+    'Northern Ireland': [
+      { id: 'Belfast', label: 'Belfast' },
+      { id: 'Derry', label: 'Derry' },
+      { id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }
+    ]
+  };
+
   const searchParams = useSearchParams();
 
   // Live Selfie Video WebRTC Recording State
@@ -303,18 +479,28 @@ function OnboardingContent() {
         }
 
         if (!formData.gender) return t('errors.genderRequired');
-        if (!formData.location) return t('errors.locationRequired');
+        
+        // Cascading Location Validator
+        const countryVal = selectedCountry === 'Others' ? manualCountry : selectedCountry;
+        const regionVal = selectedRegion === 'Others' ? manualRegion : selectedRegion;
+        const cityVal = selectedCity === 'Others' ? manualCity : selectedCity;
+
+        if (!countryVal) return locale === 'am' ? 'እባክዎ መገኛ ሀገር ይምረጡ።' : 'Country selection is required.';
+        if (!regionVal) return locale === 'am' ? 'እባክዎ መገኛ ክልል/ግዛት ይምረጡ።' : 'Region/State selection is required.';
+        if (!cityVal) return locale === 'am' ? 'እባክዎ መገኛ ከተማ ይምረጡ።' : 'City selection is required.';
         
         // Location Integrity Check
-        if (prefLocation === 'Local' && formData.location !== 'Ethiopia') {
-          return t('errors.locationMismatch');
+        if (prefLocation === 'Local' && countryVal !== 'Ethiopia') {
+          return locale === 'am' ? 'የአገር ውስጥ ተጠቃሚዎች መገኛ ኢትዮጵያ መሆን አለበት።' : 'Local matches must be within Ethiopia.';
         }
-        if (prefLocation === 'Diaspora' && formData.location === 'Ethiopia') {
-          return t('errors.locationMismatch');
+        if (prefLocation === 'Diaspora' && countryVal === 'Ethiopia') {
+          return locale === 'am' ? 'የዲያስፖራ ተጠቃሚዎች መገኛ ከኢትዮጵያ ውጭ መሆን አለበት።' : 'Diaspora matches must be outside Ethiopia.';
         }
 
         if (!formData.religion) return t('errors.religionRequired');
         if (!formData.marital_status) return t('errors.maritalRequired');
+        if (!formData.partner_intent) return locale === 'am' ? 'እባክዎ የትዳር/የፍቅር ግንኙነት ዓላማዎን ይምረጡ።' : 'Relationship goal intent is required.';
+        if (!formData.has_children) return locale === 'am' ? 'እባክዎ ልጅ መኖር አለመኖሩን ይምረጡ።' : 'Please specify if you have children.';
         break;
       case 2: // Career & Psychology
         if (!formData.job) return t('errors.jobRequired');
@@ -358,8 +544,10 @@ function OnboardingContent() {
     setIsSubmitting(true);
     try {
       if (userId) {
-        // Location must be JSONB as per schema: {"country": "", "city": ""}
-        const locationJson = { country: formData.location, city: "" };
+        const countryVal = selectedCountry === 'Others' ? manualCountry : selectedCountry;
+        const regionVal = selectedRegion === 'Others' ? manualRegion : selectedRegion;
+        const cityVal = selectedCity === 'Others' ? manualCity : selectedCity;
+        const locationJson = { country: countryVal, region: regionVal, city: cityVal };
 
         const { error: updateError } = await supabase.from('profiles').update({ 
           full_name: formData.full_name,
@@ -369,6 +557,8 @@ function OnboardingContent() {
           religion: formData.religion,
           marital_status: formData.marital_status,
           has_children: formData.has_children,
+          children_count: formData.has_children === 'Yes' ? Number(formData.partner_children_pref || 0) : 0,
+          relationship_intent: formData.partner_intent,
           future_children: formData.future_children,
           education: formData.education,
           job_title: formData.job,
@@ -501,10 +691,37 @@ function OnboardingContent() {
                   {GENDERS.map(g => <option key={g} value={g}>{t_const(`Genders.${g}`)}</option>)}
                 </select>
 
-                <select value={formData.location} aria-label={t('fields.location')} onChange={(e) => updateField('location', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
-                  <option value="">{t('fields.location')}</option>
-                  {[...COUNTRIES].sort((a, b) => (t_const(`Countries.${a.name}`) || a.name).localeCompare(t_const(`Countries.${b.name}`) || b.name, locale)).map(c => <option key={c.iso} value={c.name}>{t_const(`Countries.${c.name}`) || c.name}</option>)}
+                {/* Cascading Location Picker (Phase 5) */}
+                <select value={selectedCountry} aria-label="Country" onChange={(e) => { setSelectedCountry(e.target.value); setSelectedRegion(''); setSelectedCity(''); }} className="p-3 bg-muted rounded-xl font-bold">
+                  <option value="">{locale === 'am' ? 'ሀገር ይምረጡ' : 'Select Country'}</option>
+                  {countriesList.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                 </select>
+
+                {selectedCountry === 'Others' && (
+                  <input type="text" value={manualCountry} onChange={(e) => setManualCountry(e.target.value)} placeholder={locale === 'am' ? 'የሀገር ስም ያስገቡ' : 'Enter Country Name'} className="p-3 bg-muted rounded-xl font-bold" />
+                )}
+
+                {selectedCountry && selectedCountry !== 'Others' && (
+                  <select value={selectedRegion} aria-label="Region/State" onChange={(e) => { setSelectedRegion(e.target.value); setSelectedCity(''); }} className="p-3 bg-muted rounded-xl font-bold animate-in fade-in duration-300">
+                    <option value="">{locale === 'am' ? 'ክልል/ግዛት ይምረጡ' : 'Select Region/State'}</option>
+                    {(regionsMap[selectedCountry] || [{ id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }]).map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
+                  </select>
+                )}
+
+                {selectedRegion === 'Others' && (
+                  <input type="text" value={manualRegion} onChange={(e) => setManualRegion(e.target.value)} placeholder={locale === 'am' ? 'የክልል/ግዛት ስም ያስገቡ' : 'Enter Region/State'} className="p-3 bg-muted rounded-xl font-bold" />
+                )}
+
+                {selectedRegion && selectedRegion !== 'Others' && (
+                  <select value={selectedCity} aria-label="City" onChange={(e) => setSelectedCity(e.target.value)} className="p-3 bg-muted rounded-xl font-bold animate-in fade-in duration-300">
+                    <option value="">{locale === 'am' ? 'ከተማ ይምረጡ' : 'Select City'}</option>
+                    {(citiesMap[selectedRegion] || [{ id: 'Others', label: locale === 'am' ? 'ሌሎች...' : 'Others...' }]).map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                  </select>
+                )}
+
+                {selectedCity === 'Others' && (
+                  <input type="text" value={manualCity} onChange={(e) => setManualCity(e.target.value)} placeholder={locale === 'am' ? 'የከተማ ስም ያስገቡ' : 'Enter City Name'} className="p-3 bg-muted rounded-xl font-bold" />
+                )}
 
                 <select value={formData.religion} aria-label={t('fields.religion')} onChange={(e) => updateField('religion', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
                   <option value="">{t('fields.religion')}</option>
@@ -516,15 +733,52 @@ function OnboardingContent() {
                   {(formData.gender === 'Female' ? MARITAL_STATUS_FEMALE : MARITAL_STATUS_MALE).map(s => <option key={s} value={s}>{t_const(`Marital.${s}`)}</option>)}
                 </select>
 
-                <select value={formData.has_children} aria-label={t('fields.hasChildren')} onChange={(e) => updateField('has_children', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
-                  <option value="">{t('fields.hasChildren')}</option>
-                  {HAVE_CHILDREN_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`Children.${o}`)}</option>)}
+                {/* Relationship Goal Intent Dropdown (Phase 5) */}
+                <select value={formData.partner_intent} aria-label="Relationship Intent" onChange={(e) => updateField('partner_intent', e.target.value)} className="p-3 bg-muted rounded-xl font-bold col-span-full">
+                  <option value="">{locale === 'am' ? 'የግንኙነት ዓላማ' : 'Relationship Goal/Intent'}</option>
+                  <option value="Seeking a Serious Partner / Marriage">{locale === 'am' ? 'ትዳር / የረጅም ጊዜ አጋር' : 'Seeking a Serious Partner / Marriage'}</option>
+                  <option value="Serious Relationship / Dating">{locale === 'am' ? 'የረጅም ጊዜ የፍቅር ጓደኝነት' : 'Serious Relationship / Dating'}</option>
+                  <option value="Normal Friendship">{locale === 'am' ? 'መደበኛ ጓደኝነት' : 'Normal Friendship'}</option>
+                  <option value="Passing Time / Learning and Understanding Marriage">{locale === 'am' ? 'ለትምህርትና ጊዜ ለማሳለፍ' : 'Passing Time / Learning and Understanding Marriage'}</option>
                 </select>
 
-                <select value={formData.future_children} aria-label={t('fields.futureChildren') || t('fields.partnerIntent')} onChange={(e) => updateField('future_children', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
-                  <option value="">{t('fields.futureChildren') || t('fields.partnerIntent')}</option>
-                  {FUTURE_CHILDREN_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`FutureChildren.${o}`)}</option>)}
-                </select>
+                {/* Conditional Children Workflow (Phase 5) */}
+                <div className="space-y-4 col-span-full pt-4 border-t border-border">
+                  <label className="flex items-center gap-3 cursor-pointer p-1">
+                    <input 
+                      type="checkbox"
+                      checked={formData.has_children === 'Yes'}
+                      onChange={(e) => {
+                        const val = e.target.checked ? 'Yes' : 'No';
+                        updateField('has_children', val);
+                        if (val === 'No') updateField('partner_children_pref', '0');
+                      }}
+                      className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary"
+                    />
+                    <span className="text-xs font-bold text-slate-600">
+                      {locale === 'am' ? 'ልጅ አለኝ (I have children)' : 'I have children'}
+                    </span>
+                  </label>
+
+                  {formData.has_children === 'Yes' && (
+                    <div className="animate-in slide-in-from-top-4 duration-300 pl-8">
+                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                        {locale === 'am' ? 'የልጆች ብዛት' : 'Number of Children'}
+                      </label>
+                      <select 
+                        value={formData.partner_children_pref}
+                        onChange={(e) => updateField('partner_children_pref', e.target.value)}
+                        className="p-3 bg-muted rounded-xl font-bold w-full max-w-xs"
+                      >
+                        <option value="">{locale === 'am' ? 'እባክዎ ይምረጡ' : 'Select count'}</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="More than 3">{locale === 'am' ? 'ከ 3 በላይ' : 'More than 3'}</option>
+                      </select>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

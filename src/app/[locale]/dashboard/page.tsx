@@ -23,7 +23,8 @@ import {
   AlertCircle,
   LogOut,
   ChevronRight,
-  Gift
+  Gift,
+  Calendar
 } from 'lucide-react';
 import CommunityView from '@/components/dashboard/CommunityView';
 import PaymentTab from '@/components/dashboard/PaymentTab';
@@ -35,6 +36,8 @@ import SwipeCards from '@/components/dashboard/SwipeCards';
 import LessonsView from '@/components/dashboard/LessonsView';
 import SubscriptionGate from '@/components/SubscriptionGate';
 import EulaGate from '@/components/EulaGate';
+import WeddingView from '@/components/dashboard/WeddingView';
+import { getProfileCompletion, getTrustTier, TrustBadge, AvatarFrame } from '@/components/dashboard/TrustBadge';
 
 function DashboardContent() {
   const t = useTranslations('Dashboard');
@@ -78,6 +81,7 @@ function DashboardContent() {
   const [friendshipStatuses, setFriendshipStatuses] = useState<Record<string, string>>({});
   const [matchingView, setMatchingView] = useState<'grid' | 'swipe'>('grid');
   const [candidates, setCandidates] = useState<any[]>([]);
+  const [hasGuardian, setHasGuardian] = useState(false);
 
   const languages = [
     { id: 'en', label: 'English' },
@@ -147,6 +151,13 @@ function DashboardContent() {
 
       const currentPaymentApproved = paymentData?.status === 'approved';
       if (paymentData) setPaymentStatus(paymentData.status);
+
+      // Fetch Guardian connection status (Phase 5)
+      const { data: guardianData } = await supabase.from('guardians')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1);
+      setHasGuardian(guardianData && guardianData.length > 0 ? true : false);
 
       // 4. Calculate Premium Status & Active Trial
       const isTrialActive = profileData?.trial_ends_at && new Date(profileData.trial_ends_at) > new Date();
@@ -272,6 +283,7 @@ function DashboardContent() {
             { id: 'community', icon: Users, label: n('community') },
             { id: 'workshops', icon: GraduationCap, label: n('workshops') },
             { id: 'gifts', icon: Gift, label: locale === 'am' ? 'ስጦታዎች' : 'Gifts' },
+            { id: 'wedding', icon: Calendar, label: locale === 'am' ? 'ሰርግ' : 'Wedding' },
             { id: 'profile', icon: UserCircle, label: n('profile') }
           ].map((item) => (
             <button
@@ -310,6 +322,7 @@ function DashboardContent() {
           { id: 'community', icon: Users, label: n('community') },
           { id: 'workshops', icon: GraduationCap, label: n('workshops') },
           { id: 'gifts', icon: Gift, label: locale === 'am' ? 'ስጦታዎች' : 'Gifts' },
+          { id: 'wedding', icon: Calendar, label: locale === 'am' ? 'ሰርግ' : 'Wedding' },
           { id: 'profile', icon: UserCircle, label: n('profile') }
         ].map((item) => (
           <button
@@ -402,7 +415,7 @@ function DashboardContent() {
 
         {/* Verification Banner */}
         {!profile?.onboarding_completed && (
-          <div className="mb-10 bg-gradient-to-r from-primary to-orange-400 p-8 md:p-10 rounded-[3rem] text-white shadow-2xl shadow-primary/20 relative overflow-hidden group">
+          <div className="mb-10 bg-black text-white border border-slate-900 p-8 md:p-10 rounded-[3rem] shadow-2xl relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:scale-110 transition-transform duration-700" />
             <div className="relative flex flex-col md:flex-row items-center justify-between gap-8">
                <div className="space-y-4 text-center md:text-left">
@@ -428,6 +441,42 @@ function DashboardContent() {
 
         {activeTab === 'dashboard' && (
           <div className="space-y-10">
+            {/* Profile Completion Meter & Trust Tier Display (Phase 5) */}
+            {profile && (
+              <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-border shadow-sm space-y-4">
+                <div className="flex justify-between items-center flex-wrap gap-4">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Profile Integrity Status</p>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-black text-[#0F172A]">
+                        {locale === 'am' ? 'የመለያዎ ሁኔታ (Profile Score)' : 'Verification Score'}
+                      </h3>
+                      <TrustBadge tier={getTrustTier(profile, false)} locale={locale} />
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-2xl font-black text-primary">
+                      {getProfileCompletion(profile, hasGuardian, false)}%
+                    </span>
+                    <span className="text-xs text-gray-400 font-bold block uppercase tracking-wider">Completed</span>
+                  </div>
+                </div>
+                
+                {/* Visual completion progress bar */}
+                <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-black h-full transition-all duration-1000"
+                    style={{ width: `${getProfileCompletion(profile, hasGuardian, false)}%` }}
+                  />
+                </div>
+
+                <p className="text-[10px] text-gray-400 font-semibold italic">
+                  {locale === 'am' 
+                    ? '*የእርስዎን መታወቂያ በማረጋገጥ እና ምስክር በመጨመር መቶ በመቶ (100%) መድረስ ይችላሉ።'
+                    : '*Complete your live video selfie, legal ID upload, and link a Guardian to hit 100% completion.'}
+                </p>
+              </div>
+            )}
             {/* Friend Suggestions Carousel */}
             {suggestions.length > 0 && (
               <section className="animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -612,6 +661,12 @@ function DashboardContent() {
         {activeTab === 'gifts' && (
           <div className="mt-10">
              <GiftsView locale={locale} />
+          </div>
+        )}
+
+        {activeTab === 'wedding' && (
+          <div className="mt-10">
+             <WeddingView locale={locale} />
           </div>
         )}
 

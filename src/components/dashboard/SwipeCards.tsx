@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Heart, X, Sparkles, MapPin, Star, ShieldCheck, MoreVertical } from 'lucide-react';
 import { calculateCompatibility } from '@/lib/compatibility';
 import { supabase } from '@/lib/supabase';
+import { getTrustTier, TrustBadge, getProfileCompletion, AvatarFrame } from './TrustBadge';
 
 interface SwipeCardsProps {
   userProfile: any;
@@ -99,14 +100,18 @@ export default function SwipeCards({ userProfile, candidates, onLike, onPass, is
         }}
         className="w-full aspect-[3/4.2] bg-accent rounded-[3.5rem] overflow-hidden shadow-2xl relative border border-white/10 group cursor-grab active:cursor-grabbing"
       >
-        {/* Background Image with Unsplash fallback */}
-        <Image 
-          src={activeCandidate.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=600'} 
-          alt={activeCandidate.full_name || 'Candidate'}
-          fill
-          className="object-cover pointer-events-none"
-          priority
-        />
+        <AvatarFrame gender={activeCandidate.gender} completion={getProfileCompletion(activeCandidate, !!activeCandidate.guardian_id)} tier={getTrustTier(activeCandidate, false)}>
+          <div className="absolute inset-0 w-full h-full">
+            {/* Background Image with Unsplash fallback */}
+            <Image 
+              src={activeCandidate.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=600'} 
+              alt={activeCandidate.full_name || 'Candidate'}
+              fill
+              className="object-cover pointer-events-none"
+              priority
+            />
+          </div>
+        </AvatarFrame>
 
         {/* Visual Swipe Indicators */}
         {swipeDirection === 'right' && (
@@ -206,7 +211,15 @@ export default function SwipeCards({ userProfile, candidates, onLike, onPass, is
               )}
             </div>
             
-            <div className="flex flex-wrap gap-2 pt-1">
+            <div className="flex flex-wrap gap-2 pt-1 items-center">
+              <TrustBadge tier={getTrustTier(activeCandidate, false)} />
+              
+              {activeCandidate.guardian_id && (
+                <span className="px-3.5 py-1.5 bg-black text-white rounded-full text-[9px] font-black tracking-widest uppercase flex items-center gap-1.5 border border-slate-700">
+                  🛡️ Guardian-Linked
+                </span>
+              )}
+
               {activeCandidate.star_sign && (
                 <span className="px-3.5 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-[9px] font-bold tracking-widest uppercase flex items-center gap-1.5 border border-white/5">
                   <Star size={10} className="fill-primary" /> {activeCandidate.star_sign}
