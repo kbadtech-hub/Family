@@ -6,40 +6,26 @@ import Header from './Header';
 import TopHeader from './TopHeader';
 import Footer from './Footer';
 import AIChatbot from './AIChatbot';
-import { useAuth } from '@/context/AuthContext';
-
-// Pages that always hide header/footer regardless of auth (auth flow pages)
-const NO_CHROME_PATHS = [
-  '/dashboard',
-  '/onboarding',
-  '/secure-beteseb-admin',
-  '/admin',
-  '/login',
-  '/signup',
-  '/verify-otp',
-  '/forgot-password',
-  '/reset-password',
-  '/counseling-session',
-  '/guardian',
-  '/vouch',
-  '/location-selection',
-];
 
 export default function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, isLoading } = useAuth();
-
-  // Hide chrome on specific auth/internal paths
-  const isNoChromeRoute = NO_CHROME_PATHS.some(p => pathname?.includes(p));
-
-  // Also hide chrome if user is logged in — they are inside the app
-  const isLoggedIn = !isLoading && !!user;
-
-  const showChrome = !isNoChromeRoute && !isLoggedIn;
+  const isInternalPage = 
+    pathname?.includes('/dashboard') || 
+    pathname?.includes('/onboarding') || 
+    pathname?.includes('/secure-beteseb-admin') ||
+    pathname?.includes('/login') ||
+    pathname?.includes('/signup') ||
+    pathname?.includes('/forgot-password') ||
+    pathname?.includes('/academy') ||
+    pathname?.includes('/community') ||
+    pathname?.includes('/profile') ||
+    pathname?.includes('/chat') ||
+    pathname?.includes('/settings') ||
+    pathname?.includes('/auth/');
 
   return (
     <>
-      {showChrome && (
+      {!isInternalPage && (
         <>
           <TopHeader />
           <Header />
@@ -48,7 +34,7 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
       <main className="flex-1">
         {children}
       </main>
-      {showChrome && <Footer />}
+      {!isInternalPage && <Footer />}
       <AIChatbot />
     </>
   );

@@ -58,11 +58,13 @@ interface Comment {
 export default function CommunityView({ 
   isVerified = false, 
   isPremium = false,
-  isAdmin = false 
+  isAdmin = false,
+  userCoins = 0
 }: { 
   isVerified?: boolean, 
   isPremium?: boolean,
-  isAdmin?: boolean 
+  isAdmin?: boolean,
+  userCoins?: number
 }) {
   const t = useTranslations('Community');
   const locale = useLocale();
@@ -78,6 +80,8 @@ export default function CommunityView({
   const [commentContent, setCommentContent] = useState('');
   const [postComments, setPostComments] = useState<Record<string, Comment[]>>({});
   const [replyingToId, setReplyingToId] = useState<string | null>(null);
+  const [coinPostConfirm, setCoinPostConfirm] = useState(false);
+  const COIN_PER_POST = 20;
   
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -194,9 +198,18 @@ export default function CommunityView({
     e.preventDefault();
     if (!newPostContent.trim()) return;
 
+    // Subscription check: allow premium, admin, or 20-coin payment
     if (!isPremium && !isAdmin) {
-       alert(t('premiumOnly'));
-       return;
+      if (userCoins < COIN_PER_POST) {
+        alert(locale === 'am' 
+          ? `ለማስጠቀም ${COIN_PER_POST} ቤተሰብ ኮይን ያስፈልጋቸዋል። ሰብስክሪፕሽን ወይም ኮይን ይግዙ።`
+          : `You need ${COIN_PER_POST} Beteseb Coins to post. Please subscribe or buy coins.`);
+        return;
+      }
+      if (!coinPostConfirm) {
+        setCoinPostConfirm(true);
+        return; // Wait for user to confirm coin spend
+      }
     }
 
     // Link Restriction Check
@@ -209,6 +222,7 @@ export default function CommunityView({
     }
 
     setIsSubmitting(true);
+    setCoinPostConfirm(false);
     
     // AI Moderation API Call
     try {
@@ -230,6 +244,11 @@ export default function CommunityView({
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+
+    // Deduct coins if not premium
+    if (!isPremium && !isAdmin) {
+      await supabase.from('profiles').update({ coins: userCoins - COIN_PER_POST }).eq('id', user.id);
+    }
 
     const { error } = await supabase.from('community_posts').insert({
       author_id: user.id,
@@ -259,6 +278,40 @@ export default function CommunityView({
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-20">
+      {/* ── Coin Confirmation Modal ── */}
+      {coinPostConfirm && (
+        <div className="fixed inset-0 z-[10000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl border border-border text-center space-y-5">
+            <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto">
+              <span className="text-3xl">🪙</span>
+            </div>
+            <div>
+              <h4 className="font-black text-accent text-lg italic">
+                {locale === 'am' ? `${COIN_PER_POST} ኮይን ይጠቀሙ?` : `Use ${COIN_PER_POST} Coins?`}
+              </h4>
+              <p className="text-xs text-gray-500 font-medium mt-2">
+                {locale === 'am' 
+                  ? `ይህ ፖስት ለማደርግ ${COIN_PER_POST} ቤተሰብ ኮይን ይቀነሳሉ። ቀሪ ኮይን: ${userCoins - COIN_PER_POST}`
+                  : `This post will deduct ${COIN_PER_POST} Beteseb Coins. Remaining: ${userCoins - COIN_PER_POST}`}
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setCoinPostConfirm(false)}
+                className="flex-1 py-3 rounded-2xl border-2 border-border text-accent font-black text-xs uppercase tracking-wider hover:bg-muted transition-all"
+              >
+                {locale === 'am' ? 'ሰርዝ' : 'Cancel'}
+              </button>
+              <button
+                onClick={(e) => { setCoinPostConfirm(false); handlePostSubmit(e as any); }}
+                className="flex-1 py-3 rounded-2xl bg-primary text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
+              >
+                {locale === 'am' ? 'አረጋግጥ' : 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="flex flex-col md:flex-row justify-between items-center bg-card p-4 md:p-6 rounded-[2rem] md:rounded-[2.5rem] border border-border shadow-sm gap-4">
          <div className="flex items-center gap-4">
               <h2 className="text-xl md:text-2xl font-black text-foreground tracking-tighter uppercase italic">{t('title')}</h2>
