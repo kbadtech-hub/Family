@@ -1,12 +1,12 @@
 -- =========================================================================
 -- BETESEB UNIFIED MASTER DATABASE SCHEMA
--- VERSION: 3.0 (Consolidated Production Master)
+-- VERSION: 4.0 (Consolidated Production Master Slate)
 -- DATE: 2026-07-04
 -- AUTHOR: Antigravity AI & Nolawi Digital Hub
 -- DESCRIPTION: This file contains the complete consolidated database schema
 --              for the Beteseb platform, combining all structural updates,
 --              monetization features, security layers, gift systems, 
---              vouching system, counseling, and Wali rooms.
+--              vouching system, counseling, and Wali rooms in a single execution.
 -- =========================================================================
 
 -- =========================================================================
@@ -190,6 +190,10 @@ CREATE TABLE public.gift_catalog (
   image_url TEXT NOT NULL,
   coin_price NUMERIC NOT NULL CHECK (coin_price > 0),
   is_active BOOLEAN DEFAULT TRUE,
+  category TEXT DEFAULT 'cultural' CHECK (category IN ('cultural', 'pets', 'flowers', 'coupons')),
+  unlock_level INTEGER DEFAULT 1,
+  commission_rate NUMERIC(4,2) DEFAULT 0.15,
+  base_delivery_fee NUMERIC(10,2) DEFAULT 0.00,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -199,7 +203,7 @@ CREATE TABLE public.gifts (
   sender_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
   receiver_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
   catalog_gift_id UUID REFERENCES public.gift_catalog(id) ON DELETE SET NULL,
-  gift_type TEXT CHECK (gift_type IN ('sini_coffee', 'habesha_flower', 'shamma_candle', 'jebena_pot')),
+  gift_type TEXT,
   amount NUMERIC NOT NULL,
   currency TEXT DEFAULT 'ETB',
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'completed')),
@@ -207,6 +211,7 @@ CREATE TABLE public.gifts (
   delivery_address TEXT,
   delivery_phone TEXT,
   delivery_status TEXT DEFAULT 'none' CHECK (delivery_status IN ('none', 'requested', 'processing', 'delivered', 'failed')),
+  delivery_details JSONB DEFAULT '{}',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -285,6 +290,10 @@ CREATE TABLE public.counselor_bookings (
   scheduled_date DATE NOT NULL,
   scheduled_time TEXT NOT NULL,
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'completed', 'cancelled')),
+  payment_status TEXT DEFAULT 'pending' CHECK (payment_status IN ('pending', 'paid', 'refunded')),
+  payment_method TEXT CHECK (payment_method IN ('coins', 'chapa', 'stripe')),
+  amount_paid NUMERIC(10,2),
+  currency TEXT DEFAULT 'USD',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -309,7 +318,20 @@ CREATE TABLE public.wali_messages (
 );
 
 -- =========================================================================
--- PART 5: SECURITY DEFINERS, PROCEDURES & TRIGGERS
+-- PART 5: PHASE-4 EXPANSION (SMS NOTIFICATION QUEUE)
+-- =========================================================================
+
+CREATE TABLE public.sms_queue (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  recipient_phone TEXT NOT NULL,
+  message_content TEXT NOT NULL,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'sent', 'failed')),
+  error_message TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- =========================================================================
+-- PART 6: SECURITY DEFINERS, PROCEDURES & TRIGGERS
 -- =========================================================================
 
 -- 1. SECURE ACCOUNT SELF-DELETION
@@ -391,7 +413,7 @@ CREATE OR REPLACE TRIGGER update_friendships_updated_at
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- =========================================================================
--- PART 6: SECURITY POLICIES (ROW LEVEL SECURITY)
+-- PART 7: SECURITY POLICIES (ROW LEVEL SECURITY)
 -- =========================================================================
 
 -- Enable RLS across all tables
@@ -415,6 +437,7 @@ ALTER TABLE public.vouch_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.counselor_bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.wali_rooms ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.wali_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sms_queue ENABLE ROW LEVEL SECURITY;
 
 -- 1. Profiles Policies
 CREATE POLICY "Public Profiles Select" ON public.profiles FOR SELECT USING (true);
@@ -505,8 +528,13 @@ CREATE POLICY "Participants can manage messages in their Wali Room" ON public.wa
   )
 );
 
+-- 19. SMS Queue Policies
+CREATE POLICY "Admin full access for SMS queue" ON public.sms_queue FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'super_admin'))
+);
+
 -- =========================================================================
--- PART 7: SECURITY ROLE GRANTS
+-- PART 8: SECURITY ROLE GRANTS
 -- =========================================================================
 
 GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO authenticated;
@@ -523,20 +551,37 @@ GRANT ALL ON public.vouch_records TO authenticated;
 GRANT ALL ON public.counselor_bookings TO authenticated;
 GRANT ALL ON public.wali_rooms TO authenticated;
 GRANT ALL ON public.wali_messages TO authenticated;
+GRANT ALL ON public.sms_queue TO authenticated;
 GRANT ALL ON public.vouch_records TO anon;
 GRANT ALL ON public.wali_rooms TO anon;
 GRANT ALL ON public.wali_messages TO anon;
 
 -- =========================================================================
--- PART 8: DATA SEEDING
+-- PART 9: DATA SEEDING
 -- =========================================================================
 
--- SEED DATA FOR CULTURAL GIFT CATALOG
-INSERT INTO public.gift_catalog (id, name_en, name_am, name_om, name_ti, name_so, name_ar, image_url, coin_price) VALUES
-  ('11111111-1111-1111-1111-111111111111', 'Habesha Coffee Sini', 'የሀበሻ ሲኒ', 'Sini Buna Habeshaa', 'ፅዋ ቡን ሓበሻ', 'Koobka Bunka Xabashida', 'فنجان قهوة حبشية', 'sini_coffee', 20),
-  ('22222222-2222-2222-2222-222222222222', 'Habesha Flower', 'የማር አበባ', 'Abaaroo Habeshaa', 'ዕምባባ ሓበሻ', 'Ubaxa Xabashida', 'وردة حبشية', 'habesha_flower', 50),
-  ('33333333-3333-3333-3333-333333333333', 'Shamma Candle', 'የፍቅር ሻማ', 'Shamaa Habeshaa', 'ሽምዓ ሓበሻ', 'Shamaa Xabashida', 'شمعة حبشية', 'shamma_candle', 15),
-  ('44444444-4444-4444-4444-444444444444', 'Jebena Pot', 'የሀበሻ ጀበና', 'Jabanaa Habeshaa', 'ጀበና ሓበሻ', 'Kettle Xabashida', 'جبنة حبشية', 'jebena_pot', 100)
+-- SEED DATA FOR CULTURAL AND LUXURY GIFT CATALOG (Including Phase 4 Items)
+INSERT INTO public.gift_catalog (id, name_en, name_am, name_om, name_ti, name_so, name_ar, image_url, coin_price, category, unlock_level, commission_rate, base_delivery_fee) VALUES
+  -- Category: Cultural/Basic (Unlock Level 1 & 2)
+  ('11111111-1111-1111-1111-111111111111', 'Habesha Coffee Sini', 'የሀበሻ ሲኒ', 'Sini Buna Habeshaa', 'ፅዋ ቡን ሓበሻ', 'Koobka Bunka Xabashida', 'فنجان قهوة حبشية', 'sini_coffee', 20, 'cultural', 1, 0.15, 0.00),
+  ('33333333-3333-3333-3333-333333333333', 'Shamma Candle', 'የፍቅር ሻማ', 'Shamaa Habeshaa', 'ሽምዓ ሓበሻ', 'Shamaa Xabashida', 'شمعة حبشية', 'shamma_candle', 15, 'cultural', 1, 0.15, 0.00),
+  ('44444444-4444-4444-4444-444444444444', 'Jebena Pot', 'የሀበሻ ጀበና', 'Jabanaa Habeshaa', 'ጀበና ሓበሻ', 'Kettle Xabashida', 'جبنة حبشية', 'jebena_pot', 100, 'cultural', 2, 0.15, 10.00),
+  
+  -- Category: Flowers (Unlock Level 1 & 2)
+  ('22222222-2222-2222-2222-222222222222', 'Habesha Flower', 'የማር አበባ', 'Abaaroo Habeshaa', 'ዕምባባ ሓበሻ', 'Ubaxa Xabashida', 'وردة حبشية', 'habesha_flower', 50, 'flowers', 1, 0.15, 0.00),
+  ('88888888-8888-8888-8888-888888888888', 'Premium Boxed Flowers', 'በቅንጡ ሳጥን አበባዎች', 'Abaaroo Luxury Box', 'ዕምባባታት ፅኑዕ ሳንዱቕ', 'Ubax Boxed', 'أزهار فاخرة مغلفة', 'boxed_flowers', 80, 'flowers', 2, 0.15, 20.00),
+
+  -- Category: Pets & Animals (Unlock Level 4 - requires 30 messages)
+  ('55555555-5555-5555-5555-555555555555', 'Romantic Love Doves', 'የፍቅር እርግቦች', 'Guutoo jaalalaa', 'ርግብታት ፍቕሪ', 'Flutter Dove', 'حمام الحب الرومانسي', 'love_doves', 150, 'pets', 4, 0.20, 30.00),
+  ('66666666-6666-6666-6666-666666666666', 'Luxury Poodle Puppy', 'የቅንጦት ቡችላ (ፖፒ)', 'Saree Luxury', 'ቅንጡ ዕትብት', 'Ey puppy', 'جرو بودል فاخر', 'luxury_puppy', 500, 'pets', 4, 0.25, 150.00),
+  ('77777777-7777-7777-7777-777777777777', 'Luxury Kitten Cat', 'የቅንጦት ድመት', 'Bashoo Luxury', 'ቅንጡ ድሙ', 'Bas pussy', 'قطة فاخرة', 'luxury_kitten', 400, 'pets', 4, 0.25, 100.00),
+
+  -- Category: Cultural Wear & Accessories (Unlock Level 3 - requires 15 messages)
+  ('99999999-9999-9999-9999-999999999999', 'Modern Habesha Couple Outfit', 'የጥንዶች ባህል ልብስ', 'Uffata Aadaa Habeshaa', 'ባህላዊ አልባሳት ሓበሻ', 'Kappo Outfit', 'أزهار تقليدية عصرية للزوجين', 'cultural_outfit', 300, 'cultural', 3, 0.20, 50.00),
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Engraved Silver Bracelet', 'ስም የሚቀረጽበት የብር አንባር', 'Gimbii meetii', 'አንባር ብሩር', 'bracelet', 'سوار فضي محفور', 'silver_bracelet', 150, 'cultural', 3, 0.15, 15.00),
+
+  -- Category: Experience & Date Coupons (Unlock Level 2 - requires 5 messages)
+  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Premium Dinner & Cinema Voucher', 'የእራት እና ሲኒማ ኩፖን', 'Kupoonii irbaataa fi sinimaa', 'ኩፖን ድራርን ሲነማን', 'Premium Date Voucher', 'قسيمة عشاء وسينما مميزة', 'date_voucher', 100, 'coupons', 2, 0.15, 0.00)
 ON CONFLICT (id) DO NOTHING;
 
 -- Backfill user wallets
@@ -545,7 +590,7 @@ SELECT id, 0 FROM public.profiles
 ON CONFLICT (id) DO NOTHING;
 
 -- =========================================================================
--- PART 9: SYSTEM PERFORMANCE INDEXES
+-- PART 10: SYSTEM PERFORMANCE INDEXES
 -- =========================================================================
 
 CREATE INDEX IF NOT EXISTS idx_profiles_username ON public.profiles(username);
