@@ -37,6 +37,25 @@ import {
 import { COUNTRIES } from '@/lib/countries';
 import ethiopianDate from 'ethiopian-date';
 
+const locationData: Record<string, Record<string, string[]>> = {
+  'Ethiopia': {
+    'Harar': ['Harar'],
+    'Addis Ababa': ['Addis Ababa'],
+    'Oromia': ['Adama', 'Jimma', 'Bishoftu'],
+    'Amhara': ['Bahir Dar', 'Gondar', 'Dessie'],
+    'Tigray': ['Mekelle', 'Adigrat', 'Axum'],
+    'Others': []
+  },
+  'USA': {
+    'Minnesota': ['Minneapolis', 'St. Paul', 'Rochester'],
+    'Texas': ['Houston', 'Dallas', 'Austin'],
+    'Virginia': ['Fairfax', 'Richmond', 'Alexandria'],
+    'California': ['Los Angeles', 'San Jose', 'San Diego'],
+    'Washington': ['Seattle', 'Spokane'],
+    'Others': []
+  }
+};
+
 function OnboardingContent() {
   const t = useTranslations('Onboarding');
   const t_const = useTranslations('Constants');
@@ -80,6 +99,23 @@ function OnboardingContent() {
     selfie_photo: '',
     verification_status: 'unverified'
   });
+
+  // Cascading Location Picker States (Phase 4.5)
+  const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedRegion, setSelectedRegion] = useState('');
+  const [selectedCity, setSelectedCity] = useState('');
+  const [customCountry, setCustomCountry] = useState('');
+  const [customRegion, setCustomRegion] = useState('');
+  const [customCity, setCustomCity] = useState('');
+
+  const [hasChildren, setHasChildren] = useState(false);
+  const [childrenCount, setChildrenCount] = useState('1');
+
+  // Custom Partner Preference overrides (Phase 4.5)
+  const [showCustomPartnerReligion, setShowCustomPartnerReligion] = useState(false);
+  const [customPartnerReligion, setCustomPartnerReligion] = useState('');
+  const [showCustomPartnerIntent, setShowCustomPartnerIntent] = useState(false);
+  const [customPartnerIntent, setCustomPartnerIntent] = useState('');
 
   const searchParams = useSearchParams();
 
@@ -303,13 +339,19 @@ function OnboardingContent() {
         }
 
         if (!formData.gender) return t('errors.genderRequired');
-        if (!formData.location) return t('errors.locationRequired');
+        const activeCountry = selectedCountry === 'Others' ? customCountry : selectedCountry;
+        const activeRegion = selectedRegion === 'Others' ? customRegion : selectedRegion;
+        const activeCity = selectedCity === 'Others' ? customCity : selectedCity;
+
+        if (!activeCountry || !activeRegion || !activeCity) {
+          return t('errors.locationRequired');
+        }
         
         // Location Integrity Check
-        if (prefLocation === 'Local' && formData.location !== 'Ethiopia') {
+        if (prefLocation === 'Local' && activeCountry !== 'Ethiopia') {
           return t('errors.locationMismatch');
         }
-        if (prefLocation === 'Diaspora' && formData.location === 'Ethiopia') {
+        if (prefLocation === 'Diaspora' && activeCountry === 'Ethiopia') {
           return t('errors.locationMismatch');
         }
 
@@ -358,8 +400,11 @@ function OnboardingContent() {
     setIsSubmitting(true);
     try {
       if (userId) {
-        // Location must be JSONB as per schema: {"country": "", "city": ""}
-        const locationJson = { country: formData.location, city: "" };
+        const locationJson = { 
+          country: selectedCountry === 'Others' ? customCountry : selectedCountry, 
+          region: selectedRegion === 'Others' ? customRegion : selectedRegion,
+          city: selectedCity === 'Others' ? customCity : selectedCity 
+        };
 
         const { error: updateError } = await supabase.from('profiles').update({ 
           full_name: formData.full_name,
@@ -368,7 +413,7 @@ function OnboardingContent() {
           location: locationJson,
           religion: formData.religion,
           marital_status: formData.marital_status,
-          has_children: formData.has_children,
+          has_children: hasChildren ? `Yes, ${childrenCount}` : 'No',
           future_children: formData.future_children,
           education: formData.education,
           job_title: formData.job,
@@ -381,8 +426,8 @@ function OnboardingContent() {
           partner_location: formData.partner_countries,
           partner_age_min: formData.partner_age_min,
           partner_age_max: formData.partner_age_max,
-          partner_religion: formData.partner_religion,
-          partner_intent: formData.partner_intent,
+          partner_religion: showCustomPartnerReligion ? customPartnerReligion : formData.partner_religion,
+          partner_intent: showCustomPartnerIntent ? customPartnerIntent : formData.partner_intent,
           partner_children_pref: formData.partner_children_pref
         }).eq('id', userId);
 
@@ -496,35 +541,146 @@ function OnboardingContent() {
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <select value={formData.gender} aria-label={t('fields.gender')} onChange={(e) => updateField('gender', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                <select value={formData.gender} aria-label={t('fields.gender')} onChange={(e) => updateField('gender', e.target.value)} className="p-3 bg-muted rounded-xl font-bold text-xs">
                   <option value="">{t('fields.gender')}</option>
                   {GENDERS.map(g => <option key={g} value={g}>{t_const(`Genders.${g}`)}</option>)}
                 </select>
 
-                <select value={formData.location} aria-label={t('fields.location')} onChange={(e) => updateField('location', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
-                  <option value="">{t('fields.location')}</option>
-                  {[...COUNTRIES].sort((a, b) => (t_const(`Countries.${a.name}`) || a.name).localeCompare(t_const(`Countries.${b.name}`) || b.name, locale)).map(c => <option key={c.iso} value={c.name}>{t_const(`Countries.${c.name}`) || c.name}</option>)}
-                </select>
-
-                <select value={formData.religion} aria-label={t('fields.religion')} onChange={(e) => updateField('religion', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                <select value={formData.religion} aria-label={t('fields.religion')} onChange={(e) => updateField('religion', e.target.value)} className="p-3 bg-muted rounded-xl font-bold text-xs">
                   <option value="">{t('fields.religion')}</option>
                   {RELIGIONS.map(r => <option key={r} value={r}>{t_const(`Religions.${r}`)}</option>)}
                 </select>
 
-                <select value={formData.marital_status} aria-label={t('fields.maritalStatus')} onChange={(e) => updateField('marital_status', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                <select value={formData.marital_status} aria-label={t('fields.maritalStatus')} onChange={(e) => updateField('marital_status', e.target.value)} className="p-3 bg-muted rounded-xl font-bold text-xs">
                   <option value="">{t('fields.maritalStatus')}</option>
                   {(formData.gender === 'Female' ? MARITAL_STATUS_FEMALE : MARITAL_STATUS_MALE).map(s => <option key={s} value={s}>{t_const(`Marital.${s}`)}</option>)}
                 </select>
 
-                <select value={formData.has_children} aria-label={t('fields.hasChildren')} onChange={(e) => updateField('has_children', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
-                  <option value="">{t('fields.hasChildren')}</option>
-                  {HAVE_CHILDREN_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`Children.${o}`)}</option>)}
-                </select>
-
-                <select value={formData.future_children} aria-label={t('fields.futureChildren') || t('fields.partnerIntent')} onChange={(e) => updateField('future_children', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
+                <select value={formData.future_children} aria-label={t('fields.futureChildren') || t('fields.partnerIntent')} onChange={(e) => updateField('future_children', e.target.value)} className="p-3 bg-muted rounded-xl font-bold text-xs">
                   <option value="">{t('fields.futureChildren') || t('fields.partnerIntent')}</option>
                   {FUTURE_CHILDREN_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`FutureChildren.${o}`)}</option>)}
                 </select>
+
+                {/* Cascading Location Picker */}
+                <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-6 border border-gray-100 rounded-3xl shadow-sm">
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider">Country / ሀገር</label>
+                    <select
+                      value={selectedCountry}
+                      onChange={(e) => {
+                        setSelectedCountry(e.target.value);
+                        setSelectedRegion('');
+                        setSelectedCity('');
+                        updateField('location', e.target.value);
+                      }}
+                      className="w-full p-3 bg-muted rounded-xl font-bold text-xs"
+                    >
+                      <option value="">Select Country</option>
+                      <option value="Ethiopia">Ethiopia</option>
+                      <option value="USA">USA</option>
+                      <option value="Others">Others / ሌላ</option>
+                    </select>
+                    {selectedCountry === 'Others' && (
+                      <input
+                        type="text"
+                        placeholder="Specify country..."
+                        value={customCountry}
+                        onChange={(e) => setCustomCountry(e.target.value)}
+                        className="w-full p-3 mt-2 bg-muted border border-muted rounded-xl text-xs font-semibold"
+                      />
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider">Region / ክልል</label>
+                    <select
+                      value={selectedRegion}
+                      disabled={!selectedCountry}
+                      onChange={(e) => {
+                        setSelectedRegion(e.target.value);
+                        setSelectedCity('');
+                      }}
+                      className="w-full p-3 bg-muted rounded-xl font-bold text-xs disabled:opacity-50"
+                    >
+                      <option value="">Select Region</option>
+                      {selectedCountry && selectedCountry !== 'Others' && 
+                        Object.keys(locationData[selectedCountry] || {}).map(region => (
+                          <option key={region} value={region}>{region}</option>
+                        ))
+                      }
+                      {selectedCountry && <option value="Others">Others / ሌላ</option>}
+                    </select>
+                    {selectedRegion === 'Others' && (
+                      <input
+                        type="text"
+                        placeholder="Specify region..."
+                        value={customRegion}
+                        onChange={(e) => setCustomRegion(e.target.value)}
+                        className="w-full p-3 mt-2 bg-muted border border-muted rounded-xl text-xs font-semibold"
+                      />
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider">City / ከተማ</label>
+                    <select
+                      value={selectedCity}
+                      disabled={!selectedRegion}
+                      onChange={(e) => setSelectedCity(e.target.value)}
+                      className="w-full p-3 bg-muted rounded-xl font-bold text-xs disabled:opacity-50"
+                    >
+                      <option value="">Select City</option>
+                      {selectedCountry && selectedRegion && selectedRegion !== 'Others' && 
+                        (locationData[selectedCountry]?.[selectedRegion] || []).map(city => (
+                          <option key={city} value={city}>{city}</option>
+                        ))
+                      }
+                      {selectedRegion && <option value="Others">Others / ሌላ</option>}
+                    </select>
+                    {selectedCity === 'Others' && (
+                      <input
+                        type="text"
+                        placeholder="Specify city..."
+                        value={customCity}
+                        onChange={(e) => setCustomCity(e.target.value)}
+                        className="w-full p-3 mt-2 bg-muted border border-muted rounded-xl text-xs font-semibold"
+                      />
+                    )}
+                  </div>
+                </div>
+
+                {/* Conditional Children Selector workflow */}
+                <div className="col-span-1 md:col-span-2 p-6 bg-white border border-gray-100 rounded-3xl space-y-4 shadow-sm">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={hasChildren}
+                      onChange={(e) => setHasChildren(e.target.checked)}
+                      className="w-5 h-5 rounded-lg border-gray-300 text-primary focus:ring-primary/20"
+                    />
+                    <span className="text-xs font-bold text-accent">
+                      {locale === 'am' ? 'ልጆች አሉኝ' : 'I have children'}
+                    </span>
+                  </label>
+
+                  {hasChildren && (
+                    <div className="space-y-2 animate-in slide-in-from-top-4 duration-300">
+                      <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider">
+                        {locale === 'am' ? 'የልጆች ብዛት' : 'Number of Children'}
+                      </label>
+                      <select
+                        value={childrenCount}
+                        onChange={(e) => setChildrenCount(e.target.value)}
+                        className="w-full p-3 bg-muted rounded-xl font-bold text-xs"
+                      >
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="More than 3">More than 3 / ከ 3 በላይ</option>
+                      </select>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -614,15 +770,71 @@ function OnboardingContent() {
                    </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <select value={formData.partner_religion} aria-label={t('fields.partnerReligion')} onChange={(e) => updateField('partner_religion', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
-                     <option value="">{t('fields.partnerReligion')}</option>
-                     {RELIGIONS.map(r => <option key={r} value={r}>{t_const(`Religions.${r}`)}</option>)}
-                  </select>
-                  <select value={formData.partner_intent} aria-label={t('fields.partnerIntent')} onChange={(e) => updateField('partner_intent', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
-                     <option value="">{t('fields.partnerIntent')}</option>
-                     {PARTNER_MARITAL_PREF_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`Marital.${o}`)}</option>)}
-                  </select>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider">Partner Religion Preference</label>
+                      <select
+                        value={showCustomPartnerReligion ? 'Others' : formData.partner_religion}
+                        onChange={(e) => {
+                          if (e.target.value === 'Others') {
+                            setShowCustomPartnerReligion(true);
+                            updateField('partner_religion', '');
+                          } else {
+                            setShowCustomPartnerReligion(false);
+                            updateField('partner_religion', e.target.value);
+                          }
+                        }}
+                        className="w-full p-3 bg-muted rounded-xl font-bold text-xs"
+                      >
+                        <option value="">Select Religion</option>
+                        {RELIGIONS.map(r => <option key={r} value={r}>{t_const(`Religions.${r}`) || r}</option>)}
+                        <option value="Others">Others / ሌላ</option>
+                      </select>
+                      {showCustomPartnerReligion && (
+                        <input
+                          type="text"
+                          placeholder="Specify custom religion..."
+                          value={customPartnerReligion}
+                          onChange={(e) => setCustomPartnerReligion(e.target.value)}
+                          className="w-full p-3 mt-2 bg-muted rounded-xl text-xs font-semibold"
+                        />
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider">Partner Relationship Goal</label>
+                      <select
+                        value={showCustomPartnerIntent ? 'Others' : formData.partner_intent}
+                        onChange={(e) => {
+                          if (e.target.value === 'Others') {
+                            setShowCustomPartnerIntent(true);
+                            updateField('partner_intent', '');
+                          } else {
+                            setShowCustomPartnerIntent(false);
+                            updateField('partner_intent', e.target.value);
+                          }
+                        }}
+                        className="w-full p-3 bg-muted rounded-xl font-bold text-xs"
+                      >
+                        <option value="">Select Goal</option>
+                        <option value="Serious Partner/Marriage">Serious Partner / Marriage</option>
+                        <option value="Serious Relationship/Dating">Serious Relationship / Dating</option>
+                        <option value="Normal Friendship">Normal Friendship</option>
+                        <option value="Passing Time/Learning and Understanding Marriage">Passing Time / Learning and Understanding Marriage</option>
+                        <option value="Others">Others / ሌላ</option>
+                      </select>
+                      {showCustomPartnerIntent && (
+                        <input
+                          type="text"
+                          placeholder="Specify custom goal..."
+                          value={customPartnerIntent}
+                          onChange={(e) => setCustomPartnerIntent(e.target.value)}
+                          className="w-full p-3 mt-2 bg-muted rounded-xl text-xs font-semibold"
+                        />
+                      )}
+                    </div>
+                  </div>
                 </div>
              </div>
           </div>

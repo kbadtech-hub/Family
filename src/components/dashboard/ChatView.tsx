@@ -29,12 +29,14 @@ import {
   X as CloseIcon,
   Sparkles,
   Loader2,
-  Gift
+  Gift,
+  Lock
 } from 'lucide-react';
 import Image from 'next/image';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import CallInterface from '@/components/dashboard/CallInterface';
 import GiftModal from '@/components/dashboard/GiftModal';
+import { getUserTier, getTierLimits } from '@/lib/tiers';
 
 interface Message {
   id: string;
@@ -76,6 +78,18 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
   const [isProcessing, setIsProcessing] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const tf = useTranslations('Friendship');
+
+  // Gamification & Tier Restrictions States (Phase 4.5)
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [hasVouchedRecords, setHasVouchedRecords] = useState(false);
+  const [coinBalance, setCoinBalance] = useState(0);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeModalText, setUpgradeModalText] = useState('');
+
+  // Privacy Telemetry & Safe Space States (Phase 4.5)
+  const [telemetry, setTelemetry] = useState<any>(null);
+  const [showPulseCheck, setShowPulseCheck] = useState(false);
+  const [safeSpaceActive, setSafeSpaceActive] = useState(false);
 
   // Wali Room State
   const [showWaliModal, setShowWaliModal] = useState(false);
@@ -145,12 +159,29 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
           .map(f => f.sender_id === user.id ? f.receiver : f.sender)
           .filter((f: any) => f && !blockedIds.includes(f.id));
         
-        // Fetch current user's profile to know their gender
+        // Fetch current user's full profile
         const { data: userProfile } = await supabase
           .from('profiles')
-          .select('gender')
+          .select('*')
           .eq('id', user.id)
           .single();
+        if (userProfile) setUserProfile(userProfile);
+
+        // Fetch vouch count
+        const { count: vouchCount } = await supabase
+          .from('vouch_records')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('vouch_status', 'approved');
+        setHasVouchedRecords(vouchCount !== null && vouchCount > 0);
+
+        // Fetch coin balance
+        const { data: wallet } = await supabase
+          .from('user_wallets')
+          .select('coin_balance')
+          .eq('id', user.id)
+          .maybeSingle();
+        if (wallet) setCoinBalance(Number(wallet.coin_balance));
 
         // Also show some potential matches if no friends (with strict gender filtering)
         let profilesQuery = supabase
@@ -194,11 +225,37 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
     const checkFriendship = async () => {
       const { data } = await supabase
         .from('friendships')
-        .select('status')
+        .select('*')
         .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${selectedMatch.id}),and(sender_id.eq.${selectedMatch.id},receiver_id.eq.${currentUser.id})`)
         .single();
       
-      setIsFriend(data?.status === 'accepted');
+      const isAccepted = data?.status === 'accepted';
+      setIsFriend(isAccepted);
+
+      if (isAccepted && data) {
+        const { data: telData } = await supabase
+          .from('interaction_telemetry')
+          .select('*')
+          .eq('friendship_id', data.id)
+          .maybeSingle();
+
+        if (telData) {
+          setTelemetry(telData);
+          if (telData.phase === 2) {
+            setShowPulseCheck(true);
+          } else if (telData.phase === 3) {
+            setSafeSpaceActive(true);
+          }
+        } else {
+          setTelemetry(null);
+          setShowPulseCheck(false);
+          setSafeSpaceActive(false);
+        }
+      } else {
+        setTelemetry(null);
+        setShowPulseCheck(false);
+        setSafeSpaceActive(false);
+      }
     };
 
     checkFriendship();
@@ -390,12 +447,43 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
     }
   };
 
+  const showUpgradePromptForTier = (tier: string) => {
+    let promptText = '';
+    if (tier === 'silver') {
+      promptText = locale === 'am'
+        ? "የዕለቱ መልእክት ገደብዎ ላይ ደርሰዋል። መታወቂያዎን በነጻ በመስቀል መለያዎን ወደ Gold Tier ያሳድጉ!"
+        : "You have used your 3 texts/1 min limit. Upgrade instantly to Gold for free by simply uploading your Legal ID!";
+    } else if (tier === 'gold') {
+      promptText = locale === 'am'
+        ? "የዕለቱ የውይይት ገደብዎ ላይ ደርሰዋል። በጓደኞችዎ ምስክርነት አግኝተው መለያዎን ወደ Platinum Tier ያሳድጉ!"
+        : "Need more room to chat? Get verified by your peers to instantly unlock the Platinum tier!";
+    } else if (tier === 'platinum') {
+      promptText = locale === 'am'
+        ? "የዕለቱን ገደብ ጨርሰዋል። ያለምንም ገደብ ለመወያየት መለያዎን ወደ Diamond Tier ያሳድጉ!"
+        : "Remove all chat blocks. Upgrade directly to the premium Diamond tier for completely unlimited access!";
+    }
+    setUpgradeModalText(promptText);
+    setShowUpgradeModal(true);
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !selectedMatch || !currentUser) return;
 
-    // Non-premium daily message limit check (5 messages/day)
-    if (!isPremium) {
+    // Tiers & Daily Action Limits (Beteseb v3.6)
+    const userTier = getUserTier(userProfile, hasVouchedRecords);
+    const limits = getTierLimits(userTier);
+
+    if (userTier === 'bronze') {
+      alert(locale === 'am'
+        ? "ያልተረጋገጠ (Bronze Tier) አባላት መልእክት መላክ አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!"
+        : "Unverified (Bronze Tier) members are blocked from sending text or audio messages. Please complete verification first!");
+      return;
+    }
+
+    let bypassWithCoins = false;
+
+    if (limits.maxTexts !== Infinity) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const { count, error: countError } = await supabase
@@ -403,12 +491,41 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
         .select('*', { count: 'exact', head: true })
         .eq('sender_id', currentUser.id)
         .gte('created_at', today.toISOString());
-        
-      if (!countError && count !== null && count >= 5) {
-        alert(locale === 'am'
-          ? "በቀን መላክ የሚችሉት 5 መልእክቶች ብቻ ነው። እባክዎ ሁሉንም ለማግኘት አካውንትዎን ያሳድጉ!"
-          : "You have reached the free limit of 5 messages per day. Please upgrade to Premium to chat unlimitedly!");
-        return;
+
+      if (!countError && count !== null && count >= limits.maxTexts) {
+        // Limit reached. Offer bypass with coins (10 coins)
+        if (coinBalance >= 10) {
+          const confirmSpend = confirm(locale === 'am'
+            ? `የዕለቱ የ${limits.maxTexts} መልእክቶች ገደብዎ አልቋል። 10 የቤተሰብ ሳንቲም በመጠቀም ይህን መልእክት መላክ ይፈልጋሉ?`
+            : `You have reached your daily limit of ${limits.maxTexts} texts. Spend 10 Beteseb Coins to send this message?`);
+          
+          if (confirmSpend) {
+            // Deduct coins
+            const { error: debitError } = await supabase
+              .from('coin_transactions')
+              .insert({
+                user_id: currentUser.id,
+                amount: -10,
+                type: 'gift_send' // spend
+              });
+            
+            if (!debitError) {
+              setCoinBalance(prev => prev - 10);
+              bypassWithCoins = true;
+            } else {
+              alert("Coin transaction failed: " + debitError.message);
+              return;
+            }
+          } else {
+            // Cancel and show upgrade prompt
+            showUpgradePromptForTier(userTier);
+            return;
+          }
+        } else {
+          // No coins, show upgrade prompt directly
+          showUpgradePromptForTier(userTier);
+          return;
+        }
       }
     }
 
@@ -715,6 +832,66 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
               </div>
             </header>
 
+            {safeSpaceActive && (
+              <div className="bg-primary/5 border-b border-primary/20 px-6 py-3 flex items-center justify-between text-xs font-black uppercase tracking-wider text-primary">
+                <span className="flex items-center gap-2">🛡️ Mutual Safe Space Active / የጋራ የደህንነት መድረክ</span>
+                <button 
+                  onClick={() => {
+                    alert("Launching relationship counselor list. Please navigate to Workshops to book!");
+                  }}
+                  className="px-3 py-1 bg-primary text-white rounded-lg text-[9px] hover:scale-105 transition-all"
+                >
+                  Book Counselor / አማካሪ ያግኙ
+                </button>
+              </div>
+            )}
+
+            {showPulseCheck && (
+              <div className="m-6 p-6 bg-amber-50 border border-amber-200 rounded-3xl space-y-4 animate-in slide-in-from-top-4 duration-300">
+                <div className="flex items-start gap-3">
+                  <span className="text-xl">❤️</span>
+                  <div className="space-y-1">
+                    <h4 className="font-black text-xs text-amber-800 uppercase tracking-wider">
+                      {locale === 'am' ? 'የውይይት ግምገማ (Pulse Check)' : 'Relationship Pulse Check'}
+                    </h4>
+                    <p className="text-xs text-amber-700 font-medium">
+                      {locale === 'am' 
+                        ? 'የውይይት ፍጥነታችሁ ቀንሷል። ስሜታችሁን በግልጽ ለመወያየት ወደ የጋራ የደህንነት መድረክ (Safe Space) መግባት ይፈልጋሉ?' 
+                        : 'It looks like your conversation has cooled down. Would you like to enter a mutual Safe Space room to talk it out constructively?'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={async () => {
+                      if (telemetry) {
+                        const { error } = await supabase
+                          .from('interaction_telemetry')
+                          .update({ phase: 3 })
+                          .eq('id', telemetry.id);
+                        if (!error) {
+                          setSafeSpaceActive(true);
+                          setShowPulseCheck(false);
+                        }
+                      } else {
+                        setSafeSpaceActive(true);
+                        setShowPulseCheck(false);
+                      }
+                    }}
+                    className="px-4 py-2 bg-primary text-white rounded-xl text-[9px] font-black uppercase tracking-widest shadow-md hover:scale-105 transition-all"
+                  >
+                    {locale === 'am' ? 'እንወያይ' : 'Talk It Out'}
+                  </button>
+                  <button
+                    onClick={() => setShowPulseCheck(false)}
+                    className="px-4 py-2 bg-amber-200/50 text-amber-800 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-amber-200 transition-all"
+                  >
+                    {locale === 'am' ? 'ዝጋ' : 'Dismiss'}
+                  </button>
+                </div>
+              </div>
+            )}
+
             {isReportOpen && (
               <div className="p-6 bg-amber-50/50 border-b border-amber-200 space-y-4 animate-in slide-in-from-top-2 z-20 relative">
                 <div className="flex justify-between items-center">
@@ -809,24 +986,54 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
             </div>
 
             <form onSubmit={handleSendMessage} className="p-6 bg-white border-t border-muted space-y-4">
-              <div className="flex gap-2">
-                 <button 
-                  type="button"
-                  onClick={suggestIceBreaker}
-                  className="flex items-center gap-2 px-4 py-2 bg-muted text-accent border border-gray-100 rounded-full text-[9px] font-black uppercase tracking-widest hover:bg-primary/10 hover:text-primary transition-all shadow-sm"
-                 >
-                    <Lightbulb size={12} /> Templates
-                 </button>
-                 <button 
-                  type="button"
-                  onClick={generateIceBreakerAI}
-                  disabled={isGeneratingIceBreaker}
-                  className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-full text-[9px] font-black uppercase tracking-widest hover:bg-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 shadow-sm"
-                 >
-                    {isGeneratingIceBreaker ? <Loader2 className="animate-spin" size={12} /> : <Sparkles size={12} className="fill-primary" />}
-                    AI Ice-breaker
-                 </button>
-              </div>
+              {safeSpaceActive ? (
+                <div className="flex flex-col gap-2 w-full p-4 bg-primary/5 border border-primary/20 rounded-3xl">
+                  <p className="text-[9px] font-black text-primary uppercase tracking-widest px-2">
+                    {locale === 'am' ? 'ገንቢ የውይይት መሪዎች (Safe Space Prompts):' : 'Constructive Safe Space Prompts:'}
+                  </p>
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {[
+                      locale === 'am' 
+                        ? "በግንኙነታችን ላይ ያለንን ተስፋዎች በግልፅ እንድንወያይ እፈልጋለሁ።"
+                        : "I feel like we've drifted a bit and want to align on our relationship expectations.",
+                      locale === 'am'
+                        ? "የመነጋገሪያ ስልታችንን እንዴት ማሻሻል እንደምንችል እንወያይ።"
+                        : "Let's discuss how we can improve our communication style.",
+                      locale === 'am'
+                        ? "የግንኙነት አማካሪ ማግኘት እፈልጋለሁ።"
+                        : "I would like us to schedule a brief counseling check-in."
+                    ].map((promptText, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setNewMessage(promptText)}
+                        className="text-left px-3 py-2 bg-white hover:bg-primary/5 hover:text-primary text-[10px] font-bold rounded-2xl border border-gray-200 transition-all text-accent"
+                      >
+                        💬 {promptText}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                   <button 
+                    type="button"
+                    onClick={suggestIceBreaker}
+                    className="flex items-center gap-2 px-4 py-2 bg-muted text-accent border border-gray-100 rounded-full text-[9px] font-black uppercase tracking-widest hover:bg-primary/10 hover:text-primary transition-all shadow-sm"
+                   >
+                      <Lightbulb size={12} /> Templates
+                   </button>
+                   <button 
+                    type="button"
+                    onClick={generateIceBreakerAI}
+                    disabled={isGeneratingIceBreaker}
+                    className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-full text-[9px] font-black uppercase tracking-widest hover:bg-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 shadow-sm"
+                   >
+                      {isGeneratingIceBreaker ? <Loader2 className="animate-spin" size={12} /> : <Sparkles size={12} className="fill-primary" />}
+                      AI Ice-breaker
+                   </button>
+                </div>
+              )}
               <div className="flex items-center gap-4 bg-muted/30 rounded-[2rem] p-2 pl-6 focus-within:ring-2 focus-within:ring-primary/20 transition-all border border-muted">
                 <input 
                   type="text" 
@@ -961,6 +1168,40 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                 <Send size={18} className="ml-0.5" />
               </button>
             </form>
+          </div>
+        </div>
+      )}
+      {showUpgradeModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-md rounded-[3rem] border border-muted p-8 text-center space-y-6 shadow-2xl animate-in slide-in-from-bottom-8 duration-500">
+            <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto">
+              <Lock size={28} />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-xl font-black text-accent italic tracking-tighter">
+                {locale === 'am' ? 'ዕለታዊ ገደብ ላይ ደርሰዋል' : 'Daily Limit Exhausted'}
+              </h3>
+              <p className="text-xs text-gray-500 leading-relaxed font-medium px-2">
+                {upgradeModalText}
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 pt-2">
+              <button
+                onClick={() => {
+                  setShowUpgradeModal(false);
+                  window.location.reload();
+                }}
+                className="w-full bg-primary text-white py-4 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-primary/20 hover:scale-102 active:scale-98 transition-all"
+              >
+                {locale === 'am' ? 'አሁኑኑ መለያዎን ያሳድጉ' : 'Upgrade / Verify Now'}
+              </button>
+              <button
+                onClick={() => setShowUpgradeModal(false)}
+                className="w-full bg-muted text-gray-500 py-4 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-muted/75 transition-all"
+              >
+                {locale === 'am' ? 'ዝጋ' : 'Close'}
+              </button>
+            </div>
           </div>
         </div>
       )}

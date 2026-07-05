@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { queueSMS } from '@/lib/sms';
 import { useRouter, usePathname } from '@/i18n/routing';
 import { 
@@ -20,6 +20,7 @@ import Image from 'next/image';
 
 export default function ProfileView({ profile, onUpdate }: { profile: any, onUpdate: () => void }) {
   const t = useTranslations('Dashboard.profile');
+  const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
   const [photos, setPhotos] = useState<string[]>(profile?.gallery_urls || []);
@@ -203,6 +204,15 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
+    
+    // Biography character limit check (100 to 150 characters) (Phase 4.5)
+    if (formData.bio && (formData.bio.length < 100 || formData.bio.length > 150)) {
+       alert(locale === 'am' 
+         ? `ማሳሰቢያ፦ መገለጫ ባዮ (Biography) በትንሹ 100 እና ቢበዛ 150 ፊደላት መሆን አለበት። (አሁን ያለው ርዝመት፡ ${formData.bio.length})`
+         : `Biography must be between 100 and 150 characters long. (Current length: ${formData.bio.length})`);
+       setIsSaving(false);
+       return;
+    }
     
     // Check if username is taken if changed
     if (formData.username && formData.username !== profile.username) {

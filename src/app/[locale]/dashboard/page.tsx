@@ -35,6 +35,7 @@ import SwipeCards from '@/components/dashboard/SwipeCards';
 import LessonsView from '@/components/dashboard/LessonsView';
 import SubscriptionGate from '@/components/SubscriptionGate';
 import EulaGate from '@/components/EulaGate';
+import { getUserTier, calculateCompletionRate } from '@/lib/tiers';
 
 function DashboardContent() {
   const t = useTranslations('Dashboard');
@@ -56,6 +57,8 @@ function DashboardContent() {
     onboarding_completed: boolean;
     role: string;
     is_premium?: boolean;
+    gender: string | null;
+    premium_until?: string | null;
   }
 
   interface Match {
@@ -78,6 +81,8 @@ function DashboardContent() {
   const [friendshipStatuses, setFriendshipStatuses] = useState<Record<string, string>>({});
   const [matchingView, setMatchingView] = useState<'grid' | 'swipe'>('grid');
   const [candidates, setCandidates] = useState<any[]>([]);
+  const [hasVouchedRecords, setHasVouchedRecords] = useState(false);
+  const [isGuardianLinked, setIsGuardianLinked] = useState(false);
 
   const languages = [
     { id: 'en', label: 'English' },
@@ -87,6 +92,28 @@ function DashboardContent() {
     { id: 'ti', label: 'ትግርኛ' },
     { id: 'so', label: 'Soomaali' }
   ];
+
+  const getTierIcon = (tier: string) => {
+    switch (tier) {
+      case 'diamond': return '💎';
+      case 'platinum': return '🌟';
+      case 'gold': return '🥇';
+      case 'silver': return '🥈';
+      case 'bronze':
+      default: return '🥉';
+    }
+  };
+
+  const getTierName = (tier: string) => {
+    switch (tier) {
+      case 'diamond': return locale === 'am' ? 'ዳይመንድ (Diamond Tier)' : 'Diamond Tier';
+      case 'platinum': return locale === 'am' ? 'ፕላቲኒየም (Platinum Tier)' : 'Platinum Tier';
+      case 'gold': return locale === 'am' ? 'ጎልደን (Gold Tier)' : 'Gold Tier';
+      case 'silver': return locale === 'am' ? 'ሲልቨር (Silver Tier)' : 'Silver Tier';
+      case 'bronze':
+      default: return locale === 'am' ? 'ያልተረጋገጠ (Bronze Tier)' : 'Bronze Tier';
+    }
+  };
 
   const handleLanguageChange = (newLocale: string) => {
     router.replace(pathname, { locale: newLocale });
@@ -98,6 +125,30 @@ function DashboardContent() {
     if (!error) {
        router.push('/');
     }
+  };
+
+  const renderRoyalAvatar = (avatarUrl: string | null, gender: string | null, sizeClass = "w-10 h-10") => {
+    const isRoyal = completionRate === 100 && userTier === 'diamond';
+    return (
+      <div className="relative flex items-center justify-center shrink-0">
+        {isRoyal && (
+          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 text-[10px] animate-bounce z-10">
+            👑
+          </div>
+        )}
+        <div className={`${sizeClass} rounded-full overflow-hidden flex items-center justify-center bg-muted transition-all border-2 ${
+          isRoyal 
+            ? (gender === 'Male' ? 'border-amber-400 ring-2 ring-amber-300' : 'border-pink-400 ring-2 ring-pink-300')
+            : 'border-primary/20'
+        }`}>
+          {avatarUrl ? (
+            <Image src={avatarUrl} alt="Avatar" width={40} height={40} className="w-full h-full object-cover" />
+          ) : (
+            <UserCircle size={24} className="text-gray-300" />
+          )}
+        </div>
+      </div>
+    );
   };
 
   useEffect(() => {
@@ -124,6 +175,22 @@ function DashboardContent() {
       if (profileData) {
         setProfile(profileData as Profile);
         OfflineCache.cacheData(`profile_${user.id}`, profileData);
+
+        // Fetch vouch count
+        const { count: vouchCount } = await supabase
+          .from('vouch_records')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('vouch_status', 'approved');
+        setHasVouchedRecords(vouchCount !== null && vouchCount > 0);
+
+        // Fetch guardian count
+        const { count: guardianCount } = await supabase
+          .from('guardians')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('status', 'approved');
+        setIsGuardianLinked(guardianCount !== null && guardianCount > 0);
       }
 
       // 2. Fetch Verification
@@ -192,7 +259,27 @@ function DashboardContent() {
       const { data: profiles } = await matchQuery.limit(10);
 
       if (profiles && profileData) {
-        setCandidates(profiles);
+        const candidateIds = profiles.map(p => p.id);
+        const { data: vouchedData } = await supabase
+          .from('vouch_records')
+          .select('user_id')
+          .in('user_id', candidateIds)
+          .eq('vouch_status', 'approved');
+        const vouchedSet = new Set((vouchedData || []).map(v => v.user_id));
+
+        const { data: guardiansData } = await supabase
+          .from('guardians')
+          .select('user_id')
+          .in('user_id', candidateIds)
+          .eq('status', 'approved');
+        const guardiansSet = new Set((guardiansData || []).map(g => g.user_id));
+
+        const candidatesWithTrust = profiles.map(p => ({
+          ...p,
+          has_vouched: vouchedSet.has(p.id),
+          is_guardian_linked: guardiansSet.has(p.id)
+        }));
+        setCandidates(candidatesWithTrust);
         const processedMatches = profiles.map(p => ({
           id: p.id,
           name: p.full_name || 'Anonymous',
@@ -253,6 +340,9 @@ function DashboardContent() {
                     paymentStatus === 'approved' || 
                     ['admin', 'super_admin', 'expert'].includes((profile as any)?.role);
   const isAdmin = ['admin', 'super_admin'].includes((profile as any)?.role);
+
+  const completionRate = calculateCompletionRate(profile as any);
+  const userTier = getUserTier(profile as any, hasVouchedRecords);
 
   return (
     <div className="min-h-screen bg-[#FDFBF9] flex flex-col md:flex-row overflow-x-hidden pb-20 md:pb-0" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
@@ -388,13 +478,9 @@ function DashboardContent() {
               {/* Avatar Link */}
               <button 
                 onClick={() => setActiveTab('profile')}
-                className="w-10 h-10 rounded-full bg-muted border-2 border-primary/20 overflow-hidden shadow-sm hover:border-primary transition-all active:scale-95 flex items-center justify-center"
+                className="hover:scale-105 active:scale-95 transition-all"
               >
-                {profile?.avatar_url ? (
-                  <Image src={profile.avatar_url} alt="Avatar" width={40} height={40} className="w-full h-full object-cover" />
-                ) : (
-                  <UserCircle size={24} className="text-gray-300" />
-                )}
+                {renderRoyalAvatar(profile?.avatar_url || null, (profile as any)?.gender || null)}
               </button>
             </div>
           </div>
@@ -556,6 +642,67 @@ function DashboardContent() {
             </div>
 
             <aside className="space-y-8">
+              {/* Profile Completion & Trust Tier Dashboard Widget (Phase 4.5) */}
+              <div className="bg-white p-10 rounded-[3rem] border border-border shadow-sm space-y-6">
+                <div className="text-center space-y-1">
+                  <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">
+                    {locale === 'am' ? 'የእምነት ደረጃ' : 'Trust Meter'}
+                  </h3>
+                  <div className="flex items-center justify-center gap-2 pt-2">
+                    <span className="text-3xl">{getTierIcon(userTier)}</span>
+                    <span className="font-black text-accent text-sm uppercase tracking-wide">
+                      {getTierName(userTier)}
+                    </span>
+                  </div>
+                  {userTier === 'diamond' && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-[8px] font-black uppercase tracking-widest mt-1">
+                      🛡️ High-Trust Seal Approved
+                    </span>
+                  )}
+                </div>
+
+                {/* Completion Rate Meter */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-gray-400">
+                    <span>{locale === 'am' ? 'የመገለጫ ማጠናቀቂያ' : 'Profile Completion'}</span>
+                    <span className="text-primary">{completionRate}%</span>
+                  </div>
+                  <div className="w-full h-3 bg-muted rounded-full overflow-hidden shadow-inner border border-border">
+                    <div 
+                      style={{ width: `${completionRate}%` }}
+                      className="h-full bg-gradient-to-r from-primary to-orange-400 rounded-full transition-all duration-1000"
+                    />
+                  </div>
+                  {completionRate === 100 && (
+                    <p className="text-[9px] text-green-600 font-bold uppercase tracking-wide text-center">
+                      💯 100% Completed! Advanced badges unlocked.
+                    </p>
+                  )}
+                </div>
+
+                {/* Guardian Linked Indicator */}
+                {isGuardianLinked && (
+                  <div className="p-4 bg-amber-50 border border-amber-100 rounded-2xl flex items-center justify-center gap-2">
+                    <span className="text-base">👨‍👩‍👦</span>
+                    <span className="text-[10px] font-black text-amber-700 uppercase tracking-widest">
+                      Guardian-Linked / ዋሊ ተገናኝቷል
+                    </span>
+                  </div>
+                )}
+
+                {/* Royal Frame Design Details */}
+                {completionRate === 100 && userTier === 'diamond' && (
+                  <div className="p-4 bg-primary/5 border border-primary/10 rounded-2xl text-center space-y-1">
+                    <p className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center justify-center gap-1">
+                      👑 {(profile as any)?.gender === 'Male' ? "King's Crown Frame Active" : "Queen's Crown Frame Active"}
+                    </p>
+                    <p className="text-[8px] text-gray-400 font-bold">
+                      Your avatar across the system is highlighted with a royal border.
+                    </p>
+                  </div>
+                )}
+              </div>
+
               <div className="bg-white p-10 rounded-[3rem] border border-border shadow-sm text-center">
                 <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-6">{t('subscription')}</h3>
                 {paymentStatus === 'approved' ? (

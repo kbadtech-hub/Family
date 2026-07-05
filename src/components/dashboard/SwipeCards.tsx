@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Heart, X, Sparkles, MapPin, Star, ShieldCheck, MoreVertical } from 'lucide-react';
 import { calculateCompatibility } from '@/lib/compatibility';
 import { supabase } from '@/lib/supabase';
+import { getUserTier, calculateCompletionRate } from '@/lib/tiers';
 
 interface SwipeCardsProps {
   userProfile: any;
@@ -85,6 +86,20 @@ export default function SwipeCards({ userProfile, candidates, onLike, onPass, is
   }
 
   const matchPercent = calculateCompatibility(userProfile, activeCandidate);
+  const candCompletionRate = calculateCompletionRate(activeCandidate);
+  const candTier = getUserTier(activeCandidate, !!activeCandidate.has_vouched);
+
+  const getTierBadge = (tier: string) => {
+    switch (tier) {
+      case 'diamond': return { label: 'Diamond', color: 'bg-cyan-500/20 text-cyan-200 border-cyan-500/30', emoji: '💎' };
+      case 'platinum': return { label: 'Platinum', color: 'bg-indigo-500/20 text-indigo-200 border-indigo-500/30', emoji: '🌟' };
+      case 'gold': return { label: 'Gold', color: 'bg-amber-500/20 text-amber-200 border-amber-500/30', emoji: '🥇' };
+      case 'silver': return { label: 'Silver', color: 'bg-slate-400/20 text-slate-200 border-slate-400/30', emoji: '🥈' };
+      case 'bronze':
+      default: return { label: 'Unverified', color: 'bg-orange-850/20 text-orange-200 border-orange-850/30', emoji: '🥉' };
+    }
+  };
+  const badge = getTierBadge(candTier);
 
   return (
     <div className="w-full max-w-md mx-auto relative flex flex-col items-center select-none">
@@ -108,6 +123,19 @@ export default function SwipeCards({ userProfile, candidates, onLike, onPass, is
           priority
         />
 
+        {/* Royal Frame Overlay (Phase 4.5) */}
+        {candCompletionRate === 100 && candTier === 'diamond' && (
+          <div className={`absolute inset-0 border-8 pointer-events-none rounded-[3.5rem] z-10 ${
+            activeCandidate.gender === 'Male' 
+              ? 'border-amber-400/90 ring-4 ring-amber-300/50 ring-inset' 
+              : 'border-pink-400/90 ring-4 ring-pink-300/50 ring-inset'
+          }`}>
+            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 text-2xl drop-shadow-lg animate-bounce">
+              👑
+            </div>
+          </div>
+        )}
+
         {/* Visual Swipe Indicators */}
         {swipeDirection === 'right' && (
           <div className="absolute top-12 left-12 border-4 border-green-500 text-green-500 font-black text-2xl uppercase tracking-widest px-6 py-2 rounded-2xl rotate-[-12deg] z-20 backdrop-blur-md bg-green-500/10">
@@ -127,9 +155,17 @@ export default function SwipeCards({ userProfile, candidates, onLike, onPass, is
             {matchPercent}% Compatibility
           </div>
           <div className="flex items-center gap-2">
-            {activeCandidate.is_verified && (
-              <div className="bg-white/20 backdrop-blur-xl border border-white/20 p-2.5 rounded-full text-white shadow-lg flex items-center justify-center">
-                <ShieldCheck size={18} className="fill-primary" />
+            {/* Trust Tier Badge (v3.6) */}
+            <div className={`backdrop-blur-xl border px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-lg ${badge.color}`}>
+              <span>{badge.emoji}</span>
+              <span>{badge.label}</span>
+            </div>
+
+            {/* Guardian-Linked Identity Badge */}
+            {activeCandidate.is_guardian_linked && (
+              <div className="bg-amber-500/20 backdrop-blur-xl border border-amber-500/30 px-3 py-1.5 rounded-full text-[9px] font-black text-amber-200 uppercase tracking-wider flex items-center gap-1 shadow-lg" title="Guardian-Linked Identity">
+                <span>👨‍👩‍👦</span>
+                <span>Wali</span>
               </div>
             )}
             
