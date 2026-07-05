@@ -140,7 +140,7 @@ export default function Chatbot() {
   };
 
   return (
-    <div className="fixed bottom-8 right-8 z-[200]">
+    <div className="fixed bottom-28 right-4 md:bottom-8 md:right-8 z-[200]">
       {/* Floating Button */}
       <button
         onClick={() => {
@@ -150,7 +150,7 @@ export default function Chatbot() {
         aria-label={isOpen ? "Close Chat" : "Open Chat"}
         title={isOpen ? "Close Chat" : "Open Chat"}
         className={`w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-all duration-500 hover:scale-110 active:scale-95 ${
-          isOpen ? 'bg-white text-accent' : 'bg-primary text-white'
+          isOpen ? 'bg-white text-accent' : 'bg-primary text-white animate-[bounce_3s_infinite]'
         }`}
       >
         {isOpen ? <ChevronDown size={28} /> : <MessageSquare size={28} />}

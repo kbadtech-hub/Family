@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import Image from 'next/image';
 import { useRouter, usePathname } from '@/i18n/routing';
@@ -49,6 +49,7 @@ function DashboardContent() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
 
   interface Profile {
     id: string;
@@ -62,6 +63,8 @@ function DashboardContent() {
     gender: string | null;
     premium_until?: string | null;
     coins?: number;
+    verification_status?: string | null;
+    is_verified?: boolean;
   }
 
   interface Match {
@@ -161,6 +164,19 @@ function DashboardContent() {
        setActiveTab('dashboard');
     }
   }, [searchParams]);
+
+  // Profile dropdown click outside handler
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+        setIsProfileDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -429,9 +445,9 @@ function DashboardContent() {
               <Image 
                 src="/logo.png" 
                 alt="Beteseb Logo" 
-                width={120} 
-                height={30} 
-                className="h-8 w-auto object-contain"
+                width={200} 
+                height={45} 
+                className="h-10 w-auto object-contain"
                 priority
               />
               <div className="hidden sm:block h-6 w-[1px] bg-border" />
@@ -469,7 +485,7 @@ function DashboardContent() {
               </div>
 
               {/* Avatar Link with Dropdown */}
-              <div className="relative">
+              <div className="relative" ref={profileDropdownRef}>
                 <button 
                   onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
                   className="hover:scale-105 active:scale-95 transition-all focus:outline-none flex items-center"
@@ -522,7 +538,7 @@ function DashboardContent() {
         </header>
 
         {/* Verification Banner */}
-        {!profile?.onboarding_completed && (
+        {!profile?.onboarding_completed && profile?.verification_status !== 'verified' && profile?.verification_status !== 'pending' && !profile?.is_verified && (
           <div className="mb-10 bg-gradient-to-r from-primary to-orange-400 p-8 md:p-10 rounded-[3rem] text-white shadow-2xl shadow-primary/20 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:scale-110 transition-transform duration-700" />
             <div className="relative flex flex-col md:flex-row items-center justify-between gap-8">
@@ -810,16 +826,20 @@ function DashboardContent() {
 
         {activeTab === 'profile' && profile && (
           <ProfileView 
-            profile={profile} 
-            onUpdate={() => {
-              // Re-fetch profile to update dashboard UI
-              supabase.auth.getUser().then(({ data: { user } }) => {
-                if (user) {
-                  supabase.from('profiles').select('*').eq('id', user.id).single()
-                    .then(({ data }) => data && setProfile(data as Profile));
-                }
-              });
-            }} 
+            profile={profile}             onUpdate={() => {
+               // Re-fetch profile to update dashboard UI and update offline cache
+               supabase.auth.getUser().then(({ data: { user } }) => {
+                 if (user) {
+                   supabase.from('profiles').select('*').eq('id', user.id).single()
+                     .then(({ data }) => {
+                       if (data) {
+                         setProfile(data as Profile);
+                         OfflineCache.cacheData(`profile_${user.id}`, data);
+                       }
+                     });
+                 }
+               });
+             }} 
           />
         )}
         {selectedMatchId && (

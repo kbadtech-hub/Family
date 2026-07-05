@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useLocale } from 'next-intl';
 import YouTubeEmbed from '@/components/YouTubeEmbed';
+import BetesebCoinIcon from '@/components/BetesebCoinIcon';
 
 /* ─── Types ──────────────────────────────────────────────────────────── */
 interface VideoItem {
@@ -332,8 +333,8 @@ export default function AcademyView({
                       {mod.category}
                     </span>
                     {mod.is_free === false && !isPremium && (
-                      <span className="text-[9px] font-black text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">
-                        🪙 {mod.coin_price} {am ? 'ኮይን' : 'Coins'}
+                      <span className="text-[9px] font-black text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md flex items-center gap-1">
+                        <BetesebCoinIcon className="w-3.5 h-3.5" /> {mod.coin_price} {am ? 'ኮይን' : 'Coins'}
                       </span>
                     )}
                     {isPremium && (

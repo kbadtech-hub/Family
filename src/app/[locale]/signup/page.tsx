@@ -301,9 +301,19 @@ function SignupContent() {
     );
   }
 
+  const handleBackgroundClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      router.push('/');
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#FDFBF9] flex items-center justify-center p-6" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
-      <div className="max-w-md w-full">
+    <div 
+      className="min-h-screen bg-[#FDFBF9] flex items-center justify-center p-6 cursor-pointer" 
+      onClick={handleBackgroundClick}
+      dir={locale === 'ar' ? 'rtl' : 'ltr'}
+    >
+      <div className="max-w-md w-full cursor-default" onClick={(e) => e.stopPropagation()}>
         {/* Branding */}
         <div className="text-center mb-8">
           <Image 

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
+import BetesebCoinIcon from '@/components/BetesebCoinIcon';
 import { 
   Send,
   User,
@@ -282,8 +283,8 @@ export default function CommunityView({
       {coinPostConfirm && (
         <div className="fixed inset-0 z-[10000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl border border-border text-center space-y-5">
-            <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto">
-              <span className="text-3xl">🪙</span>
+            <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto">
+              <BetesebCoinIcon className="w-12 h-12" />
             </div>
             <div>
               <h4 className="font-black text-accent text-lg italic">
