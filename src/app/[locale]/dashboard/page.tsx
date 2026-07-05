@@ -23,13 +23,15 @@ import {
   AlertCircle,
   LogOut,
   ChevronRight,
-  Gift
+  Gift,
+  Sparkles
 } from 'lucide-react';
 import CommunityView from '@/components/dashboard/CommunityView';
 import PaymentTab from '@/components/dashboard/PaymentTab';
 import ChatView from '@/components/dashboard/ChatView';
 import ProfileView from '@/components/dashboard/ProfileView';
 import GiftsView from '@/components/dashboard/GiftsView';
+import WeddingPlannerView from '@/components/dashboard/WeddingPlannerView';
 import MatchDetailView from '@/components/dashboard/MatchDetailView';
 import SwipeCards from '@/components/dashboard/SwipeCards';
 import LessonsView from '@/components/dashboard/LessonsView';
@@ -109,9 +111,9 @@ function DashboardContent() {
       case 'diamond': return locale === 'am' ? 'ዳይመንድ (Diamond Tier)' : 'Diamond Tier';
       case 'platinum': return locale === 'am' ? 'ፕላቲኒየም (Platinum Tier)' : 'Platinum Tier';
       case 'gold': return locale === 'am' ? 'ጎልደን (Gold Tier)' : 'Gold Tier';
-      case 'silver': return locale === 'am' ? 'ሲልቨር (Silver Tier)' : 'Silver Tier';
+      case 'silver': return locale === 'am' ? 'ቤዚክ ማረጋገጫ (Silver Tier)' : 'Basic Verified (Silver Tier)';
       case 'bronze':
-      default: return locale === 'am' ? 'ያልተረጋገጠ (Bronze Tier)' : 'Bronze Tier';
+      default: return locale === 'am' ? 'ያልተረጋገጠ (Bronze Tier)' : 'Unverified (Bronze Tier)';
     }
   };
 
@@ -361,6 +363,7 @@ function DashboardContent() {
             { id: 'chat', icon: MessageCircle, label: n('chat') },
             { id: 'community', icon: Users, label: n('community') },
             { id: 'workshops', icon: GraduationCap, label: n('workshops') },
+            { id: 'wedding', icon: Sparkles, label: locale === 'am' ? 'የሰርግ እቅድ' : 'Wedding Planner' },
             { id: 'gifts', icon: Gift, label: locale === 'am' ? 'ስጦታዎች' : 'Gifts' },
             { id: 'profile', icon: UserCircle, label: n('profile') }
           ].map((item) => (
@@ -399,6 +402,7 @@ function DashboardContent() {
           { id: 'chat', icon: MessageCircle, label: n('chat') },
           { id: 'community', icon: Users, label: n('community') },
           { id: 'workshops', icon: GraduationCap, label: n('workshops') },
+          { id: 'wedding', icon: Sparkles, label: locale === 'am' ? 'የሰርግ እቅድ' : 'Wedding Planner' },
           { id: 'gifts', icon: Gift, label: locale === 'am' ? 'ስጦታዎች' : 'Gifts' },
           { id: 'profile', icon: UserCircle, label: n('profile') }
         ].map((item) => (
@@ -753,6 +757,12 @@ function DashboardContent() {
             <SubscriptionGate allowVerifiedView={true}>
               <CommunityView isVerified={verificationStatus === 'verified'} isPremium={isPremium} isAdmin={isAdmin} />
             </SubscriptionGate>
+          </div>
+        )}
+
+        {activeTab === 'wedding' && (
+          <div className="mt-10">
+             <WeddingPlannerView currency={profile?.currency_locked || 'ETB'} />
           </div>
         )}
 

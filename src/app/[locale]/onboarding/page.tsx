@@ -116,6 +116,8 @@ function OnboardingContent() {
   const [customPartnerReligion, setCustomPartnerReligion] = useState('');
   const [showCustomPartnerIntent, setShowCustomPartnerIntent] = useState(false);
   const [customPartnerIntent, setCustomPartnerIntent] = useState('');
+  const [customRequirementText, setCustomRequirementText] = useState('');
+  const [customPartnerCountry, setCustomPartnerCountry] = useState('');
 
   const searchParams = useSearchParams();
 
@@ -317,6 +319,13 @@ function OnboardingContent() {
     }
   }, [searchParams, router]);
 
+  useEffect(() => {
+    if (selectedCountry && selectedCountry !== 'Others' && !locationData[selectedCountry]) {
+      setSelectedRegion('Others');
+      setSelectedCity('Others');
+    }
+  }, [selectedCountry]);
+
   const validateStep = (currentStep: number) => {
     setErrorMsg('');
     switch (currentStep) {
@@ -423,7 +432,7 @@ function OnboardingContent() {
           spouse_requirements: formData.spouse_requirements,
           gallery_urls: formData.gallery_photos,
           star_sign: formData.star_sign,
-          partner_location: formData.partner_countries,
+          partner_location: formData.partner_countries.map(c => c === 'Others' ? customPartnerCountry : c),
           partner_age_min: formData.partner_age_min,
           partner_age_max: formData.partner_age_max,
           partner_religion: showCustomPartnerReligion ? customPartnerReligion : formData.partner_religion,
@@ -576,8 +585,18 @@ function OnboardingContent() {
                       className="w-full p-3 bg-muted rounded-xl font-bold text-xs"
                     >
                       <option value="">Select Country</option>
-                      <option value="Ethiopia">Ethiopia</option>
-                      <option value="USA">USA</option>
+                      {[...COUNTRIES]
+                        .sort((a, b) => {
+                          const nameA = locale === 'am' ? a.nameAm : a.name;
+                          const nameB = locale === 'am' ? b.nameAm : b.name;
+                          return nameA.localeCompare(nameB, locale);
+                        })
+                        .map(c => (
+                          <option key={c.iso} value={c.name}>
+                            {locale === 'am' ? c.nameAm : c.name}
+                          </option>
+                        ))
+                      }
                       <option value="Others">Others / ሌላ</option>
                     </select>
                     {selectedCountry === 'Others' && (
@@ -730,16 +749,46 @@ function OnboardingContent() {
                 <div className="space-y-2">
                    <span className="text-sm font-bold text-gray-700">{t('fields.partnerCountry')}</span>
                    <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 bg-muted/50 rounded-xl">
-                     {[{name:'Anywhere'}, ...[...COUNTRIES].sort((a, b) => (t_const(`Countries.${a.name}`) || a.name).localeCompare(t_const(`Countries.${b.name}`) || b.name, locale))].map(c => (
-                       <button key={c.name} type="button" aria-label={c.name === 'Anywhere' ? 'Anywhere' : t_const(`Countries.${c.name}`) || c.name} onClick={() => {
-                         if (c.name === 'Anywhere') return updateField('partner_countries', ['Anywhere']);
-                         const next = formData.partner_countries.filter(pc => pc !== 'Anywhere');
-                         updateField('partner_countries', formData.partner_countries.includes(c.name) ? next.filter(pc => pc !== c.name) : [...next, c.name].slice(0, 5));
-                       }} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${formData.partner_countries.includes(c.name) ? 'bg-primary text-white' : 'bg-white text-gray-400'}`}>
-                         {c.name === 'Anywhere' ? 'Anywhere' : t_const(`Countries.${c.name}`) || c.name}
-                       </button>
-                     ))}
+                     {[{name:'Anywhere'}, ...[...COUNTRIES].sort((a, b) => {
+                         const nameA = locale === 'am' ? a.nameAm : a.name;
+                         const nameB = locale === 'am' ? b.nameAm : b.name;
+                         return nameA.localeCompare(nameB, locale);
+                       })].map(c => {
+                         const cleanName = c.name === 'Anywhere' 
+                           ? (locale === 'am' ? 'የትም ቦታ' : 'Anywhere') 
+                           : (locale === 'am' ? (c as any).nameAm : c.name);
+                         
+                         return (
+                           <button key={c.name} type="button" aria-label={cleanName} onClick={() => {
+                             if (c.name === 'Anywhere') return updateField('partner_countries', ['Anywhere']);
+                             const next = formData.partner_countries.filter(pc => pc !== 'Anywhere');
+                             updateField('partner_countries', formData.partner_countries.includes(c.name) ? next.filter(pc => pc !== c.name) : [...next, c.name].slice(0, 5));
+                           }} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${formData.partner_countries.includes(c.name) ? 'bg-primary text-white' : 'bg-white text-gray-400'}`}>
+                             {cleanName}
+                           </button>
+                         );
+                       })
+                     }
+                     <button type="button" onClick={() => {
+                       const next = formData.partner_countries.filter(pc => pc !== 'Anywhere');
+                       if (formData.partner_countries.includes('Others')) {
+                         updateField('partner_countries', next.filter(pc => pc !== 'Others'));
+                       } else {
+                         updateField('partner_countries', [...next, 'Others'].slice(0, 5));
+                       }
+                     }} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${formData.partner_countries.includes('Others') ? 'bg-primary text-white' : 'bg-white text-gray-400'}`}>
+                       {locale === 'am' ? 'ሌላ' : 'Others'}
+                     </button>
                    </div>
+                   {formData.partner_countries.includes('Others') && (
+                     <input
+                       type="text"
+                       placeholder={locale === 'am' ? 'እባክዎ ሌላ አገር ይጥቀሱ...' : 'Specify other country...'}
+                       value={customPartnerCountry}
+                       onChange={(e) => setCustomPartnerCountry(e.target.value)}
+                       className="w-full p-3 mt-2 bg-muted rounded-xl text-xs font-semibold focus:outline-none"
+                     />
+                   )}
                 </div>
 
                 <div className="space-y-2">
@@ -880,8 +929,18 @@ function OnboardingContent() {
                  }}
                />
             </label>
-          </div>
-        );
+
+            <button
+               type="button"
+               onClick={() => {
+                 setStep(6);
+               }}
+               className="w-full mt-6 bg-slate-100 hover:bg-slate-200 text-gray-600 py-4 rounded-[1.5rem] font-bold text-xs uppercase tracking-widest transition-all"
+             >
+               {locale === 'am' ? 'ይህን ደረጃ ዝለል (Skip Step)' : 'Skip ID Verification'}
+             </button>
+           </div>
+         );
       case 5: // Selfie Video Verification (Live camera / file fallback)
         return (
           <div className="space-y-8 animate-in slide-in-from-right duration-300 text-center">
@@ -1053,9 +1112,19 @@ function OnboardingContent() {
                     </div>
                  ) : null}
               </div>
-            )}
-          </div>
-        );
+             )}
+
+             <button
+               type="button"
+               onClick={() => {
+                 setStep(6);
+               }}
+               className="w-full mt-6 bg-slate-100 hover:bg-slate-200 text-gray-600 py-4 rounded-[1.5rem] font-bold text-xs uppercase tracking-widest transition-all"
+             >
+               {locale === 'am' ? 'ይህን ደረጃ ዝለል (Skip Step)' : 'Skip Verification'}
+             </button>
+           </div>
+         );
       case 6: // Gallery
         return (
           <div className="space-y-8 animate-in slide-in-from-right duration-300 text-center">
