@@ -6,8 +6,9 @@ import Header from './Header';
 import TopHeader from './TopHeader';
 import Footer from './Footer';
 import AIChatbot from './AIChatbot';
+import { useAuth } from '@/context/AuthContext';
 
-// Pages that are purely internal/auth — no header, no footer
+// Pages that always hide header/footer regardless of auth (auth flow pages)
 const NO_CHROME_PATHS = [
   '/dashboard',
   '/onboarding',
@@ -26,13 +27,19 @@ const NO_CHROME_PATHS = [
 
 export default function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { user, isLoading } = useAuth();
 
-  // Check if the current path matches any no-chrome path segment
+  // Hide chrome on specific auth/internal paths
   const isNoChromeRoute = NO_CHROME_PATHS.some(p => pathname?.includes(p));
+
+  // Also hide chrome if user is logged in — they are inside the app
+  const isLoggedIn = !isLoading && !!user;
+
+  const showChrome = !isNoChromeRoute && !isLoggedIn;
 
   return (
     <>
-      {!isNoChromeRoute && (
+      {showChrome && (
         <>
           <TopHeader />
           <Header />
@@ -41,7 +48,7 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
       <main className="flex-1">
         {children}
       </main>
-      {!isNoChromeRoute && <Footer />}
+      {showChrome && <Footer />}
       <AIChatbot />
     </>
   );
