@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { queueSMS } from '@/lib/sms';
 import { translator } from '../../../lib/translator';
 import Image from 'next/image';
 import { 
@@ -771,6 +772,17 @@ export default function AdminPortal() {
     try {
       const { error } = await supabase.from('counselor_bookings').update({ status }).eq('id', id);
       if (error) throw error;
+
+      // Queue SMS notification if approved
+      if (status === 'approved') {
+        const booking = counselorBookings.find(b => b.id === id);
+        const name = booking?.profiles?.full_name || 'Candidate';
+        await queueSMS(
+          '+251946414018',
+          `Dear ${name}, your counselor booking with ${booking?.expert_name || 'our senior advisor'} has been approved! Date: ${booking?.scheduled_date}, Time: ${booking?.scheduled_time}. Join your secure session here: http://beteseb1.online/en/counseling-session?id=${id}`
+        ).catch(() => {});
+      }
+
       setCounselorBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b));
       alert(`Booking status updated to ${status}`);
     } catch (err: any) {

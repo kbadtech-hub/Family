@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useTranslations } from 'next-intl';
+import { queueSMS } from '@/lib/sms';
 import { useRouter, usePathname } from '@/i18n/routing';
 import { 
   User, 
@@ -100,6 +101,13 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
       setVouchRequests(prev => [data, ...prev]);
       setVouchName('');
       setVouchEmail('');
+      
+      // Queue SMS notification task
+      await queueSMS(
+        '+251946414018',
+        `Hello ${vouchName}, you have been invited to vouch for ${profile?.full_name || 'a Beteseb candidate'}. Vouch here: http://beteseb1.online/${profile?.preferred_language || 'en'}/vouch?id=${data.id}`
+      ).catch(() => {});
+
       alert(profile?.preferred_language === 'am' ? 'የምስክርነት ግብዣ ጥያቄ በተሳካ ሁኔታ ተልኳል!' : 'Character witness request sent successfully!');
     } else {
       alert("Failed to send invite: " + (error?.message || "Unknown error"));

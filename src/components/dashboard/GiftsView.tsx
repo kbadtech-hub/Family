@@ -64,6 +64,11 @@ export default function GiftsView({ locale }: { locale: string }) {
   const [deliveryError, setDeliveryError] = useState('');
   const [deliverySuccess, setDeliverySuccess] = useState('');
 
+  // Phase 4 Custom Claim States
+  const [clothingSize, setClothingSize] = useState('Medium');
+  const [deliveryDate, setDeliveryDate] = useState('');
+  const [specialInstructions, setSpecialInstructions] = useState('');
+
   // Topup State
   const [loadingTopup, setLoadingTopup] = useState(false);
   const coinPacks = [
@@ -144,12 +149,19 @@ export default function GiftsView({ locale }: { locale: string }) {
     setDeliverySuccess('');
 
     try {
+      const details = {
+        clothing_size: clothingSize,
+        delivery_date: deliveryDate,
+        special_instructions: specialInstructions
+      };
+
       const { error } = await supabase
         .from('gifts')
         .update({
           delivery_address: deliveryAddress,
           delivery_phone: deliveryPhone,
           delivery_status: 'requested',
+          delivery_details: details,
           updated_at: new Date().toISOString()
         })
         .eq('id', deliveryGift.id);
@@ -556,20 +568,86 @@ export default function GiftsView({ locale }: { locale: string }) {
                       />
                    </div>
 
-                   <div className="space-y-2">
-                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2 flex items-center gap-1.5">
-                         <Phone size={12} className="text-primary" /> {locale === 'am' ? 'የተቀባይ ስልክ ቁጥር' : 'Contact Phone Number'}
-                      </label>
-                      <input 
-                        type="tel" 
-                        required
-                        value={deliveryPhone}
-                        onChange={(e) => setDeliveryPhone(e.target.value)}
-                        placeholder="0911223344"
-                        className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs font-medium focus:outline-none"
-                      />
-                   </div>
-                </div>
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2 flex items-center gap-1.5">
+                          <Phone size={12} className="text-primary" /> {locale === 'am' ? 'የተቀባይ ስልክ ቁጥር' : 'Contact Phone Number'}
+                       </label>
+                       <input 
+                         type="tel" 
+                         required
+                         value={deliveryPhone}
+                         onChange={(e) => setDeliveryPhone(e.target.value)}
+                         placeholder="0911223344"
+                         className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs font-medium focus:outline-none"
+                       />
+                    </div>
+
+                    {/* Category-specific Custom Fields (Phase 4) */}
+                    {deliveryGift.gift_catalog?.image_url === 'cultural_outfit' && (
+                      <div className="space-y-2 animate-in fade-in duration-300">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2 block">
+                          {locale === 'am' ? 'የልብስ መጠን (Size)' : 'Select Clothing Size'}
+                        </label>
+                        <select 
+                          value={clothingSize}
+                          onChange={(e) => setClothingSize(e.target.value)}
+                          className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs font-medium focus:outline-none"
+                        >
+                          <option value="Small">Small (S)</option>
+                          <option value="Medium">Medium (M)</option>
+                          <option value="Large">Large (L)</option>
+                          <option value="XL">Extra Large (XL)</option>
+                        </select>
+                      </div>
+                    )}
+
+                    {(deliveryGift.gift_catalog?.image_url === 'love_doves' || 
+                      deliveryGift.gift_catalog?.image_url === 'luxury_puppy' || 
+                      deliveryGift.gift_catalog?.image_url === 'luxury_kitten') && (
+                      <div className="space-y-4 animate-in fade-in duration-300">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2 block">
+                            {locale === 'am' ? 'የቤት እንስሳው እንዲመጣ የሚፈልጉበት ቀን' : 'Preferred Delivery Date (Pets)'}
+                          </label>
+                          <input 
+                            type="date"
+                            required
+                            value={deliveryDate}
+                            onChange={(e) => setDeliveryDate(e.target.value)}
+                            className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs font-medium focus:outline-none"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2 block">
+                            {locale === 'am' ? 'ልዩ የእንክብካቤ ማሳሰቢያ' : 'Special Delivery / Care Instructions'}
+                          </label>
+                          <input 
+                            type="text"
+                            value={specialInstructions}
+                            onChange={(e) => setSpecialInstructions(e.target.value)}
+                            placeholder={locale === 'am' ? 'ለምሳሌ፡ የትኛው ክትባት እንደተሰጠው ማረጋገጫ ይምጣ' : 'e.g. Please bring vaccination certificate.'}
+                            className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs font-medium focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {deliveryGift.gift_catalog?.image_url === 'date_voucher' && (
+                      <div className="space-y-2 animate-in fade-in duration-300">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2 block">
+                          {locale === 'am' ? 'ዲጂታል ቫውቸሩ እንዲላክበት የሚመርጡት ዘዴ (ኢሜይል/ስልክ)' : 'Preferred Voucher Delivery Contact'}
+                        </label>
+                        <input 
+                          type="text"
+                          required
+                          value={specialInstructions}
+                          onChange={(e) => setSpecialInstructions(e.target.value)}
+                          placeholder="e.g. send to my email: test@gmail.com"
+                          className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs font-medium focus:outline-none"
+                        />
+                      </div>
+                    )}
+                 </div>
 
                 <button 
                   disabled={deliveryLoading || !deliveryAddress || !deliveryPhone}

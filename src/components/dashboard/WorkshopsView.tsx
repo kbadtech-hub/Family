@@ -58,12 +58,27 @@ export default function WorkshopsView({ currency }: { currency: 'ETB' | 'USD' })
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
+  // Phase 4 Monetization & Platform Compliance State
+  const [isMobileApp, setIsMobileApp] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'coins' | 'chapa' | 'stripe'>('coins');
+
   useEffect(() => {
     const getSession = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) setUserId(user.id);
     };
     getSession();
+
+    const checkPlatform = () => {
+      const ua = navigator.userAgent.toLowerCase();
+      const isCordova = !!(window as any).cordova;
+      const isCapacitor = !!(window as any).Capacitor;
+      const isReactNative = !!(window as any).ReactNativeWebView;
+      const isPlatformMobileParam = window.location.search.includes('platform=mobile');
+      const isAndroidApp = ua.includes('beteseb-android') || ua.includes('wv') || ua.includes('webview');
+      setIsMobileApp(isCordova || isCapacitor || isReactNative || isPlatformMobileParam || isAndroidApp);
+    };
+    checkPlatform();
   }, []);
 
   const handleCreateBooking = async (e: React.FormEvent) => {
@@ -78,14 +93,55 @@ export default function WorkshopsView({ currency }: { currency: 'ETB' | 'USD' })
     }
     setIsSubmitting(true);
     try {
+      let finalPaymentStatus = 'pending';
+      let finalAmount = 15;
+      let finalCurrency = 'USD';
+
+      if (paymentMethod === 'coins') {
+        // Fetch coin balance
+        const { data: ledger } = await supabase.from('coin_ledger').select('amount').eq('user_id', userId);
+        const balance = (ledger || []).reduce((acc: number, row: any) => acc + (row.amount || 0), 0);
+        if (balance < 50) {
+          alert("Insufficient coins! You need 50 coins to book this counseling session. Please top up on the web.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Deduct 50 coins from user's coin_ledger
+        const { error: ledgerError } = await supabase.from('coin_ledger').insert({
+          user_id: userId,
+          amount: -50,
+          transaction_type: 'counselor_booking'
+        });
+        if (ledgerError) throw ledgerError;
+        
+        finalPaymentStatus = 'paid';
+        finalAmount = 50;
+      } else if (paymentMethod === 'chapa') {
+        // Simulate Chapa checkout success
+        finalPaymentStatus = 'paid';
+        finalAmount = 600;
+        finalCurrency = 'ETB';
+      } else {
+        // Simulate Stripe checkout success
+        finalPaymentStatus = 'paid';
+        finalAmount = 15;
+        finalCurrency = 'USD';
+      }
+
       const { error } = await supabase.from('counselor_bookings').insert({
         user_id: userId,
         expert_name: expertName,
         topic: bookingTopic,
         scheduled_date: bookingDate,
         scheduled_time: bookingTime,
-        status: 'pending'
+        status: 'pending',
+        payment_status: finalPaymentStatus,
+        payment_method: paymentMethod,
+        amount_paid: finalAmount,
+        currency: finalCurrency
       });
+
       if (error) throw error;
       alert('Your booking request has been submitted successfully! Check back later for approval status.');
       setShowBookingModal(false);
@@ -254,6 +310,52 @@ export default function WorkshopsView({ currency }: { currency: 'ETB' | 'USD' })
                   className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none"
                 />
               </label>
+
+              {isMobileApp ? (
+                <div className="space-y-2">
+                  <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] block">Payment Method</span>
+                  <div className="p-4 bg-primary/5 border border-primary/10 rounded-xl flex items-center justify-between text-xs">
+                    <span className="font-bold text-accent">Coins (የቤተሰብ ሳንቲም)</span>
+                    <span className="font-black text-primary">50 COINS</span>
+                  </div>
+                  <p className="text-[9px] text-slate-400 font-bold leading-relaxed">
+                    ℹ️ Card and mobile banking payments are only available on our web portal at <strong>beteseb1.online</strong>. Purchase or top up coins on the web to book via the mobile app.
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Payment Method</span>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button 
+                      type="button"
+                      onClick={() => setPaymentMethod('coins')}
+                      className={`p-3 rounded-xl border text-[10px] font-bold uppercase transition-all ${
+                        paymentMethod === 'coins' ? 'bg-primary/10 border-primary text-primary' : 'bg-muted/30 border-muted text-gray-500'
+                      }`}
+                    >
+                      Coins (50)
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => setPaymentMethod('chapa')}
+                      className={`p-3 rounded-xl border text-[10px] font-bold uppercase transition-all ${
+                        paymentMethod === 'chapa' ? 'bg-primary/10 border-primary text-primary' : 'bg-muted/30 border-muted text-gray-500'
+                      }`}
+                    >
+                      Chapa (600 ETB)
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => setPaymentMethod('stripe')}
+                      className={`p-3 rounded-xl border text-[10px] font-bold uppercase transition-all ${
+                        paymentMethod === 'stripe' ? 'bg-primary/10 border-primary text-primary' : 'bg-muted/30 border-muted text-gray-500'
+                      }`}
+                    >
+                      Card ($15 USD)
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <button 
                 type="submit"

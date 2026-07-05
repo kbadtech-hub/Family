@@ -10,10 +10,12 @@ import {
   Loader2, 
   AlertCircle, 
   CheckCircle2, 
-  CreditCard,
-  ArrowRight,
-  Sparkles,
-  Info
+  CreditCard, 
+  ArrowRight, 
+  Sparkles, 
+  Info,
+  Lock,
+  LockOpen
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -27,6 +29,8 @@ interface GiftItem {
   name_ar: string;
   image_url: string;
   coin_price: number;
+  category?: string;
+  unlock_level?: number;
 }
 
 interface GiftModalProps {
@@ -49,6 +53,10 @@ export default function GiftModal({ recipientId, recipientName, locale, onClose,
   const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState('');
   
+  // Phase 4 Gamified Unlock States
+  const [interactionScore, setInteractionScore] = useState<number>(0);
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'cultural' | 'pets' | 'flowers' | 'coupons'>('all');
+
   // Coin packs to buy
   const coinPacks = [
     { id: 'coins_50', coins: 50, priceEtb: 50, priceUsd: 1.0 },
@@ -66,6 +74,13 @@ export default function GiftModal({ recipientId, recipientName, locale, onClose,
     }
   }, []);
 
+  const getRequiredMessages = (level: number) => {
+    if (level === 2) return 5;
+    if (level === 3) return 15;
+    if (level === 4) return 30;
+    return 0;
+  };
+
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -81,6 +96,16 @@ export default function GiftModal({ recipientId, recipientName, locale, onClose,
         
         if (wallet) {
           setCoinBalance(Number(wallet.coin_balance));
+        }
+
+        // Fetch message count interaction score
+        const { count } = await supabase
+          .from('messages')
+          .select('*', { count: 'exact', head: true })
+          .or(`and(sender_id.eq.${user.id},receiver_id.eq.${recipientId}),and(sender_id.eq.${recipientId},receiver_id.eq.${user.id})`);
+        
+        if (count !== null) {
+          setInteractionScore(count);
         }
       }
     };
@@ -100,7 +125,7 @@ export default function GiftModal({ recipientId, recipientName, locale, onClose,
       }
     };
     fetchCatalog();
-  }, []);
+  }, [recipientId]);
 
   const getLocalizedName = (item: GiftItem) => {
     switch (locale) {
@@ -120,6 +145,13 @@ export default function GiftModal({ recipientId, recipientName, locale, onClose,
       case 'habesha_flower': return '🌹';
       case 'shamma_candle': return '🕯️';
       case 'jebena_pot': return '🏺';
+      case 'love_doves': return '🕊️';
+      case 'luxury_puppy': return '🐶';
+      case 'luxury_kitten': return '🐱';
+      case 'boxed_flowers': return '💐';
+      case 'cultural_outfit': return '👗';
+      case 'silver_bracelet': return '💍';
+      case 'date_voucher': return '🎟️';
       default: return '🎁';
     }
   };
@@ -309,30 +341,73 @@ export default function GiftModal({ recipientId, recipientName, locale, onClose,
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {activeTab === 'gallery' ? (
             <>
+              {/* Category Filter */}
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+                {([
+                  { id: 'all', label: locale === 'am' ? 'አጠቃላይ' : 'All' },
+                  { id: 'cultural', label: locale === 'am' ? 'ባህል' : 'Cultural' },
+                  { id: 'flowers', label: locale === 'am' ? 'አበባ' : 'Flowers' },
+                  { id: 'pets', label: locale === 'am' ? 'ቤት እንስሳት' : 'Pets' },
+                  { id: 'coupons', label: locale === 'am' ? 'ቫውቸር' : 'Coupons' }
+                ] as const).map(cat => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+                      selectedCategory === cat.id ? 'bg-primary text-white shadow-md' : 'bg-muted text-gray-500 hover:bg-muted/75'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+
               {/* Gift Grid */}
               <div className="grid grid-cols-2 gap-4">
-                 {catalog.map((item) => (
-                   <button 
-                     key={item.id}
-                     onClick={() => setSelectedGift(item)}
-                     className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center justify-center text-center space-y-3 relative group ${selectedGift?.id === item.id ? 'border-primary bg-primary/5 shadow-lg scale-102' : 'border-muted hover:border-primary/20 hover:bg-muted/50'}`}
-                   >
-                     {selectedGift?.id === item.id && (
-                       <div className="absolute top-3 right-3 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center shadow-lg">
-                          <CheckCircle2 size={14} />
-                       </div>
-                     )}
-                     <span className="text-4xl filter drop-shadow-md group-hover:scale-115 transition-transform duration-500">
-                       {getLocalizedUrl(item.image_url)}
-                     </span>
-                     <div>
-                        <p className="text-xs font-black text-accent uppercase">{getLocalizedName(item)}</p>
-                        <div className="flex items-center justify-center gap-1 text-[10px] font-black text-primary uppercase mt-1">
-                           <Coins size={12} /> {item.coin_price}
-                        </div>
-                     </div>
-                   </button>
-                 ))}
+                 {catalog
+                   .filter(item => selectedCategory === 'all' || item.category === selectedCategory)
+                   .map((item) => {
+                     const isLocked = interactionScore < getRequiredMessages(item.unlock_level || 1);
+                     const reqMessages = getRequiredMessages(item.unlock_level || 1);
+                     return (
+                       <button 
+                         key={item.id}
+                         disabled={isLocked}
+                         onClick={() => setSelectedGift(item)}
+                         className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center justify-center text-center space-y-3 relative group ${
+                           isLocked ? 'opacity-40 bg-muted/20 border-muted cursor-not-allowed' :
+                           selectedGift?.id === item.id ? 'border-primary bg-primary/5 shadow-lg scale-102' : 'border-muted hover:border-primary/20 hover:bg-muted/50'
+                         }`}
+                       >
+                         {isLocked ? (
+                           <div className="absolute top-3 right-3 p-1 bg-gray-500/10 text-gray-400 rounded-full">
+                             <Lock size={12} />
+                           </div>
+                         ) : selectedGift?.id === item.id ? (
+                           <div className="absolute top-3 right-3 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center shadow-lg">
+                              <CheckCircle2 size={14} />
+                           </div>
+                         ) : null}
+                         
+                         <span className="text-4xl filter drop-shadow-md group-hover:scale-115 transition-transform duration-500">
+                           {getLocalizedUrl(item.image_url)}
+                         </span>
+                         <div>
+                            <p className="text-xs font-black text-accent uppercase">{getLocalizedName(item)}</p>
+                            {isLocked ? (
+                              <span className="text-[8px] text-red-500 font-bold block mt-1 uppercase tracking-wide">
+                                Locked (Need {reqMessages} Msgs)
+                              </span>
+                            ) : (
+                              <div className="flex items-center justify-center gap-1 text-[10px] font-black text-primary uppercase mt-1">
+                                <Coins size={12} /> {item.coin_price}
+                              </div>
+                            )}
+                         </div>
+                       </button>
+                     );
+                   })}
               </div>
 
               {/* Message Input */}
