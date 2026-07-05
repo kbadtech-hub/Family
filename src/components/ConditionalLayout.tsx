@@ -7,13 +7,32 @@ import TopHeader from './TopHeader';
 import Footer from './Footer';
 import AIChatbot from './AIChatbot';
 
+// Pages that are purely internal/auth — no header, no footer
+const NO_CHROME_PATHS = [
+  '/dashboard',
+  '/onboarding',
+  '/secure-beteseb-admin',
+  '/admin',
+  '/login',
+  '/signup',
+  '/verify-otp',
+  '/forgot-password',
+  '/reset-password',
+  '/counseling-session',
+  '/guardian',
+  '/vouch',
+  '/location-selection',
+];
+
 export default function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isInternalPage = pathname?.includes('/dashboard') || pathname?.includes('/onboarding') || pathname?.includes('/secure-beteseb-admin');
+
+  // Check if the current path matches any no-chrome path segment
+  const isNoChromeRoute = NO_CHROME_PATHS.some(p => pathname?.includes(p));
 
   return (
     <>
-      {!isInternalPage && (
+      {!isNoChromeRoute && (
         <>
           <TopHeader />
           <Header />
@@ -22,7 +41,7 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
       <main className="flex-1">
         {children}
       </main>
-      {!isInternalPage && <Footer />}
+      {!isNoChromeRoute && <Footer />}
       <AIChatbot />
     </>
   );

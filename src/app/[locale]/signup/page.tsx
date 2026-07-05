@@ -18,19 +18,25 @@ import {
   Phone, 
   Globe, 
   User, 
-  ArrowLeft 
+  ArrowLeft,
+  ShieldCheck,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  ScrollText,
+  UserCheck,
+  EyeOff as EyeOffIcon
 } from 'lucide-react';
 import { validatePassword } from '@/lib/password-validator';
 import { COUNTRIES } from '@/lib/countries';
 import ethiopianDate from 'ethiopian-date';
-import EulaGate from '@/components/EulaGate';
 
 const getSlogan = (lang: string) => {
   switch (lang) {
     case 'am': return 'የኢትዮጵያውያን የትዳር መድረክ';
-    case 'om': return 'Platformii Gaa’ela Habashaa';
+    case 'om': return 'Platformii Gaa\'ela Habashaa';
     case 'ti': return 'ናይ መጻምድቲ መድረኽ ኢትዮጵያውያን';
-    case 'ar': return 'منصة الزواج الأثይوبية العالمية';
+    case 'ar': return 'منصة الزواج الأثيوبية العالمية';
     case 'so': return 'Madasha Guurka Ee Habesha';
     default: return 'Global Habesha Marriage Platform';
   }
@@ -58,10 +64,59 @@ const getPhoneSignupLabel = (lang: string) => {
   }
 };
 
+const getAgreementTexts = (lang: string) => {
+  switch (lang) {
+    case 'am':
+      return {
+        agreementHeader: 'ወደ ቤተሰብ ከመቀጠልዎ በፊት',
+        agreementSub: 'ለደህንነትዎ ሲባል እባክዎ ሶስቱንም ስምምነቶች አንብበው ይስማሙ። ካልተቀበሉ ምዝገባ አይቻልም።',
+        confirmAge: 'እድሜዬ 18 ወይም ከዚያ በላይ መሆኑን አረጋግጣለሁ።',
+        confirmEula: 'በዜሮ-ታገስ ፖሊሲው እና በEULA ስምምነቱ ሙሉ ለሙሉ እስማማለሁ።',
+        confirmTerms: 'የአጠቃቀም መመሪያዎችን (Terms of Service) እና የKYC ግዴታን ተስማምቻለሁ።',
+        confirmPrivacy: 'የደህንነት ፖሊሲውን (Privacy Policy) እና መረጃዎችን ለሶስተኛ ወገን ያለማጋራት ደንቡን ተስማምቻለሁ።',
+        readFirst: 'እባክዎ መጀመሪያ ስምምነቱን ወደ ታች ስክሮል በማድረግ እስከ መጨረሻው ያንብቡት!',
+        scrollDown: 'ለማንበብ ወደ ታች ይሂዱ ⬇️',
+        readyToAgree: 'ተነብቧል - አሁን መስማማት ይቻላል ✅',
+        eulaTitle: '1. EULA እና የዜሮ-ታገስ ፖሊሲ',
+        eulaContent: "• ዜሮ-ታገስ ፖሊሲ (Zero-Tolerance)፦ ቤተሰብ ማናቸውንም የስድብ፣ የጥላቻ ንግግር፣ የሀሰት መለያ፣ ማጭበርበር ወይም የወሲብ ይዘት ያላቸውን ነገሮች በፍጹም አይታገስም። ደንቡን የጣሰ አካውንት ያለምንም ማስጠንቀቂያ ወዲያውኑ ይዘጋል (Permanent Ban)።\n\n• ስክሪንሾት እና ቀረጻ ክልከላ፦ የአባላትን ደህንነት እና ምስጢራዊነት ለመጠበቅ የሌሎችን ፕሮፋይል ስክሪንሾት ማድረግ፣ ፎቶዎችን ሴቭ ማድረግ ወይም የስልክ/የቪዲዮ ጥሪዎችን መቅረጽ በቤተሰብ መድረክ ላይ በፍጹም የተከለከለ ነው።\n\n• መከባበር፦ ሁሉም አባላት በታማኝነት እና በመከባበር መንቀሳቀስ አለባቸው።",
+        termsTitle: '2. የአጠቃቀም መመሪያ እና KYC ማረጋገጫ',
+        termsContent: "• የKYC ማንነት ማረጋገጫ፦ እውነተኛ እና አስተማማኝ ማህበረሰብ ለመፍጠር ሁሉም ተጠቃሚዎች የKYC ማንነት ማረጋገጥ አለባቸው። ትክክለኛ የመንግስት መታወቂያ እና የቀጥታ ፎቶ (selfie) ማቅረብ ይጠበቃል።\n\n• የጊፍት እና የኮይኖች አጠቃቀም፦ ማንነትዎ ቬሪፋይድ እስካልተደረገ ድረስ ሙሉ አገልግሎቶችን ማግኘት አይቻልም።\n\n• የእድሜ ግዴታ፦ ዕድሜዎ 18 ወይም ከዚያ በላይ መሆን አለበት። የሀሰት መረጃ ሲሰጥ አካውንቱ ይዘጋል።",
+        privacyTitle: '3. የደህንነት ፖሊሲ እና ለሶስተኛ ወገን ያለማጋራት',
+        privacyContent: "• ለሶስተኛ ወገን ያለማጋራት፦ የእርስዎ የግል መረጃዎች፣ ፎቶዎች፣ መገኛ ቦታዎ እና ቻቶችዎ በከፍተኛ ምስጠራ (encryption) የተጠበቁ ናቸው። መረጃዎትን ለሶስተኛ ወገን በፍጹም አናጋራም።\n\n• የፕሮፋይል ቁጥጥር፦ በማንኛውም ጊዜ አካውንትዎን እና መረጃዎትን ሙሉ በሙሉ የመሰረዝ መብት አልዎት።",
+        signupTitle: 'አዲስ አካውንት ይክፈቱ',
+        alreadyHave: 'አካውንት አለዎት?',
+        signIn: 'ይግቡ',
+        orChoose: 'ወይም ይምረጡ',
+        blurHint: 'ሶስቱንም ስምምነቶች ካነበቡ እና ካጸደቁ በኋላ አዝራሮቹ ይነቃሉ',
+      };
+    default:
+      return {
+        agreementHeader: 'Before Joining Beteseb',
+        agreementSub: 'For your safety and the safety of our community, please read and accept all three agreements. Registration is not possible without acceptance.',
+        confirmAge: 'I confirm that I am 18 years of age or older.',
+        confirmEula: 'I agree to the Zero-Tolerance Policy and the EULA Terms.',
+        confirmTerms: 'I agree to the Terms of Service and KYC Requirements.',
+        confirmPrivacy: 'I agree to the Privacy Policy and Zero Third-Party Sharing.',
+        readFirst: 'Please scroll down and read the agreement to the bottom first!',
+        scrollDown: 'Scroll down to read ⬇️',
+        readyToAgree: 'Read — You may now agree ✅',
+        eulaTitle: '1. EULA & Zero-Tolerance Abuse Policy',
+        eulaContent: "• Zero Tolerance: Beteseb operates under a strict zero-tolerance policy for abuse, pornography, hate speech, and harassment. Any violations will result in immediate account termination.\n\n• Screenshot & Screen Recording Ban: To protect member privacy, attempting to screenshot profiles, save private photos, or record audio/video calls is strictly prohibited. Violating this rule will lead to an instant and permanent ban.\n\n• Safety and Respect: All members must interact with honesty and respect.",
+        termsTitle: '2. Terms of Service & KYC Identity Verification',
+        termsContent: "• KYC Verification: To ensure a genuine and safe community, all users must complete KYC identity verification. You will be required to upload a valid ID document and a live selfie.\n\n• Gifts & Matching Gate: You cannot match with other users, send messages, or send/receive virtual gifts until your identity is fully verified.\n\n• Age Requirement: You must be at least 18 years old to register. Providing false information is a violation of these terms.",
+        privacyTitle: '3. Privacy Policy & Zero Third-Party Data Sharing',
+        privacyContent: "• Zero Third-Party Sharing: Your personal data, document uploads, locations, and chats are encrypted and securely stored. We never share, sell, or expose your data to any third parties.\n\n• Profile Control: You retain full ownership and control over your profile data, with the right to delete your account and all associated data at any time.",
+        signupTitle: 'Create Your Account',
+        alreadyHave: 'Already have an account?',
+        signIn: 'Sign In',
+        orChoose: 'Choose a signup method',
+        blurHint: 'Read and accept all agreements above to unlock registration',
+      };
+  }
+};
+
 function SignupContent() {
   const t = useTranslations('Auth');
-  const t_onboard = useTranslations('Onboarding');
-  const t_const = useTranslations('Constants');
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -78,7 +133,6 @@ function SignupContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
-  const [agreedToTerms, setAgreedToTerms] = useState(true);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const [toast, setToast] = useState<{ message: string; show: boolean }>({ message: '', show: false });
 
@@ -88,6 +142,42 @@ function SignupContent() {
   const [ethBirthDay, setEthBirthDay] = useState('');
   const [ethBirthMonth, setEthBirthMonth] = useState('');
   const [ethBirthYear, setEthBirthYear] = useState('');
+
+  // ─── Inline Agreement State ───
+  const [activeTab, setActiveTab] = useState<'eula' | 'terms' | 'privacy' | null>(null);
+  const [eulaRead, setEulaRead] = useState(false);
+  const [termsRead, setTermsRead] = useState(false);
+  const [privacyRead, setPrivacyRead] = useState(false);
+  const [confirmAge, setConfirmAge] = useState(false);
+  const [agreedToEula, setAgreedToEula] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
+  const [showEulaError, setShowEulaError] = useState(false);
+  const [showTermsError, setShowTermsError] = useState(false);
+  const [showPrivacyError, setShowPrivacyError] = useState(false);
+  const eulaRef = React.useRef<HTMLDivElement>(null);
+  const termsRef = React.useRef<HTMLDivElement>(null);
+  const privacyRef = React.useRef<HTMLDivElement>(null);
+
+  const allAgreed = confirmAge && agreedToEula && agreedToTerms && agreedToPrivacy;
+
+  const checkScrollable = (ref: React.RefObject<HTMLDivElement | null>, setRead: (read: boolean) => void) => {
+    if (ref.current) {
+      const el = ref.current;
+      if (el.scrollHeight <= el.clientHeight + 5) setRead(true);
+    }
+  };
+
+  React.useEffect(() => {
+    if (activeTab === 'eula') checkScrollable(eulaRef, setEulaRead);
+    if (activeTab === 'terms') checkScrollable(termsRef, setTermsRead);
+    if (activeTab === 'privacy') checkScrollable(privacyRef, setPrivacyRead);
+  }, [activeTab]);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>, setRead: (read: boolean) => void) => {
+    const target = e.currentTarget;
+    if (target.scrollHeight - target.scrollTop <= target.clientHeight + 15) setRead(true);
+  };
 
   // Handle Ethiopian Date Conversion
   React.useEffect(() => {
@@ -108,7 +198,7 @@ function SignupContent() {
   }, [ethBirthDay, ethBirthMonth, ethBirthYear, calendarType]);
 
   const handleSocialLogin = async (provider: 'google' | 'facebook' | 'apple') => {
-    console.log("handleSocialLogin called with provider:", provider);
+    if (!allAgreed) return;
     if (provider === 'apple') {
       setToast({
         message: locale === 'am'
@@ -119,91 +209,38 @@ function SignupContent() {
       return;
     }
     setError('');
-    console.log("Calling supabase.auth.signInWithOAuth for:", provider);
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
         redirectTo: `${window.location.origin}/auth/callback?next=/onboarding`
       }
     });
-    if (oauthError) {
-      console.error("Supabase signInWithOAuth error:", oauthError);
-      setError(oauthError.message);
-    }
+    if (oauthError) setError(oauthError.message);
   };
-
-  // Pending Action state to defer OAuth or direct signup until EULA is accepted
-  const [pendingAction, setPendingAction] = useState<{
-    type: 'social' | 'direct';
-    provider?: 'google' | 'facebook' | 'apple';
-    view?: 'phone' | 'email';
-  } | null>(null);
-  const [showEulaModal, setShowEulaModal] = useState(false);
 
   const selectSignupMethod = (method: 'google' | 'facebook' | 'apple' | 'phone' | 'email') => {
-    console.log("selectSignupMethod called with:", method);
-    if (method === 'apple') {
-      handleSocialLogin('apple');
-      return;
-    }
-    
-    const accepted = localStorage.getItem('beteseb_eula_accepted') === 'true';
-    console.log("beteseb_eula_accepted status:", accepted);
-    if (accepted) {
-      if (method === 'phone' || method === 'email') {
-        console.log("EULA already accepted. Setting view to:", method);
-        setView(method);
-      } else {
-        console.log("EULA already accepted. Initiating social login for:", method);
-        handleSocialLogin(method);
-      }
+    if (!allAgreed) return;
+    if (method === 'apple') { handleSocialLogin('apple'); return; }
+    if (method === 'phone' || method === 'email') {
+      setView(method);
     } else {
-      if (method === 'phone' || method === 'email') {
-        console.log("EULA not accepted. Deferring direct signup view:", method);
-        setPendingAction({ type: 'direct', view: method });
-      } else {
-        console.log("EULA not accepted. Deferring social provider login:", method);
-        setPendingAction({ type: 'social', provider: method });
-      }
-      setShowEulaModal(true);
-    }
-  };
-
-  const handleEulaAccept = () => {
-    console.log("handleEulaAccept triggered. Pending action:", pendingAction);
-    localStorage.setItem('beteseb_eula_accepted', 'true');
-    setShowEulaModal(false);
-    if (pendingAction) {
-      if (pendingAction.type === 'direct' && pendingAction.view) {
-        console.log("Executing pending direct signup view:", pendingAction.view);
-        setView(pendingAction.view);
-      } else if (pendingAction.type === 'social' && pendingAction.provider) {
-        console.log("Executing pending social login provider:", pendingAction.provider);
-        handleSocialLogin(pendingAction.provider);
-      }
-      setPendingAction(null);
+      handleSocialLogin(method as 'google' | 'facebook');
     }
   };
 
   React.useEffect(() => {
     if (toast.show) {
-      const timer = setTimeout(() => {
-        setToast(prev => ({ ...prev, show: false }));
-      }, 4000);
+      const timer = setTimeout(() => setToast(prev => ({ ...prev, show: false })), 4000);
       return () => clearTimeout(timer);
     }
   }, [toast.show]);
 
-  // Auto-redirect on success to dashboard
   React.useEffect(() => {
     if (isSuccess) {
-      const timer = setTimeout(() => {
-        router.push('/dashboard');
-      }, 2000);
+      const timer = setTimeout(() => router.push('/dashboard'), 2000);
       return () => clearTimeout(timer);
     }
   }, [isSuccess, router]);
-
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -215,14 +252,11 @@ function SignupContent() {
       setIsLoading(false);
       return;
     }
-    // Calculate Age
     const bDate = new Date(birthDate);
     const today = new Date();
     let calculatedAge = today.getFullYear() - bDate.getFullYear();
     const m = today.getMonth() - bDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < bDate.getDate())) {
-      calculatedAge--;
-    }
+    if (m < 0 || (m === 0 && today.getDate() < bDate.getDate())) calculatedAge--;
     if (calculatedAge < 18) {
       setError(locale === 'am'
         ? 'ይህን መተግበሪያ ለመጠቀም እድሜዎ 18 ወይም ከዚያ በላይ መሆን አለበት።'
@@ -238,7 +272,6 @@ function SignupContent() {
       return;
     }
 
-    const prefLocation = searchParams.get('pref_location');
     const identifier = view === 'email' ? email : `${countryCode}${phone}`;
  
     try {
@@ -277,10 +310,7 @@ function SignupContent() {
       if (authError) throw authError;
 
       if (data.user) {
-        // Update the profiles row with the birth_date directly
-        await supabase.from('profiles').update({
-          birth_date: birthDate
-        }).eq('id', data.user.id);
+        await supabase.from('profiles').update({ birth_date: birthDate }).eq('id', data.user.id);
         setIsSuccess(true);
       }
     } catch (err: unknown) {
@@ -312,11 +342,13 @@ function SignupContent() {
     );
   }
 
+  const texts = getAgreementTexts(locale);
+
   return (
-    <div className="min-h-screen bg-[#FDFBF9] flex items-center justify-center p-6" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
-      <div className="max-w-md w-full">
+    <div className="min-h-screen bg-[#FDFBF9] flex items-center justify-center p-4 md:p-6" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+      <div className="max-w-md w-full space-y-6">
         {/* Branding */}
-        <div className="text-center mb-8">
+        <div className="text-center">
           <Image 
             src="/logo.png" 
             alt="Beteseb" 
@@ -330,12 +362,228 @@ function SignupContent() {
           </p>
         </div>
 
-        {/* Signup Card */}
-        <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-primary/5 p-8 md:p-10 border border-border relative overflow-hidden">
-          <div className="relative">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold text-accent italic">
-                {view === 'initial' ? t('signUp') : view === 'email' ? getEmailSignupLabel(locale) : getPhoneSignupLabel(locale)}
+        {/* ── STEP 1: INLINE AGREEMENT GATE ── */}
+        <div className="bg-white rounded-[2rem] shadow-xl shadow-primary/5 border border-border overflow-hidden">
+          {/* Agreement Header */}
+          <div className="bg-gradient-to-r from-primary/10 to-secondary/10 px-6 py-5 border-b border-border">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center text-primary shrink-0">
+                <ShieldCheck size={20} />
+              </div>
+              <div>
+                <h2 className="text-sm font-black text-accent italic tracking-tight">{texts.agreementHeader}</h2>
+                <p className="text-[9px] font-bold text-primary uppercase tracking-widest">Beteseb Trust & Safety</p>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 leading-relaxed font-medium">{texts.agreementSub}</p>
+          </div>
+
+          <div className="px-5 py-4 space-y-3">
+            {/* Age Confirmation */}
+            <div
+              className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex items-center gap-3 cursor-pointer hover:bg-slate-100 transition-colors"
+              onClick={() => setConfirmAge(!confirmAge)}
+            >
+              <div className="relative flex items-center justify-center shrink-0">
+                <input
+                  type="checkbox"
+                  checked={confirmAge}
+                  onChange={(e) => setConfirmAge(e.target.checked)}
+                  className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border-2 border-slate-300 checked:bg-primary checked:border-primary transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <Check size={12} className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none stroke-[3] transition-opacity" />
+              </div>
+              <span className="text-xs text-slate-700 font-bold select-none leading-snug">{texts.confirmAge}</span>
+            </div>
+
+            {/* EULA Accordion */}
+            <div className="bg-slate-50 rounded-xl border border-slate-100 overflow-hidden">
+              <button
+                onClick={() => setActiveTab(activeTab === 'eula' ? null : 'eula')}
+                className="w-full p-3.5 flex items-center justify-between font-bold text-xs text-slate-800 hover:bg-slate-100 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <ScrollText size={14} className="text-primary shrink-0" />
+                  <span className="text-left">{texts.eulaTitle}</span>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {agreedToEula && <Check size={13} className="text-emerald-500 stroke-[3]" />}
+                  {activeTab === 'eula' ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </div>
+              </button>
+              {activeTab === 'eula' && (
+                <div className="px-4 pb-4 space-y-2.5">
+                  <div
+                    ref={eulaRef}
+                    onScroll={(e) => handleScroll(e, setEulaRead)}
+                    className="bg-white border border-slate-200 rounded-xl p-3 max-h-[130px] overflow-y-auto text-[11px] text-slate-600 font-medium leading-relaxed whitespace-pre-line"
+                  >
+                    {texts.eulaContent}
+                  </div>
+                  <div className="text-[9px] font-bold uppercase tracking-wider">
+                    {eulaRead
+                      ? <span className="text-emerald-600">{texts.readyToAgree}</span>
+                      : <span className="text-amber-500 animate-pulse">{texts.scrollDown}</span>}
+                  </div>
+                  <div
+                    onClick={() => {
+                      if (eulaRead) { setAgreedToEula(!agreedToEula); setShowEulaError(false); }
+                      else setShowEulaError(true);
+                    }}
+                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${agreedToEula ? 'bg-primary/5 border-primary/20' : 'bg-transparent border-transparent'} ${!eulaRead ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+                  >
+                    <div className="relative flex items-center justify-center shrink-0">
+                      <input type="checkbox" checked={agreedToEula} disabled={!eulaRead}
+                        onChange={(e) => setAgreedToEula(e.target.checked)}
+                        className="peer h-5 w-5 appearance-none rounded-md border-2 border-slate-300 checked:bg-primary checked:border-primary disabled:border-slate-200"
+                        onClick={(e) => e.stopPropagation()} />
+                      <Check size={12} className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none stroke-[3] transition-opacity" />
+                    </div>
+                    <span className="text-xs text-slate-600 font-bold select-none leading-snug">{texts.confirmEula}</span>
+                  </div>
+                  {showEulaError && <p className="text-[10px] text-red-500 font-bold pl-8 animate-bounce">{texts.readFirst}</p>}
+                </div>
+              )}
+            </div>
+
+            {/* Terms Accordion */}
+            <div className="bg-slate-50 rounded-xl border border-slate-100 overflow-hidden">
+              <button
+                onClick={() => setActiveTab(activeTab === 'terms' ? null : 'terms')}
+                className="w-full p-3.5 flex items-center justify-between font-bold text-xs text-slate-800 hover:bg-slate-100 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <UserCheck size={14} className="text-primary shrink-0" />
+                  <span className="text-left">{texts.termsTitle}</span>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {agreedToTerms && <Check size={13} className="text-emerald-500 stroke-[3]" />}
+                  {activeTab === 'terms' ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </div>
+              </button>
+              {activeTab === 'terms' && (
+                <div className="px-4 pb-4 space-y-2.5">
+                  <div
+                    ref={termsRef}
+                    onScroll={(e) => handleScroll(e, setTermsRead)}
+                    className="bg-white border border-slate-200 rounded-xl p-3 max-h-[130px] overflow-y-auto text-[11px] text-slate-600 font-medium leading-relaxed whitespace-pre-line"
+                  >
+                    {texts.termsContent}
+                  </div>
+                  <div className="text-[9px] font-bold uppercase tracking-wider">
+                    {termsRead
+                      ? <span className="text-emerald-600">{texts.readyToAgree}</span>
+                      : <span className="text-amber-500 animate-pulse">{texts.scrollDown}</span>}
+                  </div>
+                  <div
+                    onClick={() => {
+                      if (termsRead) { setAgreedToTerms(!agreedToTerms); setShowTermsError(false); }
+                      else setShowTermsError(true);
+                    }}
+                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${agreedToTerms ? 'bg-primary/5 border-primary/20' : 'bg-transparent border-transparent'} ${!termsRead ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+                  >
+                    <div className="relative flex items-center justify-center shrink-0">
+                      <input type="checkbox" checked={agreedToTerms} disabled={!termsRead}
+                        onChange={(e) => setAgreedToTerms(e.target.checked)}
+                        className="peer h-5 w-5 appearance-none rounded-md border-2 border-slate-300 checked:bg-primary checked:border-primary disabled:border-slate-200"
+                        onClick={(e) => e.stopPropagation()} />
+                      <Check size={12} className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none stroke-[3] transition-opacity" />
+                    </div>
+                    <span className="text-xs text-slate-600 font-bold select-none leading-snug">{texts.confirmTerms}</span>
+                  </div>
+                  {showTermsError && <p className="text-[10px] text-red-500 font-bold pl-8 animate-bounce">{texts.readFirst}</p>}
+                </div>
+              )}
+            </div>
+
+            {/* Privacy Accordion */}
+            <div className="bg-slate-50 rounded-xl border border-slate-100 overflow-hidden">
+              <button
+                onClick={() => setActiveTab(activeTab === 'privacy' ? null : 'privacy')}
+                className="w-full p-3.5 flex items-center justify-between font-bold text-xs text-slate-800 hover:bg-slate-100 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <EyeOffIcon size={14} className="text-primary shrink-0" />
+                  <span className="text-left">{texts.privacyTitle}</span>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {agreedToPrivacy && <Check size={13} className="text-emerald-500 stroke-[3]" />}
+                  {activeTab === 'privacy' ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </div>
+              </button>
+              {activeTab === 'privacy' && (
+                <div className="px-4 pb-4 space-y-2.5">
+                  <div
+                    ref={privacyRef}
+                    onScroll={(e) => handleScroll(e, setPrivacyRead)}
+                    className="bg-white border border-slate-200 rounded-xl p-3 max-h-[130px] overflow-y-auto text-[11px] text-slate-600 font-medium leading-relaxed whitespace-pre-line"
+                  >
+                    {texts.privacyContent}
+                  </div>
+                  <div className="text-[9px] font-bold uppercase tracking-wider">
+                    {privacyRead
+                      ? <span className="text-emerald-600">{texts.readyToAgree}</span>
+                      : <span className="text-amber-500 animate-pulse">{texts.scrollDown}</span>}
+                  </div>
+                  <div
+                    onClick={() => {
+                      if (privacyRead) { setAgreedToPrivacy(!agreedToPrivacy); setShowPrivacyError(false); }
+                      else setShowPrivacyError(true);
+                    }}
+                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${agreedToPrivacy ? 'bg-primary/5 border-primary/20' : 'bg-transparent border-transparent'} ${!privacyRead ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+                  >
+                    <div className="relative flex items-center justify-center shrink-0">
+                      <input type="checkbox" checked={agreedToPrivacy} disabled={!privacyRead}
+                        onChange={(e) => setAgreedToPrivacy(e.target.checked)}
+                        className="peer h-5 w-5 appearance-none rounded-md border-2 border-slate-300 checked:bg-primary checked:border-primary disabled:border-slate-200"
+                        onClick={(e) => e.stopPropagation()} />
+                      <Check size={12} className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none stroke-[3] transition-opacity" />
+                    </div>
+                    <span className="text-xs text-slate-600 font-bold select-none leading-snug">{texts.confirmPrivacy}</span>
+                  </div>
+                  {showPrivacyError && <p className="text-[10px] text-red-500 font-bold pl-8 animate-bounce">{texts.readFirst}</p>}
+                </div>
+              )}
+            </div>
+
+            {/* All agreed indicator */}
+            {allAgreed && (
+              <div className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
+                <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
+                <span className="text-xs text-emerald-700 font-bold">
+                  {locale === 'am' ? 'ሁሉም ስምምነቶች ተቀብለዋል ✅' : 'All agreements accepted ✅ — Choose your signup method below'}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── STEP 2: SIGNUP METHODS CARD ── */}
+        <div className={`bg-white rounded-[2rem] shadow-xl shadow-primary/5 p-6 md:p-8 border border-border relative transition-all duration-500 ${!allAgreed ? 'overflow-hidden' : ''}`}>
+          
+          {/* Blur Overlay when not agreed */}
+          {!allAgreed && (
+            <div className="absolute inset-0 z-10 backdrop-blur-sm bg-white/70 flex flex-col items-center justify-center rounded-[2rem] gap-3 px-6">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <ShieldCheck size={24} className="text-primary" />
+              </div>
+              <p className="text-center text-xs font-bold text-gray-500 leading-relaxed">
+                {texts.blurHint}
+              </p>
+              {/* Progress indicator */}
+              <div className="flex gap-2">
+                {[confirmAge, agreedToEula, agreedToTerms, agreedToPrivacy].map((agreed, i) => (
+                  <div key={i} className={`w-2 h-2 rounded-full transition-all ${agreed ? 'bg-primary' : 'bg-gray-200'}`} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className={`relative ${!allAgreed ? 'pointer-events-none select-none' : ''}`}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-accent italic">
+                {view === 'initial' ? texts.signupTitle : view === 'email' ? getEmailSignupLabel(locale) : getPhoneSignupLabel(locale)}
               </h2>
               {view !== 'initial' && (
                 <button 
@@ -348,24 +596,21 @@ function SignupContent() {
             </div>
 
             {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 text-sm animate-in fade-in slide-in-from-top-2">
+              <div className="mb-5 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 text-sm">
                 <AlertCircle size={18} />
                 <p className="font-medium">{error}</p>
               </div>
             )}
 
-            {/* Coming Soon Toast */}
             {toast.show && (
-              <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3 text-amber-800 text-xs animate-in fade-in slide-in-from-top-2">
+              <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3 text-amber-800 text-xs">
                 <span className="text-lg">⏳</span>
                 <p className="font-medium leading-relaxed">{toast.message}</p>
               </div>
             )}
 
-
             {view === 'initial' ? (
               <div className="flex flex-col gap-3">
-
                 {/* Phone */}
                 <button
                   type="button"
@@ -444,7 +689,6 @@ function SignupContent() {
                     {locale === 'am' ? 'በApple ይቀጥሉ' : 'Continue with Apple'}
                   </span>
                 </button>
-
               </div>
             ) : (
               <form onSubmit={handleSignup} className="space-y-5">
@@ -491,23 +735,13 @@ function SignupContent() {
 
                    {calendarType === 'ethiopian' ? (
                      <div className="grid grid-cols-3 gap-2">
-                        <select 
-                          value={ethBirthDay} 
-                          aria-label="Day" 
-                          onChange={(e) => setEthBirthDay(e.target.value)} 
-                          className="p-3 bg-[#F8F4F1] rounded-xl font-bold text-xs text-accent outline-none focus:ring-2 focus:ring-primary/20"
-                        >
+                        <select value={ethBirthDay} aria-label="Day" onChange={(e) => setEthBirthDay(e.target.value)} className="p-3 bg-[#F8F4F1] rounded-xl font-bold text-xs text-accent outline-none focus:ring-2 focus:ring-primary/20">
                           <option value="">{locale === 'am' ? 'ቀን' : 'Day'}</option>
                           {Array.from({ length: ethBirthMonth === '13' ? 6 : 30 }, (_, i) => i + 1).map(day => (
                             <option key={day} value={day}>{day}</option>
                           ))}
                         </select>
-                        <select 
-                          value={ethBirthMonth} 
-                          aria-label="Month" 
-                          onChange={(e) => setEthBirthMonth(e.target.value)} 
-                          className="p-3 bg-[#F8F4F1] rounded-xl font-bold text-xs text-accent outline-none focus:ring-2 focus:ring-primary/20"
-                        >
+                        <select value={ethBirthMonth} aria-label="Month" onChange={(e) => setEthBirthMonth(e.target.value)} className="p-3 bg-[#F8F4F1] rounded-xl font-bold text-xs text-accent outline-none focus:ring-2 focus:ring-primary/20">
                           <option value="">{locale === 'am' ? 'ወር' : 'Month'}</option>
                           {['Meskerem', 'Tikemt', 'Hidar', 'Tahsas', 'Tir', 'Yekatit', 'Megabit', 'Miazia', 'Genbot', 'Sene', 'Hamle', 'Nehase', 'Pagume'].map((m, i) => (
                             <option key={m} value={i + 1}>
@@ -515,12 +749,7 @@ function SignupContent() {
                             </option>
                           ))}
                         </select>
-                        <select 
-                          value={ethBirthYear} 
-                          aria-label="Year" 
-                          onChange={(e) => setEthBirthYear(e.target.value)} 
-                          className="p-3 bg-[#F8F4F1] rounded-xl font-bold text-xs text-accent outline-none focus:ring-2 focus:ring-primary/20"
-                        >
+                        <select value={ethBirthYear} aria-label="Year" onChange={(e) => setEthBirthYear(e.target.value)} className="p-3 bg-[#F8F4F1] rounded-xl font-bold text-xs text-accent outline-none focus:ring-2 focus:ring-primary/20">
                           <option value="">{locale === 'am' ? 'ዓ.ም' : 'Year'}</option>
                           {Array.from({ length: 70 }, (_, i) => 2018 - 18 - i).map(year => (
                             <option key={year} value={year}>{year}</option>
@@ -605,17 +834,14 @@ function SignupContent() {
                     </button>
                   </div>
                   {isPasswordFocused && !password && (
-                    <div className="p-3.5 bg-blue-50/50 border border-blue-100/70 rounded-2xl mt-2 text-xs text-gray-600 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                    <div className="p-3.5 bg-blue-50/50 border border-blue-100/70 rounded-2xl mt-2 text-xs text-gray-600 space-y-1.5">
                       <p className="font-bold text-accent">
                         {locale === 'am' ? 'የይለፍ ቃል ምክር' : 'Password Recommendation'}
                       </p>
                       <p className="leading-relaxed text-[11px]">
                         {locale === 'am' 
                           ? 'ለደህንነትዎ ሲባል የሚያስገቡት የይለፍ ቃል ርዝመቱ 8 ወይም ከዚያ በላይ ሆኖ፣ ትልልቅና ትንንሽ ፊደላትን፣ ቁጥሮችን እና ልዩ ምልክቶችን (እንደ @፣ #፣ $) ያካተተ እንዲሁም በቀላሉ የሚያስታውሱት ቢሆን ይመከራል።'
-                          : 'For your security, it is recommended that your password is at least 8 characters long, includes uppercase & lowercase letters, numbers, and special characters (like @, #, $), and is easy to remember.'}
-                      </p>
-                      <p className="text-[10px] text-gray-400 font-semibold italic">
-                        {locale === 'am' ? 'ምሳሌ፡ P@ssword123' : 'Example: P@ssword123'}
+                          : 'For your security, it is recommended that your password is at least 8 characters long, includes uppercase & lowercase letters, numbers, and special characters (like @, #, $).'}
                       </p>
                     </div>
                   )}
@@ -623,7 +849,7 @@ function SignupContent() {
 
                 <button
                   type="submit"
-                  disabled={isLoading || !agreedToTerms}
+                  disabled={isLoading}
                   className="w-full bg-primary text-white py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl shadow-primary/20 hover:shadow-2xl hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale-[0.5] disabled:cursor-not-allowed mt-4"
                 >
                   {isLoading ? (
@@ -637,22 +863,17 @@ function SignupContent() {
               </form>
             )}
 
-
-
-            <div className="mt-8 text-center pt-6 border-t border-border">
+            <div className="mt-6 text-center pt-5 border-t border-border">
               <p className="text-gray-400 text-xs font-medium">
-                {locale === 'am' ? 'አካውንት አለዎት?' : 'Already have an account?'}{' '}
+                {texts.alreadyHave}{' '}
                 <button 
                   onClick={() => router.push('/login')}
                   className="text-primary font-bold hover:underline ml-1"
                 >
-                  {t('signIn')}
+                  {texts.signIn}
                 </button>
               </p>
             </div>
-            {(view === 'phone' || view === 'email' || showEulaModal) && (
-              <EulaGate onAccept={handleEulaAccept} forceShow={showEulaModal} />
-            )}
           </div>
         </div>
       </div>
