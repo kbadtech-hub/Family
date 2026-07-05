@@ -421,11 +421,74 @@ export default function CommunityView({
                       const file = e.target.files?.[0];
                       if (!file) return;
                       setIsUploading(true);
+                      
+                      let uploadFile: File | Blob = file;
+                      if (file.type.startsWith('image/')) {
+                        try {
+                          const compressed = await new Promise<Blob>((resolve) => {
+                            const reader = new FileReader();
+                            reader.readAsDataURL(file);
+                            reader.onload = (event) => {
+                              const img = new window.Image();
+                              img.src = event.target?.result as string;
+                              img.onload = () => {
+                                const canvas = document.createElement('canvas');
+                                let width = img.width;
+                                let height = img.height;
+                                
+                                const MAX_DIM = 800;
+                                if (width > MAX_DIM || height > MAX_DIM) {
+                                  if (width > height) {
+                                    height = Math.round((height * MAX_DIM) / width);
+                                    width = MAX_DIM;
+                                  } else {
+                                    width = Math.round((width * MAX_DIM) / height);
+                                    height = MAX_DIM;
+                                  }
+                                }
+                                
+                                canvas.width = width;
+                                canvas.height = height;
+                                const ctx = canvas.getContext('2d');
+                                if (!ctx) {
+                                  resolve(file);
+                                  return;
+                                }
+                                ctx.drawImage(img, 0, 0, width, height);
+                                
+                                let quality = 0.7;
+                                const tryCompress = () => {
+                                  canvas.toBlob((blob) => {
+                                    if (!blob) {
+                                      resolve(file);
+                                      return;
+                                    }
+                                    if (blob.size > 50 * 1024 && quality > 0.1) {
+                                      quality -= 0.15;
+                                      tryCompress();
+                                    } else {
+                                      resolve(blob);
+                                    }
+                                  }, 'image/jpeg', quality);
+                                };
+                                tryCompress();
+                              };
+                              img.onerror = () => resolve(file);
+                            };
+                            reader.onerror = () => resolve(file);
+                          });
+                          uploadFile = compressed;
+                        } catch (err) {
+                          console.error("Compression failed", err);
+                        }
+                      }
+
                       const { data: { user } } = await supabase.auth.getUser();
                       if (user) {
-                          const ext = file.name.split('.').pop();
-                          const path = `community/${user.id}-${Date.now()}.${ext}`;
-                          const { error } = await supabase.storage.from('user_photos').upload(path, file);
+                          const path = `community/${user.id}-${Date.now()}.jpg`;
+                          const { error } = await supabase.storage.from('user_photos').upload(path, uploadFile, {
+                            contentType: 'image/jpeg'
+                          });
                           if (!error) {
                             const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(path);
                             setMediaUrl(publicUrl);
