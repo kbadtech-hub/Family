@@ -31,8 +31,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
     bio: profile?.bio || '',
     interests: profile?.interests || '',
     preferred_language: profile?.preferred_language || 'en',
-    enable_abushakir: profile?.enable_abushakir !== false,
-    enable_app_lock: profile?.enable_app_lock === true
+    enable_abushakir: profile?.enable_abushakir !== false
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -215,15 +214,6 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
        }
     }
 
-    // Biography length integrity constraint (Phase 5)
-    if (formData.bio && (formData.bio.length < 100 || formData.bio.length > 150)) {
-      alert(profile?.preferred_language === 'am' 
-        ? 'የአጭር መግለጫዎ (Bio) ርዝመት ከ 100 እስከ 150 ቃላት/ፊደላት መሆን አለበት።'
-        : 'Your short biography must be strictly between 100 and 150 characters.');
-      setIsSaving(false);
-      return;
-    }
-
     const { error } = await supabase
       .from('profiles')
       .update(formData)
@@ -340,47 +330,25 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
             </div>
 
             <div className="space-y-4 pt-2 col-span-full">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input 
-                    type="checkbox"
-                    checked={formData.enable_abushakir}
-                    onChange={(e) => setFormData({...formData, enable_abushakir: e.target.checked})}
-                    className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary"
-                  />
-                  <span className="text-xs font-bold text-slate-600">
-                    {profile?.preferred_language === 'am' 
-                      ? 'የአቡሻህር ባህላዊ የኮከብ ምልክት ተኳኋኝነትን አሳይ (Enable Abushakir Star Matching)'
-                      : 'Enable Abushakir Star Sign Matching (Optional)'}
-                  </span>
-                </label>
-                <p className="text-[10px] text-gray-400 font-semibold italic pl-8">
-                  {profile?.preferred_language === 'am'
-                    ? '*ሲበራ የኮከብ ምልክትዎን በኢትዮጵያ ዘመን አቆጣጠር መሰረት በማስላት ተጨማሪ ባህላዊ ተኳኋኝነትን ያሳያል።'
-                    : '*Allows supplementary cultural/heritage calculations based on the Ethiopian calendar.'}
-                </p>
-             </div>
-
-             {/* User-Controlled App Locking Toggle (Phase 5) */}
-             <div className="space-y-4 pt-4 col-span-full border-t border-gray-100">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input 
-                    type="checkbox"
-                    checked={formData.enable_app_lock}
-                    onChange={(e) => setFormData({...formData, enable_app_lock: e.target.checked})}
-                    className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary"
-                  />
-                  <span className="text-xs font-bold text-slate-600">
-                    {profile?.preferred_language === 'am' 
-                      ? 'የመተግበሪያ መቆለፊያን አግብር (Enable App Lock Security)'
-                      : 'Enable App Lock Security (User-controlled Toggle)'}
-                  </span>
-                </label>
-                <p className="text-[10px] text-gray-400 font-semibold italic pl-8">
-                  {profile?.preferred_language === 'am'
-                    ? '*ሲበራ አፑ ሲከፈት የደህንነት ኮድ/ፒን በመጠየቅ የግል ውይይቶችዎን ይጠብቃል።'
-                    : '*When enabled, protects your private chats by asking for authentication when opening the app.'}
-                </p>
-             </div>
+               <label className="flex items-center gap-3 cursor-pointer">
+                 <input 
+                   type="checkbox"
+                   checked={formData.enable_abushakir}
+                   onChange={(e) => setFormData({...formData, enable_abushakir: e.target.checked})}
+                   className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary"
+                 />
+                 <span className="text-xs font-bold text-slate-600">
+                   {profile?.preferred_language === 'am' 
+                     ? 'የአቡሻህር ባህላዊ የኮከብ ምልክት ተኳኋኝነትን አሳይ (Enable Abushakir Star Matching)'
+                     : 'Enable Abushakir Star Sign Matching (Optional)'}
+                 </span>
+               </label>
+               <p className="text-[10px] text-gray-400 font-semibold italic pl-8">
+                 {profile?.preferred_language === 'am'
+                   ? '*ሲበራ የኮከብ ምልክትዎን በኢትዮጵያ ዘመን አቆጣጠር መሰረት በማስላት ተጨማሪ ባህላዊ ተኳኋኝነትን ያሳያል።'
+                   : '*Allows supplementary cultural/heritage calculations based on the Ethiopian calendar.'}
+               </p>
+            </div>
          </div>
       </div>
 
@@ -432,25 +400,14 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
         </h3>
         
            <div className="space-y-2">
-               <div className="flex justify-between items-center px-4">
-                  <label className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('bio')}</label>
-                  <span className={`text-[10px] font-bold ${(formData.bio || '').length < 100 || (formData.bio || '').length > 150 ? 'text-red-500 font-extrabold animate-pulse' : 'text-green-600 font-extrabold'}`}>
-                     {(formData.bio || '').length} / 150 (Min 100)
-                  </span>
-               </div>
-               <textarea 
-                 value={formData.bio}
-                 maxLength={150}
-                 onChange={(e) => setFormData({...formData, bio: e.target.value})}
-                 placeholder={t('bioPlaceholder')}
-                 className="w-full bg-muted/30 border border-muted rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-6 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[120px] resize-none text-foreground"
-               />
-               <p className="text-[10px] text-gray-400 font-semibold italic px-4">
-                 {profile?.preferred_language === 'am'
-                   ? '*መግለጫዎ ከ100 እስከ 150 ቃላት/ፊደላት መሆን አለበት።'
-                   : '*Biography must be strictly between 100 and 150 characters.'}
-               </p>
-            </div>
+              <label className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">{t('bio')}</label>
+              <textarea 
+                value={formData.bio}
+                onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                placeholder={t('bioPlaceholder')}
+                className="w-full bg-muted/30 border border-muted rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-6 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[120px] resize-none text-foreground"
+              />
+           </div>
 
            <div className="space-y-2">
               <label className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">{t('interests')}</label>

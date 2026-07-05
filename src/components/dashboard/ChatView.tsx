@@ -35,7 +35,6 @@ import Image from 'next/image';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import CallInterface from '@/components/dashboard/CallInterface';
 import GiftModal from '@/components/dashboard/GiftModal';
-import { getTrustTier } from './TrustBadge';
 
 interface Message {
   id: string;
@@ -63,7 +62,6 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [currentUser, setCurrentUser] = useState<SupabaseUser | null>(null);
-  const [currentUserProfile, setCurrentUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [friendRequests, setFriendRequests] = useState<any[]>([]);
   const [isFriend, setIsFriend] = useState(false);
@@ -85,11 +83,6 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
   const [waliMessages, setWaliMessages] = useState<any[]>([]);
   const [newWaliMessage, setNewWaliMessage] = useState('');
   const [isWaliLoading, setIsWaliLoading] = useState(false);
-
-  // Reconciliation Safe Space states (Phase 5)
-  const [isSafeSpaceActive, setIsSafeSpaceActive] = useState(false);
-  const [safeSpaceApprovedBy, setSafeSpaceApprovedBy] = useState<string[]>([]);
-  const [activeWaliRoom, setActiveWaliRoom] = useState<any>(null);
 
   useEffect(() => {
     if (!activeWaliRoomId || !showWaliModal) return;
@@ -152,13 +145,12 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
           .map(f => f.sender_id === user.id ? f.receiver : f.sender)
           .filter((f: any) => f && !blockedIds.includes(f.id));
         
-        // Fetch current user's profile to know their gender and tier limits (Phase 5)
+        // Fetch current user's profile to know their gender
         const { data: userProfile } = await supabase
           .from('profiles')
-          .select('*')
+          .select('gender')
           .eq('id', user.id)
           .single();
-        if (userProfile) setCurrentUserProfile(userProfile);
 
         // Also show some potential matches if no friends (with strict gender filtering)
         let profilesQuery = supabase
@@ -211,25 +203,6 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
 
     checkFriendship();
 
-    const checkSafeSpaceStatus = async () => {
-      const { data } = await supabase
-        .from('wali_rooms')
-        .select('*')
-        .or(`and(candidate1_id.eq.${currentUser.id},candidate2_id.eq.${selectedMatch.id}),and(candidate1_id.eq.${selectedMatch.id},candidate2_id.eq.${currentUser.id})`)
-        .limit(1);
-
-      if (data && data.length > 0) {
-        setActiveWaliRoom(data[0]);
-        setIsSafeSpaceActive(data[0].safe_space_active === true);
-        setSafeSpaceApprovedBy(data[0].safe_space_approved_by || []);
-      } else {
-        setActiveWaliRoom(null);
-        setIsSafeSpaceActive(false);
-        setSafeSpaceApprovedBy([]);
-      }
-    };
-    checkSafeSpaceStatus();
-
     const fetchMessages = async () => {
       const { data } = await supabase
         .from('messages')
@@ -272,91 +245,6 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
-
-  const handleRequestSafeSpace = async () => {
-    if (!currentUser || !selectedMatch) return;
-    setIsProcessing(true);
-    try {
-      let room = activeWaliRoom;
-      if (!room) {
-        // Create new wali room with current user approved
-        const { data: newRoom, error: createError } = await supabase
-          .from('wali_rooms')
-          .insert({
-            candidate1_id: currentUser.id,
-            candidate2_id: selectedMatch.id,
-            safe_space_approved_by: [currentUser.id],
-            safe_space_active: false,
-            status: 'active'
-          })
-          .select()
-          .single();
-        if (createError) throw createError;
-        room = newRoom;
-      } else {
-        const approvedBy = room.safe_space_approved_by || [];
-        if (!approvedBy.includes(currentUser.id)) {
-          const newApprovedBy = [...approvedBy, currentUser.id];
-          // Check if both candidate IDs are included in approved list
-          const bothApproved = (newApprovedBy.includes(room.candidate1_id) && newApprovedBy.includes(room.candidate2_id)) || newApprovedBy.length >= 2;
-          
-          const { data: updatedRoom, error: updateError } = await supabase
-            .from('wali_rooms')
-            .update({
-              safe_space_approved_by: newApprovedBy,
-              safe_space_active: bothApproved
-            })
-            .eq('id', room.id)
-            .select()
-            .single();
-          if (updateError) throw updateError;
-          room = updatedRoom;
-        }
-      }
-      
-      setActiveWaliRoom(room);
-      setIsSafeSpaceActive(room.safe_space_active === true);
-      setSafeSpaceApprovedBy(room.safe_space_approved_by || []);
-      
-      if (room.safe_space_active) {
-        alert(locale === 'am' ? 'የዕርቅ ማዕከል ክፍል ገብተዋል።' : 'Reconciliation Safe Space Room is now Active!');
-      } else {
-        alert(locale === 'am' ? 'የደህንነት ክፍል ጥያቄ ተልኳል። ሁለቱም ወገን ሲስማሙ ይከፈታል።' : 'Safe Space Room requested. Waiting for other candidate to accept.');
-      }
-    } catch (err: any) {
-      console.error(err);
-      alert("Failed to update safe space: " + err.message);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const handleResolveSafeSpace = async () => {
-    if (!currentUser || !activeWaliRoom) return;
-    setIsProcessing(true);
-    try {
-      const { data: updatedRoom, error: updateError } = await supabase
-        .from('wali_rooms')
-        .update({
-          safe_space_approved_by: [],
-          safe_space_active: false
-        })
-        .eq('id', activeWaliRoom.id)
-        .select()
-        .single();
-      if (updateError) throw updateError;
-
-      setActiveWaliRoom(updatedRoom);
-      setIsSafeSpaceActive(false);
-      setSafeSpaceApprovedBy([]);
-      alert(locale === 'am' ? 'ክፍሉ ተዘግቷል ወደ መደበኛ ውይይት ተመልሰዋል።' : 'Safe Space resolved. Returned to regular chat.');
-    } catch (err: any) {
-      console.error(err);
-      alert("Failed to resolve safe space: " + err.message);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
 
   const suggestIceBreaker = () => {
     const suggestions = [
@@ -506,23 +394,8 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
     e.preventDefault();
     if (!newMessage.trim() || !selectedMatch || !currentUser) return;
 
-    // v3.6 Tier Limits and Coin Micro-transactions Bypass (Phase 5)
+    // Non-premium daily message limit check (5 messages/day)
     if (!isPremium) {
-      const userTier = getTrustTier(currentUserProfile, false);
-      
-      // 1. Bronze Restriction Gate
-      if (userTier === 'Bronze') {
-        alert(locale === 'am'
-          ? "ይቅርታ፣ ያልተረጋገጡ (Bronze) መለያዎች መልእክት መላክ አይችሉም። እባክዎ መጀመሪያ onboarding ገብተው መታወቂያዎን ያረጋግጡ።"
-          : "Bronze (Unverified) accounts are restricted from sending chat messages. Please complete verification in onboarding first.");
-        return;
-      }
-
-      // 2. Daily Quota Limit Checks (Silver: 3, Gold: 5, Platinum: 7)
-      let dailyLimit = 3;
-      if (userTier === 'Gold') dailyLimit = 5;
-      if (userTier === 'Platinum') dailyLimit = 7;
-
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const { count, error: countError } = await supabase
@@ -531,41 +404,11 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
         .eq('sender_id', currentUser.id)
         .gte('created_at', today.toISOString());
         
-      if (!countError && count !== null && count >= dailyLimit) {
-        // Spend 10 Coins bypass trigger
-        const confirmBypass = confirm(locale === 'am'
-          ? `የዕለቱ የነፃ መልእክት ገደብዎ አልቋል (በቀን ${dailyLimit} መልእክት)። ይህን መልእክት ለመላክ 10 የቤተሰብ ሳንቲም (Coins) መጠቀም ይፈልጋሉ?`
-          : `You have reached your daily limit of ${dailyLimit} messages. Would you like to spend 10 Beteseb Coins to bypass this limit and send your message?`);
-        
-        if (!confirmBypass) return;
-
-        // Verify and deduct coins
-        const { data: profileCoins } = await supabase
-          .from('profiles')
-          .select('coins')
-          .eq('id', currentUser.id)
-          .single();
-        
-        const balance = profileCoins?.coins || 0;
-        if (balance < 10) {
-          alert(locale === 'am'
-            ? "በቂ ሳንቲም የለዎትም። እባክዎ በድር ጣቢያችን (beteseb1.online) ላይ ሳንቲሞችን ይግዙ።"
-            : "Insufficient Beteseb Coins. Please top up on our web portal at beteseb1.online.");
-          return;
-        }
-
-        // Deduct 10 coins
-        const { error: deductError } = await supabase
-          .from('profiles')
-          .update({ coins: balance - 10 })
-          .eq('id', currentUser.id);
-
-        if (deductError) {
-          alert("Coin transaction failed: " + deductError.message);
-          return;
-        }
-
-        alert(locale === 'am' ? "10 ሳንቲም ተቀንሷል። መልእክትዎ ተልኳል።" : "10 Beteseb Coins deducted successfully.");
+      if (!countError && count !== null && count >= 5) {
+        alert(locale === 'am'
+          ? "በቀን መላክ የሚችሉት 5 መልእክቶች ብቻ ነው። እባክዎ ሁሉንም ለማግኘት አካውንትዎን ያሳድጉ!"
+          : "You have reached the free limit of 5 messages per day. Please upgrade to Premium to chat unlimitedly!");
+        return;
       }
     }
 
@@ -673,15 +516,6 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
     }
     setIsProcessing(false);
   };
-
-  // Passive Interaction Telemetry Calculations (Phase 5)
-  const lastMessage = messages[messages.length - 1];
-  const hoursSinceLastMessage = lastMessage 
-    ? (new Date().getTime() - new Date(lastMessage.created_at).getTime()) / (1000 * 60 * 60)
-    : 0;
-
-  const isChatCooldown = lastMessage && hoursSinceLastMessage >= 24;
-  const isChatFrozen = lastMessage && hoursSinceLastMessage >= 48;
 
   if (loading) return <div className="flex-1 flex items-center justify-center">{t('loading')}</div>;
 
@@ -934,62 +768,6 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
               ref={scrollRef}
               className="flex-1 overflow-y-auto p-10 space-y-6 scroll-smooth"
             >
-              {/* Reconciliation Safe Space Active Indicator (Phase 5) */}
-              {isSafeSpaceActive && (
-                <div className="bg-black text-white p-6 rounded-[2.5rem] border border-slate-900 space-y-3 mb-6 text-center animate-in zoom-in-95 duration-500">
-                  <p className="text-xs font-black uppercase tracking-[0.2em] text-red-500">🕊️ Reconciliation Safe Space Room Active</p>
-                  <p className="text-[10px] text-slate-300 font-bold uppercase tracking-wider">Conflict-Resolution Prompts:</p>
-                  <ul className="text-xs text-slate-400 font-medium space-y-2 list-disc list-inside max-w-md mx-auto text-left">
-                    <li>Speak about your feelings using "I" statements instead of blaming.</li>
-                    <li>Listen fully to the other person and restate their point before you reply.</li>
-                    <li>What is one small, reasonable compromise you can offer today?</li>
-                  </ul>
-                  <div className="pt-2">
-                    <button type="button" onClick={handleResolveSafeSpace} className="bg-white text-black px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform">
-                      Resolve & Return to Normal Chat
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Passive Interaction Telemetry Warnings (Phase 5) */}
-              {!isSafeSpaceActive && isChatCooldown && (
-                <div className="bg-slate-50 border border-slate-250 p-6 rounded-[2.5rem] space-y-3 mb-6 animate-in slide-in-from-top-4 duration-500">
-                  <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">
-                    Conversation cooled down (24h+). Try one of these prompts:
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      "What's one thing you did today that made you smile?",
-                      "What traditional family value do you appreciate the most?",
-                      "How do you usually spend your weekend mornings?"
-                    ].map(ice => (
-                      <button key={ice} type="button" onClick={() => setNewMessage(ice)} className="text-[10px] bg-white border border-slate-200 px-3.5 py-2 rounded-xl hover:bg-slate-50 transition-colors font-bold text-slate-700 shadow-sm">
-                        "{ice}"
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {!isSafeSpaceActive && isChatFrozen && (
-                <div className="bg-black text-white p-8 rounded-[2.5rem] border border-slate-900 space-y-4 mb-6 text-center animate-in slide-in-from-top-4 duration-500">
-                  <div className="w-10 h-10 bg-slate-850 rounded-full flex items-center justify-center mx-auto text-slate-300">⚠️</div>
-                  <h4 className="text-sm font-black uppercase tracking-wider text-slate-300">Communication Frozen (48h+)</h4>
-                  <p className="text-xs text-slate-400 font-medium max-w-sm mx-auto">
-                    Your communication has cooled down. Did you run into an issue? Would you like to talk it out or do you need professional help?
-                  </p>
-                  <div className="flex gap-3 justify-center flex-wrap pt-2">
-                    <button type="button" onClick={handleRequestSafeSpace} className="bg-white text-black px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform shadow-md">
-                      Talk it out (Safe Space)
-                    </button>
-                    <button type="button" onClick={() => window.location.search = '?tab=workshops'} className="bg-slate-950 border border-slate-800 text-slate-300 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform shadow-md">
-                      Book Counselor
-                    </button>
-                  </div>
-                </div>
-              )}
-
               <div className="flex flex-col items-center mb-8">
                  <div className="p-4 bg-primary/5 rounded-3xl border border-primary/10 text-center max-w-xs">
                     <Heart size={20} className="text-primary mx-auto mb-2 fill-primary/20" />
@@ -1031,34 +809,30 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
             </div>
 
             <form onSubmit={handleSendMessage} className="p-6 bg-white border-t border-muted space-y-4">
-              {!isSafeSpaceActive && (
-                <div className="flex gap-2">
-                   <button 
-                    type="button"
-                    onClick={suggestIceBreaker}
-                    className="flex items-center gap-2 px-4 py-2 bg-muted text-accent border border-gray-100 rounded-full text-[9px] font-black uppercase tracking-widest hover:bg-primary/10 hover:text-primary transition-all shadow-sm"
-                   >
-                      <Lightbulb size={12} /> Templates
-                   </button>
-                   <button 
-                    type="button"
-                    onClick={generateIceBreakerAI}
-                    disabled={isGeneratingIceBreaker}
-                    className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-full text-[9px] font-black uppercase tracking-widest hover:bg-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 shadow-sm"
-                   >
-                      {isGeneratingIceBreaker ? <Loader2 className="animate-spin" size={12} /> : <Sparkles size={12} className="fill-primary" />}
-                      AI Ice-breaker
-                   </button>
-                </div>
-              )}
+              <div className="flex gap-2">
+                 <button 
+                  type="button"
+                  onClick={suggestIceBreaker}
+                  className="flex items-center gap-2 px-4 py-2 bg-muted text-accent border border-gray-100 rounded-full text-[9px] font-black uppercase tracking-widest hover:bg-primary/10 hover:text-primary transition-all shadow-sm"
+                 >
+                    <Lightbulb size={12} /> Templates
+                 </button>
+                 <button 
+                  type="button"
+                  onClick={generateIceBreakerAI}
+                  disabled={isGeneratingIceBreaker}
+                  className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-full text-[9px] font-black uppercase tracking-widest hover:bg-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 shadow-sm"
+                 >
+                    {isGeneratingIceBreaker ? <Loader2 className="animate-spin" size={12} /> : <Sparkles size={12} className="fill-primary" />}
+                    AI Ice-breaker
+                 </button>
+              </div>
               <div className="flex items-center gap-4 bg-muted/30 rounded-[2rem] p-2 pl-6 focus-within:ring-2 focus-within:ring-primary/20 transition-all border border-muted">
                 <input 
                   type="text" 
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder={isSafeSpaceActive 
-                    ? (locale === 'am' ? 'በጥንቃቄ እና በዕርቅ መንፈስ ይፃፉ...' : 'Type respectfully using "I" statements...') 
-                    : t('typePlaceholder')} 
+                  placeholder={t('typePlaceholder')} 
                   className="flex-1 bg-transparent border-none focus:outline-none text-sm text-accent py-3"
                 />
                 <button 

@@ -4,14 +4,14 @@
   --background: #FFFFFF;
   --foreground: #0F172A;
   
-  --primary: #000000;      /* Pure Black */
-  --secondary: #64748B;    /* Slate Gray */
-  --accent: #0F172A;       /* Dark Slate/Navy */
-  --muted: #F8FAFC;        /* Minimalist Light Gray */
+  --primary: #E2725B;      /* Terracotta */
+  --secondary: #D2B48C;    /* Beige */
+  --accent: #0F172A;       /* Navy */
+  --muted: #F8F4F1;        /* Warm Off-white */
   
   --card: #FFFFFF;
   --card-foreground: #0F172A;
-  --border: #E2E8F0;       /* Minimalist Border */
+  --border: #F0EBE2;
 
   /* Spacing Scale */
   --spacing-unit: 8px;
