@@ -49,6 +49,7 @@ function DashboardContent() {
 
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isLangOpen, setIsLangOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
   interface Profile {
     id: string;
@@ -396,16 +397,13 @@ function DashboardContent() {
         </div>
       </aside>
 
-      {/* Mobile Bottom Navigation Bar */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0F172A] text-white z-50 border-t border-white/5 px-6 py-3 flex justify-between items-center shadow-2xl">
         {[
           { id: 'dashboard', icon: Home, label: n('dashboard') },
           { id: 'chat', icon: MessageCircle, label: n('chat') },
           { id: 'community', icon: Users, label: n('community') },
           { id: 'workshops', icon: GraduationCap, label: n('workshops') },
-          { id: 'wedding', icon: Sparkles, label: locale === 'am' ? 'የሰርግ እቅድ' : 'Wedding Planner' },
-          { id: 'gifts', icon: Gift, label: locale === 'am' ? 'ስጦታዎች' : 'Gifts' },
-          { id: 'profile', icon: UserCircle, label: n('profile') }
+          { id: 'gifts', icon: Gift, label: locale === 'am' ? 'ስጦታዎች' : 'Gifts' }
         ].map((item) => (
           <button
             key={item.id}
@@ -471,22 +469,55 @@ function DashboardContent() {
                 )}
               </div>
 
-              {/* Logout Button */}
-              <button 
-                onClick={handleLogout}
-                className="p-2.5 bg-red-500/5 hover:bg-red-500/10 text-red-500 rounded-xl transition-all"
-                title="Logout"
-              >
-                <LogOut size={16} />
-              </button>
+              {/* Avatar Link with Dropdown */}
+              <div className="relative">
+                <button 
+                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                  className="hover:scale-105 active:scale-95 transition-all focus:outline-none flex items-center"
+                  aria-label="Profile options"
+                >
+                  {renderRoyalAvatar(profile?.avatar_url || null, (profile as any)?.gender || null)}
+                </button>
 
-              {/* Avatar Link */}
-              <button 
-                onClick={() => setActiveTab('profile')}
-                className="hover:scale-105 active:scale-95 transition-all"
-              >
-                {renderRoyalAvatar(profile?.avatar_url || null, (profile as any)?.gender || null)}
-              </button>
+                {isProfileDropdownOpen && (
+                  <div className={`absolute top-full ${locale === 'ar' ? 'left-0' : 'right-0'} mt-2 w-56 bg-white border border-border rounded-3xl shadow-2xl z-[100] overflow-hidden`}>
+                    {[
+                      { id: 'dashboard', icon: Home, label: n('dashboard') },
+                      { id: 'chat', icon: MessageCircle, label: n('chat') },
+                      { id: 'community', icon: Users, label: n('community') },
+                      { id: 'workshops', icon: GraduationCap, label: n('workshops') },
+                      { id: 'wedding', icon: Sparkles, label: locale === 'am' ? 'የሰርግ እቅድ' : 'Wedding Planner' },
+                      { id: 'gifts', icon: Gift, label: locale === 'am' ? 'ስጦታዎች' : 'Gifts' },
+                      { id: 'profile', icon: UserCircle, label: n('profile') }
+                    ].map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setActiveTab(item.id);
+                          setIsProfileDropdownOpen(false);
+                        }}
+                        className={`w-full px-5 py-3 text-left text-xs font-bold hover:bg-[#F8F4F1] transition-all flex items-center gap-3 ${activeTab === item.id ? 'text-primary bg-[#F8F4F1]' : 'text-gray-600'}`}
+                      >
+                        <item.icon size={16} className={activeTab === item.id ? 'text-primary' : 'text-gray-400'} />
+                        <span>{item.label}</span>
+                      </button>
+                    ))}
+                    
+                    <div className="border-t border-gray-100 mt-1 pt-1">
+                      <button
+                        onClick={() => {
+                          setIsProfileDropdownOpen(false);
+                          handleLogout();
+                        }}
+                        className="w-full px-5 py-3 text-left text-xs font-bold text-red-500 hover:bg-red-50 transition-all flex items-center gap-3"
+                      >
+                        <LogOut size={16} />
+                        <span>{n('logout')}</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </header>
