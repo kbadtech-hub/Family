@@ -39,6 +39,11 @@ export default function AboutPage() {
 
   return (
     <div className="bg-[#FDFBF9] min-h-screen pb-20">
+      <div className="max-w-7xl mx-auto px-6 pt-10">
+        <Link href="/" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-accent hover:text-primary transition-colors">
+          ← {locale === 'am' ? 'ወደ መነሻ ገጽ ተመለስ' : 'Back to Home'}
+        </Link>
+      </div>
       {/* Hero Section */}
       <section className="py-32 px-6 flex flex-col items-center text-center space-y-8 bg-[radial-gradient(circle_at_top,_var(--secondary)_0%,_transparent_50%)] bg-opacity-10 relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-gradient-to-b from-primary/5 to-transparent -z-10 blur-3xl opacity-50" />
@@ -227,8 +232,8 @@ export default function AboutPage() {
             <span>{t('joinStats')}</span>
          </div>
          <h3 className="text-4xl md:text-7xl font-black text-accent tracking-tighter mb-12 leading-none italic max-w-4xl">{t('ctaTitle')}</h3>
-         <Link href="/signup" className="bg-primary text-white text-xl py-6 px-20 rounded-2xl font-black uppercase tracking-widest shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-4 group">
-            {t('ctaButton')} <ArrowRight className="group-hover:translate-x-3 transition-transform duration-500" size={24} />
+         <Link href="/signup" className="bg-primary text-white text-sm py-4 px-10 rounded-[2rem] font-black uppercase tracking-widest shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-4 group whitespace-nowrap">
+            {t('ctaButton')} <ArrowRight className="group-hover:translate-x-3 transition-transform duration-500" size={20} />
          </Link>
       </section>
       <style dangerouslySetInnerHTML={{ __html: `

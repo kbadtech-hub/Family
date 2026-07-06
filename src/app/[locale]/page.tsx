@@ -25,12 +25,23 @@ interface SystemSettings {
 // 6-Language Translation Helpers to prevent any mixed-language bleed-throughs
 const getCtaLabel = (lang: string) => {
   switch (lang) {
-    case 'am': return 'አሁኑኑ አካውንታችሁን በነፃ ክፈቱና ተጠቀሙ!';
-    case 'om': return "Amma bilisaan galmaa'aa fayyadamaa!";
-    case 'ti': return 'ሕዚ ብነጻ ተመዝገቡ እሞ ተጠቐሙ!';
-    case 'ar': return 'افتح حسابك الآن مجاناً وابدأ الاستخدام!';
-    case 'so': return 'Hada koontadaada bilaash ku fur oo isticmaal!';
-    default: return 'Create your account for free and start using now!';
+    case 'am': return 'አካውንት ይፍጠሩ';
+    case 'om': return 'Galmee Uumi';
+    case 'ti': return 'ኣካውንት ፍጠሩ';
+    case 'ar': return 'أنشئ حسابك';
+    case 'so': return 'Abuur Koontadaada';
+    default: return 'Create Your Account';
+  }
+};
+
+const getBottomCtaLabel = (lang: string) => {
+  switch (lang) {
+    case 'am': return 'አሁኑኑ ይቀላቀሉ';
+    case 'om': return 'Amma dabalami';
+    case 'ti': return 'ሕዚ ተጸንበሩ';
+    case 'ar': return 'انضم الآن';
+    case 'so': return 'Ku biir Hada';
+    default: return 'Join Now';
   }
 };
 
@@ -260,7 +271,7 @@ export default function Home() {
                href="/signup"
                className="inline-flex bg-primary text-white py-6 px-16 rounded-[2.5rem] font-bold text-sm uppercase tracking-[0.2em] hover:shadow-2xl hover:shadow-primary/20 transition-all active:scale-95 items-center gap-4"
             >
-               {getCtaLabel(locale)} <ArrowRight size={20} className={locale === 'ar' ? 'rotate-180' : ''} />
+               {getBottomCtaLabel(locale)} <ArrowRight size={20} className={locale === 'ar' ? 'rotate-180' : ''} />
             </Link>
          </div>
 

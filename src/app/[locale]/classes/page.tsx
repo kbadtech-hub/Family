@@ -21,6 +21,11 @@ export default function ClassesPage() {
 
   return (
     <div className="bg-[#FDFBF9] min-h-screen" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+      <div className="max-w-7xl mx-auto px-6 pt-10">
+        <Link href="/" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-accent hover:text-primary transition-colors">
+          ← {locale === 'am' ? 'ወደ መነሻ ገጽ ተመለስ' : 'Back to Home'}
+        </Link>
+      </div>
       {/* Hero */}
       <section className="py-20 md:py-32 px-6 flex flex-col items-center text-center space-y-6 md:space-y-8 bg-[radial-gradient(circle_at_bottom_right,_var(--primary)_0%,_transparent_40%)] bg-opacity-5">
         <div className="inline-flex items-center gap-2 px-6 py-2 bg-primary/10 rounded-full text-primary font-black text-[10px] md:text-xs tracking-widest uppercase">
@@ -144,8 +149,8 @@ export default function ClassesPage() {
       {/* Footer Meta */}
       <section className="py-32 px-8 text-center bg-white">
          <p className="text-xs font-black text-accent/10 uppercase tracking-[1em] mb-12">{t('footerMeta')}</p>
-         <Link href="/signup" className="inline-flex items-center gap-4 btn-primary text-2xl py-6 px-20 group shadow-2xl shadow-primary/20">
-            {t('footerCTA')} <ArrowRight className={`group-hover:translate-x-3 transition-transform duration-300 ${locale === 'ar' ? 'rotate-180' : ''}`} />
+         <Link href="/signup" className="inline-flex items-center gap-4 bg-primary text-white text-sm py-4 px-10 rounded-[2rem] font-bold uppercase tracking-widest shadow-2xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all group whitespace-nowrap">
+            {t('footerCTA')} <ArrowRight className={`group-hover:translate-x-3 transition-transform duration-300 ${locale === 'ar' ? 'rotate-180' : ''}`} size={20} />
          </Link>
       </section>
     </div>
