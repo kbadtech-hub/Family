@@ -234,14 +234,13 @@ function DashboardContent() {
       const currentPaymentApproved = paymentData?.status === 'approved';
       if (paymentData) setPaymentStatus(paymentData.status);
 
-      // 4. Calculate Premium Status & Active Trial
-      const isTrialActive = profileData?.trial_ends_at && new Date(profileData.trial_ends_at) > new Date();
+      // 4. Calculate Premium Status
       const isPremium = currentPaymentApproved || 
                        (profileData?.premium_until && new Date(profileData.premium_until) > new Date()) ||
                        ['admin', 'super_admin', 'expert'].includes(profileData?.role);
       
       setProfile(prev => prev ? { ...prev, is_premium: isPremium } : null);
-      setIsTrialExpired(!isPremium && !isTrialActive);
+      setIsTrialExpired(false);
 
       // 5. Fetch Matches (Gender-Based Logic)
       // Load Cached Matches if available

@@ -25,12 +25,12 @@ interface SystemSettings {
 // 6-Language Translation Helpers to prevent any mixed-language bleed-throughs
 const getCtaLabel = (lang: string) => {
   switch (lang) {
-    case 'am': return 'ነጻ የ7 ቀን ሙከራ ጀምር';
-    case 'om': return 'Yaalii bilisaa guyyaa 7 jalqabi';
-    case 'ti': return 'ናጻ ናይ 7 መዓልቲ ፈተነ ጀምር';
-    case 'ar': return 'ابدأ فترة تجريبية مجانية لمدة 7 أيام';
-    case 'so': return 'Bilow tijaabada bilaashka ah ee 7 maalmood';
-    default: return 'Start 7-Day Free Trial';
+    case 'am': return 'አሁኑኑ አካውንታችሁን በነፃ ክፈቱና ተጠቀሙ!';
+    case 'om': return "Amma bilisaan galmaa'aa fayyadamaa!";
+    case 'ti': return 'ሕዚ ብነጻ ተመዝገቡ እሞ ተጠቐሙ!';
+    case 'ar': return 'افتح حسابك الآن مجاناً وابدأ الاستخدام!';
+    case 'so': return 'Hada koontadaada bilaash ku fur oo isticmaal!';
+    default: return 'Create your account for free and start using now!';
   }
 };
 

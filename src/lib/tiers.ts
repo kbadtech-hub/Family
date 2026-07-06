@@ -80,15 +80,14 @@ export type TrustTier = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond';
 export function getUserTier(profile: ProfileData | null, hasVouchedRecords: boolean): TrustTier {
   if (!profile) return 'bronze';
   
-  // Diamond Tier: Basic verification + Legal ID Verification + Community Vouched status + Active Paid Premium Subscription
   const isPremium = (profile.premium_until && new Date(profile.premium_until) > new Date()) || 
                     ['admin', 'super_admin', 'expert'].includes(profile.role || '');
   
-  const isIdVerified = profile.verification_status === 'verified';
-  
-  if (isIdVerified && hasVouchedRecords && isPremium) {
+  if (isPremium) {
     return 'diamond';
   }
+  
+  const isIdVerified = profile.verification_status === 'verified';
   
   // Platinum Tier: Basic Verification + Legal ID Verification + Approved Community Vouched status
   if (isIdVerified && hasVouchedRecords) {

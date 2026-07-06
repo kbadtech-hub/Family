@@ -48,7 +48,7 @@ export default function SubscriptionGate({ children, allowVerifiedView = false }
         </div>
         <h2 className="text-2xl font-bold text-accent">Account Locked (አካውንት ተቆልፏል)</h2>
         <p className="text-gray-500 italic">
-          Your subscription has expired and the grace period has ended. Please renew to continue.
+          Your account has been locked. Please contact support or renew your subscription to continue.
         </p>
         <button 
           onClick={() => router.push('/dashboard?tab=payment')}
@@ -58,81 +58,6 @@ export default function SubscriptionGate({ children, allowVerifiedView = false }
         </button>
       </div>
     );
-  }
-
-  // If premium, all good
-  if (subInfo?.status === 'premium') {
-    return <>{children}</>;
-  }
-
-  // If expired (in grace period) or verified (no premium)
-  if (subInfo?.status === 'expired' || (subInfo?.isVerified && !allowVerifiedView)) {
-     return (
-       <div className="relative">
-          {/* Overlay for interaction blocking if not allowed */}
-          {!allowVerifiedView && (
-            <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-[2px] rounded-[2rem] flex flex-col items-center justify-center p-8 text-center space-y-4">
-               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-                  <Sparkles size={24} />
-               </div>
-               <h3 className="font-black text-accent uppercase tracking-tighter italic">Unlock All Features</h3>
-               <p className="text-xs text-gray-500 font-medium max-w-[200px]">
-                 {locale === 'am' ? 'ሁሉንም አገልግሎቶች ለማግኘት ክፍያዎን ያሳድጉ።' : 'Please upgrade to premium to use this feature.'}
-               </p>
-               <button 
-                 onClick={() => router.push('/dashboard?tab=payment')}
-                 className="bg-primary text-white px-6 py-2 rounded-lg font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20"
-               >
-                 {locale === 'am' ? 'አሁኑኑ ይክፈቱ' : 'Unlock Now'}
-               </button>
-            </div>
-          )}
-          
-          {/* Content (Blurred if interaction blocked) */}
-          <div className={!allowVerifiedView ? 'blur-[1px] pointer-events-none' : ''}>
-             {children}
-          </div>
-          
-          {/* Interaction blocker popup trigger for verified users who CAN view but CAN'T interact */}
-          {allowVerifiedView && (
-            <div 
-              className="absolute inset-0 z-0 cursor-pointer" 
-              onClick={(e) => {
-                e.preventDefault();
-                setShowPopup(true);
-              }}
-            />
-          )}
-
-          {showPopup && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-               <div className="bg-white rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl text-center space-y-6 animate-in zoom-in-95 duration-300">
-                  <div className="w-20 h-20 bg-primary/10 rounded-[2rem] flex items-center justify-center mx-auto text-primary">
-                     <ShieldCheck size={40} />
-                  </div>
-                  <h2 className="text-2xl font-black text-accent italic uppercase tracking-tighter leading-none">Unlock All Features</h2>
-                  <p className="text-sm text-gray-500 italic">
-                    {locale === 'am' ? 'ይህንን አገልግሎት ለመጠቀም ፕሪሚየም አባል መሆን ይኖርብዎታል።' : 'Upgrade to premium to interact, chat, and access exclusive content.'}
-                  </p>
-                  <div className="flex flex-col gap-3">
-                    <button 
-                      onClick={() => router.push('/dashboard?tab=payment')}
-                      className="btn-primary py-4 rounded-xl font-black uppercase tracking-widest text-[10px]"
-                    >
-                      {locale === 'am' ? 'ፕሪሚየም ይሁኑ' : 'Become Premium'}
-                    </button>
-                    <button 
-                      onClick={() => setShowPopup(false)}
-                      className="text-[10px] font-bold text-gray-400 uppercase tracking-widest"
-                    >
-                      {locale === 'am' ? 'ተመለስ' : 'Maybe Later'}
-                    </button>
-                  </div>
-               </div>
-            </div>
-          )}
-       </div>
-     );
   }
 
   return <>{children}</>;

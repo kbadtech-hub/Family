@@ -121,7 +121,7 @@ export const translations: any = {
       about: 'Waa’ee Keenya',
       classes: 'Barmoota',
       login: 'Seenani / Galmaa’i',
-      startTrial: 'Yaalii guyyaa 3 jalqabaa'
+      startTrial: 'Piriimiyamii Argadhaa'
     },
     hero: {
       tagline: 'Aadaa keenya, teknooloojiidhaan',
@@ -147,7 +147,7 @@ export const translations: any = {
       premium: {
         active: 'Piriimiyamii Jira',
         pending: 'Mirkaneessa irra',
-        expired: 'Yaaliin dhumeera',
+        expired: 'Piriimiyamiin dhumeera',
         unlock: 'Piriimiyamii Bani'
       }
     },
@@ -166,7 +166,7 @@ export const translations: any = {
     modal: {
       step1: 'Tarkaanfii 1: Maatii qulqullaa’i',
       where: 'Eessa jiraattu?',
-      currencyNote: 'Bakki keessan kaffaltii fi yaalii keessaniif nu gargaara.',
+      currencyNote: 'Bakki keessan kaffaltii keessaniif nu gargaara.',
       localTitle: 'Itoophiyaa Keessa',
       localSub: 'Kaffaltii ETB dhan',
       globalTitle: 'Alandaa Alaa',
@@ -179,7 +179,7 @@ export const translations: any = {
       about: 'ብዛዕባና',
       classes: 'ትምህርትታት',
       login: 'እተዉ / ኣካውንት ፍጠሩ',
-      startTrial: 'ናይ 3 መዓልቲ ፈተነ ጀምሩ'
+      startTrial: 'ፕሪሚየም ይረኽቡ'
     },
     hero: {
       tagline: 'ባህላዊ ፍቕሪ፣ ዘመናዊ ትውውቕ',
@@ -205,7 +205,7 @@ export const translations: any = {
       premium: {
         active: 'ፕሪሚየም ንጡፍ እዩ',
         pending: 'ኣብ ገምጋም ዘሎ',
-        expired: 'ናይ ፈተነ ግዜ ተወዲኡ',
+        expired: 'ፕሪሚየም ተወዲኡ',
         unlock: 'ፕሪሚየም ክፈቱ'
       }
     },
@@ -224,7 +224,7 @@ export const translations: any = {
     modal: {
       step1: 'ደረጃ 1፡ ስድራቤት ተጸንበሩ',
       where: 'ኣበይ ትርከቡ?',
-      currencyNote: 'ቦታኹም ንናይ ክፍሊትን ናይ ፈተነ ግዜን ክንውስን ይሕግዘና እዩ።',
+      currencyNote: 'ቦታኹም ንናይ ክፍሊትን ክንውስን ይሕግዘና እዩ።',
       localTitle: 'ኣብ ውሽጢ ኢትዮጵያ',
       localSub: 'ክፍሊት ብብር (ETB)',
       globalTitle: 'ኣብ ወጻኢ ሃገር',
