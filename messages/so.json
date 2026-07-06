@@ -1,44 +1,55 @@
 {
   "Index": {
     "Hero": {
-      "tagline": "Dhaqanka iyo casriyeynta oo isku jira",
-      "title1": "Lammaanahaaga nolosha ee saxda ah",
-      "title2": "Ku bilow 'Beteseb' (Qoyska)!",
-      "subtitle": "Madal isku-xirka guurka oo ku salaysan dhaqankayaga iyo qiyamkayaga, oo ay taageerayaan tignoolajiyada casriga ah. Buundo lagu kalsoonaan karo oo lagu helo lammaane nololeed oo dhab ah, ma aha oo kaliya raadinta jacayl.",
-      "cta1": "Sameyso Koonto",
+      "tagline": "Nasteexo Dhaqameed iyo Isku-xir Casri Ah",
+      "title1": "Platform Isku-xirka Guurka",
+      "title2": "Ku Salaysan Dhaqankayaga & Qiyamkayaga",
+      "subtitle": "Beteseb waa buundada guurka oo barakaysan, ammaan ah, loona qaabeeyay dadka Itoobiyaanka ah iyo qurba-joogta adduunka oo dhan. Annagoo isku darayna caqliga guur-dhaqameedka ee boqolaal sano jirsaday iyo amniga casriga ah, waxaan u hanuuninaa dadka dhabta ah guur waara iyo dhisidda qoyska.",
+      "cta1": "Ku Bilow Tijaabo Bilaash Ah Oo 7 Maalmood Ah",
       "cta2": "Aragtidayada",
-      "verify1": "La xaqiijiyay",
-      "verify2": "Aqoonsi dhab ah",
-      "verify3": "Matoorka Abushakir"
+      "verify1": "PASSPORT LA XAQIIJIYAY",
+      "verify2": "SHAKHSIYAD AAMIN AH",
+      "verify3": "CAQLIGA ABUSHAKIR",
+      "visionBtn": "Sahmi Aragtidayada"
     },
     "Features": {
-      "title": "Maxaad u dooranaysaa 'Beteseb'?",
+      "title": "Maxaad u Dooranaysaa Beteseb?",
       "aiMatch": {
-        "title": "Isbarbardhigga Wajiga (AI Face Match)",
-        "desc": "Wuxuu xaqiijiyaa xaqiiqada isticmaalaha iyadoo loo marayo nidaamka aqoonsiga wajiga oo ay ku shaqeyso AI."
+        "title": "Aqoonsiga Wajiga AI & Mirkaneessa Selfie (AI Face Match)",
+        "desc": "Xubin kasta wuxuu dhammaystirayaa xaqiijin muuqaal selfie ah oo 3 ilbiriqsi ah. AI-keena wuxuu barbar dhigaa dukumiintiyada rasmiga ah si meesha looga saaro akoonnada beenta ah iyo is-daba-marinta."
       },
       "idVerify": {
-        "title": "Amni Adag (Aqoonsiga la Hubiyay)",
-        "desc": "Isticmaale kasta waxaa lagu hubiyaa aqoonsigiisa, hubinta is-barashada la isku halleyn karo. Ka madax bannaan xisaabaadka been abuurka ah!"
+        "title": "Xaqiijinta Aqoonsiga Rasmiga ah (ID Verified)",
+        "desc": "Si loo hubiyo amniga ugu sarreeya, xubnuhu waxay ku xaqiijin karaan aqoonsigooda baasaboor ama aqoonsiga qaranka (Gold Badge). In kasta oo talaabadan la gudbi karo, akoonnada la xaqiijiyay waxay helaan boost weyn."
       },
       "expert": {
-        "title": "Talo khabiir",
-        "desc": "Hel koorsooyin iyo hagitaan ay diyaariyeen khubaro ku saabsan dhisidda guurka iyo qoyska."
+        "title": "Caqliga Dhaqanka ee Abushakir",
+        "desc": "Annagoo aan waydiin saacadda dhalashada, waxaan isku darnaa kalandarka dhaqanka Itoobiya iyo xisaabinta is-waafajinta (Abushakir) iyo sifooyinka dabeecadda si aan kuu waafajino dadka aad isku qiyamka tihiin."
+      },
+      "guardian": {
+        "title": "Ka-qaybgalka Qoyska iyo Mas'uulka (Guardian)",
+        "desc": "Guurku waa midowga qoysaska. Beteseb wuxuu kuu oggolaanayaa inaad ku martiqaaddo waalid, walaal, ama odey (Wali) si uu u noqdo Profile Endorser, isagoo kordhinaya kalsoonida adigoon arki karin sheekadaada gaarka ah."
+      },
+      "vouching": {
+        "title": "Marqaati-kicinta Bulshada (Vouching)",
+        "desc": "Ku guuleyso Platinum Badge adoo helaya marqaati (Vouch) saaxiibo ama hoggaamiyeyaal bulsho oo aamin ah. Tani waxay xaqiijinaysaa inaad la kulmayso kaliya dadka dhabta ah oo guur raba."
       }
     },
     "Trust": {
       "title": "Dammaanadda Kalsoonida iyo Amniga",
       "privacy": {
-        "title": "Asturnaantaadu waa sharaftayada",
-        "desc": "Xogtaada waxaa si adag u ilaaliya nidaamka sirta casriga ah."
+        "title": "Amnigaaga waa Sharafkayaga",
+        "desc": "Waxaan si weyn u ilaalinaynaa sirtaada. App-keenu wuxuu xannibaa sawir-qaadista (Screenshot) ee Android iyo duubista shaashadda ee iOS (UI Masking). Ma la socono goobtaada dambe, mana iibinno xogtaada. Qufulka app-ka waa mid adiga kuu gaar ah."
       },
       "values": {
-        "title": "Xushmad iyo Daryeel",
-        "desc": "Nidaamkayagu wuxuu ku dhisan yahay qiyamka dhaqanka iyo akhlaaqda waxaana si adag loola socdaa."
-      }
+        "title": "Sharaf iyo Kormeer Amni oo Adag",
+        "desc": "Waxaan ka soo horjeednaa iska-jiidista sawirrada bilaa ujeeddada ah (Casual Swipe). AI-keenu wuxuu la socdaa masarka guurka si loo ilaaliyo amniga loona joojiyo romance fraud."
+      },
+      "verifiedNode": "Waxaa xaqiijiyay Nambarka Aaminada Beteseb"
     },
     "CTA": {
-      "message": "Qoyskaaga (Beteseb) halkan ayuu kugu sugayaa."
+      "message": "Qoyskaaga ayaa Halkan kugu Sugaya. Bilow Tijaabo Bilaash Ah Oo 7 Maalmood Ah.",
+      "subtext": "Ku biir bogga guurka ee Habesha oo loogu talagalay adduunka oo dhan. Xaqiijin adag oo da'da 18+ ah iyo ammaan buuxa."
     },
     "Vision": {
       "tagline": "Hiddaha",
@@ -186,26 +197,26 @@
     }
   },
   "About": {
-    "tagline": "Kama badna is-helid kaliya—Aasaasidda Qoys!",
-    "subtitle": "Nolosha bini'aadamku waxay dhab ahaan u dhammaystirmaan marka la helo lammaane dhab ah oo la wadaaga lana fahma. 'Beteseb' (Qoyska) waxaa loo aasaasay inuu taageero ujeedadan muqadaska ah. Waxaan aaminsanahay xiriiro dhab ah, ma aha oo kaliya tirooyin; anagoo isku dareyna qiyamka dhaqanka iyo tignoolajiyada casriga ah, waxaan dhisnay buundo la isku halleyn karo oo ku dhisan daacadnimo iyo hufnaan.",
-    "missionTitle": "Socod dhab ah",
-    "missionDesc": "Socod kasta oo ku saabsan madalkayagu wuxuu ku bilaabmaa aqoonsigaaga dhabta ah. Waxaan isticmaale kasta ku xaqiijinaa aqoonsiga wajiga casriga ah iyo hubinta aqoonsiga si aan u ilaalino hufnaanta madalkayaga oo aan u xaqiijino lammaane dhab ah oo kuu qalma. Nidaamkani ma tilmaamayo oo kaliya amni adag, laakiin in aasaaska qoyskaaga mustaqbalka uu ku dhisan yahay 'Run'.",
-    "mission1": "Isticmaalayaasha la Hubiyay",
-    "mission2": "Talo Khabiir",
-    "mission3": "Lix Luقadood",
-    "mission4": "Amni Adag",
-    "principlesTag": "Mabaadi'da Muhiimka ah",
-    "principlesTitle": "Maxaa naga dhigaya kuwo gaar ah?",
-    "value1Title": "Kalsooni dhab ah",
-    "value1Desc": "Madal ay ka qaybgalaan kaliya isticmaalayaasha aqoonsigooda la xaqيiqiyay.",
-    "value2Title": "Taageero dhameystiran",
-    "value2Desc": "Helitaanka hagitaan iyo koorsooyin ay diyaariyeen khubaro ku saabsan dhisidda guur guuleysta.",
-    "value3Title": "Lahaanshaha qof kasta",
-    "value3Desc": "U adeegida dhammaan bulshada iyada oo loo marayo helitaanka lix luقadood oo waaweyn.",
-    "ctaTitle": "Qoysku wuxuu ka dhigan yahay magan-galyo, nabad iyo jacayl. Hadafkayagu waa inaan aragno kumannaan qoysas farxad leh oo la aasaasay. Midow kasta oo cusub waa rajo cusub noo ah!",
-    "ctaButton": "Ku biir Beteseb Maanta",
-    "ourStory": "Sheekadeena",
-    "joinStats": "Ku biir 1,000+ Qoysas Faraxsan"
+    "tagline": "Guurka oo ay Hagayaan Dhaqanka iyo Kalsoonidu",
+    "subtitle": "Beteseb ma aha app shukaansi caadi ah. Waxaan nahay nidaam guur oo kalsooni sare leh, oo qoyska u jihaysan si loo ilaaliyo qiyamka bulshada Habesha.",
+    "missionTitle": "Falsafadda Guurka-Kowaad",
+    "missionDesc": "Nidaam kasta iyo amniga app-ka Beteseb waxaa loo naqshadeeyay si kor loogu qaado guurka dhabta ah iyo ballanqaadyada mustaqbalka fog.",
+    "mission1": "Xoogga saarista Guurka-Kowaad",
+    "mission2": "Bini-alka Kalsoonida",
+    "mission3": "Qufulka App-ka ee Ikhtiyaariga ah",
+    "mission4": "Habka Isku-xirka Qoyska",
+    "principlesTag": "Mabaadi'dayada Aasaasiga ah",
+    "principlesTitle": "Loo Dhisay in Lagu Sharaf Qoysaska",
+    "value1Title": "1. Is-waafajinta Dhaqanka",
+    "value1Desc": "Isku darka caqliga Abushakir iyo hababka dhaqanka si aan u helno dadka share-gareeya qiyamkaaga.",
+    "value2Title": "2. Amni Kalsooni Sare Leh",
+    "value2Desc": "Sallanka kalsoonida (Bronze, Silver, Gold, Platinum, Diamond badges) si looga saaro akoonnada been abuurka ah.",
+    "value3Title": "3. Sirnimo Buuxda",
+    "value3Desc": "Waxaan xannibnaa screenshot-ka Android, waxaanan qarinaa shaashadda iOS. Sirtaada waa sharafkayaga.",
+    "ctaTitle": "Hel Shuraakada Noloshaada Maanta",
+    "ctaButton": "Ku Biir Beteseb",
+    "ourStory": "Aragtidayada iyo Architecture",
+    "joinStats": "Xarunta Guurka Habesha"
   },
   "Resources": {
     "learningHub": "Xarunta Waxbarashada",
@@ -369,8 +380,8 @@
     "curriculum": "Manhajka",
     "featured": "Xiisado gaar ah",
     "viewAll": "Arag dhammaan xiisadaha",
-    "footerMeta": "KU BIIR AKADEEMIYADA",
-    "footerCTA": "Ku biir Beteseb",
+    "footerMeta": "Baro, Faham, Codso!",
+    "footerCTA": "Ku billow helitaanka miisaskan xigmadda hadda adigoo u beddelaya xubin gaar ah",
     "list": {
       "class1": {
         "title": "Doorashada Lammaanaha",
@@ -407,9 +418,7 @@
         "t3": "Adkeysiga & Dhismaha Qoyska",
         "t4": "Bakhaarka Xigmadda"
       }
-    },
-    "footerMeta": "Baro, Faham, Codso!",
-    "footerCTA": "Ku billow helitaanka miisaskan xigmadda hadda adigoo u beddelaya xubin gaar ah"
+    }
   },
   "Constants": {
     "Religions": {

@@ -1,44 +1,55 @@
 {
   "Index": {
     "Hero": {
-      "tagline": "Aadaa keenya, Akkaataa amayyaatiin",
-      "title1": "Hiriyaa jireenyaa keessanii sirrii",
-      "title2": "Beteseb waliin jalqabaa!",
-      "subtitle": "Sirna gaa'ela walitti fiduu aadaa fi naamusaa keenya irratti hundaa'e, teeknooloojii amayyaatiin deeggarame. Jaalala barbaaduu qofa osoo hin taane, hiriyaa jireenyaa dhugaa argachuuf riqicha amanamaadha.",
-      "cta1": "Hikaawuntii uumaa",
-      "cta2": "Mul'ata keenya",
-      "verify1": "Mirkanaa'aa",
-      "verify2": "Mirkaneessuu eenyummaatiin",
-      "verify3": "Abushakir Injiinii"
+      "tagline": "Oo’umsa Aadaa fi Ijaarsa Gaa’ela Ammayyaa",
+      "title1": "Platformii Wal-simannaa Gaa’elaa",
+      "title2": "Aadaa fi Duudhaalee Keenya Irratti Hundaa’e",
+      "subtitle": "Beteseb riqicha gaa'elaa qulqulluu fi amansiisaa ta'e kan lammiilee Itiyoophiyaa fi Diyaaspooraa addunyaa maraaf qophaaye dha. Logikiin aadaa qindeessuu keenya kan waggoota dhibbbaa lakkoofsise amansiisummaa ammayyaa wajjin qindeessuun, gaa'ela dhugaa fi ijaarsa maatiif namoota dhugaa walitti fiduuf gargaara.",
+      "cta1": "Yaalii Bilisaa Guyyaa 7 Jalqabi",
+      "cta2": "Mul'ata Keenya",
+      "verify1": "PAASPOORTIIN MIRKANAAYE",
+      "verify2": "EENYUMMAA EGGAME",
+      "verify3": "OGUMMAA ABUSHAKIR",
+      "visionBtn": "Mul'ata Keenya Mirkaneessi"
     },
     "Features": {
-      "title": "Maaliif 'Beteseb' filattu?",
+      "title": "Maaliif Beteseb Filattu?",
       "aiMatch": {
-        "title": "AI Face Match",
-        "desc": "Sirna adda baasuu fuulaa AI'n deeggarameen eenyummaa fayyadamtootaa mirkaneessa."
+        "title": "Mirkaneessa Kootama AI fi Selfie Bilbilaa (AI Face Match)",
+        "desc": "Miseensi hundi mirkaneessa vidiyoo selfie sekondii 3 ni xumura. AI keenya isa olaanaan fake profiles fi bots dhabamsiisuuf ragaa seeraa wajjin wal-simsiisa."
       },
       "idVerify": {
-        "title": "Nageenya Jabaa (ID Verified)",
-        "desc": "Fayyadamtoonni hundi waraqaa eenyummaatiin waan mirkanaa'aniif wal-beekuun amanamummaa qabu mirkanaa'aadha. Akkaawuntii sobaa irraa bilisa!"
+        "title": "Mirkaneessa Eenyummaa Seeraa Strict (ID Verified)",
+        "desc": "Wabi dhugaa argachuuf miseensonni paaspoortii ykn eenyummaa biyyaalessaa (Gold Badge) ragaa gochuu ni danda'u. Qabxiin kun darbuu yoo danda'es, warri mirkaneessan boostii guddaa argatu."
       },
       "expert": {
-        "title": "Gorsa Ogeessaa",
-        "desc": "Barnoota fi qajeelfama ijaarsa gaa'elaa fi maatii irratti ogeessotaan qophaa'an ni argattu."
+        "title": "Ogumma Kootama Aadaa Abushakir",
+        "desc": "Sa'aatii dhalootaa osoo hin gaafatin, aadaa fi duudhaa kootama kalandarii Itiyoophiyaa (Abushakir) ragaa ammayyaa wajjin qindeessuun namoota wajjin wal-simtan siif dhiyeessa."
+      },
+      "guardian": {
+        "title": "Hirmaannaa Maatii fi Eegduu (Guardian)",
+        "desc": "Gaa'elli wal-simannaa maatiiti. Beteseb maatii, clergy ykn maanguddoo (Wali) akka Profile Endorser hirmaachisuuf siif hayyama, kunis iccitii chat keetii osoo hin mul'isin trust guddisa."
+      },
+      "vouching": {
+        "title": "Mirkaneessa Hawaasaa (Vouching)",
+        "desc": "Miseensota amanamoo biroo irraa dhugaa-ba'umsa (Vouch) argachuun Platinum Badge argadhu. Kunis namoota dhugaa gaa'elaaf qophaa'an qofa wajjin wal-tahuu kee mirkaneessa."
       }
     },
     "Trust": {
-      "title": "Mirkaneessa Amanamummaa fi Nageenyaa",
+      "title": "Wabi Amanamummaa fi Nageenyaa",
       "privacy": {
-        "title": "Iccitiin keessan nuuf kabaja",
-        "desc": "Odeeffannoon keessan sirna 'encryption' ammayyaatiin jabana eegamaadha."
+        "title": "Iccitiin Keessan Kabaja Keenya",
+        "desc": "Iccitii keessaniif kabaja guddaa qabna. Appilikeeshiniin keenya screenshot kaasuun (Android) fi mirror gochuu (iOS) irraa dhorka. Iccitiin keessan eegamaa dha. Location duubaa hin hordofnu. App Lock dhuunfaa filannoo keessani."
       },
       "values": {
-        "title": "Kabaja fi Of-eeggannoo",
-        "desc": "Sirni keenya aadaa fi naamusaa irratti waan ijaarameef to'annoo jabaa jalatti gaggeeffama."
-      }
+        "title": "Kabaajaa fi Hordoffii Nageenyaa Strict",
+        "desc": "ምስል ዝም ብሎ ማሸራተት (Casual Swipe) ni dhabamsiisna. AI keenya romance fraud hordofuun bakka nagayaa uuma."
+      },
+      "verifiedNode": "Noodii Mirkaneessa Betesebiin Mirkanaa'e"
     },
     "CTA": {
-      "message": "Maatiin keessan asitti isin eegaa jiru."
+      "message": "Maatiin Keessan Asitti Isin Eegaa Jira. Yaalii Bilisaa Guyyaa 7 Jalqabi.",
+      "subtext": "Platformii gaa'elaa Habashaa addunyaa maraaf qophaaye kan 18+ qofa hayyamu kana join godhaa."
     },
     "Vision": {
       "tagline": "Dhaala",
@@ -186,26 +197,26 @@
     }
   },
   "About": {
-    "tagline": "Wal-arguu qofa osoo hin taane—Maatii dhaabuu!",
-    "subtitle": "Jireenyi namaa kan guutuu ta'u yoo hiriyaa dhugaa kan waliin jireenya qooddatuu fi isa hubatu argateedha. 'Beteseb' (Maatiin) kaayyoo qulqulluu kana deeggaruuf hundeeffame. Nuti kan amannu lakkoofsa irratti osoo hin taane wal-beekumsa dhugaa irratti; aadaa fi naamusaa keenya teekኖሎojii amayyaa waliin makaanii, amanamummaa fi iftoomina irratti hundaa'ee riqicha amanamaa ijaarree jirra.",
-    "missionTitle": "Imala Dhugaa",
-    "missionDesc": "Imalli madal keenya irratti taasifamu hundi eenyummaa keessan irraa jalqaba. Fayyadamaa hunda 'Face Verification' ammayyaatiin fi waraqaa eenyummaatiin kan qorannu, qulqullina madal keenyaa eeguu fi hiriyaa dhugaa isiniif malu mirkaneessuufi. Adeemsi kun nageenya jabaa qofa osoo hin taane, maatii gara fuulduraatti ijaaramuuf bu'urri isaa 'Dhugaa' ta'uu isaa agarsiisa.",
-    "mission1": "Fayyadamtoota Mirkanaa'an",
-    "mission2": "Gorsa Ogeessaa",
-    "mission3": "Afaanota Jaha",
-    "mission4": "Nageenya Jabaa",
-    "principlesTag": "Qajeelfama Bu'uraa",
-    "principlesTitle": "Maaliif 'Beteseb' filattu?",
-    "value1Title": "Amanamummaa Dhugaa",
-    "value1Desc": "Madal fayyadamtoota eenyummaan isaanii mirkanaa'e qofaan hirmaatan.",
-    "value2Title": "Deeggarsa Guutuu",
-    "value2Desc": "Ijaarsa gaa'elaa irratti gorsa fi barnoota ogeessotaan qophaa'an.",
-    "value3Title": "Hunda-Galeessummaa",
-    "value3Desc": "Afaanota jahaan tajaajila kennuun hawaasa hunda bira ga'uu keenya.",
-    "ctaTitle": "Maatii jechuun iddoo baqataa, nageenya fi jaalala. Kaayyoon keenya maatiiwwan gammadoo kumaatamaan lakkaa'aman yoo ijaaraman arguudha. Wal-itti fufiinsi gaa'elaa haaraan hundi nuuf abdiidha!",
-    "ctaButton": "Amma Maatii join godhaa",
-    "ourStory": "Seenaa Keenya",
-    "joinStats": "Maatii 1,000+ waliin ta'aa"
+    "tagline": "Gaa'ela Aadaa fi Amanamummaadhaan Aadaa",
+    "subtitle": "Beteseb appii dating madaalawaa miti. Duudhaalee hawaasa Habashaa kabajuuf platformii ijaarsa maatii gaa'elaaf qophaayedha.",
+    "missionTitle": "Philosophy Gaa'ela-Duraa",
+    "missionDesc": "Ijaarsi keenya hundi gaa'ela dhugaa fi maatii ijaaruuf qofa kan qophaayedha.",
+    "mission1": "Gaa'ela-Duraaf xiyyeeffannoo",
+    "mission2": "Architecture Amanamummaa",
+    "mission3": "App Lock Filannoo Dhuunfaa",
+    "mission4": "Model Hirmaannaa Maatii",
+    "principlesTag": "Duudhaalee Keenya",
+    "principlesTitle": "Maatii Kabajuuf Kan Ijaarame",
+    "value1Title": "1. Wal-simannaa Aadaa",
+    "value1Desc": "Abushakir qindeessuun kootama aadaa fi gaa'ela dhugaa ijaarra.",
+    "value2Title": "2. Eenyummaa Trust Olaanaa",
+    "value2Desc": "Badge adda addaa (Bronze, Silver, Gold, Platinum, Diamond) fayyadamnee namoota dhugaa calaqqisiisna.",
+    "value3Title": "3. Iccitii Guutuu",
+    "value3Desc": "Android irratti screenshot fi iOS irratti mirror eeggannoo goona. Iccitiin keessan kabaja keenya.",
+    "ctaTitle": "Partner Gaa'ela Keessanii Har'a Argadhaa",
+    "ctaButton": "Beteseb Join Godhaa",
+    "ourStory": "Mul'ata Keenya fi Architecture",
+    "joinStats": "Platformii Gaa'ela Habashaa"
   },
   "Resources": {
     "learningHub": "Xarunta Waxbarashada",
@@ -507,8 +518,8 @@
     "curriculum": "Kilaasota",
     "featured": "Kilaasota Filatamoo",
     "viewAll": "Kilaasota hunda ilaali",
-    "footerMeta": "ACADEMY'N JOIN GODHAA",
-    "footerCTA": "Beteseb Join godhaa",
+    "footerMeta": "Baradhu, Hubadhu, Hojiirra Olchi!",
+    "footerCTA": "Miseensa addaatti jijjiiruudhaan maaddii ogummaa kana amman dura argachuu jalقabaa",
     "list": {
       "class1": {
         "title": "Filannoo Hiriyaa",
@@ -545,9 +556,7 @@
         "t3": "Ijaarsa fi Jabinna Maatii",
         "t4": "Kuusaa Ogummaa"
       }
-    },
-    "footerMeta": "Baradhu, Hubadhu, Hojiirra Olchi!",
-    "footerCTA": "Miseensa addaatti jijjiiruudhaan maaddii ogummaa kana amman dura argachuu jalقabaa"
+    }
   },
   "TopHeader": {
     "email": "betesebhub@gmail.com",

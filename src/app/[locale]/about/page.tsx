@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Heart, Target, Users, ShieldCheck, Globe, ArrowRight, Sparkles } from 'lucide-react';
 import { Link } from '@/i18n/routing';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { supabase } from '@/lib/supabase';
 import YouTubeEmbed from '@/components/YouTubeEmbed';
 
@@ -19,6 +19,7 @@ interface Post {
 
 export default function AboutPage() {
   const t = useTranslations('About');
+  const locale = useLocale();
   const [dynamicContent, setDynamicContent] = useState<Post[]>([]);
 
   useEffect(() => {
@@ -117,6 +118,70 @@ export default function AboutPage() {
                 <Globe size={180} className="text-primary/10 relative z-10 animate-pulse" />
              </div>
           </div>
+        </div>
+      </section>
+
+      {/* Trust Ladder Section */}
+      <section className="py-24 px-8 max-w-7xl mx-auto border-t border-gray-100 mt-10">
+        <div className="text-center mb-16 space-y-4">
+          <h2 className="text-primary uppercase tracking-[0.3em] text-[10px] font-black">
+            {locale === 'am' ? 'የታማኝነት መሰላል ደረጃዎች' : 'The Beteseb Trust Ladder'}
+          </h2>
+          <h3 className="text-3xl font-black text-[#0F172A] italic tracking-tight">
+            {locale === 'am' ? 'ባለ አምስት ደረጃ የታማኝነት ባጅ መለያዎች' : 'Five Distinct Levels of Trust Badges'}
+          </h3>
+          <p className="text-gray-500 max-w-xl mx-auto text-sm font-medium leading-relaxed">
+            {locale === 'am' 
+              ? 'ተጠቃሚዎች በመድረኩ ላይ በሚያደርጉት የተግባር እና የማንነት ማረጋገጫዎች ደረጃቸውን ከፍ በማድረግ ልዩ ልዩ የባጅ ምልክቶችን በፕሮፋይላቸው ላይ ያገኛሉ'
+              : 'Members progress through verification stages to earn unique profile badges and boost recommendation visibility.'}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+          {[
+            { 
+              level: 'Level 0', 
+              badge: locale === 'am' ? 'የብሮንዝ አይኮን' : 'Bronze Badge', 
+              status: locale === 'am' ? 'ያልተረጋገቀ አባል' : 'Unverified Member', 
+              desc: locale === 'am' ? 'መሰረታዊ ምዝገባ ብቻ ያጠናቀቀ። ሲስተሙን ከመመልከት ውጪ መልዕክት መለዋወጥ አይችልም' : 'Basic registration completed. View-only access, cannot exchange messages.',
+              color: 'border-amber-700 bg-amber-50/50 text-amber-900' 
+            },
+            { 
+              level: 'Level 1', 
+              badge: locale === 'am' ? 'የሲልቨር አይኮን' : 'Silver Badge', 
+              status: locale === 'am' ? 'መሰረታዊ የተረጋገቀ' : 'Basic Verified', 
+              desc: locale === 'am' ? 'በሶሻል ሚዲያ የገባ ወይም የኢሜይል/ስልክ ማረጋገጫ ያደረገና የ 3 ሰከንድ የቀጥታ ቪዲዮ ሰልፊ የጸደቀለት' : 'Signed in via Google/Apple or verified email/phone plus completed a 3-second live selfie video.',
+              color: 'border-slate-400 bg-slate-50/50 text-slate-800' 
+            },
+            { 
+              level: 'Level 2', 
+              badge: locale === 'am' ? 'የጎልድ አይኮን' : 'Gold Badge', 
+              status: locale === 'am' ? 'በመታወቂያ የተረጋገቀ' : 'ID Verified', 
+              desc: locale === 'am' ? 'በሕጋዊ የመንግስት መታወቂያ ወይም በፓስፖርት የተረጋገጠ አባል (በምዝገባ ወቅት ስኪፕ ማድረግ ይቻላል)' : 'Verified with official government ID or passport (can be skipped during onboarding).',
+              color: 'border-yellow-500 bg-yellow-50/50 text-yellow-800' 
+            },
+            { 
+              level: 'Level 3', 
+              badge: locale === 'am' ? 'የፕላቲኒየም አይኮን' : 'Platinum Badge', 
+              status: locale === 'am' ? 'በማህበረሰብ የተመሰከረለት' : 'Community Vouched', 
+              desc: locale === 'am' ? 'በመታወቂያ የተረጋገቀ ሆኖ በመድረኩ ላይ ባሉ ሌሎች እሙናት አባላት ምስክርነት የተሰጠው' : 'ID-verified member who has been vouched for by other high-trust members of the community.',
+              color: 'border-emerald-500 bg-emerald-50/50 text-emerald-950' 
+            },
+            { 
+              level: 'Level 4', 
+              badge: locale === 'am' ? 'የዳይመንድ አይኮን' : 'Diamond Badge', 
+              status: locale === 'am' ? 'ከፍተኛ እምነት ያለው' : 'High-Trust Seal', 
+              desc: locale === 'am' ? 'ሁሉንም ማረጋገጫዎች አሟልቶ ንቁ የፕሪሚየም ሰብስክሪፕሽን የከፈለ ወይም ከአስጠኚ/ቤተሰብ ጋር የተገናኘ' : 'Fully verified active premium subscriber or linked with a family elder/guardian.',
+              color: 'border-indigo-600 bg-indigo-50/50 text-indigo-900' 
+            }
+          ].map((item, index) => (
+            <div key={index} className={`p-6 rounded-[2rem] border-2 ${item.color} space-y-4 hover:scale-105 transition-all duration-300`}>
+              <div className="text-[10px] font-black uppercase tracking-widest opacity-60">{item.level}</div>
+              <h4 className="text-lg font-black italic">{item.badge}</h4>
+              <p className="text-xs font-black uppercase tracking-wider">{item.status}</p>
+              <p className="text-[11px] font-medium leading-relaxed opacity-80">{item.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 

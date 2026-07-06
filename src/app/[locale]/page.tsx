@@ -9,7 +9,8 @@ import {
   ArrowRight, 
   CheckCircle2,
   Layers,
-  Sparkles
+  Sparkles,
+  Users
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -116,6 +117,9 @@ export default function Home() {
             >
               {getCtaLabel(locale)} <ArrowRight size={18} className={locale === 'ar' ? 'rotate-180' : ''} />
             </Link>
+            <a href="#vision" className="w-full sm:w-auto px-12 py-5 rounded-[2rem] border-2 border-border text-[#0F172A] font-bold text-sm uppercase tracking-widest hover:bg-[#F8F4F1] transition-all text-center cursor-pointer">
+               {t('Hero.visionBtn')}
+            </a>
             <Link href="/about" className="w-full sm:w-auto px-12 py-5 rounded-[2rem] border-2 border-border text-[#0F172A] font-bold text-sm uppercase tracking-widest hover:bg-[#F8F4F1] transition-all text-center">
                {t('Hero.cta2')}
             </Link>
@@ -130,7 +134,7 @@ export default function Home() {
       </section>
 
       {/* Vision Section */}
-      <section className="py-24 px-8 bg-[#FDFBF9]">
+      <section id="vision" className="py-24 px-8 bg-[#FDFBF9]">
          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
             <div className="relative">
                <div className="w-full aspect-square rounded-[3rem] bg-white border border-border overflow-hidden shadow-sm flex items-center justify-center group relative">
@@ -163,13 +167,15 @@ export default function Home() {
                <div className="h-1 w-20 bg-primary mx-auto rounded-full opacity-20" />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
                {[
                  { id: 'aiMatch', icon: Sparkles },
                  { id: 'idVerify', icon: ShieldCheck },
-                 { id: 'expert', icon: CheckCircle2 }
+                 { id: 'expert', icon: CheckCircle2 },
+                 { id: 'guardian', icon: Users },
+                 { id: 'vouching', icon: CheckCircle2 }
                ].map(feature => (
-                  <div key={feature.id} className="p-10 rounded-[3rem] bg-[#FDFBF9] border border-border/50 space-y-6 hover:shadow-2xl hover:shadow-primary/5 transition-all group">
+                  <div key={feature.id} className="p-10 rounded-[3rem] bg-[#FDFBF9] border-2 border-primary/20 hover:border-primary/80 space-y-6 hover:shadow-2xl hover:shadow-primary/5 transition-all group">
                      <div className="w-16 h-16 rounded-2xl bg-white border border-border flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                         <feature.icon size={32} />
                      </div>
@@ -195,6 +201,19 @@ export default function Home() {
                <p className="text-lg text-white/60 leading-relaxed">
                   {t('Trust.privacy.desc')}
                </p>
+               <div className="space-y-4 pt-4">
+                 {[
+                   locale === 'am' ? 'የአንድሮይድ ስክሪንሾት መከላከያ እና የአይኦኤስ ይዘት መደበቂያ (UI Masking)' : 'Android screenshot protection & iOS screen masking',
+                   locale === 'am' ? 'የጀርባ መገኛ ቦታን አለመከታተል እና መረጃን ለሶስተኛ ወገን በፍጹም አለመሸጥ' : 'Zero background location tracking & zero third-party data sales',
+                   locale === 'am' ? 'ጥብቅ የ18+ ዕድሜ ገደብ ማረጋገጫ በሁለት የቀን መቁጠሪያ' : 'Strict 18+ age verification with dual-calendar engine',
+                   locale === 'am' ? 'ሙሉ በሙሉ በግል ፍላጎት ላይ የተመሰረተ የይለፍ ቃል አፕ መቆለፊያ' : 'Fully optional app-level security lock under your control'
+                 ].map((item, index) => (
+                   <div key={index} className="flex items-start gap-3 text-xs text-white/70">
+                     <CheckCircle2 size={16} className="text-primary shrink-0 mt-0.5" />
+                     <span>{item}</span>
+                   </div>
+                 ))}
+               </div>
                <div className="pt-6 flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-primary">
                      <ShieldCheck size={24} />
@@ -234,6 +253,9 @@ export default function Home() {
             <h2 className="text-5xl md:text-6xl font-black tracking-tighter text-[#0F172A] italic">
                {t('CTA.message')}
             </h2>
+            <p className="text-lg text-gray-500 max-w-xl mx-auto font-medium leading-relaxed">
+               {t('CTA.subtext')}
+            </p>
             <Link 
                href="/signup"
                className="inline-flex bg-primary text-white py-6 px-16 rounded-[2.5rem] font-bold text-sm uppercase tracking-[0.2em] hover:shadow-2xl hover:shadow-primary/20 transition-all active:scale-95 items-center gap-4"

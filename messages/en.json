@@ -1,44 +1,55 @@
 {
   "Index": {
     "Hero": {
-      "tagline": "Traditional warmth, modern matching",
-      "title1": "Find Your Perfect Life Partner",
-      "title2": "Start with 'Beteseb'!",
-      "subtitle": "A marriage matching platform based on our culture and values, supported by modern technology. A trusted bridge to find a true life partner, not just a search for love.",
-      "cta1": "Create Account",
-      "cta2": "Our Vision",
+      "tagline": "Traditional Warmth Meets Modern Matchmaking",
+      "title1": "A Matrimonial Matching Platform",
+      "title2": "Based on Our Culture & Values",
+      "subtitle": "Beteseb is a sacred, secure matrimonial bridge built specifically for Ethiopians and the global Diaspora. Blending centuries of traditional matchmaking logic with advanced modern security, we guide serious individuals toward lifelong marriage and family building.",
+      "cta1": "Start 7-Day Free Trial",
+      "cta2": "Our Heritage",
       "verify1": "PASSPORT VERIFIED",
       "verify2": "IDENTITY SECURED",
-      "verify3": "ABUSHAKIR ENGINE"
+      "verify3": "ABUSHAKIR WISDOM",
+      "visionBtn": "Explore Our Vision"
     },
     "Features": {
-      "title": "Why Choose 'Beteseb'?",
+      "title": "Why Choose Beteseb?",
       "aiMatch": {
-        "title": "AI Face Match",
-        "desc": "Ensures user authenticity through an AI-powered face recognition system."
+        "title": "AI Face & Live Selfie Match",
+        "desc": "Every member completes a 3-second live video selfie verification. Our advanced AI matches it against official documents to eliminate fake profiles, bots, and impersonators, ensuring you only interact with real people."
       },
       "idVerify": {
-        "title": "Strict Security (ID Verified)",
-        "desc": "Every user is ID-verified, ensuring reliable introductions. Free from fake accounts!"
+        "title": "Strict Government ID Verification",
+        "desc": "To ensure maximum safety, members can verify their identity using official passports or national IDs (Gold Badge). While onboarding allows skipping this step, verified accounts receive a massive recommendation boost."
       },
       "expert": {
-        "title": "Expert Advice",
-        "desc": "Access expert-led courses and guidance on marriage and family building."
+        "title": "Abushakir Astrological Wisdom",
+        "desc": "We integrate traditional Ethiopian calendar logic and compatibility calculations (Abushakir wisdom) without requiring birth hours, aligning you with candidates who share your values, heritage, and lifecycle timing."
+      },
+      "guardian": {
+        "title": "Family & Guardian Integration",
+        "desc": "Matrimony is a union of families. Beteseb allows you to invite a parent, sibling, clergy member, or elder (Wali) to act as your Profile Endorser, adding cultural integrity without exposing your private chats."
+      },
+      "vouching": {
+        "title": "Community Vouching & Endorsements",
+        "desc": "Earn a Platinum Badge by having trusted friends or community leaders vouch for your serious matrimonial intent. This peer-validation system ensures high-trust interactions and absolute peace of mind."
       }
     },
     "Trust": {
       "title": "Trust & Security Assurance",
       "privacy": {
         "title": "Your Privacy is Our Honor",
-        "desc": "Your data is strictly protected by a modern encryption system."
+        "desc": "We hold your privacy in the highest regard. Our system implements anti-capture controls: screenshot and screen-recording blocking on Android, and automatic UI masking on iOS. We collect zero background location data and never sell your personal information. App locking options are fully voluntary and placed under your control."
       },
       "values": {
-        "title": "Respect & Care",
-        "desc": "Our system is built on traditional and moral values and is strictly monitored."
-      }
+        "title": "Respect & Cultural Integrity",
+        "desc": "We reject casual swiping. Our platform enforces relationship progression metrics to encourage meaningful dialogue. Our AI moderately scans interactions for romance scams and romance fraud, ensuring a respectful space."
+      },
+      "verifiedNode": "Verified by Beteseb Secure Node"
     },
     "CTA": {
-      "message": "Your 'Family' (Beteseb) is waiting for you here."
+      "message": "Your Family is Waiting. Start Your 7-Day Free Trial.",
+      "subtext": "Access the matrimonial platform designed for the global Habesha community. Experience strict 18+ age verification, robust encryption, and transparent marketplace guarantees."
     },
     "Vision": {
       "tagline": "Our Heritage",
@@ -134,127 +145,6 @@
     }
   },
   "Community": {
-    "title": "Beteseb Community Feed",
-    "moderated": "AI MODERATED",
-    "loadingFeed": "Fetching community wisdom...",
-    "topicDay": "Daily Wisdom Focus",
-    "topicQuestion": "How do you maintain family harmony during financial stress?",
-    "topicJoin": "Join the conversation and share your wisdom with the community.",
-    "joinBtn": "Share Your Wisdom",
-    "verifyToPostTitle": "Verification Required",
-    "verifyToPostSub": "To protect our community, only verified members can post and comment.",
-    "newPostPlaceholder": "What's on your mind? Share your family wisdom...",
-    "aiFilter": "AI Guard Active",
-    "postButton": "Share Wisdom",
-    "checking": "AI Checking...",
-    "anonymousUser": "Beteseb Member",
-    "memberBadge": "Wisdom Sharer",
-    "sharedLink": "External Wisdom",
-    "photo": "Photo",
-    "premiumOnly": "Switch to special membership to share wisdom",
-    "adminOnly": "Only admins can share external links",
-    "unsafeContent": "Safety Alert",
-    "completeProfile": "Complete Profile",
-    "like": "Heart",
-    "dislike": "Dislike",
-    "reply": "Reply",
-    "comments": "Comments",
-    "replyingTo": "Replying to",
-    "commentPlaceholder": "Add a wise comment...",
-    "linkCopied": "Post link copied!",
-    "topics": {
-      "Marriage": "Marriage",
-      "Parenting": "Parenting",
-      "Family Finance": "Family Finance",
-      "General": "General"
-    }
-  },
-  "Chat": {
-    "loading": "Loading family chat...",
-    "title": "Matches",
-    "searchPlaceholder": "Search matches...",
-    "noMatches": "No matches yet. Keep exploring!",
-    "premiumTitle": "Premium Feature",
-    "premiumSub": "Direct messaging with your matches is a premium feature. Upgrade now to start your journey.",
-    "upgradeNow": "Upgrade Now",
-    "activeNow": "Active Now",
-    "compatibilityTitle": "Your Abushakir Compatibility is High!",
-    "compatibilitySub": "Start a conversation with traditional values.",
-    "translate": "Translate to {lang}",
-    "original": "Show Original",
-    "iceBreaker": "Suggest AI Ice-Breaker",
-    "typePlaceholder": "Type a message with respect...",
-    "selectMatchTitle": "Select a Match",
-    "selectMatchSub": "Connect with your potential partner within the Beteseb family. Secure, real-time, and privacy-focused messaging.",
-    "encrypted": "Encrypted",
-    "private": "Private"
-  },
-  "Academy": {
-    "loading": "Loading Lessons...",
-    "learnTitle": "Learn. Connect. Grow.",
-    "learnSub": "Access exclusive lessons on relationship building, family values, and Ethiopian cultural heritage from verified experts.",
-    "duration": "Duration",
-    "description": "Description",
-    "actionableSteps": "Actionable Steps",
-    "selectLesson": "Select a lesson to begin your journey.",
-    "availableLessons": "Available Lessons ({count})",
-    "tagline": "Beteseb Academy",
-    "premiumOnly": "Premium Only",
-    "general": "General"
-  },
-  "Classes": {
-    "hero": {
-      "tagline": "Beteseb Academy",
-      "title1": "Master the Art of",
-      "title2": "Habesha Relationships",
-      "subtitle": "Expert-led courses on cultural heritage, family values, and modern dating for the Ethiopian community.",
-      "cta": "Start Learning"
-    },
-    "curriculum": "Curriculum",
-    "featured": "Featured Classes",
-    "viewAll": "View All Lessons",
-    "footerMeta": "JOIN THE ACADEMY",
-    "footerCTA": "Join Beteseb",
-    "login": "Login"
-  },
-  "Footer": {
-    "tagline": "Beteseb - Global Habesha Marriage Matching",
-    "description": "Bringing Ethiopian families together across the globe with tradition, technology, and unconditional warmth.",
-    "connect": "Connect",
-    "platform": "Platform",
-    "legal": "Legal",
-    "vision": "Our Vision",
-    "classes": "Matching Classes",
-    "start": "Start Matching",
-    "terms": "Terms of Service",
-    "privacy": "Privacy Policy",
-    "admin": "Admin Security Portal",
-    "copyright": "© 2026 Beteseb (ቤተሰብ). Bringing Habesha Together.",
-    "address": "London, England / Harar, Ethiopia / Medina, Saudi Arabia",
-    "community": "Community Feed"
-  },
-  "Auth": {
-    "signIn": "Sign In",
-    "signUp": "Create Account",
-    "email": "Email Address",
-    "phone": "Phone Number",
-    "password": "Password",
-    "forgot": "Forgot Password?",
-    "noAccount": "Don't have an account?",
-    "haveAccount": "Already have an account?",
-    "phoneTab": "Phone",
-    "countryCode": "Country Code",
-    "processing": "Processing...",
-    "errors": {
-      "passwordTooShort": "Password must be at least 8 characters long.",
-      "passwordTooWeak": "Password must include at least one number and one special character (@, #, $).",
-      "passwordCommon": "Please use a stronger password. This one is too common."
-    },
-    "agreement": "I agree to Beteseb's <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>.",
-    "terms": "Terms of Service",
-    "privacy": "Privacy Policy"
-  },
-  "Community": {
     "title": "Family Counseling & Community",
     "subtitle": "Discuss traditional values, marriage advice, and cultural topics with the Beteseb family.",
     "newPostPlaceholder": "Share your thoughts or ask for advice...",
@@ -305,27 +195,151 @@
       "uploadVideo": "Add Video"
     }
   },
+  "Chat": {
+    "loading": "Loading family chat...",
+    "title": "Matches",
+    "searchPlaceholder": "Search matches...",
+    "noMatches": "No matches yet. Keep exploring!",
+    "premiumTitle": "Premium Feature",
+    "premiumSub": "Direct messaging with your matches is a premium feature. Upgrade now to start your journey.",
+    "upgradeNow": "Upgrade Now",
+    "activeNow": "Active Now",
+    "compatibilityTitle": "Your Abushakir Compatibility is High!",
+    "compatibilitySub": "Start a conversation with traditional values.",
+    "translate": "Translate to {lang}",
+    "original": "Show Original",
+    "iceBreaker": "Suggest AI Ice-Breaker",
+    "typePlaceholder": "Type a message with respect...",
+    "selectMatchTitle": "Select a Match",
+    "selectMatchSub": "Connect with your potential partner within the Beteseb family. Secure, real-time, and privacy-focused messaging.",
+    "encrypted": "Encrypted",
+    "private": "Private"
+  },
+  "Academy": {
+    "loading": "Loading Lessons...",
+    "learnTitle": "Learn. Connect. Grow.",
+    "learnSub": "Access exclusive lessons on relationship building, family values, and Ethiopian cultural heritage from verified experts.",
+    "duration": "Duration",
+    "description": "Description",
+    "actionableSteps": "Actionable Steps",
+    "selectLesson": "Select a lesson to begin your journey.",
+    "availableLessons": "Available Lessons ({count})",
+    "tagline": "Beteseb Academy",
+    "premiumOnly": "Premium Only",
+    "general": "General"
+  },
+  "Classes": {
+    "hero": {
+      "tagline": "Beteseb Academy",
+      "title1": "Table of Wisdom—",
+      "title2": "Love through Knowledge, Marriage through Wisdom!",
+      "subtitle": "Marriage is not achieved by chance, but is a chapter of life built with knowledge and care. Marriage is like a beautiful garden; if it is not cultivated and watered, it will not flourish. True love is not just a feeling, but a decision that is renewed every day. On this table, we have prepared for you the wisdom of the ages, from the art of choosing a life partner to building a strong family that is not overcome by storms, in a modern way.",
+      "cta": "Start Learning"
+    },
+    "list": {
+      "class1": {
+        "title": "Soulmate Selection",
+        "desc": "The wisdom of identifying identity beyond looks and truth beyond words.",
+        "date": "Members Only",
+        "badge": "Exclusive"
+      },
+      "class2": {
+        "title": "Heart Language",
+        "desc": "The art of creating peace in conflict and understanding in silence.",
+        "date": "Members Only",
+        "badge": "Exclusive"
+      },
+      "class3": {
+        "title": "Family Resilience",
+        "desc": "The secrets of raising children with virtue and your home with love.",
+        "date": "Members Only",
+        "badge": "Exclusive"
+      }
+    },
+    "counseling": {
+      "tagline": "The Learning Journey",
+      "title1": "The foundation of your beautiful home",
+      "title2": "Is laid here today",
+      "subtitle": "This section is a wisdom warehouse prepared for our special members who understand the sacred purpose of the family and invest in knowledge today for their happy life tomorrow. We offer these special trainings including video lessons and articles selected by experts, and the authority to upload new content is reserved for 'Beteseb' admin only.",
+      "stat1Value": "1,000+",
+      "stat1Label": "Trained Members",
+      "stat2Value": "100%",
+      "stat2Label": "True Wisdom",
+      "curriculumTitle": "Table of Wisdom Contents",
+      "topics": {
+        "t1": "Soulmate Selection",
+        "t2": "Heart Language & Connection",
+        "t3": "Family Resilience & Building",
+        "t4": "Wisdom Warehouse"
+      }
+    },
+    "login": "Sign In",
+    "curriculum": "The Curriculum",
+    "featured": "Featured Tables",
+    "viewAll": "View All Classes",
+    "general": "General Wisdom",
+    "premiumOnly": "Special Membership Only",
+    "footerMeta": "Learn, Understand, Apply!",
+    "footerCTA": "Start accessing these tables of wisdom now by switching to special membership"
+  },
+  "Footer": {
+    "tagline": "Beteseb - Global Habesha Marriage Matching",
+    "description": "Bringing Ethiopian families together across the globe with tradition, technology, and unconditional warmth.",
+    "connect": "Connect",
+    "platform": "Platform",
+    "legal": "Legal",
+    "vision": "Our Vision",
+    "classes": "Matching Classes",
+    "start": "Start Matching",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "admin": "Admin Security Portal",
+    "copyright": "© 2026 Beteseb (ቤተሰብ). Bringing Habesha Together.",
+    "address": "London, England / Harar, Ethiopia / Medina, Saudi Arabia",
+    "community": "Community Feed"
+  },
+  "Auth": {
+    "signIn": "Sign In",
+    "signUp": "Create Account",
+    "email": "Email Address",
+    "phone": "Phone Number",
+    "password": "Password",
+    "forgot": "Forgot Password?",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "phoneTab": "Phone",
+    "countryCode": "Country Code",
+    "processing": "Processing...",
+    "errors": {
+      "passwordTooShort": "Password must be at least 8 characters long.",
+      "passwordTooWeak": "Password must include at least one number and one special character (@, #, $).",
+      "passwordCommon": "Please use a stronger password. This one is too common."
+    },
+    "agreement": "I agree to Beteseb's <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>.",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy"
+  },
   "About": {
-    "tagline": "Beyond Matching—Building Families!",
-    "subtitle": "Human life is truly fulfilled when one finds a real partner to share and understand them. 'Beteseb' was founded to support this sacred purpose. We believe in genuine connections, not just numbers; by blending traditional values with modern technology, we have created a trusted bridge built on honesty and transparency.",
-    "missionTitle": "A Genuine Journey",
-    "missionDesc": "Every journey on our platform begins with your true identity. We verify every user through modern Face Verification and ID checks to maintain the integrity of our platform and ensure a real partner who deserves you. This process signifies not just strict security, but that the foundation of your future family is built on 'Truth'.",
-    "mission1": "Verified Users",
-    "mission2": "Expert Advice",
-    "mission3": "Six Languages",
-    "mission4": "Strict Safety",
-    "principlesTag": "Core Principles",
-    "principlesTitle": "What Makes Us Unique?",
-    "value1Title": "Genuine Trust",
-    "value1Desc": "A platform where only identity-verified users participate.",
-    "value2Title": "Holistic Support",
-    "value2Desc": "Access expert-led guidance and courses on building a successful marriage.",
-    "value3Title": "Inclusivity",
-    "value3Desc": "Serving the entire community through accessibility in six major languages.",
-    "ctaTitle": "Family means refuge, peace, and love. Our goal is to see thousands of happy families established. Every new union is a new hope for us!",
-    "ctaButton": "Join Beteseb Today",
-    "ourStory": "Our Story",
-    "joinStats": "Join 1,000+ Happy Families"
+    "tagline": "Matrimony Guided by Tradition & Trust",
+    "subtitle": "Beteseb is not a casual dating app. We are a high-trust, family-oriented matrimonial ecosystem built specifically to address the unique cultural and relational values of the Habesha global community.",
+    "missionTitle": "The Marriage-First Philosophy",
+    "missionDesc": "Every process, security gate, and system feature in Beteseb is designed with the sole purpose of fostering serious, long-term matrimonial commitments. We integrate families, protect identity, and elevate trust through strict design principles.",
+    "mission1": "Marriage-First Focus",
+    "mission2": "Trust-by-Design Infrastructure",
+    "mission3": "App Lock Optional Control",
+    "mission4": "Family Matrimonial Integration",
+    "principlesTag": "Our Foundational Principles",
+    "principlesTitle": "Built to Honor Families",
+    "value1Title": "1. Cultural Alignment",
+    "value1Desc": "Combining the traditional Abushakir matchmaking logic with modern behavioral models, we match candidates by shared values, heritage, and goals.",
+    "value2Title": "2. High-Trust Infrastructure",
+    "value2Desc": "Through a structured Trust Ladder (Bronze, Silver, Gold, Platinum, Diamond badges), we ensure that fake profiles are weeded out and genuine members are highlighted.",
+    "value3Title": "3. Absolute Privacy",
+    "value3Desc": "We prevent screenshot capture on Android and mask screens on iOS. We store no background location data. Your privacy is our honor.",
+    "ctaTitle": "Find Your Life Partner Today",
+    "ctaButton": "Join Beteseb",
+    "ourStory": "Our Vision & Architecture",
+    "joinStats": "Habesha Matrimonial Hub"
   },
   "Resources": {
     "learningHub": "Learning Hub",
@@ -434,20 +448,6 @@
       "processing": "Processing..."
     },
     "errors": {
-      "passwordTooShort": "Password must be at least 8 characters long.",
-      "passwordTooWeak": "Password must include at least one number and one special character (@, #, $).",
-      "passwordCommon": "Please use a stronger password. This one is too common."
-    },
-    "loading": "Beteseb | Loading Family Portal...",
-    "footerTagline": "Bringing Ethiopian Families Together Globally",
-    "calendar": {
-      "ethiopian": "Ethiopian Calendar",
-      "gregorian": "Gregorian Calendar",
-      "day": "Day",
-      "month": "Month",
-      "year": "Year"
-    },
-    "errors": {
       "emailRequired": "Please enter your email",
       "phoneRequired": "Please enter your phone number",
       "passwordLength": "Password must be at least 6 characters",
@@ -467,61 +467,16 @@
       "partnerIntentRequired": "Please select marital status and intent",
       "otpRequired": "Please enter 6-digit code",
       "locationMismatch": "Your chosen entry location and the country in your profile do not match. Please correct it."
+    },
+    "loading": "Beteseb | Loading Family Portal...",
+    "footerTagline": "Bringing Ethiopian Families Together Globally",
+    "calendar": {
+      "ethiopian": "Ethiopian Calendar",
+      "gregorian": "Gregorian Calendar",
+      "day": "Day",
+      "month": "Month",
+      "year": "Year"
     }
-  },
-  "Classes": {
-    "hero": {
-      "tagline": "Beteseb Academy",
-      "title1": "Table of Wisdom—",
-      "title2": "Love through Knowledge, Marriage through Wisdom!",
-      "subtitle": "Marriage is not achieved by chance, but is a chapter of life built with knowledge and care. Marriage is like a beautiful garden; if it is not cultivated and watered, it will not flourish. True love is not just a feeling, but a decision that is renewed every day. On this table, we have prepared for you the wisdom of the ages, from the art of choosing a life partner to building a strong family that is not overcome by storms, in a modern way.",
-      "cta": "Start Learning"
-    },
-    "list": {
-      "class1": {
-        "title": "Soulmate Selection",
-        "desc": "The wisdom of identifying identity beyond looks and truth beyond words.",
-        "date": "Members Only",
-        "badge": "Exclusive"
-      },
-      "class2": {
-        "title": "Heart Language",
-        "desc": "The art of creating peace in conflict and understanding in silence.",
-        "date": "Members Only",
-        "badge": "Exclusive"
-      },
-      "class3": {
-        "title": "Family Resilience",
-        "desc": "The secrets of raising children with virtue and your home with love.",
-        "date": "Members Only",
-        "badge": "Exclusive"
-      }
-    },
-    "counseling": {
-      "tagline": "The Learning Journey",
-      "title1": "The foundation of your beautiful home",
-      "title2": "Is laid here today",
-      "subtitle": "This section is a wisdom warehouse prepared for our special members who understand the sacred purpose of the family and invest in knowledge today for their happy life tomorrow. We offer these special trainings including video lessons and articles selected by experts, and the authority to upload new content is reserved for 'Beteseb' admin only.",
-      "stat1Value": "1,000+",
-      "stat1Label": "Trained Members",
-      "stat2Value": "100%",
-      "stat2Label": "True Wisdom",
-      "curriculumTitle": "Table of Wisdom Contents",
-      "topics": {
-        "t1": "Soulmate Selection",
-        "t2": "Heart Language & Connection",
-        "t3": "Family Resilience & Building",
-        "t4": "Wisdom Warehouse"
-      }
-    },
-    "login": "Sign In",
-    "curriculum": "The Curriculum",
-    "featured": "Featured Tables",
-    "viewAll": "View All Classes",
-    "general": "General Wisdom",
-    "premiumOnly": "Special Membership Only",
-    "footerMeta": "Learn, Understand, Apply!",
-    "footerCTA": "Start accessing these tables of wisdom now by switching to special membership"
   },
   "TopHeader": {
     "email": "betesebhub@gmail.com",
