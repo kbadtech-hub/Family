@@ -727,10 +727,27 @@ export default function AdminPortal() {
     
     if (!confirm(confirmMsg)) return;
 
+    let proofUrl = '';
+    if (newStatus === 'delivered') {
+      const inputUrl = prompt("Enter Proof of Delivery Screenshot URL (optional) or leave blank:");
+      if (inputUrl) {
+        proofUrl = inputUrl;
+      }
+    }
+
     try {
+      const details = {
+        ...gift.delivery_details,
+        ...(proofUrl ? { proof_of_delivery: proofUrl } : {})
+      };
+
       const { error } = await supabase
         .from('gifts')
-        .update({ delivery_status: newStatus, updated_at: new Date().toISOString() })
+        .update({ 
+          delivery_status: newStatus, 
+          delivery_details: details,
+          updated_at: new Date().toISOString() 
+        })
         .eq('id', gift.id);
 
       if (error) throw error;
@@ -747,7 +764,11 @@ export default function AdminPortal() {
         alert('Delivery marked as failed. Coins refunded to sender.');
       }
 
-      setAdminGifts(prev => prev.map(g => g.id === gift.id ? { ...g, delivery_status: newStatus } : g));
+      setAdminGifts(prev => prev.map(g => g.id === gift.id ? { 
+        ...g, 
+        delivery_status: newStatus,
+        delivery_details: details
+      } : g));
     } catch (err: any) {
       alert('Error updating delivery status: ' + err.message);
     }
@@ -2321,6 +2342,11 @@ export default function AdminPortal() {
                                         <Phone size={12} className="text-primary" /> Phone: <span className="text-accent">{gift.delivery_phone}</span>
                                      </div>
                                   </div>
+                                  {gift.delivery_details?.proof_of_delivery && (
+                                     <div className="mt-2 text-[9px] text-green-600 font-bold flex items-center gap-1.5 uppercase">
+                                        ✅ Proof Uploaded: <a href={gift.delivery_details.proof_of_delivery} target="_blank" rel="noreferrer" className="underline hover:text-primary normal-case">{gift.delivery_details.proof_of_delivery}</a>
+                                     </div>
+                                  )}
                                </div>
 
                                <div className="flex flex-col items-end gap-3 self-center md:self-auto">

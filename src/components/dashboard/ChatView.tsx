@@ -22,6 +22,10 @@ import {
   UserPlus,
   UserCheck,
   Users,
+  VideoOff,
+  Mic,
+  MicOff,
+  PhoneOff,
   UserX,
   Bell,
   Check,
@@ -98,6 +102,9 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
   const [waliMessages, setWaliMessages] = useState<any[]>([]);
   const [newWaliMessage, setNewWaliMessage] = useState('');
   const [isWaliLoading, setIsWaliLoading] = useState(false);
+  const [isWaliCallActive, setIsWaliCallActive] = useState(false);
+  const [waliMicOn, setWaliMicOn] = useState(true);
+  const [waliVideoOn, setWaliVideoOn] = useState(true);
 
   useEffect(() => {
     if (!activeWaliRoomId || !showWaliModal) return;
@@ -1215,12 +1222,12 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
       )}
       {showWaliModal && selectedMatch && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] flex items-center justify-center p-6 animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-2xl h-[600px] rounded-[3.5rem] border border-muted p-8 md:p-10 relative shadow-2xl flex flex-col justify-between animate-in slide-in-from-bottom-8 duration-500">
+          <div className="bg-white w-full max-w-2xl h-[600px] rounded-[3.5rem] border border-muted p-8 md:p-10 relative shadow-2xl flex flex-col justify-between animate-in slide-in-from-bottom-8 duration-500 overflow-hidden">
             {/* Header */}
             <div>
               <button 
-                onClick={() => setShowWaliModal(false)}
-                className="absolute top-8 right-8 p-3 bg-muted/30 hover:bg-muted rounded-full transition-all text-gray-500"
+                onClick={() => { setShowWaliModal(false); setIsWaliCallActive(false); }}
+                className="absolute top-8 right-8 p-3 bg-muted/30 hover:bg-muted rounded-full transition-all text-gray-500 z-10"
               >
                 <CloseIcon size={18} />
               </button>
@@ -1232,61 +1239,175 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                 <h3 className="text-2xl font-black text-accent italic tracking-tighter">
                   {locale === 'am' ? 'የቤተሰብ ማሳተፊያ የጋራ መድረክ' : 'Family-Integrated Dialogue'}
                 </h3>
-                <p className="text-[10px] text-amber-600 font-bold uppercase tracking-wide">
-                  ⚠️ {locale === 'am' ? 'ማስጠንቀቂያ፡ በዚህ የቡድን ውይይት ውስጥ አስታራቂዎች (Walis) ይገኛሉ' : 'Note: Linked family guardians/mediators are present in this chat'}
-                </p>
+                <div className="flex items-center justify-center gap-4">
+                  <p className="text-[10px] text-amber-600 font-bold uppercase tracking-wide">
+                    ⚠️ {locale === 'am' ? 'ማስጠንቀቂያ፡ በዚህ የቡድን ውይይት ውስጥ አስታራቂዎች (Walis) ይገኛሉ' : 'Note: Linked family guardians/mediators are present in this chat'}
+                  </p>
+                  {!isWaliCallActive && (
+                    <button 
+                      onClick={() => setIsWaliCallActive(true)}
+                      className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-[9px] font-black uppercase tracking-wider flex items-center gap-1 transition-all"
+                    >
+                      <Video size={10} /> {locale === 'am' ? 'የቪዲዮ ጥሪ ጀምር' : 'Start Video Call'}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto my-6 space-y-4 pr-2 custom-scrollbar">
-              {waliMessages.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-center p-6 text-gray-400 space-y-2">
-                  <MessageCircle size={36} className="opacity-30" />
-                  <p className="text-xs uppercase tracking-widest font-bold">No messages yet</p>
-                  <p className="text-[10px] max-w-xs leading-relaxed">Guardians and candidates can start the discussion on marriage plans here.</p>
-                </div>
-              ) : (
-                waliMessages.map(msg => {
-                  const isOwn = msg.sender_id === currentUser?.id;
-                  return (
-                    <div key={msg.id} className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <span className="text-[10px] font-bold text-gray-500">{msg.sender_name}</span>
-                        {/* Check if sender is not one of the candidates (must be a guardian) */}
-                        {msg.sender_id !== currentUser?.id && msg.sender_id !== selectedMatch.id && (
-                          <span className="px-1.5 py-0.5 bg-amber-500/10 text-amber-600 rounded text-[9px] font-black uppercase">Guardian / አስታራቂ</span>
-                        )}
+            {isWaliCallActive ? (
+              /* Simulated Wali Video Call Layout */
+              <div className="flex-1 flex flex-col justify-between my-4 space-y-4">
+                <div className="flex-1 grid grid-cols-3 gap-4">
+                  {/* Panel 1: You */}
+                  <div className="bg-slate-900 rounded-3xl relative overflow-hidden flex flex-col items-center justify-center text-center p-4 border border-white/10 shadow-inner">
+                    {waliVideoOn ? (
+                      <div className="absolute inset-0 bg-slate-800 flex items-center justify-center">
+                        <User size={48} className="text-white/20 animate-pulse" />
+                        {/* Simulated green dot */}
+                        <div className="absolute top-4 left-4 flex items-center gap-1.5 px-2.5 py-1 bg-green-500/25 border border-green-500/50 rounded-full text-[7px] font-black uppercase tracking-widest text-green-400">
+                          <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-ping" />
+                          <span>{locale === 'am' ? 'ቀጥታ' : 'Live'}</span>
+                        </div>
                       </div>
-                      <div className={`p-4 rounded-2xl max-w-md text-xs font-semibold leading-relaxed shadow-sm ${
-                        isOwn ? 'bg-primary text-white rounded-tr-none' : 'bg-muted/50 text-accent rounded-tl-none border border-muted'
-                      }`}>
-                        {msg.content}
+                    ) : (
+                      <div className="absolute inset-0 bg-slate-950 flex items-center justify-center">
+                        <VideoOff size={32} className="text-white/30" />
                       </div>
-                      <span className="text-[9px] text-gray-400 mt-1">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    )}
+                    {/* Watermark compliance */}
+                    <div className="absolute bottom-2 left-2 text-[6px] font-mono text-white/25 pointer-events-none select-none uppercase tracking-wide">
+                      BETESEB SECURE: {currentUser?.id?.substring(0, 8)}
                     </div>
-                  );
-                })
-              )}
-            </div>
+                    <div className="absolute top-2 right-2 text-[6px] font-mono text-white/25 pointer-events-none select-none">
+                      {new Date().toLocaleTimeString()}
+                    </div>
+                    <span className="absolute bottom-3 right-3 text-[9px] font-black uppercase tracking-wider text-white/50 z-10 bg-slate-950/40 px-2 py-0.5 rounded-md">
+                      {locale === 'am' ? 'እርስዎ (You)' : 'You'}
+                    </span>
+                  </div>
 
-            {/* Form Input */}
-            <form onSubmit={handleSendWaliMessage} className="flex gap-4 items-center border-t border-muted pt-4">
-              <input 
-                type="text" 
-                placeholder={locale === 'am' ? 'መልእክትዎን እዚህ ይጻፉ...' : 'Type message here...'}
-                value={newWaliMessage}
-                onChange={(e) => setNewWaliMessage(e.target.value)}
-                className="flex-1 bg-muted/30 border border-muted rounded-2xl p-4 text-xs focus:outline-none"
-              />
-              <button 
-                type="submit"
-                disabled={!newWaliMessage.trim()}
-                className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center hover:scale-105 transition-transform disabled:opacity-50 disabled:hover:scale-100 shadow-lg shadow-primary/20 shrink-0"
-              >
-                <Send size={18} className="ml-0.5" />
-              </button>
-            </form>
+                  {/* Panel 2: Match */}
+                  <div className="bg-slate-900 rounded-3xl relative overflow-hidden flex flex-col items-center justify-center text-center p-4 border border-white/10 shadow-inner">
+                    <div className="absolute inset-0 bg-slate-800 flex items-center justify-center">
+                      {selectedMatch.avatar_url ? (
+                        <img src={selectedMatch.avatar_url} alt="" className="w-full h-full object-cover opacity-80" />
+                      ) : (
+                        <User size={48} className="text-white/20" />
+                      )}
+                      <div className="absolute top-4 left-4 flex items-center gap-1.5 px-2.5 py-1 bg-green-500/25 border border-green-500/50 rounded-full text-[7px] font-black uppercase tracking-widest text-green-400">
+                        <span className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                        <span>{locale === 'am' ? 'በመስመር ላይ' : 'Online'}</span>
+                      </div>
+                    </div>
+                    {/* Watermark compliance */}
+                    <div className="absolute bottom-2 left-2 text-[6px] font-mono text-white/25 pointer-events-none select-none uppercase tracking-wide">
+                      ANTI-CAPTURE ACTIVE
+                    </div>
+                    <span className="absolute bottom-3 right-3 text-[9px] font-black uppercase tracking-wider text-white/50 z-10 bg-slate-950/40 px-2 py-0.5 rounded-md">
+                      {selectedMatch.full_name}
+                    </span>
+                  </div>
+
+                  {/* Panel 3: Guardian (Wali) */}
+                  <div className="bg-slate-900 rounded-3xl relative overflow-hidden flex flex-col items-center justify-center text-center p-4 border border-white/10 shadow-inner">
+                    <div className="absolute inset-0 bg-slate-800 flex flex-col items-center justify-center space-y-2 p-2">
+                      <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/25 animate-pulse">
+                        <ShieldCheck size={28} />
+                      </div>
+                      <span className="text-[8px] font-black text-amber-500 uppercase tracking-widest bg-amber-500/5 border border-amber-500/10 px-2 py-0.5 rounded">
+                        {locale === 'am' ? 'የቤተሰብ የሚዜ' : 'Guardian / Wali'}
+                      </span>
+                      <div className="absolute top-4 left-4 flex items-center gap-1.5 px-2.5 py-1 bg-green-500/25 border border-green-500/50 rounded-full text-[7px] font-black uppercase tracking-widest text-green-400">
+                        <span className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                        <span>{locale === 'am' ? 'በመስመር ላይ' : 'Online'}</span>
+                      </div>
+                    </div>
+                    {/* Watermark compliance */}
+                    <div className="absolute bottom-2 left-2 text-[6px] font-mono text-white/25 pointer-events-none select-none uppercase tracking-wide">
+                      WALI SECURE FEED
+                    </div>
+                  </div>
+                </div>
+
+                {/* Call Control Overlay */}
+                <div className="flex items-center justify-center gap-4 bg-slate-950 p-4 rounded-2xl border border-white/5">
+                  <button 
+                    onClick={() => setWaliMicOn(!waliMicOn)}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-white transition-all ${waliMicOn ? 'bg-slate-800 hover:bg-slate-700' : 'bg-red-500/20 text-red-500 hover:bg-red-500/35'}`}
+                    title={waliMicOn ? 'Mute Microphone' : 'Unmute Microphone'}
+                  >
+                    {waliMicOn ? <Mic size={18} /> : <MicOff size={18} />}
+                  </button>
+                  <button 
+                    onClick={() => setWaliVideoOn(!waliVideoOn)}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-white transition-all ${waliVideoOn ? 'bg-slate-800 hover:bg-slate-700' : 'bg-red-500/20 text-red-500 hover:bg-red-500/35'}`}
+                    title={waliVideoOn ? 'Turn Camera Off' : 'Turn Camera On'}
+                  >
+                    {waliVideoOn ? <Video size={18} /> : <VideoOff size={18} />}
+                  </button>
+                  <button 
+                    onClick={() => setIsWaliCallActive(false)}
+                    className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 transition-all shadow-lg shadow-red-600/20"
+                    title="End Call"
+                  >
+                    <PhoneOff size={14} /> {locale === 'am' ? 'ጥሪ አቁም' : 'End Call'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Messages Area */
+              <>
+                <div className="flex-1 overflow-y-auto my-6 space-y-4 pr-2 custom-scrollbar">
+                  {waliMessages.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center text-center p-6 text-gray-400 space-y-2">
+                      <MessageCircle size={36} className="opacity-30" />
+                      <p className="text-xs uppercase tracking-widest font-bold">No messages yet</p>
+                      <p className="text-[10px] max-w-xs leading-relaxed">Guardians and candidates can start the discussion on marriage plans here.</p>
+                    </div>
+                  ) : (
+                    waliMessages.map(msg => {
+                      const isOwn = msg.sender_id === currentUser?.id;
+                      return (
+                        <div key={msg.id} className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <span className="text-[10px] font-bold text-gray-500">{msg.sender_name}</span>
+                            {/* Check if sender is not one of the candidates (must be a guardian) */}
+                            {msg.sender_id !== currentUser?.id && msg.sender_id !== selectedMatch.id && (
+                              <span className="px-1.5 py-0.5 bg-amber-500/10 text-amber-600 rounded text-[9px] font-black uppercase">Guardian / አስታራቂ</span>
+                            )}
+                          </div>
+                          <div className={`p-4 rounded-2xl max-w-md text-xs font-semibold leading-relaxed shadow-sm ${
+                            isOwn ? 'bg-primary text-white rounded-tr-none' : 'bg-muted/50 text-accent rounded-tl-none border border-muted'
+                          }`}>
+                            {msg.content}
+                          </div>
+                          <span className="text-[9px] text-gray-400 mt-1">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* Form Input */}
+                <form onSubmit={handleSendWaliMessage} className="flex gap-4 items-center border-t border-muted pt-4">
+                  <input 
+                    type="text" 
+                    placeholder={locale === 'am' ? 'መልእክትዎን እዚህ ይጻፉ...' : 'Type message here...'}
+                    value={newWaliMessage}
+                    onChange={(e) => setNewWaliMessage(e.target.value)}
+                    className="flex-1 bg-muted/30 border border-muted rounded-2xl p-4 text-xs focus:outline-none"
+                  />
+                  <button 
+                    type="submit"
+                    disabled={!newWaliMessage.trim()}
+                    className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center hover:scale-105 transition-transform disabled:opacity-50 disabled:hover:scale-100 shadow-lg shadow-primary/20 shrink-0"
+                  >
+                    <Send size={18} className="ml-0.5" />
+                  </button>
+                </form>
+              </>
+            )}
           </div>
         </div>
       )}

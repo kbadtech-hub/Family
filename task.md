@@ -16,3 +16,8 @@
 - `[x]` Step 6: Implement Tier-based Daily limits & Coins Bypass triggers in ChatView.tsx
 - `[x]` Step 7: Create Interaction Telemetry and RLS privacy rules in DB migrations
 - `[x]` Step 8: Implement Pulse Check card overlays and Safe Space constructive chat rooms in ChatView.tsx
+
+# Execution Checklist - Phase 6 (Wali Call & Gift Delivery Queue Proof Upload)
+
+- `[x]` Step 1: Implement Simulated Wali Group Video Call Layout and controls in ChatView.tsx
+- `[x]` Step 2: Implement Admin Gift Delivery Proof Screenshot Upload and rendering in secure-beteseb-admin/page.tsx
