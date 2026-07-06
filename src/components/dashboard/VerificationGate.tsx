@@ -34,6 +34,22 @@ export default function VerificationGate({ userId, onVerified }: VerificationGat
       setIdUrl(data.id_url);
       setSelfieUrl(data.selfie_url);
       if (data.status === 'verified') {
+        // Sync verification state to profiles table so it persists permanently
+        await supabase.from('profiles').update({
+          verification_status: 'verified',
+          is_verified: true
+        }).eq('id', userId);
+        onVerified();
+      }
+    } else {
+      // No verifications record — check profiles table as fallback
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('verification_status, is_verified')
+        .eq('id', userId)
+        .single();
+      if (profileData?.verification_status === 'verified' || profileData?.is_verified) {
+        setStatus('verified');
         onVerified();
       }
     }

@@ -212,16 +212,32 @@ function DashboardContent() {
         setIsGuardianLinked(guardianCount !== null && guardianCount > 0);
       }
 
-      // 2. Fetch Verification
-      const { data: verifyData } = await supabase.from('verifications')
-        .select('status')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
+      // 2. Fetch Verification — profiles.verification_status is the source of truth
+      // If the profile says 'verified', trust it permanently (no re-verification needed)
+      const profileVerifyStatus = profileData?.verification_status || profileData?.is_verified ? 'verified' : null;
+      
+      if (profileVerifyStatus === 'verified') {
+        setVerificationStatus('verified');
+      } else {
+        // Fallback: check verifications table for latest submission status
+        const { data: verifyData } = await supabase.from('verifications')
+          .select('status')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
 
-      const currentVerifyStatus = verifyData?.status || 'none';
-      setVerificationStatus(currentVerifyStatus);
+        const currentVerifyStatus = verifyData?.status || 'none';
+        setVerificationStatus(currentVerifyStatus);
+
+        // If verifications table says verified but profiles doesn't, sync profiles
+        if (currentVerifyStatus === 'verified') {
+          await supabase.from('profiles').update({
+            verification_status: 'verified',
+            is_verified: true
+          }).eq('id', user.id);
+        }
+      }
 
       // 3. Fetch Payment
       const { data: paymentData } = await supabase.from('payments')
