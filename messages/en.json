@@ -39,7 +39,11 @@
       "title": "Trust & Security Assurance",
       "privacy": {
         "title": "Your Privacy is Our Honor",
-        "desc": "We hold your privacy in the highest regard. Our system implements anti-capture controls: screenshot and screen-recording blocking on Android, and automatic UI masking on iOS. We collect zero background location data and never sell your personal information. App locking options are fully voluntary and placed under your control."
+        "desc": "We hold your privacy in the highest regard. Our system implements anti-capture controls: screenshot and screen-recording blocking on Android, and automatic UI masking on iOS. We collect zero background location data and never sell your personal information. App locking options are fully voluntary and placed under your control.",
+        "item1": "Android screenshot protection & iOS screen masking",
+        "item2": "Zero background location tracking & zero third-party data sales",
+        "item3": "Strict 18+ age verification with dual-calendar engine",
+        "item4": "Fully optional app-level security lock under your control"
       },
       "values": {
         "title": "Respect & Cultural Integrity",
@@ -339,7 +343,37 @@
     "ctaTitle": "Find Your Life Partner Today",
     "ctaButton": "Join Beteseb",
     "ourStory": "Our Vision & Architecture",
-    "joinStats": "Habesha Matrimonial Hub"
+    "joinStats": "Habesha Matrimonial Hub",
+    "badges": {
+      "title": "The Beteseb Trust Ladder",
+      "subtitle": "Five Distinct Levels of Trust Badges",
+      "description": "Members progress through verification stages to earn unique profile badges and boost recommendation visibility.",
+      "level0": {
+        "title": "Bronze Badge",
+        "status": "Unverified Member",
+        "desc": "Basic registration completed. View-only access, cannot exchange messages."
+      },
+      "level1": {
+        "title": "Silver Badge",
+        "status": "Basic Verified",
+        "desc": "Signed in via Google/Apple or verified email/phone plus completed a 3-second live selfie video."
+      },
+      "level2": {
+        "title": "Gold Badge",
+        "status": "ID Verified",
+        "desc": "Verified with official government ID or passport (can be skipped during onboarding)."
+      },
+      "level3": {
+        "title": "Platinum Badge",
+        "status": "Community Vouched",
+        "desc": "ID-verified member who has been vouched for by other high-trust members of the community."
+      },
+      "level4": {
+        "title": "Diamond Badge",
+        "status": "High-Trust Seal",
+        "desc": "Fully verified active premium subscriber or linked with a family elder/guardian."
+      }
+    }
   },
   "Resources": {
     "learningHub": "Learning Hub",

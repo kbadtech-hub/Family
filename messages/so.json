@@ -39,7 +39,11 @@
       "title": "Dammaanadda Kalsoonida iyo Amniga",
       "privacy": {
         "title": "Amnigaaga waa Sharafkayaga",
-        "desc": "Waxaan si weyn u ilaalinaynaa sirtaada. App-keenu wuxuu xannibaa sawir-qaadista (Screenshot) ee Android iyo duubista shaashadda ee iOS (UI Masking). Ma la socono goobtaada dambe, mana iibinno xogtaada. Qufulka app-ka waa mid adiga kuu gaar ah."
+        "desc": "Waxaan si weyn u ilaalinaynaa sirtaada. App-keenu wuxuu xannibaa sawir-qaadista (Screenshot) ee Android iyo duubista shaashadda ee iOS (UI Masking). Ma la socono goobtaada dambe, mana iibinno xogtaada. Qufulka app-ka waa mid adiga kuu gaar ah.",
+        "item1": "Ka hortagga screenshot Android iyo qorista shaashadda iOS (UI Masking)",
+        "item2": "Ma la socono goobtaada dambe, mana iibinno xogtaada",
+        "item3": "Xaqiijin adag oo da'da 18+ ah oo leh kalandarka labaad",
+        "item4": "Qufulka app-ka oo gebi ahaanba ah mid ikhtiyaari ah oo gacantaada ku jira"
       },
       "values": {
         "title": "Sharaf iyo Kormeer Amni oo Adag",
@@ -216,7 +220,37 @@
     "ctaTitle": "Hel Shuraakada Noloshaada Maanta",
     "ctaButton": "Ku Biir Beteseb",
     "ourStory": "Aragtidayada iyo Architecture",
-    "joinStats": "Xarunta Guurka Habesha"
+    "joinStats": "Xarunta Guurka Habesha",
+    "badges": {
+      "title": "Sallanka Kalsoonida Beteseb",
+      "subtitle": "Shanta Heerar ee Calaamadaha Kalsoonida",
+      "description": "Xubnuhu waxay dhex maraan heerar xaqiijin si ay u helaan calaamado gaar ah.",
+      "level0": {
+        "title": "Bronze Badge",
+        "status": "Xubin Aan La Xaqiijin",
+        "desc": "Diiwaangelinta aasaasiga ah oo kaliya. Daawasho kaliya, ma diri karo fariimo."
+      },
+      "level1": {
+        "title": "Silver Badge",
+        "status": "Xaqiijinta Aasaasiga Ah",
+        "desc": "Ku soo galay Google/Apple ama xaqiijiyay email/tel iyo selfie 3 ilbiriqsi ah."
+      },
+      "level2": {
+        "title": "Gold Badge",
+        "status": "Aqoonsi La Xaqiijiyay",
+        "desc": "Lagu xaqiijiyay baasaboor rasmi ah ama aqoonsiga qaranka."
+      },
+      "level3": {
+        "title": "Platinum Badge",
+        "status": "Bulshadu Marqaati Ka Tahay",
+        "desc": "Xubin aqoonsigiisa la xaqiijiyay oo ay marqaati ka noqdeen xubnaha kale ee aaminka ah."
+      },
+      "level4": {
+        "title": "Diamond Badge",
+        "status": "Astaanta Kalsoonida Sare",
+        "desc": "Xaqiijiyay dhamaan oo leh premium firfircoon ama ku xiran mas'uulka qoyska."
+      }
+    }
   },
   "Resources": {
     "learningHub": "Xarunta Waxbarashada",

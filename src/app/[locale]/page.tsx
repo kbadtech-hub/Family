@@ -201,19 +201,19 @@ export default function Home() {
                <p className="text-lg text-white/60 leading-relaxed">
                   {t('Trust.privacy.desc')}
                </p>
-               <div className="space-y-4 pt-4">
-                 {[
-                   locale === 'am' ? 'የአንድሮይድ ስክሪንሾት መከላከያ እና የአይኦኤስ ይዘት መደበቂያ (UI Masking)' : 'Android screenshot protection & iOS screen masking',
-                   locale === 'am' ? 'የጀርባ መገኛ ቦታን አለመከታተል እና መረጃን ለሶስተኛ ወገን በፍጹም አለመሸጥ' : 'Zero background location tracking & zero third-party data sales',
-                   locale === 'am' ? 'ጥብቅ የ18+ ዕድሜ ገደብ ማረጋገጫ በሁለት የቀን መቁጠሪያ' : 'Strict 18+ age verification with dual-calendar engine',
-                   locale === 'am' ? 'ሙሉ በሙሉ በግል ፍላጎት ላይ የተመሰረተ የይለፍ ቃል አፕ መቆለፊያ' : 'Fully optional app-level security lock under your control'
-                 ].map((item, index) => (
-                   <div key={index} className="flex items-start gap-3 text-xs text-white/70">
-                     <CheckCircle2 size={16} className="text-primary shrink-0 mt-0.5" />
-                     <span>{item}</span>
-                   </div>
-                 ))}
-               </div>
+                <div className="space-y-4 pt-4">
+                  {[
+                    t('Trust.privacy.item1'),
+                    t('Trust.privacy.item2'),
+                    t('Trust.privacy.item3'),
+                    t('Trust.privacy.item4')
+                  ].map((item, index) => (
+                    <div key={index} className="flex items-start gap-3 text-xs text-white/70">
+                      <CheckCircle2 size={16} className="text-primary shrink-0 mt-0.5" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
                <div className="pt-6 flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-primary">
                      <ShieldCheck size={24} />

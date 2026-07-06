@@ -39,7 +39,11 @@
       "title": "Wabi Amanamummaa fi Nageenyaa",
       "privacy": {
         "title": "Iccitiin Keessan Kabaja Keenya",
-        "desc": "Iccitii keessaniif kabaja guddaa qabna. Appilikeeshiniin keenya screenshot kaasuun (Android) fi mirror gochuu (iOS) irraa dhorka. Iccitiin keessan eegamaa dha. Location duubaa hin hordofnu. App Lock dhuunfaa filannoo keessani."
+        "desc": "Iccitii keessaniif kabaja guddaa qabna. Appilikeeshiniin keenya screenshot kaasuun (Android) fi mirror gochuu (iOS) irraa dhorka. Iccitiin keessan eegamaa dha. Location duubaa hin hordofnu. App Lock dhuunfaa filannoo keessani.",
+        "item1": "Eegumsa screenshot Android fi hordoffii screen iOS (UI Masking)",
+        "item2": "Location duubaa hin hordofnu, ragaa dhuunfaa hin gurgurru",
+        "item3": "Mirkaneessa umurii strict 18+ kalandarii lamaan",
+        "item4": "App Lock dhuunfaa guutummaatti filannoo keessan kan ta'e"
       },
       "values": {
         "title": "Kabaajaa fi Hordoffii Nageenyaa Strict",
@@ -216,7 +220,37 @@
     "ctaTitle": "Partner Gaa'ela Keessanii Har'a Argadhaa",
     "ctaButton": "Beteseb Join Godhaa",
     "ourStory": "Mul'ata Keenya fi Architecture",
-    "joinStats": "Platformii Gaa'ela Habashaa"
+    "joinStats": "Platformii Gaa'ela Habashaa",
+    "badges": {
+      "title": "Sadarkaa Amanamummaa Beteseb",
+      "subtitle": "Mallattoo Badhaasa Amanamummaa Shanan",
+      "description": "Miseensonni sadarkaa mirkaneessaa dabruun mallattoo addaa argatu.",
+      "level0": {
+        "title": "Bronze Badge",
+        "status": "Miseensa Hin Mirkanaayin",
+        "desc": "Galmeessa bu'uraa qofa xumure. Ilaaluu qofa danda'a, ergaa wal-jijjiiruu hin danda'u."
+      },
+      "level1": {
+        "title": "Silver Badge",
+        "status": "Mirkaneessa Bu'uraa",
+        "desc": "Google/Apple'n kan seene ykn email/bilbila mirkaneessee fi selfie sekondii 3 kan xumure."
+      },
+      "level2": {
+        "title": "Gold Badge",
+        "status": "ID'n Mirkanaa'e",
+        "desc": "Paaspoortii ykn eenyummaa biyyaalessaa rasmichaatiin kan mirkanaaye."
+      },
+      "level3": {
+        "title": "Platinum Badge",
+        "status": "Hawaasaan Kan Vouch Ta'e",
+        "desc": "Miseensa ID'n mirkanaaye kan miseensota amanamoo birootiin dhugaa-ba'umsa argate."
+      },
+      "level4": {
+        "title": "Diamond Badge",
+        "status": "Mallattoo Trust Olaanaa",
+        "desc": "Mirkaneessa hunda xumuree premium kan kafale ykn maatii wajjin kan wal-qabate."
+      }
+    }
   },
   "Resources": {
     "learningHub": "Xarunta Waxbarashada",
