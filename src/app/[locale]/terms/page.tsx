@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useLocale } from 'next-intl';
+import { Link } from '@/i18n/routing';
 import { Gavel, Scale, Heart, ShieldAlert, AlertTriangle, CheckCircle, FileText } from 'lucide-react';
 
 export default function TermsPage() {
@@ -222,6 +223,11 @@ export default function TermsPage() {
   return (
     <div className="min-h-screen bg-muted py-24 px-6 md:px-12" dir={selectedLang === 'ar' ? 'rtl' : 'ltr'}>
       <div className="max-w-4xl mx-auto">
+        <div className="mb-6">
+          <Link href="/" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-accent hover:text-primary transition-colors">
+            ← {locale === 'am' ? 'ወደ መነሻ ገጽ ተመለስ' : 'Back to Home'}
+          </Link>
+        </div>
         
         {/* Language Selector */}
         <div className="flex justify-end gap-2 mb-8">
