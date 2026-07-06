@@ -148,8 +148,24 @@ export default function AcademyView({
     setUnlocking(mod.id);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setUnlocking(null); return; }
-    await supabase.from('user_unlocked_videos').upsert({ user_id: user.id, video_id: mod.id });
-    await supabase.from('profiles').update({ coins: userCoins - mod.coin_price }).eq('id', user.id);
+    
+    // 1. Record unlock video authorization
+    const { error: unlockError } = await supabase.from('user_unlocked_videos').upsert({ user_id: user.id, video_id: mod.id });
+    if (unlockError) {
+      alert("Failed to unlock video: " + unlockError.message);
+      setUnlocking(null);
+      return;
+    }
+    
+    // 2. Insert debit transaction into coin_transactions (Blueprint v4.0)
+    // The DB trigger handles updating user_wallets.coin_balance automatically.
+    await supabase.from('coin_transactions').insert({
+      user_id: user.id,
+      amount: -mod.coin_price,
+      type: 'coin_transfer',
+      note: `unlock_video_${mod.id}`
+    });
+
     setUnlockedIds(prev => new Set([...prev, mod.id]));
     setUnlocking(null);
   };

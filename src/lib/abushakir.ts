@@ -1,7 +1,4 @@
-/**
- * Beteseb Abushakir Engine
- * Handles Ethiopian Calendar conversion and Star Sign calculation.
- */
+import ethiopianDate from 'ethiopian-date';
 
 export interface EthiopianDate {
   year: number;
@@ -21,37 +18,14 @@ const STAR_SIGNS: StarSign[] = [
 ];
 
 /**
- * Basic Gregorian to Ethiopian conversion
- * This is a simplified version suitable for birth date mapping.
+ * Converts Gregorian date to Ethiopian date using the official ethiopian-date package.
  */
 export function toEthiopianDate(date: Date): EthiopianDate {
   const gYear = date.getFullYear();
   const gMonth = date.getMonth() + 1;
   const gDay = date.getDate();
 
-  let eYear = gYear - 8;
-  
-  // Transition happened around Sept 11/12
-  const isLeap = (eYear + 1) % 4 === 0;
-  const meskerem1 = isLeap ? 12 : 11;
-
-  let eMonth: number;
-  let eDay: number;
-
-  if (gMonth < 9 || (gMonth === 9 && gDay < meskerem1)) {
-    eYear = gYear - 8;
-    // Calculation of day/month within the 13 months
-    // For simplicity, we use an approximation based on 30-day months
-    // Adjusting for the shift
-    const dayOfYear = Math.floor((date.getTime() - new Date(gYear - 1, 8, meskerem1).getTime()) / (1000 * 60 * 60 * 24));
-    eMonth = Math.floor(dayOfYear / 30) + 1;
-    eDay = (dayOfYear % 30) + 1;
-  } else {
-    eYear = gYear - 7;
-    const dayOfYear = Math.floor((date.getTime() - new Date(gYear, 8, meskerem1).getTime()) / (1000 * 60 * 60 * 24));
-    eMonth = Math.floor(dayOfYear / 30) + 1;
-    eDay = (dayOfYear % 30) + 1;
-  }
+  const [eYear, eMonth, eDay] = ethiopianDate.toEthiopian(gYear, gMonth, gDay);
 
   return { year: eYear, month: eMonth, day: eDay };
 }

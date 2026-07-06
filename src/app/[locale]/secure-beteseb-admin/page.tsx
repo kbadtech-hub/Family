@@ -246,7 +246,6 @@ export default function AdminPortal() {
     "12m": number;
     "class": number;
     lifetime: number;
-    trial_days?: number;
     discount?: number;
   }
 
@@ -300,9 +299,9 @@ export default function AdminPortal() {
       { bank_name: '', account_number: '', account_holder: '' }
     ],
     pricing_usd: {
-      "1m": 0, "3m": 0, "6m": 0, "12m": 0, "class": 0, "lifetime": 0, "trial_days": 3, "discount": 0 },
+      "1m": 0, "3m": 0, "6m": 0, "12m": 0, "class": 0, "lifetime": 0, "discount": 0 },
     pricing_etb: {
-      "1m": 0, "3m": 0, "6m": 0, "12m": 0, "class": 0, "lifetime": 0, "trial_days": 3, "discount": 0 },
+      "1m": 0, "3m": 0, "6m": 0, "12m": 0, "class": 0, "lifetime": 0, "discount": 0 },
     website_url: ''
   });
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
@@ -534,19 +533,18 @@ export default function AdminPortal() {
     const { error } = await supabase.from('payments').update({ status }).eq('id', id);
     
     if (!error && status === 'approved' && userId && planType) {
-       // Calculate trial end date based on plan
+       // Calculate premium duration based on plan
        let days = 30;
        if (planType === '3m') days = 90;
        if (planType === '6m') days = 180;
        if (planType === '12m') days = 365;
        if (planType === 'lifetime') days = 36500; // ~100 years
 
-       const trialEndsAt = new Date();
-       trialEndsAt.setDate(trialEndsAt.getDate() + days);
+       const premiumUntil = new Date();
+       premiumUntil.setDate(premiumUntil.getDate() + days);
 
        await supabase.from('profiles').update({ 
-          trial_ends_at: trialEndsAt.toISOString(),
-          premium_until: trialEndsAt.toISOString()
+          premium_until: premiumUntil.toISOString()
        }).eq('id', userId);
     }
 
@@ -1313,8 +1311,8 @@ export default function AdminPortal() {
            <div className="space-y-8 animate-in fade-in duration-500">
              <header className="flex justify-between items-end">
                <div>
-                 <h2 className="text-3xl font-bold italic uppercase tracking-tighter">Pricing & Trial</h2>
-                 <p className="text-foreground/40 mt-1">Control subscription plans and free trial duration.</p>
+                 <h2 className="text-3xl font-bold italic uppercase tracking-tighter">Pricing & Plans</h2>
+                 <p className="text-foreground/40 mt-1">Control Diamond subscription plans and pricing structure.</p>
                </div>
                <button onClick={handleSaveCMS} className="btn-primary">Deploy Updates</button>
              </header>
@@ -1323,21 +1321,7 @@ export default function AdminPortal() {
                <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5">
                  <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6">Discount & Logic</h3>
                  <div className="space-y-6">
-                    <label className="block">
-                       <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest">Free Trial Days</span>
-                       <input 
-                         type="number" 
-                         value={cmsForm.pricing_usd?.trial_days || 3}
-                         onChange={(e) => setCmsForm({
-                            ...cmsForm, 
-                            pricing_usd: {
-                                ...cmsForm.pricing_usd, trial_days: parseInt(e.target.value) },
-                            pricing_etb: {
-                                ...cmsForm.pricing_etb, trial_days: parseInt(e.target.value) }
-                         })}
-                         className="input-premium bg-background mt-2"
-                       />
-                    </label>
+                    {/* Free Trial Days input removed — Beteseb uses Freemium model per Blueprint v4.0 */}
                     <label className="block">
                        <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest text-primary italic">Global Holiday Discount (%)</span>
                        <input 

@@ -1,0 +1,153 @@
+import { NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
+
+// Apple App Store receipt validation endpoints
+const APPLE_SANDBOX_URL = 'https://sandbox.itunes.apple.com/verifyReceipt';
+const APPLE_PRODUCTION_URL = 'https://buy.itunes.apple.com/verifyReceipt';
+
+const APPLE_SHARED_SECRET = process.env.APPLE_IAP_SHARED_SECRET || '';
+
+interface VerifyReceiptResponse {
+  status: number;
+  receipt?: {
+    bundle_id: string;
+    in_app: Array<{
+      product_id: string;
+      original_transaction_id: string;
+      expires_date_ms?: string;
+      purchase_date_ms: string;
+    }>;
+  };
+  latest_receipt_info?: Array<{
+    product_id: string;
+    original_transaction_id: string;
+    expires_date_ms: string;
+    purchase_date_ms: string;
+  }>;
+}
+
+export async function POST(req: Request) {
+  try {
+    const { receiptData, userId, planType } = await req.json();
+
+    if (!receiptData || !userId || !planType) {
+      return NextResponse.json(
+        { status: 'error', message: 'Missing receiptData, userId, or planType' },
+        { status: 400 }
+      );
+    }
+
+    // 1. Validate receipt with Apple App Store
+    let appleResponse = await verifyWithApple(receiptData, APPLE_PRODUCTION_URL);
+
+    // If status is 21007, it is a sandbox receipt sent to production, retry against sandbox URL
+    if (appleResponse.status === 21007) {
+      appleResponse = await verifyWithApple(receiptData, APPLE_SANDBOX_URL);
+    }
+
+    if (appleResponse.status !== 0) {
+      return NextResponse.json(
+        { status: 'error', message: `Apple validation failed with status code ${appleResponse.status}` },
+        { status: 400 }
+      );
+    }
+
+    // 2. Extract latest transaction / purchase information
+    const latestInfo = appleResponse.latest_receipt_info 
+      ? appleResponse.latest_receipt_info[appleResponse.latest_receipt_info.length - 1]
+      : appleResponse.receipt?.in_app?.[appleResponse.receipt.in_app.length - 1];
+
+    if (!latestInfo) {
+      return NextResponse.json(
+        { status: 'error', message: 'No transaction found in receipt data' },
+        { status: 400 }
+      );
+    }
+
+    // 3. Determine premium expiration date
+    let expiresAt: Date;
+    if (latestInfo.expires_date_ms) {
+      expiresAt = new Date(parseInt(latestInfo.expires_date_ms));
+    } else {
+      // Fallback if expires_date_ms is missing (e.g., non-consumable lifetime plan)
+      let days = 30;
+      if (planType === '3m') days = 90;
+      if (planType === '12m') days = 365;
+      if (planType === 'lifetime') days = 36500; // ~100 years
+      
+      expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + days);
+    }
+
+    // 4. Record transaction in database
+    const { error: paymentError } = await supabase
+      .from('payments')
+      .insert({
+        user_id: userId,
+        plan_type: planType,
+        amount: getPlanPriceUSD(planType),
+        currency: 'USD',
+        status: 'approved',
+        receipt_url: `Apple Transaction ID: ${latestInfo.original_transaction_id}`
+      });
+
+    if (paymentError) {
+      console.error('Failed to log Apple payment transaction in DB:', paymentError);
+    }
+
+    // 5. Upgrade user's premium validity in profiles table
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({
+        premium_until: expiresAt.toISOString()
+      })
+      .eq('id', userId);
+
+    if (profileError) {
+      console.error('Failed to update premium profile status:', profileError);
+      return NextResponse.json(
+        { status: 'error', message: 'Failed to update premium profile status' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      status: 'success',
+      message: 'Receipt validated and account upgraded successfully',
+      premiumUntil: expiresAt.toISOString()
+    });
+
+  } catch (error: any) {
+    console.error('Apple IAP Webhook/API Error:', error);
+    return NextResponse.json({ status: 'failed', message: error.message }, { status: 500 });
+  }
+}
+
+/**
+ * Sends receipt verification POST request to Apple App Store endpoints
+ */
+async function verifyWithApple(receiptData: string, url: string): Promise<VerifyReceiptResponse> {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      'receipt-data': receiptData,
+      'password': APPLE_SHARED_SECRET
+    })
+  });
+  return response.json();
+}
+
+/**
+ * Returns plan prices in USD for logging Apple IAP transactions
+ */
+function getPlanPriceUSD(planType: string): number {
+  switch (planType) {
+    case '1m': return 15;
+    case '3m': return 39;
+    case '6m': return 69;
+    case '12m': return 120;
+    case 'lifetime': return 299;
+    default: return 15;
+  }
+}

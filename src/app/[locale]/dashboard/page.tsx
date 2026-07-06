@@ -79,8 +79,7 @@ function DashboardContent() {
   const [showPayment, setShowPayment] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [verificationStatus, setVerificationStatus] = useState<string>('loading');
-  const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
-  const [isTrialExpired, setIsTrialExpired] = useState(false);
+  // Trial model removed (Blueprint v4.0) — using freemium tier-based limits
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -192,8 +191,13 @@ function DashboardContent() {
       // 1. Fetch Profile
       const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
       if (profileData) {
-        setProfile(profileData as Profile);
-        OfflineCache.cacheData(`profile_${user.id}`, profileData);
+        // Fetch coin balance from user_wallets (Blueprint v4.0)
+        const { data: walletData } = await supabase.from('user_wallets').select('coin_balance').eq('id', user.id).single();
+        const coins = walletData ? Number(walletData.coin_balance) : 0;
+        
+        const mergedProfile = { ...(profileData as Profile), coins };
+        setProfile(mergedProfile);
+        OfflineCache.cacheData(`profile_${user.id}`, mergedProfile);
 
         // Fetch vouch count
         const { count: vouchCount } = await supabase
@@ -256,7 +260,7 @@ function DashboardContent() {
                        ['admin', 'super_admin', 'expert'].includes(profileData?.role);
       
       setProfile(prev => prev ? { ...prev, is_premium: isPremium } : null);
-      setIsTrialExpired(false);
+      // No trial tracking — Freemium model uses tier-based limits (Blueprint v4.0)
 
       // 5. Fetch Matches (Gender-Based Logic)
       // Load Cached Matches if available
@@ -633,7 +637,7 @@ function DashboardContent() {
                   
                   <div className="flex items-center gap-4">
                     {/* View Switcher Toggle */}
-                    {!showPayment && !isTrialExpired && matches.length > 0 && (
+                    {!showPayment && matches.length > 0 && (
                       <div className="flex p-1 bg-muted rounded-2xl w-fit border border-gray-100 shadow-sm">
                         <button 
                           onClick={() => setMatchingView('grid')} 
@@ -655,7 +659,7 @@ function DashboardContent() {
                   </div>
                 </div>
 
-                {matchingView === 'swipe' && !showPayment && !isTrialExpired && matches.length > 0 && profile ? (
+                {matchingView === 'swipe' && !showPayment && matches.length > 0 && profile ? (
                   <div className="animate-in zoom-in-95 duration-500 py-4">
                     <SwipeCards 
                       userProfile={profile} 
@@ -672,13 +676,13 @@ function DashboardContent() {
                         <button onClick={() => setShowPayment(false)} className="mb-6 text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">← {t('backToDash')}</button>
                         <PaymentTab />
                       </div>
-                    ) : isTrialExpired && paymentStatus !== 'approved' ? (
-                      <div className="col-span-full bg-white p-8 md:p-12 rounded-[2.5rem] md:rounded-[3rem] border border-red-100 text-center space-y-6">
-                        <div className="w-14 h-14 md:w-16 md:h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto">
-                          <AlertCircle className="w-7 h-7 md:w-8 md:h-8" />
+                    ) : !profile?.is_premium && paymentStatus !== 'approved' && matches.length === 0 ? (
+                      <div className="col-span-full bg-white p-8 md:p-12 rounded-[2.5rem] md:rounded-[3rem] border border-primary/10 text-center space-y-6">
+                        <div className="w-14 h-14 md:w-16 md:h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto">
+                          <Sparkles className="w-7 h-7 md:w-8 md:h-8" />
                         </div>
-                        <h3 className="text-xl md:text-2xl font-black text-accent italic">{t('trialExpired')}</h3>
-                        <p className="text-xs md:text-gray-500 max-w-sm mx-auto">{t('trialEnded')}</p>
+                        <h3 className="text-xl md:text-2xl font-black text-accent italic">{t('upgradeForMore')}</h3>
+                        <p className="text-xs md:text-gray-500 max-w-sm mx-auto">{t('freemiumLimitNote')}</p>
                         <button onClick={() => setShowPayment(true)} className="w-full md:w-auto bg-primary text-white px-10 py-4 rounded-2xl font-bold uppercase tracking-widest shadow-xl shadow-primary/20">{t('upgradeNow')}</button>
                       </div>
                     ) : matches.length === 0 ? (

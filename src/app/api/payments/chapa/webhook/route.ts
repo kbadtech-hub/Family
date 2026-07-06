@@ -41,11 +41,11 @@ export async function POST(req: Request) {
       }
 
       // Upgrade profile premium dates in profiles table
+      // Note: trial_ends_at removed — Beteseb uses Freemium model (Blueprint v4.0)
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
-          premium_until: premiumUntil.toISOString(),
-          trial_ends_at: premiumUntil.toISOString()
+          premium_until: premiumUntil.toISOString()
         })
         .eq('id', userId);
 

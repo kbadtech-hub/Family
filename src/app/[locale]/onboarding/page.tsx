@@ -43,6 +43,8 @@ const locationData: Record<string, Record<string, string[]>> = {
     'Oromia': ['Adama', 'Jimma', 'Bishoftu'],
     'Amhara': ['Bahir Dar', 'Gondar', 'Dessie'],
     'Tigray': ['Mekelle', 'Adigrat', 'Axum'],
+    'Sidama': ['Hawassa', 'Yirgalem'],
+    'South Ethiopia': ['Arba Minch', 'Dila'],
     'Others': []
   },
   'USA': {
@@ -51,6 +53,51 @@ const locationData: Record<string, Record<string, string[]>> = {
     'Virginia': ['Fairfax', 'Richmond', 'Alexandria'],
     'California': ['Los Angeles', 'San Jose', 'San Diego'],
     'Washington': ['Seattle', 'Spokane'],
+    'Georgia': ['Atlanta', 'Decatur'],
+    'Colorado': ['Denver', 'Aurora'],
+    'Others': []
+  },
+  'Canada': {
+    'Ontario': ['Toronto', 'Ottawa', 'Mississauga', 'London'],
+    'British Columbia': ['Vancouver', 'Victoria', 'Burnaby'],
+    'Alberta': ['Calgary', 'Edmonton'],
+    'Quebec': ['Montreal', 'Quebec City'],
+    'Others': []
+  },
+  'United Kingdom': {
+    'England': ['London', 'Birmingham', 'Manchester', 'Leeds'],
+    'Scotland': ['Edinburgh', 'Glasgow'],
+    'Others': []
+  },
+  'Germany': {
+    'Hesse': ['Frankfurt', 'Wiesbaden'],
+    'Bavaria': ['Munich', 'Nuremberg'],
+    'Berlin': ['Berlin'],
+    'North Rhine-Westphalia': ['Cologne', 'Düsseldorf'],
+    'Others': []
+  },
+  'Saudi Arabia': {
+    'Riyadh Region': ['Riyadh'],
+    'Makkah Region': ['Jeddah', 'Mecca'],
+    'Eastern Province': ['Dammam', 'Khobar'],
+    'Others': []
+  },
+  'UAE': {
+    'Dubai': ['Dubai'],
+    'Abu Dhabi': ['Abu Dhabi', 'Al Ain'],
+    'Sharjah': ['Sharjah'],
+    'Others': []
+  },
+  'Sweden': {
+    'Stockholm County': ['Stockholm', 'Solna'],
+    'Västra Götaland': ['Gothenburg'],
+    'Skåne': ['Malmö'],
+    'Others': []
+  },
+  'Australia': {
+    'Victoria': ['Melbourne', 'Geelong'],
+    'New South Wales': ['Sydney', 'Newcastle'],
+    'Queensland': ['Brisbane'],
     'Others': []
   }
 };
@@ -69,7 +116,7 @@ function OnboardingContent() {
   const [formData, setFormData] = useState({
     full_name: '',
     birth_date: '',
-    birth_time: '12:00',
+    // birth_time removed — Blueprint v4.0: birth time must never be collected
     location: '',
     gender: '',
     religion: '',
@@ -285,10 +332,11 @@ function OnboardingContent() {
         }
       }
 
-      if (field === 'birth_date' || field === 'birth_time') {
+      if (field === 'birth_date') {
         if (next.birth_date) {
-            const date = new Date(next.birth_date);
-            next.star_sign = calculateStarSign(date, next.birth_time);
+          // Blueprint v4.0: birth time is never collected; pass empty string as time
+          const date = new Date(next.birth_date);
+          next.star_sign = calculateStarSign(date, '');
         }
       }
       return next;

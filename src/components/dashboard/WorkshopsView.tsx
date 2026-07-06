@@ -98,20 +98,26 @@ export default function WorkshopsView({ currency }: { currency: 'ETB' | 'USD' })
       let finalCurrency = 'USD';
 
       if (paymentMethod === 'coins') {
-        // Fetch coin balance
-        const { data: ledger } = await supabase.from('coin_ledger').select('amount').eq('user_id', userId);
-        const balance = (ledger || []).reduce((acc: number, row: any) => acc + (row.amount || 0), 0);
+        // Fetch coin balance from user_wallets (Blueprint v4.0)
+        const { data: wallet } = await supabase
+          .from('user_wallets')
+          .select('coin_balance')
+          .eq('id', userId)
+          .single();
+          
+        const balance = Number(wallet?.coin_balance || 0);
         if (balance < 50) {
           alert("Insufficient coins! You need 50 coins to book this counseling session. Please top up on the web.");
           setIsSubmitting(false);
           return;
         }
 
-        // Deduct 50 coins from user's coin_ledger
-        const { error: ledgerError } = await supabase.from('coin_ledger').insert({
+        // Deduct 50 coins from user's coin_transactions
+        const { error: ledgerError } = await supabase.from('coin_transactions').insert({
           user_id: userId,
           amount: -50,
-          transaction_type: 'counselor_booking'
+          type: 'coin_transfer',
+          note: 'counselor_booking'
         });
         if (ledgerError) throw ledgerError;
         
