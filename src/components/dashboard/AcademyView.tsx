@@ -242,7 +242,7 @@ export default function AcademyView({
                         handleUnlock(mod);
                       }
                     }}
-                    className={`bg-white p-10 rounded-[3rem] shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all group overflow-hidden border border-gray-100 relative text-left cursor-pointer ${
+                    className={`bg-white p-10 rounded-[3rem] shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all group overflow-hidden border border-primary/20 hover:border-primary/80 relative text-left cursor-pointer ${
                       !accessible && 'opacity-90'
                     }`}
                  >
