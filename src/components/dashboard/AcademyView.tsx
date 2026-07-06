@@ -5,9 +5,9 @@ import { supabase } from '@/lib/supabase';
 import { 
   Play, BookOpen, Lock, Crown, ExternalLink, 
   GraduationCap, Sparkles, ChevronRight, Star,
-  Users, Clock, Heart, Video
+  Users, Clock, Heart, Video, ShieldCheck
 } from 'lucide-react';
-import { useLocale } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import YouTubeEmbed from '@/components/YouTubeEmbed';
 import BetesebCoinIcon from '@/components/BetesebCoinIcon';
 
@@ -100,6 +100,7 @@ export default function AcademyView({
   isPremium?: boolean; 
   userCoins?: number; 
 }) {
+  const t = useTranslations('Classes');
   const locale = useLocale();
   const am = locale === 'am';
 
@@ -153,235 +154,32 @@ export default function AcademyView({
     setUnlocking(null);
   };
 
-  const freeModules = modules.filter(m => m.is_free);
-  const courseModules = modules.filter(m => !m.is_free);
+  if (loading) {
+    return <div className="p-12 text-center text-foreground/40 font-black uppercase tracking-widest text-xs">Loading...</div>;
+  }
 
   return (
-    <div className="space-y-8 pb-20">
-
-      {/* ── Hero Banner ── */}
-      <div className="bg-gradient-to-br from-accent via-accent/90 to-primary/80 rounded-[2.5rem] p-8 md:p-12 text-white relative overflow-hidden shadow-2xl">
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 70% 50%, white 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
-        <div className="absolute top-0 right-0 w-80 h-80 bg-primary/20 rounded-full blur-3xl -mr-40 -mt-40" />
-        <div className="relative z-10 max-w-2xl space-y-4">
-          <div className="flex items-center gap-2">
-            <GraduationCap size={20} className="text-primary" />
-            <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em]">
-              {am ? 'ቤተሰብ አካዳሚ' : 'Beteseb Academy'}
-            </span>
+    <div className="space-y-12 pb-20" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+      {/* Hero Banner (No Start Learning or Sign In buttons) */}
+      <section className="py-12 md:py-20 px-6 flex flex-col items-center text-center space-y-6 bg-[radial-gradient(circle_at_bottom_right,_var(--primary)_0%,_transparent_40%)] bg-opacity-5 rounded-[3rem] bg-white border border-gray-100 shadow-sm relative overflow-hidden">
+        <div className="absolute inset-0 bg-[#FDFBF9] opacity-30" />
+        <div className="relative z-10 space-y-4 max-w-3xl">
+          <div className="inline-flex items-center gap-2 px-6 py-2 bg-primary/10 rounded-full text-primary font-black text-[10px] md:text-xs tracking-widest uppercase">
+             <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 fill-primary" />
+             {t('hero.tagline')}
           </div>
-          <h2 className="text-3xl md:text-5xl font-black italic tracking-tighter leading-tight">
-            {am ? 'ትዳር፣ ቤተሰብ እና ፍቅር' : 'Marriage, Family & Love'}
-          </h2>
-          <p className="text-white/60 text-sm md:text-base font-medium leading-relaxed">
-            {am 
-              ? 'ለጤናማ ቤተሰብ ሕይወት የሚያዘጋጁ ፕሮፌሽናል ቪዲዮ ትምህርቶች።'
-              : 'Professional video lessons preparing you for a healthy family life.'
-            }
+          <h1 className="text-3xl md:text-5xl font-black text-accent tracking-tight leading-tight uppercase">
+            {t('hero.title1')} <br /> <span className="text-primary italic underline decoration-primary/20">{t('hero.title2')}</span>
+          </h1>
+          <p className="text-sm md:text-base text-gray-500 max-w-2xl mx-auto leading-relaxed font-medium italic">
+            {t('hero.subtitle')}
           </p>
-          <div className="flex flex-wrap gap-4 pt-2 text-xs font-bold">
-            <div className="flex items-center gap-1.5 bg-white/10 rounded-xl px-3 py-1.5">
-              <Video size={12} /> {am ? '12 ቪዲዮዎች' : '12 Videos'}
-            </div>
-            <div className="flex items-center gap-1.5 bg-white/10 rounded-xl px-3 py-1.5">
-              <Users size={12} /> {am ? '2 ነጻ' : '2 Free'}
-            </div>
-            <div className="flex items-center gap-1.5 bg-white/10 rounded-xl px-3 py-1.5">
-              <Crown size={12} className="text-yellow-400" /> {am ? 'ፕሪሚየም ተጠቃሚዎች ሁሉ ይክፈቱ' : 'Premium: Unlock All'}
-            </div>
-          </div>
         </div>
-      </div>
+      </section>
 
-      {/* ── Free Welcome Videos ── */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3 px-1">
-          <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center">
-            <Sparkles size={16} className="text-emerald-600" />
-          </div>
-          <div>
-            <h3 className="text-sm font-black text-accent uppercase tracking-wider">
-              {am ? 'ነጻ የአቀባበል ቪዲዮዎች' : 'Free Welcome Videos'}
-            </h3>
-            <p className="text-[10px] text-gray-400 font-semibold">
-              {am ? 'ሁሉም ሰው ሊያይ ይችላል' : 'Open to everyone'}
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {freeModules.map(mod => (
-            <button
-              key={mod.id}
-              onClick={() => setActiveModule(mod)}
-              className={`text-left group relative p-5 rounded-[2rem] border-2 transition-all duration-300 ${
-                activeModule.id === mod.id
-                  ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10'
-                  : 'border-border bg-white hover:border-primary/30 hover:shadow-md'
-              }`}
-            >
-              <div className="absolute top-4 right-4">
-                <span className="text-[9px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-700 px-2 py-1 rounded-lg">
-                  {am ? 'ነጻ' : 'FREE'}
-                </span>
-              </div>
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${activeModule.id === mod.id ? 'bg-primary' : 'bg-muted'}`}>
-                <Play size={20} className={activeModule.id === mod.id ? 'text-white fill-white' : 'text-primary fill-primary'} />
-              </div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">
-                {am ? (CATEGORY_COLORS[mod.category] ? mod.category : 'Welcome') : mod.category}
-              </p>
-              <h4 className="font-black text-accent text-sm leading-tight">
-                {am ? mod.title_am : mod.title}
-              </h4>
-              <p className="text-[11px] text-gray-400 font-medium mt-2 leading-relaxed line-clamp-2">
-                {am ? mod.description_am : mod.description}
-              </p>
-              <div className="flex items-center gap-2 mt-3">
-                <Clock size={11} className="text-gray-300" />
-                <span className="text-[10px] text-gray-400 font-bold">{mod.duration_minutes} min</span>
-              </div>
-            </button>
-          ))}
-        </div>
-
-        {/* Video Player */}
-        {activeModule.is_free && (
-          <div className="bg-white rounded-[2rem] border border-border p-6 space-y-4 shadow-sm">
-            {activeModule.youtube_url ? (
-              <YouTubeEmbed url={activeModule.youtube_url} />
-            ) : (
-              <div className="aspect-video bg-gradient-to-br from-accent/5 to-primary/5 rounded-2xl border-2 border-dashed border-primary/20 flex flex-col items-center justify-center gap-4">
-                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
-                  <Play size={28} className="text-primary fill-primary" />
-                </div>
-                <div className="text-center">
-                  <p className="font-black text-accent text-sm">
-                    {am ? activeModule.title_am : activeModule.title}
-                  </p>
-                  <p className="text-xs text-gray-400 font-medium mt-1">
-                    {am ? 'ቪዲዮ በቅርቡ ይሰቀላል...' : 'Video link coming soon...'}
-                  </p>
-                </div>
-              </div>
-            )}
-            <div className="space-y-2">
-              <span className={`inline-block text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg ${CATEGORY_COLORS[activeModule.category] || 'bg-primary/10 text-primary'}`}>
-                {activeModule.category}
-              </span>
-              <h3 className="text-lg font-black text-accent italic">
-                {am ? activeModule.title_am : activeModule.title}
-              </h3>
-              <p className="text-sm text-gray-500 font-medium leading-relaxed">
-                {am ? activeModule.description_am : activeModule.description}
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* ── Course Module Library ── */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between px-1">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
-              <BookOpen size={16} className="text-primary" />
-            </div>
-            <div>
-              <h3 className="text-sm font-black text-accent uppercase tracking-wider">
-                {am ? 'የትዳር ትምህርት ሙሉ ቤተ-ፍጥረት' : 'Full Course Library'}
-              </h3>
-              <p className="text-[10px] text-gray-400 font-semibold">
-                {am ? 'ፕሪሚየም ወይም ቤተሰብ ኮይን' : 'Premium or Beteseb Coins'}
-              </p>
-            </div>
-          </div>
-          {!isPremium && (
-            <div className="flex items-center gap-1.5 bg-yellow-50 border border-yellow-200 rounded-xl px-3 py-1.5">
-              <Crown size={12} className="text-yellow-600" />
-              <span className="text-[10px] font-black text-yellow-700">
-                {am ? 'ፕሪሚየም ሁሉን ይክፍታል' : 'Premium unlocks all'}
-              </span>
-            </div>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 gap-3">
-          {courseModules.map((mod, idx) => {
-            const accessible = canWatch(mod);
-            return (
-              <div
-                key={mod.id}
-                className={`relative flex items-center gap-4 p-5 rounded-[2rem] border-2 transition-all duration-300 ${
-                  accessible
-                    ? 'border-primary/20 bg-white cursor-pointer hover:shadow-lg hover:border-primary/40 group'
-                    : 'border-border bg-white/50'
-                }`}
-                onClick={() => accessible && setActiveModule(mod)}
-              >
-                {/* Index */}
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-sm font-black ${
-                  accessible ? 'bg-primary text-white' : 'bg-muted text-gray-300'
-                }`}>
-                  {accessible ? <Play size={18} className="fill-white" /> : <Lock size={16} />}
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${CATEGORY_COLORS[mod.category] || 'bg-gray-100 text-gray-500'}`}>
-                      {mod.category}
-                    </span>
-                    {mod.is_free === false && !isPremium && (
-                      <span className="text-[9px] font-black text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md flex items-center gap-1">
-                        <BetesebCoinIcon className="w-3.5 h-3.5" /> {mod.coin_price} {am ? 'ኮይን' : 'Coins'}
-                      </span>
-                    )}
-                    {isPremium && (
-                      <span className="text-[9px] font-black text-yellow-700 bg-yellow-50 px-2 py-0.5 rounded-md">
-                        <Crown size={8} className="inline mr-0.5" />{am ? 'ፕሪሚየም' : 'Premium'}
-                      </span>
-                    )}
-                  </div>
-                  <p className={`font-black text-sm leading-tight ${accessible ? 'text-accent' : 'text-gray-300'}`}>
-                    {am ? mod.title_am : mod.title}
-                  </p>
-                  <p className={`text-[11px] font-medium mt-0.5 line-clamp-1 ${accessible ? 'text-gray-400' : 'text-gray-200'}`}>
-                    {am ? mod.description_am : mod.description}
-                  </p>
-                  <div className="flex items-center gap-3 mt-1.5">
-                    <div className="flex items-center gap-1">
-                      <Clock size={10} className="text-gray-300" />
-                      <span className="text-[10px] text-gray-400 font-bold">{mod.duration_minutes} min</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Action */}
-                {accessible ? (
-                  <ChevronRight size={18} className="text-primary shrink-0 group-hover:translate-x-1 transition-transform" />
-                ) : (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleUnlock(mod); }}
-                    disabled={userCoins < mod.coin_price || unlocking === mod.id}
-                    className="shrink-0 bg-primary text-white text-[10px] font-black uppercase tracking-wider px-4 py-2 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary/90 transition-all"
-                  >
-                    {unlocking === mod.id 
-                      ? '...' 
-                      : userCoins >= mod.coin_price 
-                        ? (am ? 'ክፈት' : 'Unlock') 
-                        : (am ? 'ኮይን የለዎትም' : 'Need Coins')}
-                  </button>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ── Active Course Video Player ── */}
-      {!activeModule.is_free && canWatch(activeModule) && (
-        <div className="bg-white rounded-[2rem] border border-border p-6 space-y-4 shadow-sm">
+      {/* Video Player Section (Only shown when activeModule is selected) */}
+      {activeModule && (
+        <div className="bg-white rounded-[3rem] border border-border p-6 space-y-4 shadow-xl max-w-4xl mx-auto animate-in fade-in slide-in-from-top-4 duration-500">
           {activeModule.youtube_url ? (
             <YouTubeEmbed url={activeModule.youtube_url} />
           ) : (
@@ -390,24 +188,167 @@ export default function AcademyView({
                 <Play size={28} className="text-primary fill-primary" />
               </div>
               <div className="text-center">
-                <p className="font-black text-accent text-sm">{am ? activeModule.title_am : activeModule.title}</p>
-                <p className="text-xs text-gray-400 font-medium mt-1">{am ? 'ቪዲዮ በቅርቡ ይሰቀላል...' : 'Video link coming soon...'}</p>
+                <p className="font-black text-accent text-sm">
+                  {am ? activeModule.title_am : activeModule.title}
+                </p>
+                <p className="text-xs text-gray-400 font-medium mt-1">
+                  {am ? 'ቪዲዮ በቅርቡ ይሰቀላል...' : 'Video link coming soon...'}
+                </p>
               </div>
             </div>
           )}
           <div className="space-y-2">
-            <span className={`inline-block text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg ${CATEGORY_COLORS[activeModule.category] || 'bg-primary/10 text-primary'}`}>
+            <span className="inline-block text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg bg-primary/10 text-primary">
               {activeModule.category}
             </span>
-            <h3 className="text-lg font-black text-accent italic">{am ? activeModule.title_am : activeModule.title}</h3>
-            <p className="text-sm text-gray-500 font-medium leading-relaxed">{am ? activeModule.description_am : activeModule.description}</p>
+            <h3 className="text-lg font-black text-accent italic">
+              {am ? activeModule.title_am : activeModule.title}
+            </h3>
+            <p className="text-sm text-gray-500 font-medium leading-relaxed">
+              {am ? activeModule.description_am : activeModule.description}
+            </p>
           </div>
         </div>
       )}
 
-      {/* ── Upgrade CTA ── */}
+      {/* Course Highlights / Curriculum (Featured Tables) */}
+      <section className="py-8 max-w-7xl mx-auto">
+         <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-12 gap-6">
+            <div className="space-y-4 text-center md:text-left">
+               <h2 className="text-[10px] md:text-sm font-black text-primary uppercase tracking-[0.4em]">{t('curriculum')}</h2>
+               <h3 className="text-3xl md:text-4xl font-black text-accent tracking-tighter uppercase">{t('featured')}</h3>
+            </div>
+            {!isPremium && (
+              <div className="flex items-center gap-1.5 bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-2">
+                <Crown size={14} className="text-yellow-600 animate-pulse" />
+                <span className="text-[10px] font-black text-yellow-700">
+                  {am ? 'ፕሪሚየም ሁሉን ይክፍታል' : 'Premium unlocks all'}
+                </span>
+              </div>
+            )}
+         </div>
+
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {modules.map((mod) => {
+              const accessible = canWatch(mod);
+              return (
+                 <div
+                    key={mod.id}
+                    onClick={() => {
+                      if (accessible) {
+                        setActiveModule(mod);
+                        window.scrollTo({ top: 400, behavior: 'smooth' });
+                      } else {
+                        handleUnlock(mod);
+                      }
+                    }}
+                    className={`bg-white p-10 rounded-[3rem] shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all group overflow-hidden border border-gray-100 relative text-left cursor-pointer ${
+                      !accessible && 'opacity-90'
+                    }`}
+                 >
+                    <div className={`absolute top-0 ${locale === 'ar' ? 'left-0' : 'right-0'} w-24 h-24 bg-primary/5 rounded-full ${locale === 'ar' ? '-ml-12' : '-mr-12'} -mt-12 group-hover:scale-150 transition-transform duration-700`} />
+                    
+                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-8 shadow-inner relative z-10 transition-all ${
+                      accessible ? 'bg-muted text-primary group-hover:bg-primary group-hover:text-white' : 'bg-amber-50 text-amber-600'
+                    }`}>
+                       {unlocking === mod.id ? (
+                         <span className="animate-spin font-black text-xs">...</span>
+                       ) : accessible ? (
+                         <Play size={32} className="fill-current" />
+                       ) : (
+                         <Lock size={28} />
+                       )}
+                    </div>
+                    
+                    <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2">{mod.category || 'General'}</p>
+                    <h3 className="text-2xl font-black text-accent mb-4 tracking-tighter uppercase line-clamp-1">
+                      {am ? mod.title_am : mod.title}
+                    </h3>
+                    <p className="text-gray-500 text-sm leading-relaxed mb-8 line-clamp-2 italic font-medium">
+                      {am ? mod.description_am : mod.description}
+                    </p>
+                    
+                    <div className="pt-6 border-t border-muted/50 flex items-center justify-between">
+                       <div className="flex items-center gap-3 text-[10px] font-black text-accent italic uppercase tracking-widest">
+                          <ShieldCheck size={14} className="text-primary" />
+                          {mod.is_free ? (
+                             <span className="text-emerald-600">{am ? 'ነጻ' : 'FREE'}</span>
+                          ) : accessible ? (
+                             <span className="text-primary">{am ? 'የተከፈተ' : 'UNLOCKED'}</span>
+                          ) : (
+                             <span className="text-amber-700 flex items-center gap-1">
+                               <BetesebCoinIcon className="w-3.5 h-3.5" />
+                               {mod.coin_price} {am ? 'ኮይን' : 'Coins'}
+                             </span>
+                          )}
+                       </div>
+                       <div className="p-3 bg-muted rounded-xl text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                          <ChevronRight size={18} />
+                       </div>
+                    </div>
+                 </div>
+              );
+            })}
+         </div>
+      </section>
+
+      {/* Counseling Feature (WISDOM CURRICULUM DETAILS) */}
+      <section className="py-16 bg-accent text-white px-8 rounded-[3rem] border border-white/5 shadow-2xl relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--secondary)_0%,_transparent_70%)] opacity-10" />
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-16 items-center relative z-10">
+           <div className={`flex-1 space-y-6 ${locale === 'ar' ? 'text-right' : 'text-left'}`}>
+              <h2 className="text-[10px] md:text-sm font-black text-primary uppercase tracking-[0.4em]">{t('counseling.tagline')}</h2>
+              <h3 className="text-3xl md:text-5xl font-black tracking-tight leading-tight italic">
+                {t('counseling.title1')} <br /> <span className="text-primary">{t('counseling.title2')}</span>
+              </h3>
+              <p className="text-sm md:text-base text-white/50 leading-relaxed font-medium italic">
+                 {t('counseling.subtitle')}
+              </p>
+              <div className="grid grid-cols-2 gap-6 pt-4">
+                 <div className="space-y-2">
+                    <p className="text-2xl md:text-3xl font-black text-primary">{t('counseling.stat1Value')}</p>
+                    <p className="text-[8px] md:text-[10px] font-black text-white/40 uppercase tracking-widest">{t('counseling.stat1Label')}</p>
+                 </div>
+                 <div className="space-y-2">
+                    <p className="text-2xl md:text-3xl font-black text-primary">{t('counseling.stat2Value')}</p>
+                    <p className="text-[8px] md:text-[10px] font-black text-white/40 uppercase tracking-widest">{t('counseling.stat2Label')}</p>
+                 </div>
+              </div>
+           </div>
+           <div className="flex-1 w-full bg-white/5 backdrop-blur-3xl rounded-[3rem] p-8 md:p-12 border border-white/10 shadow-2xl relative">
+              <div className="absolute -top-4 -right-4 w-16 h-16 bg-primary rounded-[2rem] flex items-center justify-center shadow-xl shadow-primary/30 animate-bounce">
+                 <GraduationCap className="w-8 h-8 text-white" />
+              </div>
+              <div className="space-y-6 md:space-y-8">
+                 <div className="flex gap-4 items-center">
+                    <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                       <BookOpen className="text-primary w-5 h-5" />
+                    </div>
+                    <p className="text-xl md:text-2xl font-black uppercase tracking-tighter italic">{t('counseling.curriculumTitle')}</p>
+                 </div>
+                 <div className="space-y-3">
+                    {[
+                      t('counseling.topics.t1'),
+                      t('counseling.topics.t2'),
+                      t('counseling.topics.t3'),
+                      t('counseling.topics.t4')
+                    ].map((f, i) => (
+                       <div key={i} className="flex justify-between items-center bg-white/5 p-4 rounded-[1.5rem] hover:bg-white/10 transition-all cursor-default border border-white/5">
+                          <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] text-white/80">{f}</p>
+                          <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-lg">
+                            <Heart className="w-2 h-2 fill-white text-white" />
+                          </div>
+                       </div>
+                    ))}
+                 </div>
+              </div>
+           </div>
+        </div>
+      </section>
+
+      {/* Upgrade Premium CTA card */}
       {!isPremium && (
-        <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-[2rem] border-2 border-primary/20 p-8 flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+        <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-[2rem] border-2 border-primary/20 p-8 flex flex-col md:flex-row items-center gap-6 text-center md:text-left shadow-sm">
           <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center shrink-0 text-primary">
             <Crown size={32} />
           </div>

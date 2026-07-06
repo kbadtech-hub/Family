@@ -29,6 +29,7 @@ interface Post {
   author_id: string;
   content: string;
   topic: string;
+  category?: string;
   heart_count: number;
   dislike_count: number;
   media_url: string | null;
@@ -76,7 +77,8 @@ export default function CommunityView({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [selectedTopic, setSelectedTopic] = useState('General');
+  const [selectedTopic, setSelectedTopic] = useState('general');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
   const [commentContent, setCommentContent] = useState('');
   const [postComments, setPostComments] = useState<Record<string, Comment[]>>({});
@@ -92,11 +94,16 @@ export default function CommunityView({
     const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       
-      const { data: postsData } = await supabase
+      let query = supabase
         .from('community_posts')
         .select('*, profiles(full_name, avatar_url, star_sign, is_verified, role)')
         .order('created_at', { ascending: false });
+
+      if (selectedCategory !== 'all') {
+        query = query.eq('category', selectedCategory);
+      }
       
+      const { data: postsData } = await query;
       if (postsData) setPosts(postsData as any[]);
 
       if (user) {
@@ -114,7 +121,7 @@ export default function CommunityView({
     };
 
     fetchData();
-  }, []);
+  }, [selectedCategory]);
 
   const fetchComments = async (postId: string) => {
     const { data } = await supabase
@@ -255,6 +262,7 @@ export default function CommunityView({
       author_id: user.id,
       content: newPostContent.trim(),
       topic: selectedTopic,
+      category: selectedTopic,
       media_url: mediaUrl,
       media_type: mediaType === 'none' && hasLinks ? 'link' : mediaType,
       is_approved: true
@@ -368,14 +376,19 @@ export default function CommunityView({
           </div>
           <form onSubmit={handlePostSubmit} className="w-full flex-1 space-y-4">
             <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-               {['Marriage', 'Parenting', 'Family Finance', 'General'].map(topic => (
+               {[
+                 { id: 'general', label: t('categories.all').replace('All Posts', 'General').replace('ሁሉም ፖስቶች', 'ጠቅላላ') },
+                 { id: 'success_story', label: t('categories.success_story') },
+                 { id: 'lesson_learned', label: t('categories.lesson_learned') },
+                 ...(isAdmin ? [{ id: 'expert_class', label: t('categories.expert_class') }] : [])
+               ].map(topic => (
                  <button
-                   key={topic}
+                   key={topic.id}
                    type="button"
-                   onClick={() => setSelectedTopic(topic)}
-                   className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border ${selectedTopic === topic ? 'bg-primary text-white border-primary shadow-lg' : 'bg-muted text-gray-500 border-border hover:border-primary/50'}`}
+                   onClick={() => setSelectedTopic(topic.id)}
+                   className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border ${selectedTopic === topic.id ? 'bg-primary text-white border-primary shadow-lg' : 'bg-muted text-gray-500 border-border hover:border-primary/50'}`}
                  >
-                    {t(`topics.${topic}`)}
+                    {topic.label}
                  </button>
                ))}
             </div>
@@ -515,6 +528,30 @@ export default function CommunityView({
         </div>
       </div>
 
+      {/* Category Filter Bar */}
+      <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar bg-card p-4 rounded-[2rem] border border-border shadow-sm">
+         {[
+           { id: 'all', label: t('categories.all'), icon: MessageCircle },
+           { id: 'success_story', label: t('categories.success_story'), icon: Heart },
+           { id: 'lesson_learned', label: t('categories.lesson_learned'), icon: Sparkles },
+           { id: 'expert_class', label: t('categories.expert_class'), icon: CheckCircle2 }
+         ].map((cat) => (
+            <button
+               key={cat.id}
+               type="button"
+               onClick={() => setSelectedCategory(cat.id)}
+               className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all border whitespace-nowrap ${
+                  selectedCategory === cat.id
+                     ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-105'
+                     : 'bg-muted text-gray-500 border-border hover:bg-muted/70'
+               }`}
+            >
+               <cat.icon size={16} className={selectedCategory === cat.id ? 'fill-white' : ''} />
+               {cat.label}
+            </button>
+         ))}
+      </div>
+
       <div className="space-y-4 md:space-y-6">
         {posts.map((post) => (
           <article key={post.id} className="bg-card p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-border shadow-sm hover:shadow-md transition-shadow group">
@@ -541,7 +578,12 @@ export default function CommunityView({
                     <div className="flex items-center gap-2 mt-1">
                        <p className="text-[10px] text-primary font-black uppercase tracking-widest">{post.profiles?.star_sign || t('memberBadge')}</p>
                        <span className="w-1 h-1 bg-border rounded-full" />
-                       <p className="text-[8px] bg-primary/5 text-primary px-2 py-0.5 rounded-full font-black uppercase tracking-widest">{t(`topics.${post.topic || 'General'}`)}</p>
+                       <p className="text-[8px] bg-primary/5 text-primary px-2 py-0.5 rounded-full font-black uppercase tracking-widest">
+                          {post.category === 'success_story' && t('categories.success_story')}
+                          {post.category === 'lesson_learned' && t('categories.lesson_learned')}
+                          {post.category === 'expert_class' && t('categories.expert_class')}
+                          {post.category !== 'success_story' && post.category !== 'lesson_learned' && post.category !== 'expert_class' && (t(`topics.${post.topic || 'General'}`) || 'General')}
+                       </p>
                     </div>
                   </div>
               </div>

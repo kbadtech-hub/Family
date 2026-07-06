@@ -139,7 +139,7 @@ export default function Home() {
             <div className="relative">
                <div className="w-full aspect-square rounded-[3rem] bg-white border border-border overflow-hidden shadow-sm flex items-center justify-center group relative">
                   <div className="absolute inset-0 bg-[#F8F4F1] opacity-50 transition-opacity group-hover:opacity-100" />
-                  <Heart size={120} className="text-primary/10 fill-primary/10 group-hover:fill-primary/20 transition-all duration-500 relative z-10" />
+                  <Heart size={120} className="text-primary animate-heart-burst relative z-10" />
                </div>
                <div className="absolute -bottom-8 -right-8 bg-[#0F172A] p-8 rounded-[2rem] text-white shadow-2xl">
                   <p className="text-4xl font-black text-primary italic">94%</p>
@@ -268,6 +268,38 @@ export default function Home() {
             <span className="text-8xl font-black tracking-tighter uppercase italic">{locale === 'am' ? 'ቤተሰብ' : 'BETESEB'}</span>
          </div>
       </section>
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes heart-pulse-burst {
+          0% {
+            transform: scale(0.9);
+            fill: rgba(199, 131, 88, 0.1);
+            opacity: 0.8;
+          }
+          50% {
+            transform: scale(1.15);
+            fill: rgba(199, 131, 88, 0.8);
+            opacity: 1;
+          }
+          90% {
+            transform: scale(1.4);
+            fill: rgba(199, 131, 88, 1);
+            opacity: 0.9;
+          }
+          95% {
+            transform: scale(1.6);
+            fill: rgba(199, 131, 88, 1);
+            opacity: 0;
+          }
+          100% {
+            transform: scale(0.9);
+            fill: rgba(199, 131, 88, 0.1);
+            opacity: 0.8;
+          }
+        }
+        .animate-heart-burst {
+          animation: heart-pulse-burst 4s infinite ease-in-out;
+        }
+      ` }} />
     </div>
   );
 }

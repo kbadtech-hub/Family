@@ -115,7 +115,10 @@ export default function AboutPage() {
           <div className="relative">
              <div className="w-full aspect-square bg-[#F5F2F0] rounded-[4rem] shadow-inner flex items-center justify-center overflow-hidden border border-gray-100">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--primary)_0%,_transparent_70%)] opacity-5" />
-                <Globe size={180} className="text-primary/10 relative z-10 animate-pulse" />
+                <div className="relative z-10 w-48 h-48 flex items-center justify-center animate-logo-spin-fade">
+                   <Heart size={120} className="text-primary fill-primary/20 relative" />
+                   <Heart size={60} className="text-[#0F172A] fill-[#0F172A] absolute translate-x-3 -translate-y-3 animate-pulse" />
+                </div>
              </div>
           </div>
         </div>
@@ -228,7 +231,25 @@ export default function AboutPage() {
             {t('ctaButton')} <ArrowRight className="group-hover:translate-x-3 transition-transform duration-500" size={24} />
          </Link>
       </section>
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes logo-spin-fade {
+          0% {
+            opacity: 0.15;
+            transform: scale(0.85) rotate(0deg);
+          }
+          50% {
+            opacity: 0.85;
+            transform: scale(1.05) rotate(180deg);
+          }
+          100% {
+            opacity: 0.15;
+            transform: scale(0.85) rotate(360deg);
+          }
+        }
+        .animate-logo-spin-fade {
+          animation: logo-spin-fade 10s infinite linear;
+        }
+      ` }} />
     </div>
   );
 }
-
