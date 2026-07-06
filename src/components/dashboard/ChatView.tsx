@@ -30,7 +30,8 @@ import {
   Sparkles,
   Loader2,
   Gift,
-  Lock
+  Lock,
+  Coins
 } from 'lucide-react';
 import Image from 'next/image';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -287,6 +288,18 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
           const msg = payload.new as Message;
           if (msg.sender_id === selectedMatch.id) {
             setMessages((prev) => [...prev, msg]);
+            
+            // Auto-refresh coin balance if it contains coin symbol
+            if (msg.content.includes('🪙')) {
+              supabase
+                .from('user_wallets')
+                .select('coin_balance')
+                .eq('id', currentUser.id)
+                .single()
+                .then(({ data }) => {
+                  if (data) setCoinBalance(Number(data.coin_balance));
+                });
+            }
           }
         }
       )
@@ -576,6 +589,97 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
     }
   };
 
+  const handleSendCoins = async () => {
+    if (!currentUser || !selectedMatch) return;
+    const amountStr = prompt(locale === 'am' 
+      ? "ለመላክ የሚፈልጉትን የሳንቲም (Coins) መጠን ያስገቡ፦" 
+      : "Enter the number of coins you want to send:");
+    if (!amountStr) return;
+    const amount = parseInt(amountStr, 10);
+    if (isNaN(amount) || amount <= 0) {
+      alert(locale === 'am' ? "እባክዎ ትክክለኛ ቁጥር ያስገቡ" : "Please enter a valid amount");
+      return;
+    }
+
+    if (coinBalance < amount) {
+      alert(locale === 'am' 
+        ? `በቂ ሳንቲም የለዎትም። የእርስዎ ቀሪ ሳንቲም፡ ${coinBalance} ነው` 
+        : `Insufficient coins. Your current balance is ${coinBalance}`);
+      return;
+    }
+
+    const { error: debitError } = await supabase
+      .from('coin_transactions')
+      .insert({
+        user_id: currentUser.id,
+        amount: -amount,
+        type: 'gift_send'
+      });
+
+    if (debitError) {
+      alert("Deduction failed: " + debitError.message);
+      return;
+    }
+
+    const { error: creditError } = await supabase
+      .from('coin_transactions')
+      .insert({
+        user_id: selectedMatch.id,
+        amount: amount,
+        type: 'gift_receive'
+      });
+
+    if (creditError) {
+      alert("Transfer failed: " + creditError.message);
+      return;
+    }
+
+    setCoinBalance(prev => prev - amount);
+
+    const transferMessage = locale === 'am'
+      ? `🪙 ${amount} የቤተሰብ ሳንቲሞችን ልኬልሃለሁ/ልኬልሻለሁ!`
+      : `🪙 Sent you ${amount} Beteseb Coins!`;
+
+    const { data: msgData, error: msgError } = await supabase
+      .from('messages')
+      .insert({
+        sender_id: currentUser.id,
+        receiver_id: selectedMatch.id,
+        content: transferMessage
+      })
+      .select()
+      .single();
+
+    if (!msgError && msgData) {
+      setMessages((prev) => [...prev, msgData]);
+    }
+
+    alert(locale === 'am' ? `${amount} ሳንቲም በተሳካ ሁኔታ ተልኳል!` : `Successfully sent ${amount} coins!`);
+  };
+
+  const handleRequestCoins = async () => {
+    if (!currentUser || !selectedMatch) return;
+    const requestMessage = locale === 'am'
+      ? `👋 እባክህ/እባክሽ ቴክስት መመለሻ ኮይን አልቆብኛል፤ የተወሰነ ኮይን ላክልኝ/ላኪልኝ! 🪙`
+      : `👋 I have run out of coins to reply. Please send me some coins! 🪙`;
+
+    const { data: msgData, error: msgError } = await supabase
+      .from('messages')
+      .insert({
+        sender_id: currentUser.id,
+        receiver_id: selectedMatch.id,
+        content: requestMessage
+      })
+      .select()
+      .single();
+
+    if (!msgError && msgData) {
+      setMessages((prev) => [...prev, msgData]);
+    }
+
+    alert(locale === 'am' ? "የኮይን መጠየቂያ መልዕክት ተልኳል!" : "Coin request sent!");
+  };
+
   const handleFriendRequest = async (requestId: string, status: 'accepted' | 'rejected') => {
     const { error } = await supabase
       .from('friendships')
@@ -778,6 +882,14 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                   <Gift size={20} />
                 </button>
                 <button 
+                  onClick={handleSendCoins}
+                  aria-label="Send coins" 
+                  className="hover:text-primary transition-colors text-amber-500"
+                  title={locale === 'am' ? 'ኮይን ላክ' : 'Send Coins'}
+                >
+                  <Coins size={20} />
+                </button>
+                <button 
                   onClick={() => {
                     setIsCallVideo(false);
                     setActiveCallMatch(selectedMatch);
@@ -825,6 +937,13 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                         className="w-full text-left px-5 py-3 hover:bg-muted text-xs font-bold text-red-600 flex items-center gap-2 border-t border-muted"
                       >
                         🚫 {locale === 'am' ? 'አግድ (Block)' : 'Block User'}
+                      </button>
+                      <button 
+                        onClick={() => { handleRequestCoins(); setShowMenu(false); }}
+                        className="w-full text-left px-5 py-3 hover:bg-muted text-xs font-bold text-amber-600 flex items-center gap-2 border-t border-muted"
+                        title={locale === 'am' ? 'ኮይን ጠይቅ' : 'Request Coins'}
+                      >
+                        🪙 {locale === 'am' ? 'ኮይን ጠይቅ (Request)' : 'Request Coins'}
                       </button>
                     </div>
                   )}
