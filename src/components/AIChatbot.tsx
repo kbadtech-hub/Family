@@ -53,10 +53,11 @@ export default function AIChatbot() {
 
     setTimeout(async () => {
       try {
+        const { data: { user } } = await supabase.auth.getUser();
         const res = await fetch('/api/ai/chat', {
            method: 'POST',
            headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({ message: trimmedInput, locale })
+           body: JSON.stringify({ message: trimmedInput, locale, userId: user?.id || null })
         });
         const data = await res.json();
         setMessages(prev => [...prev, { role: 'bot' as const, text: data.text || FAQ_RESPONSES['default'] }]);

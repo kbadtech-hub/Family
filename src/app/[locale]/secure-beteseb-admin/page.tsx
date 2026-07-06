@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { queueSMS } from '@/lib/sms';
 import { translator } from '../../../lib/translator';
@@ -157,6 +158,8 @@ interface ChatMessage {
 }
 
 export default function AdminPortal() {
+  const params = useParams();
+  const locale = params?.locale as string || 'en';
   const [activeTab, setActiveTab] = useState('cms');
   const [settings, setSettings] = useState<SystemSettings | null>(null);
   const [supportTickets, setSupportTickets] = useState<SupportTicket[]>([]);
@@ -603,6 +606,17 @@ export default function AdminPortal() {
       }]);
 
       if (replyErr) throw replyErr;
+
+      // 3. Save to resolved_kb for AI Chatbot Self-learning
+      const ticket = supportTickets.find(t => t.id === id);
+      if (ticket) {
+        await supabase.from('resolved_kb').insert([{
+          ticket_id: id,
+          question: ticket.message,
+          solution: message,
+          locale: locale || 'en'
+        }]);
+      }
 
       setSupportTickets(prev => prev.map(t => t.id === id ? { ...t, status: 'resolved' } : t));
       alert('Response sent successfully!');
