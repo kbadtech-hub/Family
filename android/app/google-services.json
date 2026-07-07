@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "258779403605",
+    "project_id": "beteseb-89bae",
+    "storage_bucket": "beteseb-89bae.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:258779403605:android:60895c31c03575561ecbdc",
+        "android_client_info": {
+          "package_name": "com.beteseb.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBd8MZqNCqSsmI11DPfDhrg4lITvOwT5mc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
