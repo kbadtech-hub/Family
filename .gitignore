@@ -34,3 +34,7 @@ yarn-error.log*
 
 # Supabase
 .supabase/
+
+# Firebase configuration files
+android/app/google-services.json
+ios/App/App/GoogleService-Info.plist

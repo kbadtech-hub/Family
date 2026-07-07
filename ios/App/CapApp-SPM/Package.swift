@@ -11,14 +11,26 @@ let package = Package(
             targets: ["CapApp-SPM"])
     ],
     dependencies: [
-        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", exact: "8.4.0")
+        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", exact: "8.4.0"),
+        .package(name: "CapacitorFirebaseAnalytics", path: "..\..\..\node_modules\@capacitor-firebase\analytics"),
+        .package(name: "CapacitorFirebaseApp", path: "..\..\..\node_modules\@capacitor-firebase\app"),
+        .package(name: "CapacitorFirebaseCrashlytics", path: "..\..\..\node_modules\@capacitor-firebase\crashlytics"),
+        .package(name: "CapacitorFirebaseMessaging", path: "..\..\..\node_modules\@capacitor-firebase\messaging"),
+        .package(name: "CapacitorDevice", path: "..\..\..\node_modules\@capacitor\device"),
+        .package(name: "CapacitorPushNotifications", path: "..\..\..\node_modules\@capacitor\push-notifications")
     ],
     targets: [
         .target(
             name: "CapApp-SPM",
             dependencies: [
                 .product(name: "Capacitor", package: "capacitor-swift-pm"),
-                .product(name: "Cordova", package: "capacitor-swift-pm")
+                .product(name: "Cordova", package: "capacitor-swift-pm"),
+                .product(name: "CapacitorFirebaseAnalytics", package: "CapacitorFirebaseAnalytics"),
+                .product(name: "CapacitorFirebaseApp", package: "CapacitorFirebaseApp"),
+                .product(name: "CapacitorFirebaseCrashlytics", package: "CapacitorFirebaseCrashlytics"),
+                .product(name: "CapacitorFirebaseMessaging", package: "CapacitorFirebaseMessaging"),
+                .product(name: "CapacitorDevice", package: "CapacitorDevice"),
+                .product(name: "CapacitorPushNotifications", package: "CapacitorPushNotifications")
             ]
         )
     ]
