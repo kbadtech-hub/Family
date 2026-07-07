@@ -3,6 +3,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Session, User } from '@supabase/supabase-js';
+import { setUserProperties, trackLogin } from '@/lib/firebase-analytics';
+import { setCrashlyticsUser } from '@/lib/firebase-crashlytics';
+import { unregisterPushNotifications } from '@/lib/push-notifications';
 
 interface AuthContextType {
   user: User | null;
@@ -34,6 +37,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       setIsLoading(false);
+
+      if (_event === 'SIGNED_IN' && session?.user) {
+        // Track login in Firebase Analytics
+        trackLogin('email').catch(() => {});
+        // Set user identity in Crashlytics
+        setCrashlyticsUser(session.user.id).catch(() => {});
+        // Set user properties for segmentation
+        setUserProperties(session.user.id, 'free', session.user.user_metadata?.country || 'ET').catch(() => {});
+      } else if (_event === 'SIGNED_OUT') {
+        // Clean up FCM tokens on logout
+        unregisterPushNotifications().catch(() => {});
+      }
     });
 
     return () => {

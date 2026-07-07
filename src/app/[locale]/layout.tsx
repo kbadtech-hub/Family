@@ -12,6 +12,7 @@ import SubscriptionObserver from "@/components/SubscriptionObserver";
 import AnimatedSplashScreen from "@/components/AnimatedSplashScreen";
 import ZoomBlocker from "@/components/ZoomBlocker";
 import PrivacyBlurOverlay from "@/components/PrivacyBlurOverlay";
+import FirebaseProvider from "@/components/FirebaseProvider";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -61,6 +62,7 @@ export default async function LocaleLayout({
       </head>
       <body className={`min-h-screen bg-white dark:bg-accent ${locale === 'ar' ? 'font-arabic' : 'font-sans'} flex flex-col transition-colors duration-500`}>
         <NextIntlClientProvider messages={messages}>
+          <FirebaseProvider>
           <AuthProvider>
             <UIProvider>
               <ConditionalLayout>
@@ -73,6 +75,7 @@ export default async function LocaleLayout({
               </ConditionalLayout>
             </UIProvider>
           </AuthProvider>
+          </FirebaseProvider>
         </NextIntlClientProvider>
       </body>
     </html>
