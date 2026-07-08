@@ -120,6 +120,19 @@ function LoginContent() {
       }
 
       if (data.user) {
+        // Capture login location (for VPN/geo verification)
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+              await supabase.from('profiles').update({
+                last_login_location: { lat: pos.coords.latitude, lng: pos.coords.longitude },
+                last_login_at: new Date().toISOString()
+              }).eq('id', data.user!.id);
+            },
+            () => { /* non-blocking if denied */ },
+            { timeout: 5000 }
+          );
+        }
         // Direct redirect to dashboard
         window.location.href = `/${locale}/dashboard`;
       }

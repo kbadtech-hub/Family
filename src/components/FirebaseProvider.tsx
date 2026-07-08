@@ -50,6 +50,10 @@ async function initFirebaseServices() {
     const { registerPushNotifications } = await import('@/lib/push-notifications');
     await registerPushNotifications();
 
+    // 5. Initialize AdMob (Native only)
+    const { initializeAdMob } = await import('@/lib/ads');
+    await initializeAdMob();
+
     console.log('[Firebase] All services initialized.');
   } catch (e) {
     console.warn('[Firebase] Service initialization warning:', e);

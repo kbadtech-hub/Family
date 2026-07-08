@@ -81,6 +81,28 @@ function SignupContent() {
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const [toast, setToast] = useState<{ message: string; show: boolean }>({ message: '', show: false });
 
+  // Location Access State (required for registration)
+  const [locationStatus, setLocationStatus] = useState<'idle' | 'requesting' | 'granted' | 'denied'>('idle');
+  const [locationCoords, setLocationCoords] = useState<{lat: number; lng: number} | null>(null);
+
+  const requestLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationStatus('denied');
+      return;
+    }
+    setLocationStatus('requesting');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocationCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLocationStatus('granted');
+      },
+      () => {
+        setLocationStatus('denied');
+      },
+      { timeout: 10000, enableHighAccuracy: false }
+    );
+  };
+
   // EULA & Age Checkboxes (v3.5 compliance)
   const [confirmAge, setConfirmAge] = useState(false);
   const [agreedToEula, setAgreedToEula] = useState(false);
@@ -151,6 +173,10 @@ function SignupContent() {
   const selectSignupMethod = (method: 'google' | 'facebook' | 'apple' | 'phone' | 'email') => {
     console.log("selectSignupMethod called with:", method);
     localStorage.setItem('beteseb_eula_accepted', 'true');
+    // Request location first if not yet granted
+    if (locationStatus !== 'granted') {
+      requestLocation();
+    }
     if (method === 'phone' || method === 'email') {
       setView(method);
     } else {
@@ -242,7 +268,8 @@ function SignupContent() {
                   birth_date: birthDate,
                   is_onboarded: false,
                   verification_status: 'unverified',
-                  pref_location: searchParams.get('pref_location') || 'Local'
+                  pref_location: searchParams.get('pref_location') || 'Local',
+                  registration_location: locationCoords ? { lat: locationCoords.lat, lng: locationCoords.lng } : null
                 }
               }
             }
@@ -255,8 +282,10 @@ function SignupContent() {
                   birth_date: birthDate,
                   is_onboarded: false,
                   verification_status: 'unverified',
-                  pref_location: searchParams.get('pref_location') || 'Local'
+                  pref_location: searchParams.get('pref_location') || 'Local',
+                  registration_location: locationCoords ? { lat: locationCoords.lat, lng: locationCoords.lng } : null
                 }
+              }
               }
             }
       );
@@ -358,7 +387,29 @@ function SignupContent() {
                 <p className="font-medium leading-relaxed">{toast.message}</p>
               </div>
             )}
-
+            {/* Location Status Banner */}
+            {locationStatus === 'requesting' && (
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded-2xl flex items-center gap-3 text-blue-700 text-xs animate-in fade-in slide-in-from-top-2">
+                <Loader2 size={16} className="animate-spin flex-shrink-0" />
+                <span className="font-bold">{locale === 'am' ? '📍 ቦታዎን በማወቅ ላይ...' : '📍 Detecting your location...'}</span>
+              </div>
+            )}
+            {locationStatus === 'granted' && (
+              <div className="mb-4 p-3 bg-green-50 border border-green-100 rounded-2xl flex items-center gap-3 text-green-700 text-xs animate-in fade-in">
+                <CheckCircle2 size={16} className="flex-shrink-0" />
+                <span className="font-bold">{locale === 'am' ? '✅ ቦታ ተረጋግጧል' : '✅ Location verified'}</span>
+              </div>
+            )}
+            {locationStatus === 'denied' && (
+              <div className="mb-4 p-3 bg-amber-50 border border-amber-100 rounded-2xl flex items-start gap-3 text-amber-800 text-xs animate-in fade-in">
+                <span className="text-sm flex-shrink-0">⚠️</span>
+                <div>
+                  <p className="font-bold">{locale === 'am' ? 'ቦታ ፍቃድ አልተሰጠም' : 'Location permission denied'}</p>
+                  <p className="text-amber-600 mt-0.5">{locale === 'am' ? 'የቦታ ሎኬሽን ሳይረጋገጥ ምዝገባ ሊቆም ይችላል።' : 'Registration may be limited without location access.'}</p>
+                  <button onClick={requestLocation} className="mt-1 text-primary font-bold underline">{locale === 'am' ? 'ደግሞ ሞክር' : 'Try again'}</button>
+                </div>
+              </div>
+            )}
 
             {view === 'initial' ? (
               <div className="space-y-6">

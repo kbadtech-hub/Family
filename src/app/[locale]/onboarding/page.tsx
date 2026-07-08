@@ -157,6 +157,9 @@ function OnboardingContent() {
   const [hasChildren, setHasChildren] = useState(false);
   const [childrenCount, setChildrenCount] = useState('1');
 
+  // Location permission request for onboarding
+  const [geoRequested, setGeoRequested] = useState(false);
+
   // Custom Partner Preference overrides (Phase 4.5)
   const [showCustomPartnerReligion, setShowCustomPartnerReligion] = useState(false);
   const [customPartnerReligion, setCustomPartnerReligion] = useState('');
@@ -385,7 +388,26 @@ function OnboardingContent() {
     if (stepParam) {
       setStep(parseInt(stepParam));
     }
-  }, [searchParams, router]);
+
+    // Request location permission on onboarding start
+    if (!geoRequested && navigator.geolocation) {
+      setGeoRequested(true);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          // Location captured - save to profile if user exists
+          supabase.auth.getUser().then(({ data: { user } }) => {
+            if (user) {
+              supabase.from('profiles').update({
+                registration_location: { lat: pos.coords.latitude, lng: pos.coords.longitude }
+              }).eq('id', user.id);
+            }
+          });
+        },
+        () => { /* User denied - non-blocking */ },
+        { timeout: 8000 }
+      );
+    }
+  }, [searchParams, router, geoRequested]);
 
   useEffect(() => {
     if (selectedCountry && selectedCountry !== 'Others' && !locationData[selectedCountry]) {
@@ -633,8 +655,8 @@ function OnboardingContent() {
                   {(formData.gender === 'Female' ? MARITAL_STATUS_FEMALE : MARITAL_STATUS_MALE).map(s => <option key={s} value={s}>{t_const(`Marital.${s}`)}</option>)}
                 </select>
 
-                <select value={formData.future_children} aria-label={t('fields.futureChildren') || t('fields.partnerIntent')} onChange={(e) => updateField('future_children', e.target.value)} className="p-3 bg-muted rounded-xl font-bold text-xs">
-                  <option value="">{t('fields.futureChildren') || t('fields.partnerIntent')}</option>
+                <select value={formData.future_children} aria-label={locale === 'am' ? 'ወደፊት ልጆች' : 'Future Children Plan'} onChange={(e) => updateField('future_children', e.target.value)} className="p-3 bg-muted rounded-xl font-bold text-xs">
+                  <option value="">{locale === 'am' ? 'ወደፊት ልጆች' : 'Future Children'}</option>
                   {FUTURE_CHILDREN_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`FutureChildren.${o}`)}</option>)}
                 </select>
 

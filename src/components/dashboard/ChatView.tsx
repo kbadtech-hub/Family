@@ -90,6 +90,8 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
   const [coinBalance, setCoinBalance] = useState(0);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [upgradeModalText, setUpgradeModalText] = useState('');
+  const [showLimitModal, setShowLimitModal] = useState(false);
+  const [pendingMessageSend, setPendingMessageSend] = useState<(() => Promise<void>) | null>(null);
 
   // Privacy Telemetry & Safe Space States (Phase 4.5)
   const [telemetry, setTelemetry] = useState<any>(null);
@@ -105,6 +107,9 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
   const [isWaliCallActive, setIsWaliCallActive] = useState(false);
   const [waliMicOn, setWaliMicOn] = useState(true);
   const [waliVideoOn, setWaliVideoOn] = useState(true);
+
+  const userTier = getUserTier(userProfile, hasVouchedRecords);
+  const limits = getTierLimits(userTier);
 
   useEffect(() => {
     if (!activeWaliRoomId || !showWaliModal) return;
@@ -486,9 +491,94 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
     setShowUpgradeModal(true);
   };
 
+  const handleBypassWithCoins = async () => {
+    if (!currentUser || coinBalance < 10) return;
+    try {
+      const { error: debitError } = await supabase
+        .from('coin_transactions')
+        .insert({
+          user_id: currentUser.id,
+          amount: -10,
+          type: 'gift_send', // spend
+          note: 'Limit break bypass'
+        });
+
+      if (!debitError) {
+        setCoinBalance(prev => prev - 10);
+        setShowLimitModal(false);
+        if (pendingMessageSend) {
+          await pendingMessageSend();
+          setPendingMessageSend(null);
+        }
+      } else {
+        alert("Coin transaction failed: " + debitError.message);
+      }
+    } catch (e: any) {
+      alert("Error: " + e.message);
+    }
+  };
+
+  const handleWatchAdBypass = async () => {
+    if (!currentUser) return;
+    try {
+      const { showRewardedAd } = await import('@/lib/ads');
+      await showRewardedAd(
+        currentUser.id,
+        async (rewardAmount) => {
+          // Grant 20 coins reward
+          const { error: creditError } = await supabase
+            .from('coin_transactions')
+            .insert({
+              user_id: currentUser.id,
+              amount: 20,
+              type: 'admin_adjustment',
+              note: 'Rewarded Ad: Limit extension reward'
+            });
+
+          if (!creditError) {
+            setCoinBalance(prev => prev + 20);
+            alert(locale === 'am' 
+              ? "ማስታወቂያውን ስለተመለከቱ 20 ሳንቲም ተሸልመዋል! መልእክትዎ አሁን ይላካል።"
+              : "You earned 20 coins for watching the ad! Your message is being sent.");
+
+            // Deduct 10 coins to auto-send the pending message
+            const { error: debitError } = await supabase
+              .from('coin_transactions')
+              .insert({
+                user_id: currentUser.id,
+                amount: -10,
+                type: 'gift_send',
+                note: 'Limit break bypass (ad funded)'
+              });
+
+            if (!debitError) {
+              setCoinBalance(prev => prev - 10);
+              setShowLimitModal(false);
+              if (pendingMessageSend) {
+                await pendingMessageSend();
+                setPendingMessageSend(null);
+              }
+            }
+          } else {
+            alert("Failed to grant ad reward: " + creditError.message);
+          }
+        },
+        () => {
+          alert(locale === 'am' 
+            ? "ማስታወቂያውን ሳያጠናቅቁ ዘለሉት። ሳንቲም ለማግኘት እባክዎ ቪዲዮውን ያጠናቅቁ።"
+            : "You skipped the ad. Watch the full ad to earn the reward.");
+        }
+      );
+    } catch (e: any) {
+      alert("Error triggering ad: " + e.message);
+    }
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !selectedMatch || !currentUser) return;
+
+    const messageContent = newMessage.trim();
 
     // Tiers & Daily Action Limits (Beteseb v3.6)
     const userTier = getUserTier(userProfile, hasVouchedRecords);
@@ -501,8 +591,6 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
       return;
     }
 
-    let bypassWithCoins = false;
-
     if (limits.maxTexts !== Infinity) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -513,43 +601,23 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
         .gte('created_at', today.toISOString());
 
       if (!countError && count !== null && count >= limits.maxTexts) {
-        // Limit reached. Offer bypass with coins (10 coins)
-        if (coinBalance >= 10) {
-          const confirmSpend = confirm(locale === 'am'
-            ? `የዕለቱ የ${limits.maxTexts} መልእክቶች ገደብዎ አልቋል። 10 የቤተሰብ ሳንቲም በመጠቀም ይህን መልእክት መላክ ይፈልጋሉ?`
-            : `You have reached your daily limit of ${limits.maxTexts} texts. Spend 10 Beteseb Coins to send this message?`);
-          
-          if (confirmSpend) {
-            // Deduct coins
-            const { error: debitError } = await supabase
-              .from('coin_transactions')
-              .insert({
-                user_id: currentUser.id,
-                amount: -10,
-                type: 'gift_send' // spend
-              });
-            
-            if (!debitError) {
-              setCoinBalance(prev => prev - 10);
-              bypassWithCoins = true;
-            } else {
-              alert("Coin transaction failed: " + debitError.message);
-              return;
-            }
-          } else {
-            // Cancel and show upgrade prompt
-            showUpgradePromptForTier(userTier);
-            return;
+        // Save the pending send action to execute after bypass succeeds
+        setPendingMessageSend(() => async () => {
+          const msgData = {
+            sender_id: currentUser.id,
+            receiver_id: selectedMatch.id,
+            content: messageContent,
+          };
+          const { data, error } = await supabase.from('messages').insert(msgData).select().single();
+          if (!error && data) {
+            setMessages((prev) => [...prev, data]);
+            setNewMessage('');
           }
-        } else {
-          // No coins, show upgrade prompt directly
-          showUpgradePromptForTier(userTier);
-          return;
-        }
+        });
+        setShowLimitModal(true);
+        return;
       }
     }
-
-    const messageContent = newMessage.trim();
 
     // 1. Strict Phone & Email Sharing Block (Permanent Security Rule)
     const phoneRegex = /(?:\+?251|\b0)[\s-]*[97](?:[\s-]*\d){8}\b/;
