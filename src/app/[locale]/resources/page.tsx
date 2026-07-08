@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useTranslations } from 'next-intl';
-import { BookOpen, Clock, ArrowRight, Sparkles, Filter, Search } from 'lucide-react';
+import { useTranslations, useLocale } from 'next-intl';
+import { Link } from '@/i18n/routing';
+import { BookOpen, Clock, ArrowRight, Sparkles, Filter, Search, ArrowLeft } from 'lucide-react';
 import YouTubeEmbed from '@/components/YouTubeEmbed';
 
 interface Post {
@@ -18,6 +19,7 @@ interface Post {
 
 export default function ResourcesPage() {
   const t = useTranslations('Resources');
+  const locale = useLocale();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -49,8 +51,15 @@ export default function ResourcesPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] pb-20">
+      {/* Back to Home */}
+      <div className="max-w-7xl mx-auto px-6 pt-6">
+        <Link href="/" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-accent hover:text-primary transition-colors group">
+          <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+          {locale === 'am' ? 'ወደ መነሻ ገጽ ተመለስ' : 'Back to Home'}
+        </Link>
+      </div>
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 overflow-hidden">
+      <section className="relative pt-16 pb-20 overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-gradient-to-b from-primary/10 to-transparent -z-10 blur-3xl opacity-50" />
         <div className="container mx-auto px-6 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-sm border border-primary/10 text-primary font-bold text-xs uppercase tracking-widest mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
