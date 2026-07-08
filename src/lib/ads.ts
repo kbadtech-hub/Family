@@ -46,7 +46,11 @@ export async function initializeAdMob() {
   try {
     const { AdMob } = await import('@capacitor-community/admob');
     await AdMob.initialize({
-      requestTrackingAuthorization: true,
+      // requestTrackingAuthorization is an iOS-only option for ATT prompt
+      // Cast to any to allow it without strict typing errors
+      ...({
+        requestTrackingAuthorization: true,
+      } as any),
       testingDevices: [], // Add developer device IDs here if needed
       initializeForTesting: true, // Set true to load test ads during development
     });
@@ -101,28 +105,28 @@ async function showNativeRewardedAd(
     let rewardEarned = false;
 
     // Listen for completion / reward event
-    const rewardListener = AdMob.addListener(RewardAdPluginEvents.Rewarded, (reward) => {
+    const rewardListener = await AdMob.addListener(RewardAdPluginEvents.Rewarded, (reward) => {
       console.log('[AdMob] Native reward earned:', reward);
       rewardEarned = true;
       onRewardGranted(reward.amount || 1);
     });
 
     // Listen for ad dismissal / close
-    const dismissListener = AdMob.addListener(RewardAdPluginEvents.Dismissed, () => {
+    const dismissListener = await AdMob.addListener(RewardAdPluginEvents.Dismissed, async () => {
       console.log('[AdMob] Native ad dismissed.');
-      rewardListener.remove();
-      dismissListener.remove();
+      await rewardListener.remove();
+      await dismissListener.remove();
       if (!rewardEarned && onAdClosedOrFailed) {
         onAdClosedOrFailed();
       }
     });
 
     // Listen for failure to show
-    const failedListener = AdMob.addListener(RewardAdPluginEvents.FailedToShow, () => {
+    const failedListener = await AdMob.addListener(RewardAdPluginEvents.FailedToShow, async () => {
       console.warn('[AdMob] Native ad failed to show.');
-      rewardListener.remove();
-      dismissListener.remove();
-      failedListener.remove();
+      await rewardListener.remove();
+      await dismissListener.remove();
+      await failedListener.remove();
       if (onAdClosedOrFailed) onAdClosedOrFailed();
     });
 
