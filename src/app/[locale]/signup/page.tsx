@@ -286,7 +286,6 @@ function SignupContent() {
                   registration_location: locationCoords ? { lat: locationCoords.lat, lng: locationCoords.lng } : null
                 }
               }
-              }
             }
       );
 
