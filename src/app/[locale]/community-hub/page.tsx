@@ -3,7 +3,7 @@
 import React from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/routing';
-import { Users, Heart, Sparkles, MessageCircle, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Users, Heart, Sparkles, MessageCircle, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 
 export default function CommunityHubPage() {
@@ -11,25 +11,15 @@ export default function CommunityHubPage() {
   const locale = useLocale();
 
   return (
-    <div className="min-h-screen bg-background" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
-      {/* Back to Home Bar */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Link 
-            href="/" 
-            className="flex items-center gap-2 text-primary hover:text-primary/80 font-bold text-xs uppercase tracking-widest transition-all group"
-          >
-            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-            {locale === 'am' ? 'ወደ ቤት ተመለስ' : 'Back to Home'}
-          </Link>
-          <span className="text-gray-200">|</span>
-          <span className="text-gray-400 text-xs font-semibold">
-            {locale === 'am' ? 'ማህበረሰብ ማዕከል' : 'Community Hub'}
-          </span>
-        </div>
+    <div className="bg-[#FDFBF9] min-h-screen pb-20" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+      <div className="max-w-7xl mx-auto px-6 pt-10">
+        <Link href="/" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-accent hover:text-primary transition-colors">
+          ← {locale === 'am' ? 'ወደ መነሻ ገጽ ተመለስ' : 'Back to Home'}
+        </Link>
       </div>
+
       {/* Hero Section */}
-      <section className="relative pt-32 pb-32 overflow-hidden">
+      <section className="relative pt-20 pb-32 overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 opacity-30">
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-secondary/20 to-transparent" />
         </div>
