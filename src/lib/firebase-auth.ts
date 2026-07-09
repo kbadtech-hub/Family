@@ -251,6 +251,12 @@ function translateFirebaseError(code: string): string {
       return 'Invalid verification code. Please check and try again.';
     case 'auth/code-expired':
       return 'The verification code has expired. Please request a new one.';
+    case 'auth/unauthorized-domain':
+      return 'This domain or IP address is not authorized in your Firebase Console under Authorized Domains.';
+    case 'auth/too-many-requests':
+      return 'Too many SMS requests sent. Please wait a few minutes before trying again.';
+    case 'auth/invalid-phone-number':
+      return 'Invalid phone number format. Please check the number and try again.';
     default:
       return 'Authentication failed. Please try again.';
   }
@@ -309,8 +315,16 @@ export function setupRecaptcha(containerId: string): RecaptchaVerifier | null {
   if (!auth) return null;
 
   try {
+    const element = document.getElementById(containerId);
+    if (!element) {
+      console.warn(`[FirebaseAuth] reCAPTCHA container element #${containerId} not found in DOM.`);
+      return null;
+    }
+    // Clean up any previous reCAPTCHA widget renderings in this container
+    element.innerHTML = '';
+
     // Renders an invisible reCAPTCHA in the designated HTML element
-    return new RecaptchaVerifier(auth, containerId, {
+    return new RecaptchaVerifier(auth, element, {
       size: 'invisible',
       callback: () => {
         // reCAPTCHA solved — allows phone auth to proceed

@@ -178,14 +178,19 @@ function LoginContent() {
 
         router.push(result.isNewUser ? '/onboarding' : '/dashboard');
       } else if (view === 'phone') {
-        const { sendPhoneOtp, confirmPhoneOtp } = await import('@/lib/firebase-auth');
+        const { sendPhoneOtp, confirmPhoneOtp, setupRecaptcha } = await import('@/lib/firebase-auth');
         
         if (!isOtpSent) {
-          if (!recaptchaVerifier) {
-            throw new Error('reCAPTCHA verification is loading. Please try again.');
+          let verifier = recaptchaVerifier;
+          if (!verifier) {
+            verifier = setupRecaptcha('recaptcha-container');
+            if (verifier) setRecaptchaVerifier(verifier);
+          }
+          if (!verifier) {
+            throw new Error('reCAPTCHA verification failed to initialize. Please check your internet connection.');
           }
           const fullPhoneNumber = `${countryCode}${phone}`;
-          const res = await sendPhoneOtp(fullPhoneNumber, recaptchaVerifier);
+          const res = await sendPhoneOtp(fullPhoneNumber, verifier);
           
           if (!res.success || !res.confirmationResult) {
             setError(res.error || 'Failed to send OTP. Please check the number.');
@@ -219,14 +224,19 @@ function LoginContent() {
     setError('');
 
     try {
-      const { sendPhoneOtp, linkPhoneWithCurrentUser } = await import('@/lib/firebase-auth');
+      const { sendPhoneOtp, linkPhoneWithCurrentUser, setupRecaptcha } = await import('@/lib/firebase-auth');
 
       if (!isGateOtpSent) {
-        if (!recaptchaVerifier) {
-          throw new Error('reCAPTCHA is loading. Please try again.');
+        let verifier = recaptchaVerifier;
+        if (!verifier) {
+          verifier = setupRecaptcha('recaptcha-container');
+          if (verifier) setRecaptchaVerifier(verifier);
+        }
+        if (!verifier) {
+          throw new Error('reCAPTCHA verification failed to initialize. Please check your internet connection.');
         }
         const fullPhoneNumber = `${gateCountryCode}${gatePhone}`;
-        const res = await sendPhoneOtp(fullPhoneNumber, recaptchaVerifier);
+        const res = await sendPhoneOtp(fullPhoneNumber, verifier);
 
         if (!res.success || !res.confirmationResult) {
           setError(res.error || 'Failed to send OTP.');
