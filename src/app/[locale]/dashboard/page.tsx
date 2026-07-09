@@ -191,6 +191,10 @@ function DashboardContent() {
       // 1. Fetch Profile
       const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
       if (profileData) {
+        if (!profileData.onboarding_completed) {
+          router.push('/onboarding');
+          return;
+        }
         // Fetch coin balance from user_wallets (Blueprint v4.0)
         const { data: walletData } = await supabase.from('user_wallets').select('coin_balance').eq('id', user.id).single();
         const coins = walletData ? Number(walletData.coin_balance) : 0;

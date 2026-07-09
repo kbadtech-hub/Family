@@ -43,9 +43,38 @@ export async function GET(request: NextRequest) {
       }
     )
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     
-    if (!error) {
+    if (!error && data?.user) {
+      const userId = data.user.id;
+      
+      // Query profiles table to see if the user completed onboarding
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('onboarding_completed')
+        .eq('id', userId)
+        .single();
+
+      if (profile && !profile.onboarding_completed) {
+        const onboardingUrl = `${redirectBase}/${locale}/onboarding`;
+        const onboardingResponse = NextResponse.redirect(onboardingUrl);
+
+        // Copy cookies to the new onboarding response
+        request.cookies.getAll().forEach(cookie => {
+          onboardingResponse.cookies.set(cookie.name, cookie.value);
+        });
+        response.cookies.getAll().forEach(cookie => {
+          onboardingResponse.cookies.set(cookie.name, cookie.value, {
+            path: cookie.path,
+            domain: cookie.domain,
+            secure: cookie.secure,
+            httpOnly: cookie.httpOnly,
+            sameSite: cookie.sameSite
+          });
+        });
+        return onboardingResponse;
+      }
+      
       return response
     }
     
