@@ -39,11 +39,6 @@ export default function AboutPage() {
 
   return (
     <div className="bg-[#FDFBF9] min-h-screen pb-20">
-      <div className="max-w-7xl mx-auto px-6 pt-10">
-        <Link href="/" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-accent hover:text-primary transition-colors">
-          ← {locale === 'am' ? 'ወደ መነሻ ገጽ ተመለስ' : 'Back to Home'}
-        </Link>
-      </div>
       {/* Hero Section */}
       <section className="py-32 px-6 flex flex-col items-center text-center space-y-8 bg-[radial-gradient(circle_at_top,_var(--secondary)_0%,_transparent_50%)] bg-opacity-10 relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-gradient-to-b from-primary/5 to-transparent -z-10 blur-3xl opacity-50" />

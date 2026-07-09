@@ -103,12 +103,7 @@ export default function ContactPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-32" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
-      <div className="max-w-7xl mx-auto px-6 pt-10">
-        <Link href="/" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-accent hover:text-primary transition-colors">
-          ← {locale === 'am' ? 'ወደ መነሻ ገጽ ተመለስ' : 'Back to Home'}
-        </Link>
-      </div>
+    <div className="min-h-screen bg-[#FDFBF9] pb-32" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       {/* Hero Header */}
       <section className="bg-muted py-24 text-center">
         <div className="max-w-7xl mx-auto px-6">
