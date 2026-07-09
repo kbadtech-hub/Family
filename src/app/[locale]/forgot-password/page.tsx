@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, Suspense } from 'react';
-import { supabase } from '@/lib/supabase';
 import { useRouter } from '@/i18n/routing';
 import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
 import { Mail, ChevronRight, AlertCircle, Loader2, Key } from 'lucide-react';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { getFirebaseAuth } from '@/lib/firebase-auth';
 
 function ForgotPasswordContent() {
   const t = useTranslations('Auth');
@@ -23,19 +24,17 @@ function ForgotPasswordContent() {
     setError('');
 
     try {
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      });
+      const auth = getFirebaseAuth();
+      if (!auth) throw new Error('Firebase Auth not available');
 
-      if (resetError) throw resetError;
+      await sendPasswordResetEmail(auth, email);
 
       setIsSuccess(true);
-      // Redirect to verify OTP page for password recovery after 2 seconds
       setTimeout(() => {
-        router.push(`/verify-otp?email=${encodeURIComponent(email)}&type=recovery`);
-      }, 2000);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Reset failed. Please try again.');
+        router.push('/login');
+      }, 4000);
+    } catch (err: any) {
+      setError(err.message || 'Reset failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -52,11 +51,11 @@ function ForgotPasswordContent() {
             {locale === 'am' ? 'ኢሜል ተልኳል!' : locale === 'ti' ? 'ኢሜል ተሰዲዱ!' : 'Email Sent!'}
           </h2>
           <p className="text-gray-500 mb-8 font-medium">
-            {locale === 'am' ? 'ባለ 6 አሃዝ የማረጋገጫ ኮድ ወደ ኢሜልዎ ልከናል::' : locale === 'ti' ? '6 ቁጽሪ ዘለዎ ኮድ ናብ ኢሜልኩም ሰዲድና አለና።' : 'We have sent a 6-digit verification code to your email.'}
+            {locale === 'am' ? 'የይለፍ ቃል መቀየርያ ሊንክ ወደ ኢሜልዎ ልከናል::' : locale === 'ti' ? 'ናይ መሕለፊ ቃል መቐየሪ ሊንክ ናብ ኢሜልኩም ሰዲድና አለና።' : 'We have sent a password reset link to your email.'}
           </p>
           <div className="flex items-center justify-center gap-2 text-primary font-bold animate-pulse">
              <Loader2 className="animate-spin" size={18} />
-             <span>{locale === 'am' ? 'ወደ ማረጋገጫ ገጽ በመውሰድ ላይ...' : locale === 'ti' ? 'ናብ መረጋገጺ ገጽ ይወስደኩም አሎ...' : 'Redirecting to verification...'}</span>
+             <span>{locale === 'am' ? 'ወደ መግቢያ ገጽ በመውሰድ ላይ...' : locale === 'ti' ? 'ናብ መእተዊ ገጽ ይወስደኩም አሎ...' : 'Redirecting to login...'}</span>
           </div>
         </div>
       </div>

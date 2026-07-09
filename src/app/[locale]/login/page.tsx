@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { supabase } from '@/lib/supabase';
+import { signInWithGoogle, signInWithFacebook, signInWithApple } from '@/lib/firebase-auth';
+import GeoGuard from '@/components/GeoGuard';
 import { useRouter } from '@/i18n/routing';
 import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
@@ -57,8 +59,8 @@ function LoginContent() {
   const locale = useLocale();
   const router = useRouter();
   
-  // View state: 'initial' | 'email' | 'phone'
-  const [view, setView] = useState<'initial' | 'email' | 'phone'>('initial');
+  // View state: 'initial' | 'email' | 'phone' | 'phone-verification-gate'
+  const [view, setView] = useState<'initial' | 'email' | 'phone' | 'phone-verification-gate'>('initial');
   
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -69,7 +71,33 @@ function LoginContent() {
   const [error, setError] = useState('');
   const [toast, setToast] = useState<{ message: string; show: boolean }>({ message: '', show: false });
 
+  // Phone OTP Flow States
+  const [otpCode, setOtpCode] = useState('');
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [confirmationResult, setConfirmationResult] = useState<any>(null);
+  const [recaptchaVerifier, setRecaptchaVerifier] = useState<any>(null);
 
+  // Verification Gate for social/email users lacking phone number
+  const [verificationUser, setVerificationUser] = useState<any>(null);
+  const [gatePhone, setGatePhone] = useState('');
+  const [gateCountryCode, setGateCountryCode] = useState('+251');
+  const [gateOtpCode, setGateOtpCode] = useState('');
+  const [isGateOtpSent, setIsGateOtpSent] = useState(false);
+  const [gateVerificationId, setGateVerificationId] = useState<string | null>(null);
+
+  // Initialize invisible reCAPTCHA when phone view or verification gate is entered
+  useEffect(() => {
+    if ((view === 'phone' || view === 'phone-verification-gate') && typeof window !== 'undefined') {
+      const initRecaptcha = async () => {
+        const { setupRecaptcha } = await import('@/lib/firebase-auth');
+        const verifier = setupRecaptcha('recaptcha-container');
+        if (verifier) {
+          setRecaptchaVerifier(verifier);
+        }
+      };
+      initRecaptcha();
+    }
+  }, [view]);
 
   const handleSocialLogin = async (provider: 'google' | 'facebook' | 'apple') => {
     if (provider === 'apple') {
@@ -81,15 +109,39 @@ function LoginContent() {
       });
       return;
     }
+
     setError('');
-    const { error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`
+    setIsLoading(true);
+
+    try {
+      // Use Firebase Auth popup — no page redirect, no loop risk
+      const result = provider === 'google'
+        ? await signInWithGoogle()
+        : await signInWithFacebook();
+
+      if (!result.success || !result.firebaseUser) {
+        setError(result.error || 'Sign-in failed. Please try again.');
+        return;
       }
-    });
-    if (oauthError) {
-      setError(oauthError.message);
+
+      // Security check: every social user must have a linked phone number
+      if (!result.hasPhone) {
+        setVerificationUser(result.firebaseUser);
+        setView('phone-verification-gate');
+        return;
+      }
+
+      // Existing user → go straight to dashboard
+      // New user → needs to complete onboarding first
+      if (result.isNewUser) {
+        router.push('/onboarding');
+      } else {
+        router.push('/dashboard');
+      }
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -102,42 +154,101 @@ function LoginContent() {
     }
   }, [toast.show]);
 
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
     try {
-      const loginParams = view === 'email' 
-        ? { email, password } 
-        : { phone: `${countryCode}${phone}`, password };
-
-      const { data, error: authError } = await supabase.auth.signInWithPassword(loginParams);
-
-      if (authError) {
-        throw authError;
-      }
-
-      if (data.user) {
-        // Capture login location (for VPN/geo verification)
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            async (pos) => {
-              await supabase.from('profiles').update({
-                last_login_location: { lat: pos.coords.latitude, lng: pos.coords.longitude },
-                last_login_at: new Date().toISOString()
-              }).eq('id', data.user!.id);
-            },
-            () => { /* non-blocking if denied */ },
-            { timeout: 5000 }
-          );
+      if (view === 'email') {
+        const { signInWithEmail } = await import('@/lib/firebase-auth');
+        const result = await signInWithEmail(email, password);
+        
+        if (!result.success || !result.firebaseUser) {
+          setError(result.error || 'Login failed. Please check your credentials.');
+          return;
         }
-        // Direct redirect to dashboard
-        window.location.href = `/${locale}/dashboard`;
+
+        // Email logins must be verified by phone number to be professional/secure
+        if (!result.hasPhone) {
+          setVerificationUser(result.firebaseUser);
+          setView('phone-verification-gate');
+          return;
+        }
+
+        router.push(result.isNewUser ? '/onboarding' : '/dashboard');
+      } else if (view === 'phone') {
+        const { sendPhoneOtp, confirmPhoneOtp } = await import('@/lib/firebase-auth');
+        
+        if (!isOtpSent) {
+          if (!recaptchaVerifier) {
+            throw new Error('reCAPTCHA verification is loading. Please try again.');
+          }
+          const fullPhoneNumber = `${countryCode}${phone}`;
+          const res = await sendPhoneOtp(fullPhoneNumber, recaptchaVerifier);
+          
+          if (!res.success || !res.confirmationResult) {
+            setError(res.error || 'Failed to send OTP. Please check the number.');
+            return;
+          }
+          
+          setConfirmationResult(res.confirmationResult);
+          setIsOtpSent(true);
+        } else {
+          if (!confirmationResult) throw new Error('Confirmation flow has expired.');
+          const result = await confirmPhoneOtp(confirmationResult, otpCode);
+          
+          if (!result.success || !result.firebaseUser) {
+            setError(result.error || 'Invalid OTP code.');
+            return;
+          }
+
+          router.push(result.isNewUser ? '/onboarding' : '/dashboard');
+        }
       }
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Login failed. Please check your credentials.');
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyGatePhone = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const { sendPhoneOtp, linkPhoneWithCurrentUser } = await import('@/lib/firebase-auth');
+
+      if (!isGateOtpSent) {
+        if (!recaptchaVerifier) {
+          throw new Error('reCAPTCHA is loading. Please try again.');
+        }
+        const fullPhoneNumber = `${gateCountryCode}${gatePhone}`;
+        const res = await sendPhoneOtp(fullPhoneNumber, recaptchaVerifier);
+
+        if (!res.success || !res.confirmationResult) {
+          setError(res.error || 'Failed to send OTP.');
+          return;
+        }
+
+        setGateVerificationId(res.confirmationResult.verificationId);
+        setIsGateOtpSent(true);
+      } else {
+        if (!gateVerificationId) throw new Error('Verification reference expired.');
+        const result = await linkPhoneWithCurrentUser(gateVerificationId, gateOtpCode);
+
+        if (!result.success) {
+          setError(result.error || 'Phone verification failed.');
+          return;
+        }
+
+        // Successfully linked phone, profile synced. Direct to dashboard or onboarding.
+        router.push(result.isNewUser ? '/onboarding' : '/dashboard');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Verification error occurred.');
     } finally {
       setIsLoading(false);
     }
@@ -150,11 +261,13 @@ function LoginContent() {
   };
 
   return (
-    <div 
-      className="min-h-screen bg-[#FDFBF9] flex items-center justify-center p-6 cursor-pointer" 
+    <div
+      className="min-h-screen bg-[#FDFBF9] flex items-center justify-center p-6 cursor-pointer"
       onClick={handleBackgroundClick}
       dir={locale === 'ar' ? 'rtl' : 'ltr'}
     >
+      {/* Invisible reCAPTCHA container required by Firebase Phone Auth */}
+      <div id="recaptcha-container" className="hidden" />
       <div className="max-w-md w-full cursor-default" onClick={(e) => e.stopPropagation()}>
         {/* Branding */}
         <div className="text-center mb-8">
@@ -288,7 +401,91 @@ function LoginContent() {
 
                 </div>
               </div>
+            ) : view === 'phone-verification-gate' ? (
+              /* ── Phone Verification Gate (for Email/Social users without phone) ── */
+              <form onSubmit={handleVerifyGatePhone} className="space-y-5">
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-center">
+                  <span className="text-2xl block mb-2">🔐</span>
+                  <p className="text-amber-800 text-xs font-bold">
+                    {locale === 'am'
+                      ? 'ደህንነትዎን ለማረጋገጥ ስልክ ቁጥርዎን ያስገቡ'
+                      : 'For your security, please verify your phone number to continue'}
+                  </p>
+                </div>
+
+                {!isGateOtpSent ? (
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">
+                      {locale === 'am' ? 'ስልክ ቁጥር' : 'Phone Number'}
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="relative group min-w-[110px]">
+                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
+                        <select
+                          value={gateCountryCode}
+                          onChange={(e) => setGateCountryCode(e.target.value)}
+                          aria-label="Select country code"
+                          className="w-full pl-9 pr-2 py-4 bg-[#F8F4F1] rounded-2xl outline-none appearance-none font-bold text-accent text-xs"
+                        >
+                          {COUNTRIES.map(c => <option key={c.iso} value={c.code}>{c.iso} {c.code}</option>)}
+                        </select>
+                      </div>
+                      <div className="relative group flex-1">
+                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                        <input
+                          type="tel"
+                          required
+                          value={gatePhone}
+                          onChange={(e) => setGatePhone(e.target.value)}
+                          className="w-full pl-12 pr-4 py-4 bg-[#F8F4F1] rounded-2xl outline-none font-medium text-accent"
+                          placeholder="912345678"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-center text-sm text-gray-500 font-medium">
+                      {locale === 'am'
+                        ? `ወደ ${gateCountryCode}${gatePhone} የ 6-ዲጂት ኮድ ተልኳል`
+                        : `A 6-digit code was sent to ${gateCountryCode}${gatePhone}`}
+                    </p>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      required
+                      value={gateOtpCode}
+                      onChange={(e) => setGateOtpCode(e.target.value.replace(/\D/g, ''))}
+                      className="w-full text-center text-3xl font-black tracking-[0.5em] py-5 bg-[#F8F4F1] rounded-2xl outline-none text-accent border-2 border-transparent focus:border-primary transition-all"
+                      placeholder="••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => { setIsGateOtpSent(false); setGateOtpCode(''); setGateVerificationId(null); }}
+                      className="text-xs text-gray-400 hover:text-primary text-center w-full"
+                    >
+                      {locale === 'am' ? 'ቁጥሩን ቀይር / ኮዱን እንደገና ላክ' : 'Change number / Resend code'}
+                    </button>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isLoading || (isGateOtpSent && gateOtpCode.length < 6) || (!isGateOtpSent && gatePhone.length < 7)}
+                  className="w-full bg-primary text-white py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl shadow-primary/20 hover:shadow-2xl hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                >
+                  {isLoading ? (
+                    <Loader2 className="animate-spin" size={18} />
+                  ) : isGateOtpSent ? (
+                    <>{locale === 'am' ? 'አረጋግጥ' : 'Verify & Continue'} <ChevronRight size={18} /></>
+                  ) : (
+                    <>{locale === 'am' ? 'ኮድ ላክ' : 'Send Verification Code'} <ChevronRight size={18} /></>
+                  )}
+                </button>
+              </form>
             ) : (
+              /* ── Email / Phone Login Form ── */
               <form onSubmit={handleLogin} className="space-y-5">
                 {view === 'email' ? (
                   <div className="space-y-1.5">
@@ -305,13 +502,40 @@ function LoginContent() {
                       />
                     </div>
                   </div>
+                ) : isOtpSent ? (
+                  /* OTP Code Entry for Phone Login */
+                  <div className="space-y-3">
+                    <p className="text-center text-sm text-gray-500 font-medium">
+                      {locale === 'am'
+                        ? `ወደ ${countryCode}${phone} የ 6-ዲጂት ኮድ ተልኳል`
+                        : `A 6-digit code was sent to ${countryCode}${phone}`}
+                    </p>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      required
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                      className="w-full text-center text-3xl font-black tracking-[0.5em] py-5 bg-[#F8F4F1] rounded-2xl outline-none text-accent border-2 border-transparent focus:border-primary transition-all"
+                      placeholder="••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => { setIsOtpSent(false); setOtpCode(''); setConfirmationResult(null); }}
+                      className="text-xs text-gray-400 hover:text-primary text-center w-full"
+                    >
+                      {locale === 'am' ? 'ቁጥሩን ቀይር / ኮዱን እንደገና ላክ' : 'Change number / Resend code'}
+                    </button>
+                  </div>
                 ) : (
+                  /* Phone Number Entry */
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">{t('phone')}</label>
                     <div className="flex gap-2">
                       <div className="relative group min-w-[110px]">
                         <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-primary transition-colors" size={16} />
-                        <select 
+                        <select
                           value={countryCode}
                           onChange={(e) => setCountryCode(e.target.value)}
                           aria-label="Select country code"
@@ -335,42 +559,47 @@ function LoginContent() {
                   </div>
                 )}
 
-                <div className="space-y-1.5">
-                  <div className="flex justify-between items-center ml-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t('password')}</label>
-                    <button type="button" onClick={() => router.push('/forgot-password')} className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">{t('forgot')}</button>
+                {/* Password field — only shown for email login */}
+                {view === 'email' && (
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center ml-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t('password')}</label>
+                      <button type="button" onClick={() => router.push('/forgot-password')} className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline">{t('forgot')}</button>
+                    </div>
+                    <div className="relative group">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-primary transition-colors" size={20} />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full pl-12 pr-12 py-4 bg-[#F8F4F1] border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all font-medium text-accent"
+                        placeholder="••••••••"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-primary transition-all rounded-xl"
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                   </div>
-                  <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-primary transition-colors" size={20} />
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-12 pr-12 py-4 bg-[#F8F4F1] border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all font-medium text-accent"
-                      placeholder="••••••••"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-primary transition-all rounded-xl"
-                    >
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
-                </div>
+                )}
 
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isLoading || (isOtpSent && otpCode.length < 6)}
                   className="w-full bg-primary text-white py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl shadow-primary/20 hover:shadow-2xl hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 mt-4"
                 >
                   {isLoading ? (
                     <Loader2 className="animate-spin" size={18} />
+                  ) : view === 'phone' && !isOtpSent ? (
+                    <>{locale === 'am' ? 'ኮድ ላክ' : 'Send OTP Code'} <ChevronRight size={18} /></>
+                  ) : view === 'phone' && isOtpSent ? (
+                    <>{locale === 'am' ? 'አረጋግጥና ግባ' : 'Verify & Sign In'} <ChevronRight size={18} /></>
                   ) : (
-                    <>
-                      {t('signIn')} <ChevronRight size={18} />
-                    </>
+                    <>{t('signIn')} <ChevronRight size={18} /></>
                   )}
                 </button>
               </form>
@@ -397,7 +626,9 @@ function LoginContent() {
 export default function LoginPage() {
   return (
     <Suspense fallback={null}>
-      <LoginContent />
+      <GeoGuard>
+        <LoginContent />
+      </GeoGuard>
     </Suspense>
   );
 }

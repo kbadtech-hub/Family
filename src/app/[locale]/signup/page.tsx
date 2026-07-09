@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { signInWithGoogle, signInWithFacebook } from '@/lib/firebase-auth';
+import GeoGuard from '@/components/GeoGuard';
 import { useRouter } from '@/i18n/routing';
 import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
@@ -66,8 +67,8 @@ function SignupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  // View state: 'initial' | 'email' | 'phone'
-  const [view, setView] = useState<'initial' | 'email' | 'phone'>('initial');
+  // View state: 'initial' | 'email' | 'phone' | 'phone-verification-gate'
+  const [view, setView] = useState<'initial' | 'email' | 'phone' | 'phone-verification-gate'>('initial');
   
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -80,6 +81,32 @@ function SignupContent() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const [toast, setToast] = useState<{ message: string; show: boolean }>({ message: '', show: false });
+
+  // Phone OTP Flow States
+  const [otpCode, setOtpCode] = useState('');
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [confirmationResult, setConfirmationResult] = useState<any>(null);
+  const [recaptchaVerifier, setRecaptchaVerifier] = useState<any>(null);
+
+  // Verification Gate for social/email users lacking phone number
+  const [verificationUser, setVerificationUser] = useState<any>(null);
+  const [gatePhone, setGatePhone] = useState('');
+  const [gateCountryCode, setGateCountryCode] = useState('+251');
+  const [gateOtpCode, setGateOtpCode] = useState('');
+  const [isGateOtpSent, setIsGateOtpSent] = useState(false);
+  const [gateVerificationId, setGateVerificationId] = useState<string | null>(null);
+
+  // Initialize invisible reCAPTCHA when phone view or gate is entered
+  useEffect(() => {
+    if ((view === 'phone' || view === 'phone-verification-gate') && typeof window !== 'undefined') {
+      const initRecaptcha = async () => {
+        const { setupRecaptcha } = await import('@/lib/firebase-auth');
+        const verifier = setupRecaptcha('recaptcha-container');
+        if (verifier) setRecaptchaVerifier(verifier);
+      };
+      initRecaptcha();
+    }
+  }, [view]);
 
   // Location Access State (required for registration)
   const [locationStatus, setLocationStatus] = useState<'idle' | 'requesting' | 'granted' | 'denied'>('idle');
@@ -138,7 +165,6 @@ function SignupContent() {
   }, [ethBirthDay, ethBirthMonth, ethBirthYear, calendarType]);
 
   const handleSocialLogin = async (provider: 'google' | 'facebook' | 'apple') => {
-    console.log("handleSocialLogin called with provider:", provider);
     if (provider === 'apple') {
       setToast({
         message: locale === 'am'
@@ -148,17 +174,32 @@ function SignupContent() {
       });
       return;
     }
+
     setError('');
-    console.log("Calling supabase.auth.signInWithOAuth for:", provider);
-    const { error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/onboarding`
+    setIsLoading(true);
+
+    try {
+      const result = provider === 'google'
+        ? await signInWithGoogle()
+        : await signInWithFacebook();
+
+      if (!result.success || !result.firebaseUser) {
+        setError(result.error || 'Sign-in failed. Please try again.');
+        return;
       }
-    });
-    if (oauthError) {
-      console.error("Supabase signInWithOAuth error:", oauthError);
-      setError(oauthError.message);
+
+      // Security gate: all users must verify phone before accessing the app
+      if (!result.hasPhone) {
+        setVerificationUser(result.firebaseUser);
+        setView('phone-verification-gate');
+        return;
+      }
+
+      router.push(result.isNewUser ? '/onboarding' : '/dashboard');
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -230,14 +271,13 @@ function SignupContent() {
       setIsLoading(false);
       return;
     }
+
     // Calculate Age
     const bDate = new Date(birthDate);
     const today = new Date();
     let calculatedAge = today.getFullYear() - bDate.getFullYear();
     const m = today.getMonth() - bDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < bDate.getDate())) {
-      calculatedAge--;
-    }
+    if (m < 0 || (m === 0 && today.getDate() < bDate.getDate())) calculatedAge--;
     if (calculatedAge < 18) {
       setError(locale === 'am'
         ? 'ይህን መተግበሪያ ለመጠቀም እድሜዎ 18 ወይም ከዚያ በላይ መሆን አለበት።'
@@ -246,60 +286,117 @@ function SignupContent() {
       return;
     }
 
-    const { isValid, errorKey } = validatePassword(password);
-    if (!isValid) {
-      setError(t(`errors.${errorKey}`));
-      setIsLoading(false);
-      return;
-    }
-
-    const prefLocation = searchParams.get('pref_location');
-    const identifier = view === 'email' ? email : `${countryCode}${phone}`;
- 
     try {
-      const { data, error: authError } = await supabase.auth.signUp(
-        view === 'email' 
-          ? { 
-              email, 
-              password, 
-              options: {
-                data: {
-                  full_name: fullName,
-                  birth_date: birthDate,
-                  is_onboarded: false,
-                  verification_status: 'unverified',
-                  pref_location: searchParams.get('pref_location') || 'Local',
-                  registration_location: locationCoords ? { lat: locationCoords.lat, lng: locationCoords.lng } : null
-                }
-              }
-            }
-          : { 
-              phone: identifier, 
-              password, 
-              options: {
-                data: {
-                  full_name: fullName,
-                  birth_date: birthDate,
-                  is_onboarded: false,
-                  verification_status: 'unverified',
-                  pref_location: searchParams.get('pref_location') || 'Local',
-                  registration_location: locationCoords ? { lat: locationCoords.lat, lng: locationCoords.lng } : null
-                }
-              }
-            }
-      );
+      if (view === 'email') {
+        // ── Email Signup via Firebase ─────────────────────────────────────
+        const { isValid, errorKey } = validatePassword(password);
+        if (!isValid) { setError(t(`errors.${errorKey}`)); setIsLoading(false); return; }
 
-      if (authError) throw authError;
+        const { signUpWithEmail } = await import('@/lib/firebase-auth');
+        const result = await signUpWithEmail(email, password);
 
-      if (data.user) {
-        // Update the profiles row with the birth_date directly
+        if (!result.success || !result.firebaseUser) {
+          setError(result.error || 'Signup failed. Please try again.');
+          return;
+        }
+
+        // Store birth_date in Supabase profiles (server already created the profile)
+        const { supabase } = await import('@/lib/supabase');
         await supabase.from('profiles').update({
-          birth_date: birthDate
-        }).eq('id', data.user.id);
-        setIsSuccess(true);
+          full_name: fullName,
+          birth_date: birthDate,
+          pref_location: searchParams.get('pref_location') || 'Local',
+          registration_location: locationCoords ?? null,
+        }).eq('id', result.firebaseUser.uid);
+
+        // Email users must verify phone number
+        if (!result.hasPhone) {
+          setVerificationUser(result.firebaseUser);
+          setView('phone-verification-gate');
+          return;
+        }
+
+        router.push('/onboarding');
+
+      } else if (view === 'phone') {
+        // ── Phone Signup via Firebase OTP ─────────────────────────────────
+        const { sendPhoneOtp, confirmPhoneOtp } = await import('@/lib/firebase-auth');
+
+        if (!isOtpSent) {
+          if (!recaptchaVerifier) {
+            throw new Error('reCAPTCHA is loading. Please try again in a moment.');
+          }
+          const fullPhoneNumber = `${countryCode}${phone}`;
+          const res = await sendPhoneOtp(fullPhoneNumber, recaptchaVerifier);
+
+          if (!res.success || !res.confirmationResult) {
+            setError(res.error || 'Failed to send OTP. Please check the number.');
+            return;
+          }
+
+          setConfirmationResult(res.confirmationResult);
+          setIsOtpSent(true);
+        } else {
+          if (!confirmationResult) throw new Error('OTP session expired. Please try again.');
+          const result = await confirmPhoneOtp(confirmationResult, otpCode);
+
+          if (!result.success || !result.firebaseUser) {
+            setError(result.error || 'Invalid OTP code.');
+            return;
+          }
+
+          // Store extra profile data in Supabase after phone verification
+          const { supabase } = await import('@/lib/supabase');
+          await supabase.from('profiles').update({
+            full_name: fullName,
+            birth_date: birthDate,
+            pref_location: searchParams.get('pref_location') || 'Local',
+            registration_location: locationCoords ?? null,
+          }).eq('id', result.firebaseUser.uid);
+
+          router.push('/onboarding');
+        }
       }
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Signup failed. Please try again.');
+    } catch (err: any) {
+      setError(err.message || 'Signup failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyGatePhone = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const { sendPhoneOtp, linkPhoneWithCurrentUser } = await import('@/lib/firebase-auth');
+
+      if (!isGateOtpSent) {
+        if (!recaptchaVerifier) throw new Error('reCAPTCHA is loading. Please try again.');
+        const fullPhoneNumber = `${gateCountryCode}${gatePhone}`;
+        const res = await sendPhoneOtp(fullPhoneNumber, recaptchaVerifier);
+
+        if (!res.success || !res.confirmationResult) {
+          setError(res.error || 'Failed to send OTP.');
+          return;
+        }
+
+        setGateVerificationId(res.confirmationResult.verificationId);
+        setIsGateOtpSent(true);
+      } else {
+        if (!gateVerificationId) throw new Error('Verification reference expired.');
+        const result = await linkPhoneWithCurrentUser(gateVerificationId, gateOtpCode);
+
+        if (!result.success) {
+          setError(result.error || 'Phone verification failed.');
+          return;
+        }
+
+        router.push('/onboarding');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Verification error occurred.');
     } finally {
       setIsLoading(false);
     }
@@ -339,6 +436,8 @@ function SignupContent() {
       onClick={handleBackgroundClick}
       dir={locale === 'ar' ? 'rtl' : 'ltr'}
     >
+      {/* Invisible reCAPTCHA container required by Firebase Phone Auth */}
+      <div id="recaptcha-container" className="hidden" />
       <div className="max-w-md w-full cursor-default" onClick={(e) => e.stopPropagation()}>
         {/* Branding */}
         <div className="text-center mb-8">
@@ -360,7 +459,10 @@ function SignupContent() {
           <div className="relative">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-bold text-accent italic">
-                {view === 'initial' ? t('signUp') : view === 'email' ? getEmailSignupLabel(locale) : getPhoneSignupLabel(locale)}
+                {view === 'initial' ? t('signUp') 
+                  : view === 'phone-verification-gate' ? (locale === 'am' ? 'ስልክ ማረጋገጫ' : 'Verify Phone')
+                  : view === 'email' ? getEmailSignupLabel(locale) 
+                  : getPhoneSignupLabel(locale)}
               </h2>
               {view !== 'initial' && (
                 <button 
@@ -593,6 +695,89 @@ function SignupContent() {
                   )}
                 </div>
               </div>
+            ) : view === 'phone-verification-gate' ? (
+              /* ── Phone Verification Gate (for Social/Email users without phone) ── */
+              <form onSubmit={handleVerifyGatePhone} className="space-y-5">
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-center">
+                  <span className="text-2xl block mb-2">🔐</span>
+                  <p className="text-amber-800 text-xs font-bold">
+                    {locale === 'am'
+                      ? 'ደህንነትዎን ለማረጋገጥ ስልክ ቁጥርዎን ያስገቡ'
+                      : 'Please verify your phone number to complete registration'}
+                  </p>
+                </div>
+
+                {!isGateOtpSent ? (
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">
+                      {locale === 'am' ? 'ስልክ ቁጥር' : 'Phone Number'}
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="relative group min-w-[110px]">
+                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
+                        <select
+                          value={gateCountryCode}
+                          onChange={(e) => setGateCountryCode(e.target.value)}
+                          aria-label="Select country code"
+                          className="w-full pl-9 pr-2 py-4 bg-[#F8F4F1] rounded-2xl outline-none appearance-none font-bold text-accent text-xs"
+                        >
+                          {COUNTRIES.map(c => <option key={c.iso} value={c.code}>{c.iso} {c.code}</option>)}
+                        </select>
+                      </div>
+                      <div className="relative group flex-1">
+                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={20} />
+                        <input
+                          type="tel"
+                          required
+                          value={gatePhone}
+                          onChange={(e) => setGatePhone(e.target.value)}
+                          className="w-full pl-12 pr-4 py-4 bg-[#F8F4F1] rounded-2xl outline-none font-medium text-accent"
+                          placeholder="912345678"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-center text-sm text-gray-500 font-medium">
+                      {locale === 'am'
+                        ? `ወደ ${gateCountryCode}${gatePhone} የ 6-ዲጂት ኮድ ተልኳል`
+                        : `A 6-digit code was sent to ${gateCountryCode}${gatePhone}`}
+                    </p>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      required
+                      value={gateOtpCode}
+                      onChange={(e) => setGateOtpCode(e.target.value.replace(/\D/g, ''))}
+                      className="w-full text-center text-3xl font-black tracking-[0.5em] py-5 bg-[#F8F4F1] rounded-2xl outline-none text-accent border-2 border-transparent focus:border-primary transition-all"
+                      placeholder="••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => { setIsGateOtpSent(false); setGateOtpCode(''); setGateVerificationId(null); }}
+                      className="text-xs text-gray-400 hover:text-primary text-center w-full"
+                    >
+                      {locale === 'am' ? 'ቁጥሩን ቀይር / ኮዱን እንደገና ላክ' : 'Change number / Resend code'}
+                    </button>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isLoading || (isGateOtpSent && gateOtpCode.length < 6) || (!isGateOtpSent && gatePhone.length < 7)}
+                  className="w-full bg-primary text-white py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl shadow-primary/20 hover:shadow-2xl hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                >
+                  {isLoading ? (
+                    <Loader2 className="animate-spin" size={18} />
+                  ) : isGateOtpSent ? (
+                    <>{locale === 'am' ? 'አረጋግጥና ጨርስ' : 'Verify & Complete'} <ChevronRight size={18} /></>
+                  ) : (
+                    <>{locale === 'am' ? 'ኮድ ላክ' : 'Send Verification Code'} <ChevronRight size={18} /></>
+                  )}
+                </button>
+              </form>
             ) : (
               <form onSubmit={handleSignup} className="space-y-5">
                  {/* Full Name */}
@@ -699,6 +884,32 @@ function SignupContent() {
                       />
                     </div>
                   </div>
+                ) : isOtpSent ? (
+                  /* OTP Code Entry for Phone Signup */
+                  <div className="space-y-3">
+                    <p className="text-center text-sm text-gray-500 font-medium">
+                      {locale === 'am'
+                        ? `ወደ ${countryCode}${phone} የ 6-ዲጂት ኮድ ተልኳል`
+                        : `A 6-digit code was sent to ${countryCode}${phone}`}
+                    </p>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      required
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                      className="w-full text-center text-3xl font-black tracking-[0.5em] py-5 bg-[#F8F4F1] rounded-2xl outline-none text-accent border-2 border-transparent focus:border-primary transition-all"
+                      placeholder="••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => { setIsOtpSent(false); setOtpCode(''); setConfirmationResult(null); }}
+                      className="text-xs text-gray-400 hover:text-primary text-center w-full"
+                    >
+                      {locale === 'am' ? 'ቁጥሩን ቀይር / ኮዱን እንደገና ላክ' : 'Change number / Resend code'}
+                    </button>
+                  </div>
                 ) : (
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">{t('phone')}</label>
@@ -729,56 +940,58 @@ function SignupContent() {
                   </div>
                 )}
 
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">{t('password')}</label>
-                  <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-primary transition-colors" size={20} />
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      onFocus={() => setIsPasswordFocused(true)}
-                      onBlur={() => setIsPasswordFocused(false)}
-                      className="w-full pl-12 pr-12 py-4 bg-[#F8F4F1] border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all font-medium text-accent"
-                      placeholder="••••••••"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-primary transition-all rounded-xl"
-                    >
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
-                  {isPasswordFocused && !password && (
-                    <div className="p-3.5 bg-blue-50/50 border border-blue-100/70 rounded-2xl mt-2 text-xs text-gray-600 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
-                      <p className="font-bold text-accent">
-                        {locale === 'am' ? 'የይለፍ ቃል ምክር' : 'Password Recommendation'}
-                      </p>
-                      <p className="leading-relaxed text-[11px]">
-                        {locale === 'am' 
-                          ? 'ለደህንነትዎ ሲባል የሚያስገቡት የይለፍ ቃል ርዝመቱ 8 ወይም ከዚያ በላይ ሆኖ፣ ትልልቅና ትንንሽ ፊደላትን፣ ቁጥሮችን እና ልዩ ምልክቶችን (እንደ @፣ #፣ $) ያካተተ እንዲሁም በቀላሉ የሚያስታውሱት ቢሆን ይመከራል።'
-                          : 'For your security, it is recommended that your password is at least 8 characters long, includes uppercase & lowercase letters, numbers, and special characters (like @, #, $), and is easy to remember.'}
-                      </p>
-                      <p className="text-[10px] text-gray-400 font-semibold italic">
-                        {locale === 'am' ? 'ምሳሌ፡ P@ssword123' : 'Example: P@ssword123'}
-                      </p>
+                {/* Password field — only shown for email signup. Phone uses OTP instead. */}
+                {view === 'email' && (
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">{t('password')}</label>
+                    <div className="relative group">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-primary transition-colors" size={20} />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        onFocus={() => setIsPasswordFocused(true)}
+                        onBlur={() => setIsPasswordFocused(false)}
+                        className="w-full pl-12 pr-12 py-4 bg-[#F8F4F1] border-transparent focus:border-primary focus:bg-white rounded-2xl outline-none transition-all font-medium text-accent"
+                        placeholder="••••••••"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-primary transition-all rounded-xl"
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
                     </div>
-                  )}
-                </div>
+                    {isPasswordFocused && !password && (
+                      <div className="p-3.5 bg-blue-50/50 border border-blue-100/70 rounded-2xl mt-2 text-xs text-gray-600 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                        <p className="font-bold text-accent">
+                          {locale === 'am' ? 'የይለፍ ቃል ምክር' : 'Password Recommendation'}
+                        </p>
+                        <p className="leading-relaxed text-[11px]">
+                          {locale === 'am'
+                            ? 'ለደህንነትዎ ሲባል የሚያስገቡት የይለፍ ቃል ርዝመቱ 8 ወይም ከዚያ በላይ ሆኖ፣ ትልልቅና ትንንሽ ፊደላትን፣ ቁጥሮችን እና ልዩ ምልክቶችን (እንደ @፣ #፣ $) ያካተተ እንዲሁም በቀላሉ የሚያስታውሱት ቢሆን ይመከራል።'
+                            : 'For your security, use at least 8 characters with uppercase & lowercase letters, numbers, and special characters (@, #, $).'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isLoading || (isOtpSent && otpCode.length < 6)}
                   className="w-full bg-primary text-white py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl shadow-primary/20 hover:shadow-2xl hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale-[0.5] disabled:cursor-not-allowed mt-4"
                 >
                   {isLoading ? (
                     <Loader2 className="animate-spin" size={18} />
+                  ) : view === 'phone' && !isOtpSent ? (
+                    <>{locale === 'am' ? 'ኮድ ላክ' : 'Send OTP Code'} <ChevronRight size={18} /></>
+                  ) : view === 'phone' && isOtpSent ? (
+                    <>{locale === 'am' ? 'አረጋግጥና ተመዝገብ' : 'Verify & Register'} <ChevronRight size={18} /></>
                   ) : (
-                    <>
-                      {locale === 'am' ? 'ቀጥል' : 'Continue'} <ChevronRight size={18} />
-                    </>
+                    <>{locale === 'am' ? 'ቀጥል' : 'Continue'} <ChevronRight size={18} /></>
                   )}
                 </button>
               </form>
@@ -854,7 +1067,9 @@ function SignupContent() {
 export default function SignupPage() {
   return (
     <Suspense fallback={null}>
-      <SignupContent />
+      <GeoGuard>
+        <SignupContent />
+      </GeoGuard>
     </Suspense>
   );
 }
