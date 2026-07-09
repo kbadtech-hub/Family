@@ -16,7 +16,8 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
     pathname?.includes('/signup') ||
     pathname?.includes('/forgot-password') ||
     pathname?.includes('/academy') ||
-    pathname?.includes('/community') ||
+    // Use exact segment match so /community-hub is NOT caught here
+    pathname?.match(/\/community(\/|$)/) !== null ||
     pathname?.includes('/profile') ||
     pathname?.includes('/chat') ||
     pathname?.includes('/settings') ||

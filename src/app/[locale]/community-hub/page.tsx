@@ -11,12 +11,7 @@ export default function CommunityHubPage() {
   const locale = useLocale();
 
   return (
-    <div className="bg-[#FDFBF9] min-h-screen pb-20" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
-      <div className="max-w-7xl mx-auto px-6 pt-10">
-        <Link href="/" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-accent hover:text-primary transition-colors">
-          ← {locale === 'am' ? 'ወደ መነሻ ገጽ ተመለስ' : 'Back to Home'}
-        </Link>
-      </div>
+    <div className="bg-[#FDFBF9] min-h-screen" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
 
       {/* Hero Section */}
       <section className="relative pt-20 pb-32 overflow-hidden">
