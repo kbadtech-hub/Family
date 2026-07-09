@@ -83,11 +83,41 @@ function requestGPSLocation(): Promise<{ granted: boolean }> {
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      () => resolve({ granted: true }),
-      () => resolve({ granted: false }),
-      { timeout: 10000, enableHighAccuracy: false, maximumAge: 60000 }
-    );
+    // First check the Permissions API if available.
+    // This allows an instant resolution on retry when the user has already
+    // enabled location in their device settings since the last check.
+    if (navigator.permissions) {
+      navigator.permissions.query({ name: 'geolocation' }).then((permissionStatus) => {
+        if (permissionStatus.state === 'granted') {
+          // Already granted — no need to show a prompt, resolve instantly
+          resolve({ granted: true });
+        } else if (permissionStatus.state === 'denied') {
+          // Hard-denied — no point prompting
+          resolve({ granted: false });
+        } else {
+          // 'prompt' — user hasn't decided yet, ask them
+          navigator.geolocation.getCurrentPosition(
+            () => resolve({ granted: true }),
+            () => resolve({ granted: false }),
+            { timeout: 10000, enableHighAccuracy: false, maximumAge: 60000 }
+          );
+        }
+      }).catch(() => {
+        // Permissions API failed — fall back to direct GPS request
+        navigator.geolocation.getCurrentPosition(
+          () => resolve({ granted: true }),
+          () => resolve({ granted: false }),
+          { timeout: 10000, enableHighAccuracy: false, maximumAge: 60000 }
+        );
+      });
+    } else {
+      // Older browsers without Permissions API
+      navigator.geolocation.getCurrentPosition(
+        () => resolve({ granted: true }),
+        () => resolve({ granted: false }),
+        { timeout: 10000, enableHighAccuracy: false, maximumAge: 60000 }
+      );
+    }
   });
 }
 

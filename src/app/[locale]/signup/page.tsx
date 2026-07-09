@@ -96,17 +96,6 @@ function SignupContent() {
   const [isGateOtpSent, setIsGateOtpSent] = useState(false);
   const [gateVerificationId, setGateVerificationId] = useState<string | null>(null);
 
-  // Initialize invisible reCAPTCHA when phone view or gate is entered
-  useEffect(() => {
-    if ((view === 'phone' || view === 'phone-verification-gate') && typeof window !== 'undefined') {
-      const initRecaptcha = async () => {
-        const { setupRecaptcha } = await import('@/lib/firebase-auth');
-        const verifier = setupRecaptcha('recaptcha-container');
-        if (verifier) setRecaptchaVerifier(verifier);
-      };
-      initRecaptcha();
-    }
-  }, [view]);
 
   // Location Access State (required for registration)
   const [locationStatus, setLocationStatus] = useState<'idle' | 'requesting' | 'granted' | 'denied'>('idle');
@@ -323,14 +312,13 @@ function SignupContent() {
         const { sendPhoneOtp, confirmPhoneOtp, setupRecaptcha } = await import('@/lib/firebase-auth');
 
         if (!isOtpSent) {
-          let verifier = recaptchaVerifier;
-          if (!verifier) {
-            verifier = setupRecaptcha('recaptcha-container');
-            if (verifier) setRecaptchaVerifier(verifier);
-          }
+          // Always create a fresh reCAPTCHA verifier — the singleton in firebase-auth
+          // automatically cleans up any previous widget before creating a new one.
+          const verifier = setupRecaptcha('recaptcha-container');
           if (!verifier) {
             throw new Error('reCAPTCHA verification failed to initialize. Please check your internet connection.');
           }
+          setRecaptchaVerifier(verifier);
           const fullPhoneNumber = `${countryCode}${phone}`;
           const res = await sendPhoneOtp(fullPhoneNumber, verifier);
 
@@ -378,14 +366,12 @@ function SignupContent() {
       const { sendPhoneOtp, linkPhoneWithCurrentUser, setupRecaptcha } = await import('@/lib/firebase-auth');
 
       if (!isGateOtpSent) {
-        let verifier = recaptchaVerifier;
-        if (!verifier) {
-          verifier = setupRecaptcha('recaptcha-container');
-          if (verifier) setRecaptchaVerifier(verifier);
-        }
+        // Always create a fresh reCAPTCHA verifier on each OTP send attempt
+        const verifier = setupRecaptcha('recaptcha-container');
         if (!verifier) {
           throw new Error('reCAPTCHA verification failed to initialize. Please check your internet connection.');
         }
+        setRecaptchaVerifier(verifier);
         const fullPhoneNumber = `${gateCountryCode}${gatePhone}`;
         const res = await sendPhoneOtp(fullPhoneNumber, verifier);
 

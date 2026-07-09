@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import { ShieldCheck, Check, ChevronDown, ChevronUp, ScrollText, UserCheck, EyeOff } from 'lucide-react';
 
@@ -16,67 +16,22 @@ export default function EulaGate({ onAccept, forceShow = false }: EulaGateProps 
   // Accordion active tab
   const [activeTab, setActiveTab] = useState<'eula' | 'terms' | 'privacy' | null>(null);
 
-  // Read verification states (user must scroll to the bottom of the container)
-  const [eulaRead, setEulaRead] = useState(false);
-  const [termsRead, setTermsRead] = useState(false);
-  const [privacyRead, setPrivacyRead] = useState(false);
-
-  // Checkbox values
+  // Checkbox values — no scroll-gate required; users check freely
   const [confirmAge, setConfirmAge] = useState(false);
   const [agreedToEula, setAgreedToEula] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
 
-  // Show error prompts if checkbox clicked before reading
-  const [showEulaError, setShowEulaError] = useState(false);
-  const [showTermsError, setShowTermsError] = useState(false);
-  const [showPrivacyError, setShowPrivacyError] = useState(false);
-
-  // Container refs to check if content is scrollable or not
-  const eulaRef = useRef<HTMLDivElement>(null);
-  const termsRef = useRef<HTMLDivElement>(null);
-  const privacyRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
-    console.log("EulaGate useEffect triggered. forceShow:", forceShow);
     if (forceShow) {
-      console.log("EulaGate forcing visibility to true");
       setIsVisible(true);
     } else {
       const accepted = localStorage.getItem('beteseb_eula_accepted');
-      console.log("EulaGate checked beteseb_eula_accepted in localStorage:", accepted);
       if (!accepted) {
         setIsVisible(true);
       }
     }
   }, [forceShow]);
-
-  // Check if content fits in container without scrolling
-  const checkScrollable = (ref: React.RefObject<HTMLDivElement | null>, setRead: (read: boolean) => void) => {
-    if (ref.current) {
-      const el = ref.current;
-      console.log("EulaGate checkScrollable. scrollHeight:", el.scrollHeight, "clientHeight:", el.clientHeight);
-      if (el.scrollHeight <= el.clientHeight) {
-        setRead(true);
-      }
-    }
-  };
-
-  useEffect(() => {
-    if (activeTab === 'eula') checkScrollable(eulaRef, setEulaRead);
-    if (activeTab === 'terms') checkScrollable(termsRef, setTermsRead);
-    if (activeTab === 'privacy') checkScrollable(privacyRef, setPrivacyRead);
-  }, [activeTab]);
-
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>, setRead: (read: boolean) => void) => {
-    const target = e.currentTarget;
-    // Calculate if scrolled to bottom with 15px buffer
-    const isAtBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 15;
-    console.log("EulaGate handleScroll. scrollHeight:", target.scrollHeight, "scrollTop:", target.scrollTop, "clientHeight:", target.clientHeight, "isAtBottom:", isAtBottom);
-    if (isAtBottom) {
-      setRead(true);
-    }
-  };
 
   console.log("EulaGate rendering. isVisible:", isVisible);
   if (!isVisible) {
@@ -304,40 +259,20 @@ export default function EulaGate({ onAccept, forceShow = false }: EulaGateProps 
             
             {activeTab === 'eula' && (
               <div className="p-4 pt-0 space-y-3">
-                <div 
-                  ref={eulaRef}
-                  onScroll={(e) => handleScroll(e, setEulaRead)}
-                  className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 max-h-[140px] overflow-y-auto text-[11px] text-slate-600 dark:text-slate-400 font-medium leading-relaxed whitespace-pre-line"
-                >
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 max-h-[140px] overflow-y-auto text-[11px] text-slate-600 dark:text-slate-400 font-medium leading-relaxed whitespace-pre-line">
                   {texts.eulaContent}
                 </div>
-                
-                <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-wider">
-                  {eulaRead ? (
-                    <span className="text-emerald-600">{texts.readyToAgree}</span>
-                  ) : (
-                    <span className="text-amber-500 animate-pulse">{texts.scrollDown}</span>
-                  )}
-                </div>
 
-                <div 
-                  onClick={() => {
-                    if (eulaRead) {
-                      setAgreedToEula(!agreedToEula);
-                      setShowEulaError(false);
-                    } else {
-                      setShowEulaError(true);
-                    }
-                  }} 
-                  className={`flex items-start gap-3.5 p-3 rounded-xl border transition-all ${agreedToEula ? 'bg-primary/5 border-primary/20' : 'bg-transparent border-transparent'} ${!eulaRead ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+                <div
+                  onClick={() => setAgreedToEula(!agreedToEula)}
+                  className={`flex items-start gap-3.5 p-3 rounded-xl border transition-all cursor-pointer ${agreedToEula ? 'bg-primary/5 border-primary/20' : 'bg-transparent border-transparent'}`}
                 >
                   <div className="relative flex items-center justify-center mt-0.5 shrink-0">
                     <input
                       type="checkbox"
                       checked={agreedToEula}
-                      disabled={!eulaRead}
                       onChange={(e) => setAgreedToEula(e.target.checked)}
-                      className="peer h-5.5 w-5.5 appearance-none rounded-md border-2 border-slate-300 dark:border-slate-700 checked:bg-primary checked:border-primary disabled:border-slate-200"
+                      className="peer h-5.5 w-5.5 appearance-none rounded-md border-2 border-slate-300 dark:border-slate-700 checked:bg-primary checked:border-primary"
                       onClick={(e) => e.stopPropagation()}
                     />
                     <Check size={14} className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none stroke-[3] transition-opacity" />
@@ -346,12 +281,6 @@ export default function EulaGate({ onAccept, forceShow = false }: EulaGateProps 
                     {texts.confirmEula}
                   </span>
                 </div>
-                
-                {showEulaError && (
-                  <p className="text-[10px] text-red-500 font-bold leading-none pl-9 animate-bounce">
-                    {texts.readFirst}
-                  </p>
-                )}
               </div>
             )}
           </div>
@@ -371,40 +300,20 @@ export default function EulaGate({ onAccept, forceShow = false }: EulaGateProps 
             
             {activeTab === 'terms' && (
               <div className="p-4 pt-0 space-y-3">
-                <div 
-                  ref={termsRef}
-                  onScroll={(e) => handleScroll(e, setTermsRead)}
-                  className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 max-h-[140px] overflow-y-auto text-[11px] text-slate-600 dark:text-slate-400 font-medium leading-relaxed whitespace-pre-line"
-                >
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 max-h-[140px] overflow-y-auto text-[11px] text-slate-600 dark:text-slate-400 font-medium leading-relaxed whitespace-pre-line">
                   {texts.termsContent}
                 </div>
-                
-                <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-wider">
-                  {termsRead ? (
-                    <span className="text-emerald-600">{texts.readyToAgree}</span>
-                  ) : (
-                    <span className="text-amber-500 animate-pulse">{texts.scrollDown}</span>
-                  )}
-                </div>
 
-                <div 
-                  onClick={() => {
-                    if (termsRead) {
-                      setAgreedToTerms(!agreedToTerms);
-                      setShowTermsError(false);
-                    } else {
-                      setShowTermsError(true);
-                    }
-                  }} 
-                  className={`flex items-start gap-3.5 p-3 rounded-xl border transition-all ${agreedToTerms ? 'bg-primary/5 border-primary/20' : 'bg-transparent border-transparent'} ${!termsRead ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+                <div
+                  onClick={() => setAgreedToTerms(!agreedToTerms)}
+                  className={`flex items-start gap-3.5 p-3 rounded-xl border transition-all cursor-pointer ${agreedToTerms ? 'bg-primary/5 border-primary/20' : 'bg-transparent border-transparent'}`}
                 >
                   <div className="relative flex items-center justify-center mt-0.5 shrink-0">
                     <input
                       type="checkbox"
                       checked={agreedToTerms}
-                      disabled={!termsRead}
                       onChange={(e) => setAgreedToTerms(e.target.checked)}
-                      className="peer h-5.5 w-5.5 appearance-none rounded-md border-2 border-slate-300 dark:border-slate-700 checked:bg-primary checked:border-primary disabled:border-slate-200"
+                      className="peer h-5.5 w-5.5 appearance-none rounded-md border-2 border-slate-300 dark:border-slate-700 checked:bg-primary checked:border-primary"
                       onClick={(e) => e.stopPropagation()}
                     />
                     <Check size={14} className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none stroke-[3] transition-opacity" />
@@ -413,12 +322,6 @@ export default function EulaGate({ onAccept, forceShow = false }: EulaGateProps 
                     {texts.confirmTerms}
                   </span>
                 </div>
-                
-                {showTermsError && (
-                  <p className="text-[10px] text-red-500 font-bold leading-none pl-9 animate-bounce">
-                    {texts.readFirst}
-                  </p>
-                )}
               </div>
             )}
           </div>
@@ -438,40 +341,20 @@ export default function EulaGate({ onAccept, forceShow = false }: EulaGateProps 
             
             {activeTab === 'privacy' && (
               <div className="p-4 pt-0 space-y-3">
-                <div 
-                  ref={privacyRef}
-                  onScroll={(e) => handleScroll(e, setPrivacyRead)}
-                  className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 max-h-[140px] overflow-y-auto text-[11px] text-slate-600 dark:text-slate-400 font-medium leading-relaxed whitespace-pre-line"
-                >
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 max-h-[140px] overflow-y-auto text-[11px] text-slate-600 dark:text-slate-400 font-medium leading-relaxed whitespace-pre-line">
                   {texts.privacyContent}
                 </div>
-                
-                <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-wider">
-                  {privacyRead ? (
-                    <span className="text-emerald-600">{texts.readyToAgree}</span>
-                  ) : (
-                    <span className="text-amber-500 animate-pulse">{texts.scrollDown}</span>
-                  )}
-                </div>
 
-                <div 
-                  onClick={() => {
-                    if (privacyRead) {
-                      setAgreedToPrivacy(!agreedToPrivacy);
-                      setShowPrivacyError(false);
-                    } else {
-                      setShowPrivacyError(true);
-                    }
-                  }} 
-                  className={`flex items-start gap-3.5 p-3 rounded-xl border transition-all ${agreedToPrivacy ? 'bg-primary/5 border-primary/20' : 'bg-transparent border-transparent'} ${!privacyRead ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+                <div
+                  onClick={() => setAgreedToPrivacy(!agreedToPrivacy)}
+                  className={`flex items-start gap-3.5 p-3 rounded-xl border transition-all cursor-pointer ${agreedToPrivacy ? 'bg-primary/5 border-primary/20' : 'bg-transparent border-transparent'}`}
                 >
                   <div className="relative flex items-center justify-center mt-0.5 shrink-0">
                     <input
                       type="checkbox"
                       checked={agreedToPrivacy}
-                      disabled={!privacyRead}
                       onChange={(e) => setAgreedToPrivacy(e.target.checked)}
-                      className="peer h-5.5 w-5.5 appearance-none rounded-md border-2 border-slate-300 dark:border-slate-700 checked:bg-primary checked:border-primary disabled:border-slate-200"
+                      className="peer h-5.5 w-5.5 appearance-none rounded-md border-2 border-slate-300 dark:border-slate-700 checked:bg-primary checked:border-primary"
                       onClick={(e) => e.stopPropagation()}
                     />
                     <Check size={14} className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none stroke-[3] transition-opacity" />
@@ -480,12 +363,6 @@ export default function EulaGate({ onAccept, forceShow = false }: EulaGateProps 
                     {texts.confirmPrivacy}
                   </span>
                 </div>
-                
-                {showPrivacyError && (
-                  <p className="text-[10px] text-red-500 font-bold leading-none pl-9 animate-bounce">
-                    {texts.readFirst}
-                  </p>
-                )}
               </div>
             )}
           </div>

@@ -306,32 +306,50 @@ export async function signInWithEmail(email: string, password: string): Promise<
 
 // ─── Phone OTP Auth ──────────────────────────────────────────────────────────
 
+// Module-level singleton to track the active reCAPTCHA verifier.
+// Having more than one active verifier causes "already initialized" errors.
+let _recaptchaVerifier: RecaptchaVerifier | null = null;
+
 /**
- * Initializes the invisible reCAPTCHA verifier for Phone Auth.
- * Must be attached to a button or container in the UI.
+ * Creates (or re-creates) the invisible reCAPTCHA verifier for Phone Auth.
+ * Destroys any existing verifier + clears the DOM container first so every
+ * call is idempotent and safe to call on retry.
  */
 export function setupRecaptcha(containerId: string): RecaptchaVerifier | null {
   const auth = getFirebaseAuth();
   if (!auth) return null;
 
   try {
+    // 1. Destroy any previously active verifier to prevent stale widget errors
+    if (_recaptchaVerifier) {
+      try {
+        _recaptchaVerifier.clear();
+      } catch (_) {
+        // Ignore errors during cleanup — widget may already be gone
+      }
+      _recaptchaVerifier = null;
+    }
+
+    // 2. Clear the DOM container so no leftover iframes/widgets remain
     const element = document.getElementById(containerId);
     if (!element) {
-      console.warn(`[FirebaseAuth] reCAPTCHA container element #${containerId} not found in DOM.`);
+      console.warn(`[FirebaseAuth] reCAPTCHA container #${containerId} not found.`);
       return null;
     }
-    // Clean up any previous reCAPTCHA widget renderings in this container
     element.innerHTML = '';
 
-    // Renders an invisible reCAPTCHA in the designated HTML element
-    return new RecaptchaVerifier(auth, element, {
+    // 3. Create a fresh invisible verifier
+    _recaptchaVerifier = new RecaptchaVerifier(auth, element, {
       size: 'invisible',
       callback: () => {
-        // reCAPTCHA solved — allows phone auth to proceed
-      }
+        // reCAPTCHA solved — phone auth will proceed automatically
+      },
     });
+
+    return _recaptchaVerifier;
   } catch (error) {
     console.error('[FirebaseAuth] reCAPTCHA initialization error:', error);
+    _recaptchaVerifier = null;
     return null;
   }
 }
