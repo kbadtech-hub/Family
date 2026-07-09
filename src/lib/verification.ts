@@ -16,7 +16,15 @@ export interface VerificationResult {
 export async function simulateIdentityVerification(
   idPhotoUrl: string,
   selfiePhotoUrl: string,
-  profileData: { full_name: string; birth_date: string }
+  profileData: { 
+    full_name: string; 
+    birth_date: string;
+    location?: {
+      country?: string;
+      region?: string;
+      city?: string;
+    }
+  }
 ): Promise<VerificationResult> {
   if (!idPhotoUrl || !selfiePhotoUrl) {
     return { isMatch: false, score: 0, reason: 'Missing images' };

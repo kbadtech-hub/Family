@@ -245,7 +245,12 @@ function OnboardingContent() {
           if (formData.id_photo) {
             simulateIdentityVerification(formData.id_photo, publicUrl, {
               full_name: formData.full_name,
-              birth_date: formData.birth_date
+              birth_date: formData.birth_date,
+              location: {
+                country: selectedCountry === 'Others' ? customCountry : selectedCountry,
+                region: selectedRegion === 'Others' ? customRegion : selectedRegion,
+                city: selectedCity === 'Others' ? customCity : selectedCity
+              }
             }).then(async (result) => {
               setIsVerifying(false);
               if (result.isMatch) {
@@ -1133,7 +1138,12 @@ function OnboardingContent() {
                         if (formData.id_photo) {
                           simulateIdentityVerification(formData.id_photo, publicUrl, {
                             full_name: formData.full_name,
-                            birth_date: formData.birth_date
+                            birth_date: formData.birth_date,
+                            location: {
+                              country: selectedCountry === 'Others' ? customCountry : selectedCountry,
+                              region: selectedRegion === 'Others' ? customRegion : selectedRegion,
+                              city: selectedCity === 'Others' ? customCity : selectedCity
+                            }
                           }).then(async (result) => {
                             setIsVerifying(false);
                             if (result.isMatch) {

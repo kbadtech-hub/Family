@@ -67,6 +67,9 @@ CREATE TABLE public.profiles (
   premium_until TIMESTAMP WITH TIME ZONE,
   is_locked BOOLEAN DEFAULT FALSE,
   last_online TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  registration_location JSONB,
+  last_login_location JSONB,
+  last_login_at TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
