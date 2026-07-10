@@ -39,3 +39,10 @@ yarn-error.log*
 google-services.json
 GoogleService-Info.plist
 
+# Firebase CLI cache (local only)
+.firebase/
+
+# Firebase App Hosting — apphosting.*.yaml local overrides only
+# apphosting.yaml itself IS committed (it contains only public config)
+# apphosting.local.yaml is for local secret overrides
+apphosting.local.yaml
