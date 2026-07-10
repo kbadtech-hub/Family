@@ -257,8 +257,18 @@ function translateFirebaseError(code: string): string {
       return 'Too many SMS requests sent. Please wait a few minutes before trying again.';
     case 'auth/invalid-phone-number':
       return 'Invalid phone number format. Please check the number and try again.';
+    case 'auth/captcha-check-failed':
+      return 'Security verification failed. Please refresh the page and try again.';
+    case 'auth/internal-error':
+      return 'Firebase internal error. Please try again in a moment.';
+    case 'auth/missing-client-identifier':
+      return 'Security check failed. Please ensure you are on the official site and try again.';
+    case 'auth/quota-exceeded':
+      return 'SMS quota exceeded for this project. Please try again later.';
+    case 'auth/app-not-authorized':
+      return 'This app is not authorized to use Firebase Authentication. Please contact support.';
     default:
-      return 'Authentication failed. Please try again.';
+      return `Authentication error (${code || 'unknown'}). Please try again.`;
   }
 }
 
