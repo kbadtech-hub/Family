@@ -3,6 +3,7 @@ import {getMessages, setRequestLocale} from 'next-intl/server';
 import {notFound} from 'next/navigation';
 import {routing} from '@/i18n/routing';
 import {Poppins, Noto_Sans_Ethiopic, Noto_Sans_Arabic} from "next/font/google";
+import type { Viewport } from 'next';
 import "@/app/globals.css";
 import ConditionalLayout from "@/components/ConditionalLayout";
 import {UIProvider} from "@/context/UIContext";
@@ -35,6 +36,15 @@ const notoArabic = Noto_Sans_Arabic({
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({locale}));
 }
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+};
+
 
 export default async function LocaleLayout({
   children,

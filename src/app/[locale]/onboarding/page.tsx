@@ -541,7 +541,13 @@ function OnboardingContent() {
           return;
         }
       }
-      setStep(s => Math.min(s + 1, 7));
+      if (step === 3) {
+        setStep(6);
+      } else if (step === 5) {
+        router.push('/dashboard');
+      } else {
+        setStep(s => Math.min(s + 1, 7));
+      }
     } catch (e) {
       console.error(e);
       setErrorMsg('An unexpected error occurred.');
@@ -552,7 +558,11 @@ function OnboardingContent() {
 
   const prevStep = () => {
     setErrorMsg('');
-    setStep(s => Math.max(s - 1, 1));
+    if (step === 6) {
+      setStep(3);
+    } else {
+      setStep(s => Math.max(s - 1, 1));
+    }
   };
 
   const handleFinish = async () => {
@@ -1237,12 +1247,10 @@ function OnboardingContent() {
 
              <button
                type="button"
-               onClick={() => {
-                 setStep(6);
-               }}
+               onClick={() => router.push('/dashboard')}
                className="w-full mt-6 bg-slate-100 hover:bg-slate-200 text-gray-600 py-4 rounded-[1.5rem] font-bold text-xs uppercase tracking-widest transition-all"
              >
-               {locale === 'am' ? 'ይህን ደረጃ ዝለል (Skip Step)' : 'Skip Verification'}
+               {locale === 'am' ? 'ወደ Dashboard ይመለሱ (Back to Dashboard)' : 'Back to Dashboard'}
              </button>
            </div>
          );
@@ -1331,14 +1339,33 @@ function OnboardingContent() {
     <div className="min-h-screen bg-[var(--secondary)] bg-opacity-10 py-12 px-4 flex items-center justify-center" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       <div className="max-w-xl w-full">
         <div className="mb-8 flex justify-between items-center px-4">
-          {[1,2,3,4,5,6,7].map(i => (
-             <React.Fragment key={i}>
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold transition-all ${step >= i ? 'bg-primary text-white scale-110 shadow-lg' : 'bg-white text-gray-300'}`}>
-                   <span className="text-[8px]">{i}</span>
-                </div>
-                {i < 7 && <div className={`flex-1 h-1 mx-1 rounded-full ${step > i ? 'bg-primary' : 'bg-white'}`} />}
-             </React.Fragment>
-          ))}
+          {(step === 4 || step === 5) ? (
+            // Verification Progress Bar (2 steps)
+            [4, 5].map((i, idx) => {
+               const displayNum = idx + 1;
+               return (
+                 <React.Fragment key={i}>
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold transition-all ${step === i ? 'bg-primary text-white scale-110 shadow-lg' : step > i ? 'bg-primary text-white' : 'bg-white text-gray-300'}`}>
+                       <span className="text-[8px]">{displayNum}</span>
+                    </div>
+                    {idx < 1 && <div className={`flex-1 h-1 mx-1 rounded-full ${step > i ? 'bg-primary' : 'bg-white'}`} />}
+                 </React.Fragment>
+               );
+            })
+          ) : (
+            // Onboarding Progress Bar (5 steps: 1, 2, 3, 6, 7)
+            [1, 2, 3, 6, 7].map((i, idx) => {
+               const displayNum = idx + 1;
+               return (
+                 <React.Fragment key={i}>
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold transition-all ${step === i ? 'bg-primary text-white scale-110 shadow-lg' : step > i || (step === 7) ? 'bg-primary text-white' : 'bg-white text-gray-300'}`}>
+                       <span className="text-[8px]">{displayNum}</span>
+                    </div>
+                    {idx < 4 && <div className={`flex-1 h-1 mx-1 rounded-full ${step > i ? 'bg-primary' : 'bg-white'}`} />}
+                 </React.Fragment>
+               );
+            })
+          )}
         </div>
 
         <div className="bg-white rounded-[2.5rem] shadow-2xl p-8 md:p-12 border border-gray-100 relative overflow-hidden">

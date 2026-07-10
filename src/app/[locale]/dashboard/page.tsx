@@ -561,7 +561,7 @@ function DashboardContent() {
         </header>
 
         {/* Verification Banner */}
-        {!profile?.onboarding_completed && profile?.verification_status !== 'verified' && profile?.verification_status !== 'pending' && !profile?.is_verified && (
+        {profile?.verification_status !== 'verified' && profile?.verification_status !== 'pending' && !profile?.is_verified && (
           <div className="mb-10 bg-gradient-to-r from-primary to-orange-400 p-8 md:p-10 rounded-[3rem] text-white shadow-2xl shadow-primary/20 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:scale-110 transition-transform duration-700" />
             <div className="relative flex flex-col md:flex-row items-center justify-between gap-8">
@@ -577,7 +577,7 @@ function DashboardContent() {
                   </p>
                </div>
                <button 
-                 onClick={() => router.push('/onboarding')}
+                 onClick={() => router.push('/onboarding?step=4')}
                  className="bg-white text-primary px-10 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
                >
                   {t('verifyNow')} <ChevronRight size={20} />
