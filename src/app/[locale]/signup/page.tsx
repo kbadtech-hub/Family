@@ -123,8 +123,8 @@ function SignupContent() {
   const [confirmAge, setConfirmAge] = useState(false);
   const [agreedToEula, setAgreedToEula] = useState(false);
   const [agreedToTermsPrivacy, setAgreedToTermsPrivacy] = useState(false);
-  const [eulaRead, setEulaRead] = useState(false);
-  const [termsPrivacyRead, setTermsPrivacyRead] = useState(false);
+  const [eulaRead, setEulaRead] = useState(true);
+  const [termsPrivacyRead, setTermsPrivacyRead] = useState(true);
   const [readingTab, setReadingTab] = useState<'eula' | 'terms' | null>(null);
   const [showReadError, setShowReadError] = useState('');
 
@@ -617,19 +617,14 @@ function SignupContent() {
                   {/* EULA Checkbox */}
                   <div 
                     onClick={() => {
-                      if (eulaRead) {
-                        setAgreedToEula(!agreedToEula);
-                        setShowReadError('');
-                      } else {
-                        setShowReadError(locale === 'am' ? 'እባክዎ መጀመሪያ የEULA ስምምነቱን ይክፈቱና ያንብቡት!' : 'Please open and read the EULA agreement first!');
-                      }
+                      setAgreedToEula(!agreedToEula);
+                      setShowReadError('');
                     }} 
                     className={`flex items-start gap-3 p-3 rounded-2xl border transition-all cursor-pointer ${agreedToEula ? 'bg-primary/5 border-primary/20' : 'bg-transparent border-transparent'}`}
                   >
                     <input
                       type="checkbox"
                       checked={agreedToEula}
-                      disabled={!eulaRead}
                       onChange={(e) => setAgreedToEula(e.target.checked)}
                       className="h-5 w-5 rounded accent-primary"
                       onClick={(e) => e.stopPropagation()}
@@ -653,19 +648,14 @@ function SignupContent() {
                   {/* Terms & Privacy Checkbox */}
                   <div 
                     onClick={() => {
-                      if (termsPrivacyRead) {
-                        setAgreedToTermsPrivacy(!agreedToTermsPrivacy);
-                        setShowReadError('');
-                      } else {
-                        setShowReadError(locale === 'am' ? 'እባክዎ መጀመሪያ የአጠቃቀም መመሪያውን ይክፈቱና ያንብቡት!' : 'Please open and read the Terms of Service first!');
-                      }
+                      setAgreedToTermsPrivacy(!agreedToTermsPrivacy);
+                      setShowReadError('');
                     }} 
                     className={`flex items-start gap-3 p-3 rounded-2xl border transition-all cursor-pointer ${agreedToTermsPrivacy ? 'bg-primary/5 border-primary/20' : 'bg-transparent border-transparent'}`}
                   >
                     <input
                       type="checkbox"
                       checked={agreedToTermsPrivacy}
-                      disabled={!termsPrivacyRead}
                       onChange={(e) => setAgreedToTermsPrivacy(e.target.checked)}
                       className="h-5 w-5 rounded accent-primary"
                       onClick={(e) => e.stopPropagation()}

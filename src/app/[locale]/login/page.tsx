@@ -124,13 +124,6 @@ function LoginContent() {
         return;
       }
 
-      // Security check: every social user must have a linked phone number
-      if (!result.hasPhone) {
-        setVerificationUser(result.firebaseUser);
-        setView('phone-verification-gate');
-        return;
-      }
-
       // Existing user → go straight to dashboard
       // New user → needs to complete onboarding first
       if (result.isNewUser) {
@@ -166,13 +159,6 @@ function LoginContent() {
         
         if (!result.success || !result.firebaseUser) {
           setError(result.error || 'Login failed. Please check your credentials.');
-          return;
-        }
-
-        // Email logins must be verified by phone number to be professional/secure
-        if (!result.hasPhone) {
-          setVerificationUser(result.firebaseUser);
-          setView('phone-verification-gate');
           return;
         }
 
