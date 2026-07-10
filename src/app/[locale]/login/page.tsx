@@ -154,29 +154,48 @@ function LoginContent() {
 
     try {
       if (view === 'email') {
-        const { signInWithEmail } = await import('@/lib/firebase-auth');
-        const result = await signInWithEmail(email, password);
-        
-        if (!result.success || !result.firebaseUser) {
-          setError(result.error || 'Login failed. Please check your credentials.');
+        // ── Email Login via Supabase Auth (direct — no Firebase needed) ─────────
+        const { supabase } = await import('@/lib/supabase');
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (signInError || !data.user) {
+          setError(signInError?.message || 'Login failed. Please check your credentials.');
           return;
         }
 
-        router.push(result.isNewUser ? '/onboarding' : '/dashboard');
+        // Check if onboarding is completed
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('onboarding_completed')
+          .eq('id', data.user.id)
+          .maybeSingle();
+
+        router.push(profile?.onboarding_completed ? '/dashboard' : '/onboarding');
+
       } else if (view === 'phone') {
-        // ── Phone Login via Derived Email and Password (No OTP!) ────────────────────
+        // ── Phone Login via Supabase Auth with derived email (No OTP!) ──────────
         const fullPhoneNumber = `${countryCode}${phone}`;
-        const derivedEmail = `${fullPhoneNumber}@phone.beteseb.online`;
+        const derivedEmail = `${fullPhoneNumber.replace('+', '')}@phone.beteseb.app`;
 
-        const { signInWithEmail } = await import('@/lib/firebase-auth');
-        const result = await signInWithEmail(derivedEmail, password);
-        
-        if (!result.success || !result.firebaseUser) {
-          setError(result.error || 'Login failed. Please check your credentials.');
+        const { supabase } = await import('@/lib/supabase');
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
+          email: derivedEmail,
+          password,
+        });
+
+        if (signInError || !data.user) {
+          setError(signInError?.message || 'Login failed. Please check your credentials.');
           return;
         }
 
-        router.push(result.isNewUser ? '/onboarding' : '/dashboard');
+        // Check if onboarding is completed
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('onboarding_completed')
+          .eq('id', data.user.id)
+          .maybeSingle();
+
+        router.push(profile?.onboarding_completed ? '/dashboard' : '/onboarding');
       }
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');

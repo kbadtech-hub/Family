@@ -277,54 +277,59 @@ function SignupContent() {
 
     try {
       if (view === 'email') {
-        // ── Email Signup via Firebase ─────────────────────────────────────
+        // ── Email Signup via Supabase Auth (direct — no Firebase needed) ──────
         const { isValid, errorKey } = validatePassword(password);
         if (!isValid) { setError(t(`errors.${errorKey}`)); setIsLoading(false); return; }
 
-        const { signUpWithEmail } = await import('@/lib/firebase-auth');
-        const result = await signUpWithEmail(email, password);
+        const { supabase } = await import('@/lib/supabase');
+        const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
 
-        if (!result.success || !result.firebaseUser) {
-          setError(result.error || 'Signup failed. Please try again.');
+        if (signUpError || !data.user) {
+          setError(signUpError?.message || 'Signup failed. Please try again.');
           return;
         }
 
-        // Store birth_date in Supabase profiles (server already created the profile)
-        const { supabase } = await import('@/lib/supabase');
-        await supabase.from('profiles').update({
+        // Save profile details
+        await supabase.from('profiles').upsert({
+          id: data.user.id,
+          email,
           full_name: fullName,
           birth_date: birthDate,
-          pref_location: searchParams.get('pref_location') || 'Local',
-          registration_location: locationCoords ?? null,
-        }).eq('id', result.firebaseUser.uid);
+          onboarding_step: 1,
+          onboarding_completed: false,
+        }, { onConflict: 'id' }).select();
 
         router.push('/onboarding');
 
       } else if (view === 'phone') {
-        // ── Phone Signup via Derived Email and Password (No OTP!) ───────────────────
+        // ── Phone Signup via Supabase Auth with derived email (No OTP!) ───────
         const { isValid, errorKey } = validatePassword(password);
         if (!isValid) { setError(t(`errors.${errorKey}`)); setIsLoading(false); return; }
 
         const fullPhoneNumber = `${countryCode}${phone}`;
-        const derivedEmail = `${fullPhoneNumber}@phone.beteseb.online`;
+        const derivedEmail = `${fullPhoneNumber.replace('+', '')}@phone.beteseb.app`;
 
-        const { signUpWithEmail } = await import('@/lib/firebase-auth');
-        const result = await signUpWithEmail(derivedEmail, password);
+        const { supabase } = await import('@/lib/supabase');
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email: derivedEmail,
+          password,
+        });
 
-        if (!result.success || !result.firebaseUser) {
-          setError(result.error || 'Signup failed. Please try again.');
+        if (signUpError || !data.user) {
+          setError(signUpError?.message || 'Signup failed. Please try again.');
           return;
         }
 
-        // Store extra profile data in Supabase after phone registration (saving the actual phone number!)
-        const { supabase } = await import('@/lib/supabase');
-        await supabase.from('profiles').update({
+        // Save profile details with real phone number
+        await supabase.from('profiles').upsert({
+          id: data.user.id,
+          email: derivedEmail,
+          phone: fullPhoneNumber,
           full_name: fullName,
           birth_date: birthDate,
-          phone: fullPhoneNumber,
-          pref_location: searchParams.get('pref_location') || 'Local',
-          registration_location: locationCoords ?? null,
-        }).eq('id', result.firebaseUser.uid);
+          onboarding_step: 1,
+          onboarding_completed: false,
+        }, { onConflict: 'id' }).select();
 
         router.push('/onboarding');
       }
