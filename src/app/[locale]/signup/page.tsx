@@ -298,57 +298,35 @@ function SignupContent() {
           registration_location: locationCoords ?? null,
         }).eq('id', result.firebaseUser.uid);
 
-        // Email users must verify phone number
-        if (!result.hasPhone) {
-          setVerificationUser(result.firebaseUser);
-          setView('phone-verification-gate');
-          return;
-        }
-
         router.push('/onboarding');
 
       } else if (view === 'phone') {
-        // ── Phone Signup via Firebase OTP ─────────────────────────────────
-        const { sendPhoneOtp, confirmPhoneOtp, setupRecaptcha } = await import('@/lib/firebase-auth');
+        // ── Phone Signup via Derived Email and Password (No OTP!) ───────────────────
+        const { isValid, errorKey } = validatePassword(password);
+        if (!isValid) { setError(t(`errors.${errorKey}`)); setIsLoading(false); return; }
 
-        if (!isOtpSent) {
-          // Always create a fresh reCAPTCHA verifier — the singleton in firebase-auth
-          // automatically cleans up any previous widget before creating a new one.
-          const verifier = setupRecaptcha('recaptcha-container');
-          if (!verifier) {
-            throw new Error('reCAPTCHA verification failed to initialize. Please check your internet connection.');
-          }
-          setRecaptchaVerifier(verifier);
-          const fullPhoneNumber = `${countryCode}${phone}`;
-          const res = await sendPhoneOtp(fullPhoneNumber, verifier);
+        const fullPhoneNumber = `${countryCode}${phone}`;
+        const derivedEmail = `${fullPhoneNumber}@phone.beteseb.online`;
 
-          if (!res.success || !res.confirmationResult) {
-            setError(res.error || 'Failed to send OTP. Please check the number.');
-            return;
-          }
+        const { signUpWithEmail } = await import('@/lib/firebase-auth');
+        const result = await signUpWithEmail(derivedEmail, password);
 
-          setConfirmationResult(res.confirmationResult);
-          setIsOtpSent(true);
-        } else {
-          if (!confirmationResult) throw new Error('OTP session expired. Please try again.');
-          const result = await confirmPhoneOtp(confirmationResult, otpCode);
-
-          if (!result.success || !result.firebaseUser) {
-            setError(result.error || 'Invalid OTP code.');
-            return;
-          }
-
-          // Store extra profile data in Supabase after phone verification
-          const { supabase } = await import('@/lib/supabase');
-          await supabase.from('profiles').update({
-            full_name: fullName,
-            birth_date: birthDate,
-            pref_location: searchParams.get('pref_location') || 'Local',
-            registration_location: locationCoords ?? null,
-          }).eq('id', result.firebaseUser.uid);
-
-          router.push('/onboarding');
+        if (!result.success || !result.firebaseUser) {
+          setError(result.error || 'Signup failed. Please try again.');
+          return;
         }
+
+        // Store extra profile data in Supabase after phone registration (saving the actual phone number!)
+        const { supabase } = await import('@/lib/supabase');
+        await supabase.from('profiles').update({
+          full_name: fullName,
+          birth_date: birthDate,
+          phone: fullPhoneNumber,
+          pref_location: searchParams.get('pref_location') || 'Local',
+          registration_location: locationCoords ?? null,
+        }).eq('id', result.firebaseUser.uid);
+
+        router.push('/onboarding');
       }
     } catch (err: any) {
       setError(err.message || 'Signup failed. Please try again.');
@@ -928,8 +906,8 @@ function SignupContent() {
                   </div>
                 )}
 
-                {/* Password field — only shown for email signup. Phone uses OTP instead. */}
-                {view === 'email' && (
+                {/* Password field — shown for both email and phone signup. */}
+                {(view === 'email' || view === 'phone') && (
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-2">{t('password')}</label>
                     <div className="relative group">
@@ -969,15 +947,11 @@ function SignupContent() {
 
                 <button
                   type="submit"
-                  disabled={isLoading || (isOtpSent && otpCode.length < 6)}
+                  disabled={isLoading}
                   className="w-full bg-primary text-white py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl shadow-primary/20 hover:shadow-2xl hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale-[0.5] disabled:cursor-not-allowed mt-4"
                 >
                   {isLoading ? (
                     <Loader2 className="animate-spin" size={18} />
-                  ) : view === 'phone' && !isOtpSent ? (
-                    <>{locale === 'am' ? 'ኮድ ላክ' : 'Send OTP Code'} <ChevronRight size={18} /></>
-                  ) : view === 'phone' && isOtpSent ? (
-                    <>{locale === 'am' ? 'አረጋግጥና ተመዝገብ' : 'Verify & Register'} <ChevronRight size={18} /></>
                   ) : (
                     <>{locale === 'am' ? 'ቀጥል' : 'Continue'} <ChevronRight size={18} /></>
                   )}

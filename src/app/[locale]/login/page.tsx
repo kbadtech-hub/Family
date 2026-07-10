@@ -164,38 +164,19 @@ function LoginContent() {
 
         router.push(result.isNewUser ? '/onboarding' : '/dashboard');
       } else if (view === 'phone') {
-        const { sendPhoneOtp, confirmPhoneOtp, setupRecaptcha } = await import('@/lib/firebase-auth');
-        
-        if (!isOtpSent) {
-          let verifier = recaptchaVerifier;
-          if (!verifier) {
-            verifier = setupRecaptcha('recaptcha-container');
-            if (verifier) setRecaptchaVerifier(verifier);
-          }
-          if (!verifier) {
-            throw new Error('reCAPTCHA verification failed to initialize. Please check your internet connection.');
-          }
-          const fullPhoneNumber = `${countryCode}${phone}`;
-          const res = await sendPhoneOtp(fullPhoneNumber, verifier);
-          
-          if (!res.success || !res.confirmationResult) {
-            setError(res.error || 'Failed to send OTP. Please check the number.');
-            return;
-          }
-          
-          setConfirmationResult(res.confirmationResult);
-          setIsOtpSent(true);
-        } else {
-          if (!confirmationResult) throw new Error('Confirmation flow has expired.');
-          const result = await confirmPhoneOtp(confirmationResult, otpCode);
-          
-          if (!result.success || !result.firebaseUser) {
-            setError(result.error || 'Invalid OTP code.');
-            return;
-          }
+        // ── Phone Login via Derived Email and Password (No OTP!) ────────────────────
+        const fullPhoneNumber = `${countryCode}${phone}`;
+        const derivedEmail = `${fullPhoneNumber}@phone.beteseb.online`;
 
-          router.push(result.isNewUser ? '/onboarding' : '/dashboard');
+        const { signInWithEmail } = await import('@/lib/firebase-auth');
+        const result = await signInWithEmail(derivedEmail, password);
+        
+        if (!result.success || !result.firebaseUser) {
+          setError(result.error || 'Login failed. Please check your credentials.');
+          return;
         }
+
+        router.push(result.isNewUser ? '/onboarding' : '/dashboard');
       }
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
@@ -555,8 +536,8 @@ function LoginContent() {
                   </div>
                 )}
 
-                {/* Password field — only shown for email login */}
-                {view === 'email' && (
+                {/* Password field — shown for both email and phone login */}
+                {(view === 'email' || view === 'phone') && (
                   <div className="space-y-1.5">
                     <div className="flex justify-between items-center ml-2">
                       <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t('password')}</label>
@@ -585,15 +566,11 @@ function LoginContent() {
 
                 <button
                   type="submit"
-                  disabled={isLoading || (isOtpSent && otpCode.length < 6)}
+                  disabled={isLoading}
                   className="w-full bg-primary text-white py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl shadow-primary/20 hover:shadow-2xl hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 mt-4"
                 >
                   {isLoading ? (
                     <Loader2 className="animate-spin" size={18} />
-                  ) : view === 'phone' && !isOtpSent ? (
-                    <>{locale === 'am' ? 'ኮድ ላክ' : 'Send OTP Code'} <ChevronRight size={18} /></>
-                  ) : view === 'phone' && isOtpSent ? (
-                    <>{locale === 'am' ? 'አረጋግጥና ግባ' : 'Verify & Sign In'} <ChevronRight size={18} /></>
                   ) : (
                     <>{t('signIn')} <ChevronRight size={18} /></>
                   )}
