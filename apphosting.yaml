@@ -94,17 +94,18 @@ env:
     availability:
       - RUNTIME
 
-  # ── Secrets (stored in Google Secret Manager) ──
-  # Run these commands once to create the secrets:
-  #   firebase apphosting:secrets:set supabase-service-role-key
-  #   firebase apphosting:secrets:set resend-api-key
-  #   firebase apphosting:secrets:set firebase-private-key
-
+  # ── Server-side secrets (direct values) ──
   - variable: SUPABASE_SERVICE_ROLE_KEY
-    secret: supabase-service-role-key
+    value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wcmV5eWpjbGZrbHZvZnpmb3NjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzExNzYyMywiZXhwIjoyMDkyNjkzNjIzfQ.uplICXpCoqzPZZb55yKhoWa-srZhNOyhqzBfI_SSEMk
+    availability:
+      - RUNTIME
 
   - variable: RESEND_API_KEY
-    secret: resend-api-key
+    value: re_3HiM8ZnY_L8wrQ5XZjXWW69sSd6CQDVCi
+    availability:
+      - RUNTIME
 
   - variable: FIREBASE_PRIVATE_KEY
-    secret: firebase-private-key
+    value: "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCz8rgVfEquugw76lC0myWbMA1xbQgZxoZEn06FcJXKSYvYOSvKgANlDY5z+MQkFNxG49izKylwV5R63uA0lQpegaScKO3LRK+U/K0LUTBRDRtFdfBp5yxoe8k3bi8BAgjy3+FZymSdt8KdQpHmGoGCEW1Ur+DyMFHp8B92zCOZcEBgdybEhspoz8eU3EFS3ZmaAHz/6kcm5wivCpTwxMycPtWl+P2Aewv6e4iU+UL8HjvuAABVxTNeKE4RcvE84/SAafLDI6F1cBNwssUOPaIKMt6EaH+4W6FKMswNNoSEUi9juVsCBxg/h5Mhx8/ft4bk1asXMKGJ31fme22yqOyfAgMBAAECggEANEHQY6zso0E0PFIXjdtgWGjj/oSDTbjxVQxOaUIAvfYNvoUbynrSgY4mSFd93lyQe6W/UIjAR/enDueahKqjkD5l51ObeuQ/eSzHs/mn5mHAAbP2VUrlApKwJIDC9a/5mU6aytCT15l90t16MTCRW4xkC6vnz21o3F73RDCURgJuRSO54OFuPQgSfrNvE2mJDujJqEyV129nj4hk7nfRlocEfVYLpH/ncV0d68ZNrP+7HiHr0HuS2c03YTic7K9230WFs1jwK2REUpoUIxw6F4L2QkxpRS3ZVIFZXAgL1IqQFoasWDQYzwvFwKSJaPjI5w6Ateh9jxpGF1O3J/s5gQKBgQDk0gOx9+l9LPBYlcf9T6c47Wv5LCTkCoy5q1jR9VQY+l+mVcCmmPcvb8R235evyUdF9siSAnO8CuPuXedarUvMqx/n2HlElLd1sJle3DLr4YX6YVXgQjEloRV6Tq+dGr5eYDHGr/Ay5FzxcNFkqjSOdPOLPd1FXcxyUib38+bz2QKBgQDJUpgOZuFSa3VWlflJMXnJsZzmmNNLKuq7f3HIRTISrDGuBG4F11N+C3X5zrhJqGH9NEUtumpHXgbp5C8tdskRylyXjIbOBgBlDloWtfbzA84sDmBEnmxb/fs8eRnKgv6b8sJnCF8x7lAfUXu3wIMNh8fDdjPIwR0Mui8IXY4xNwKBgQCB6Rpf+Dh/8Pujz6Xzkz2FfIZIuV9YeQTchQOwcHCGnd+gOB9gdoggTnxkYR1lmAj3F91XyDydDjHKK1YmjSzzzlQW9TgkT6q5DsKEsM/YS/oc5RY0dGAi1Qm0nuflckGSo1qfS1Q8EJsUGNFJLbkZCB0deMofj9l7LlkhfUAqQQKBgD8Q4pVQYTFifEV9gbQODarDOvV51mbrsNC/obMtCfyTeJScyqKFy5/mkzSIL27Tkq6xGyKyDO0CZYQLeUPyvBYYoFzRJsGPW7xMfKg0pIGIJaPjdQDJ6AQBUhylixDHbF8J8yA3nSqVDwBglDMB2Yv5hviSJLK03BbKlEU4mXyNAoGAPajsNo1oSvnKZVoQY616RZrTiNXY+U9y0f82rw8ixML07Mv0xvpWfIZsW2N9qCPHNzgFjBqdtd+v+rgEZ/AdhbJfWH4vyleQlZ8l2rrloBKwSgBHDkL7z/upbLJ2prC0GBbLzOuDmDzBJ5UQIx2tYfIAp4mfc4Ex4OcDTmt7MuQ=\n-----END PRIVATE KEY-----\n"
+    availability:
+      - RUNTIME
