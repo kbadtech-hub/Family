@@ -25,7 +25,7 @@ import { getAuth } from 'firebase-admin/auth';
 function getFirebaseAdmin() {
   if (getApps().length > 0) return getApps()[0];
 
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/^"|"$/g, '').replace(/\\n/g, '\n');
 
   return initializeApp({
     credential: cert({
