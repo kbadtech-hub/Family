@@ -17,6 +17,8 @@ export default function VerificationGate({ userId, onVerified }: VerificationGat
   const [idUrl, setIdUrl] = useState('');
   const [selfieUrl, setSelfieUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const idInputRef = useRef<HTMLInputElement>(null);
   const selfieInputRef = useRef<HTMLInputElement>(null);
 
@@ -88,18 +90,79 @@ export default function VerificationGate({ userId, onVerified }: VerificationGat
   const handleSubmit = async () => {
     if (!idUrl || !selfieUrl) return;
 
-    const { error } = await supabase.from('verifications').upsert({
-      user_id: userId,
-      doc_type: docType,
-      id_url: idUrl,
-      selfie_url: selfieUrl,
-      status: 'pending'
-    });
+    setIsVerifying(true);
+    setErrorMsg('');
 
-    if (!error) {
-      setStatus('pending');
-    } else {
-      alert('Submit failed: ' + error.message);
+    try {
+      // 1. Fetch user profile data to check against ID
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('full_name, birth_date, location')
+        .eq('id', userId)
+        .single();
+
+      if (profileError || !profile) {
+        throw new Error(profileError?.message || 'Failed to retrieve profile data');
+      }
+
+      // 2. Call simulateIdentityVerification helper
+      const { simulateIdentityVerification } = await import('@/lib/verification');
+      const result = await simulateIdentityVerification(idUrl, selfieUrl, {
+        full_name: profile.full_name || '',
+        birth_date: profile.birth_date || '',
+        location: profile.location || {}
+      });
+
+      if (result.isMatch) {
+        // AI verified successfully
+        const { error: upsertError } = await supabase.from('verifications').upsert({
+          user_id: userId,
+          doc_type: docType,
+          id_url: idUrl,
+          selfie_url: selfieUrl,
+          id_data: result.extractedData,
+          match_score: result.score,
+          status: 'verified',
+          verified_at: new Date().toISOString()
+        });
+
+        if (upsertError) throw upsertError;
+
+        await supabase.from('profiles').update({
+          verification_status: 'verified',
+          is_verified: true,
+          video_selfie_url: selfieUrl
+        }).eq('id', userId);
+
+        setStatus('verified');
+        onVerified();
+      } else {
+        // AI verification failed
+        const { error: upsertError } = await supabase.from('verifications').upsert({
+          user_id: userId,
+          doc_type: docType,
+          id_url: idUrl,
+          selfie_url: selfieUrl,
+          id_data: result.extractedData,
+          match_score: result.score || 0,
+          status: 'rejected',
+          verified_at: null
+        });
+
+        if (upsertError) throw upsertError;
+
+        await supabase.from('profiles').update({
+          verification_status: 'rejected',
+          is_verified: false
+        }).eq('id', userId);
+
+        setStatus('rejected');
+        setErrorMsg(result.reason || t('rejected'));
+      }
+    } catch (err: any) {
+      alert('Verification process error: ' + err.message);
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -147,7 +210,7 @@ export default function VerificationGate({ userId, onVerified }: VerificationGat
               onClick={() => idInputRef.current?.click()}
               className={`relative group cursor-pointer border-2 border-dashed rounded-[2.5rem] p-10 flex flex-col items-center gap-4 transition-all duration-500 ${idUrl ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-primary/50 hover:bg-muted'}`}
             >
-              <input type="file" ref={idInputRef} aria-label="Upload ID document" className="hidden" onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0], 'id')} />
+              <input type="file" ref={idInputRef} accept="image/*" capture="environment" aria-label="Take photo of ID document" className="hidden" onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0], 'id')} />
               {idUrl ? (
                 <>
                   <div className="w-16 h-16 bg-primary text-white rounded-2xl flex items-center justify-center">
@@ -173,7 +236,7 @@ export default function VerificationGate({ userId, onVerified }: VerificationGat
               onClick={() => selfieInputRef.current?.click()}
               className={`relative group cursor-pointer border-2 border-dashed rounded-[2.5rem] p-10 flex flex-col items-center gap-4 transition-all duration-500 ${selfieUrl ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-primary/50 hover:bg-muted'}`}
             >
-              <input type="file" ref={selfieInputRef} aria-label="Upload selfie" className="hidden" onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0], 'selfie')} />
+              <input type="file" ref={selfieInputRef} accept="image/*" capture="user" aria-label="Take selfie" className="hidden" onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0], 'selfie')} />
               {selfieUrl ? (
                 <>
                   <div className="w-16 h-16 bg-primary text-white rounded-2xl flex items-center justify-center">
@@ -196,17 +259,23 @@ export default function VerificationGate({ userId, onVerified }: VerificationGat
           </div>
 
           <button
-            disabled={!idUrl || !selfieUrl || isUploading}
+            disabled={!idUrl || !selfieUrl || isUploading || isVerifying}
             onClick={handleSubmit}
-            className="w-full bg-primary text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-30 disabled:grayscale disabled:hover:scale-100"
+            className="w-full bg-primary text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-30 disabled:grayscale disabled:hover:scale-100 flex items-center justify-center gap-2"
           >
-            {isUploading ? t('nav.processing') : t('submitAI')}
+            {(isUploading || isVerifying) && <Loader2 className="animate-spin" size={20} />}
+            {isUploading ? t('nav.processing') : isVerifying ? 'Verifying...' : t('submitAI')}
           </button>
 
           {status === 'rejected' && (
-            <div className="p-6 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-4 text-red-600">
-              <AlertCircle size={24} />
-              <p className="text-sm font-bold">{t('rejected')}</p>
+            <div className="p-6 bg-red-50 border border-red-100 rounded-2xl flex flex-col gap-2 text-red-600">
+              <div className="flex items-center gap-4">
+                <AlertCircle size={24} />
+                <p className="text-sm font-bold">{t('rejected')}</p>
+              </div>
+              {errorMsg && (
+                <p className="text-xs font-semibold pl-10 border-l border-red-200 mt-1">{errorMsg}</p>
+              )}
             </div>
           )}
         </div>

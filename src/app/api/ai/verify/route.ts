@@ -97,31 +97,116 @@ export async function POST(req: Request) {
 
     // 2. Name Matching Check
     const fullName = (profileData?.full_name || '').toLowerCase().trim();
-    const nameParts = fullName.split(' ');
-    
-    // Check if at least the first and last name appear in the ID text
+    if (!fullName) {
+      return NextResponse.json({
+        isMatch: false,
+        reason: 'Profile name is empty. Please set your full name in your profile before verification.'
+      });
+    }
+
+    const nameParts = fullName.split(' ').filter((part: string) => part.trim().length > 0);
+    if (nameParts.length === 0) {
+      return NextResponse.json({
+        isMatch: false,
+        reason: 'Invalid profile name.'
+      });
+    }
+
+    // Check if all parts of the full name appear in the ID text (legible)
     const nameMatches = nameParts.every((part: string) => 
-      part.length < 3 || lowerText.includes(part)
+      part.length < 2 || lowerText.includes(part)
     );
 
     if (!nameMatches) {
       return NextResponse.json({
         isMatch: false,
-        reason: 'The name on the ID does not match the name registered on your profile. Please use your real name.'
+        reason: 'The full name on the ID does not match the name registered on your profile. Please ensure all parts of your registered name are clearly visible on the ID document.'
       });
     }
 
-    // 3. Birth Date / Age Check (Checking if birth year appears in the ID text)
-    let birthDateMatches = true;
-    if (profileData?.birth_date) {
-      const birthYear = new Date(profileData.birth_date).getFullYear().toString();
-      birthDateMatches = lowerText.includes(birthYear);
+    // 3. Birth Date Check (Checking if day, month, and year appear in the ID text)
+    const birthDateStr = profileData?.birth_date;
+    if (!birthDateStr) {
+      return NextResponse.json({
+        isMatch: false,
+        reason: 'No birth date provided on your profile. Please set your birth date before verification.'
+      });
     }
+
+    const dateObj = new Date(birthDateStr);
+    if (isNaN(dateObj.getTime())) {
+      return NextResponse.json({
+        isMatch: false,
+        reason: 'Invalid birth date registered on your profile.'
+      });
+    }
+
+    const year = dateObj.getFullYear().toString(); // e.g. "1995"
+    const monthVal = dateObj.getMonth() + 1; // 1-12
+    const day = dateObj.getDate().toString(); // e.g. "25"
+    const dayPadded = day.padStart(2, '0'); // e.g. "25"
+    const month = monthVal.toString(); // e.g. "3"
+    const monthPadded = month.padStart(2, '0'); // e.g. "03"
+
+    // Standard English month names
+    const monthsEnglish = [
+      ['jan', 'january'],
+      ['feb', 'february'],
+      ['mar', 'march'],
+      ['apr', 'april'],
+      ['may'],
+      ['jun', 'june'],
+      ['jul', 'july'],
+      ['aug', 'august'],
+      ['sep', 'september', 'sept'],
+      ['oct', 'october'],
+      ['nov', 'november'],
+      ['dec', 'december']
+    ];
+    const currentEngMonths = monthsEnglish[monthVal - 1] || [];
+
+    // Ethiopian/Amharic month names and common transliterations
+    const monthsAmharic = [
+      ['መስከረም', 'meskerem', 'ጃንዋሪ', 'january'],
+      ['ጥቅምት', 'tikimt', 'ፌብሩዋሪ', 'february'],
+      ['ህዳር', 'hidar', 'ማርች', 'march'],
+      ['ታህሳስ', 'tahsas', 'ኤፕሪል', 'april'],
+      ['ጥር', 'tir', 'ሜይ', 'may'],
+      ['የካቲት', 'yakatit', 'ጁን', 'june'],
+      ['መጋቢት', 'megabit', 'ጁላይ', 'july'],
+      ['ሚያዝያ', 'miyazya', 'ኦገስት', 'august'],
+      ['ግንቦት', 'ginbot', 'ሴፕቴምበር', 'september'],
+      ['ሰኔ', 'sene', 'ኦክቶበር', 'october'],
+      ['ሐምሌ', 'hamle', 'ኖቬምበር', 'november'],
+      ['ነሐሴ', 'nehase', 'ዲሴምበር', 'december'],
+      ['ጳጉሜ', 'pagume']
+    ];
+    const currentAmhMonths = monthsAmharic[monthVal - 1] || [];
+
+    // Match Year
+    const hasYear = lowerText.includes(year);
+
+    // Match Month (numeric, padded, slash/hyphen wrapped, or English/Amharic name)
+    const hasMonth = lowerText.includes(monthPadded) ||
+                     lowerText.includes(`/${month}/`) ||
+                     lowerText.includes(`-${month}-`) ||
+                     lowerText.includes(` ${month} `) ||
+                     currentEngMonths.some(m => lowerText.includes(m)) ||
+                     currentAmhMonths.some(m => lowerText.includes(m));
+
+    // Match Day (numeric, padded, or boundary word)
+    const hasDay = lowerText.includes(dayPadded) ||
+                   new RegExp(`\\b${day}\\b`).test(lowerText) ||
+                   lowerText.includes(`/${day}/`) ||
+                   lowerText.includes(`-${day}-`) ||
+                   lowerText.includes(` ${day} `);
+
+    const birthDateMatches = hasYear && hasMonth && hasDay;
 
     if (!birthDateMatches) {
       return NextResponse.json({
         isMatch: false,
-        reason: 'The birth date / age on the ID does not match the birth date on your profile.'
+        reason: `Could not verify your complete birth date (${birthDateStr}) on the ID document. Make sure the day (${day}), month (${monthPadded}), and year (${year}) are clearly visible and match your profile.`
       });
     }
 

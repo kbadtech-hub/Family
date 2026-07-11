@@ -1015,11 +1015,7 @@ function OnboardingContent() {
                     <span className="text-xs font-black uppercase tracking-widest text-gray-400">{t('idVerification.uploadClick').replace('{type}', '')}</span>
                  </div>
                )}
-               <input 
-                 type="file" 
-                 accept="image/*" 
-                 aria-label={t('idVerification.doc')}
-                 className="hidden" 
+               <input type="file" accept="image/*" capture="environment" aria-label={t('idVerification.doc')} className="hidden" 
                  onChange={async (e) => {
                    const file = e.target.files?.[0];
                    if (!file || !userId) return;
@@ -1124,88 +1120,7 @@ function OnboardingContent() {
                 </button>
               )}
 
-              {/* Upload fallback button */}
-              {!cameraActive && !isRecording && (
-                <label className="bg-white text-accent border border-accent/20 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest cursor-pointer hover:bg-muted transition-all flex items-center justify-center">
-                  {locale === 'am' ? 'ፋይል ይምረጡ' : 'Upload File'}
-                  <input
-                    type="file"
-                    accept="video/*,image/*"
-                    className="hidden"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file || !userId) return;
-                      setIsSubmitting(true);
-                      const isVideo = file.type.startsWith('video/');
-                      const fileExt = isVideo ? 'mp4' : 'jpg';
-                      const fileName = `${userId}/verification-selfie-${Date.now()}.${fileExt}`;
-                      const { error } = await supabase.storage.from('user_photos').upload(fileName, file);
-                      if (!error) {
-                        const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(fileName);
-                        updateField('selfie_photo', publicUrl);
-                        
-                        setIsVerifying(true);
-                        if (formData.id_photo) {
-                          simulateIdentityVerification(formData.id_photo, publicUrl, {
-                            full_name: formData.full_name,
-                            birth_date: formData.birth_date,
-                            location: {
-                              country: selectedCountry === 'Others' ? customCountry : selectedCountry,
-                              region: selectedRegion === 'Others' ? customRegion : selectedRegion,
-                              city: selectedCity === 'Others' ? customCity : selectedCity
-                            }
-                          }).then(async (result) => {
-                            setIsVerifying(false);
-                            if (result.isMatch) {
-                              await supabase.from('verifications').insert({
-                                user_id: userId,
-                                id_url: formData.id_photo,
-                                selfie_url: publicUrl,
-                                id_data: result.extractedData,
-                                match_score: result.score,
-                                status: 'verified',
-                                verified_at: new Date().toISOString()
-                              });
-
-                              await supabase.from('profiles').update({
-                                verification_status: 'verified',
-                                is_verified: true,
-                                video_selfie_url: publicUrl
-                              }).eq('id', userId);
-
-                              setFormData(prev => ({ ...prev, verification_status: 'verified' }));
-                              setErrorMsg('');
-                            } else {
-                              setFormData(prev => ({ ...prev, verification_status: 'rejected' }));
-                              setErrorMsg(result.reason || t('idVerification.rejected'));
-                            }
-                          });
-                        } else {
-                          // Manual review flow
-                          await supabase.from('verifications').insert({
-                            user_id: userId,
-                            id_url: '',
-                            selfie_url: publicUrl,
-                            status: 'pending',
-                            verified_at: null
-                          });
-
-                          await supabase.from('profiles').update({
-                            verification_status: 'pending',
-                            is_verified: false,
-                            video_selfie_url: publicUrl
-                          }).eq('id', userId);
-
-                          setIsVerifying(false);
-                          setFormData(prev => ({ ...prev, verification_status: 'pending' }));
-                          setErrorMsg('');
-                        }
-                      }
-                      setIsSubmitting(false);
-                    }}
-                  />
-                </label>
-              )}
+              
             </div>
 
             {(isVerifying || formData.verification_status === 'verified' || errorMsg) && (
