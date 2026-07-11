@@ -2,7 +2,7 @@
   "name": "ቤተሰብ Beteseb Matchmaking",
   "short_name": "ቤተሰብ",
   "description": "Global Ethiopian Marriage Matching & Counseling",
-  "start_url": "/",
+  "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#FF6B6B",

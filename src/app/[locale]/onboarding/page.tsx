@@ -385,8 +385,7 @@ function OnboardingContent() {
           }
         });
       } else {
-        // No session — send to landing page, not login
-        router.push('/');
+        router.push('/login');
       }
     });
 
