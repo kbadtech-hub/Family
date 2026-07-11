@@ -86,6 +86,25 @@ export const OfflineCache = {
       console.error("Error during offline sync process:", e);
     }
     return false;
+  },
+
+  // Clear ALL cached Beteseb keys on logout to prevent stale session data
+  clearAll: () => {
+    if (typeof window !== 'undefined') {
+      try {
+        const keysToRemove: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith('beteseb_')) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach((key) => localStorage.removeItem(key));
+        console.log(`[OfflineCache] Cleared ${keysToRemove.length} cached keys on logout.`);
+      } catch (e) {
+        console.error('[OfflineCache] clearAll failed:', e);
+      }
+    }
   }
 };
 

@@ -37,6 +37,7 @@ import SwipeCards from '@/components/dashboard/SwipeCards';
 import AcademyView from '@/components/dashboard/AcademyView';
 import SubscriptionGate from '@/components/SubscriptionGate';
 import { getUserTier, calculateCompletionRate } from '@/lib/tiers';
+import { unregisterPushNotifications } from '@/lib/push-notifications';
 
 function DashboardContent() {
   const t = useTranslations('Dashboard');
@@ -127,10 +128,27 @@ function DashboardContent() {
   };
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (!error) {
-       router.push('/');
+    try {
+      // 1. Clear all offline/local caches so no stale data persists
+      if (typeof window !== 'undefined') {
+        localStorage.clear();
+        sessionStorage.clear();
+        // Clear Supabase auth cookies as well
+        document.cookie.split(';').forEach((c) => {
+          document.cookie = c
+            .replace(/^ +/, '')
+            .replace(/=.*/, '=;expires=' + new Date(0).toUTCString() + ';path=/');
+        });
+      }
+      // 2. Unregister Firebase push notifications
+      await unregisterPushNotifications().catch(() => {});
+      // 3. Sign out from Supabase (clears server-side session)
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.error('[Logout] Error during sign-out:', e);
     }
+    // 4. Always redirect to landing page using replace() so user cannot go Back to dashboard
+    router.replace('/');
   };
 
   const renderRoyalAvatar = (avatarUrl: string | null, gender: string | null, sizeClass = "w-10 h-10") => {
@@ -181,7 +199,12 @@ function DashboardContent() {
   useEffect(() => {
     const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        // No active session — clear stale cache and redirect to login
+        OfflineCache.clearAll?.();
+        router.replace('/login');
+        return;
+      }
 
       // Load Cached Profile if available to show immediately
       const cachedProfile = OfflineCache.getCachedData(`profile_${user.id}`);
@@ -223,7 +246,10 @@ function DashboardContent() {
 
       // 2. Fetch Verification — profiles.verification_status is the source of truth
       // If the profile says 'verified', trust it permanently (no re-verification needed)
-      const profileVerifyStatus = profileData?.verification_status || profileData?.is_verified ? 'verified' : null;
+      // NOTE: Parentheses are REQUIRED — without them JS evaluates left-to-right and
+      //       any truthy verification_status string (e.g. 'unverified') makes the whole
+      //       expression resolve to 'verified', which is incorrect.
+      const profileVerifyStatus = (profileData?.verification_status === 'verified' || profileData?.is_verified === true) ? 'verified' : null;
       
       if (profileVerifyStatus === 'verified') {
         setVerificationStatus('verified');
@@ -581,8 +607,9 @@ function DashboardContent() {
           </div>
         </header>
 
-        {/* Verification Banner */}
-        {profile?.verification_status !== 'verified' && profile?.verification_status !== 'pending' && !profile?.is_verified && (
+        {/* Verification Banner — use the synced local verificationStatus state, NOT the raw
+            profile fields which may be stale on first render before DB sync completes */}
+        {verificationStatus !== 'verified' && verificationStatus !== 'pending' && verificationStatus !== 'loading' && (
           <div className="mb-10 bg-gradient-to-r from-primary to-orange-400 p-8 md:p-10 rounded-[3rem] text-white shadow-2xl shadow-primary/20 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:scale-110 transition-transform duration-700" />
             <div className="relative flex flex-col md:flex-row items-center justify-between gap-8">

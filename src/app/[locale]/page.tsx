@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { Link } from '@/i18n/routing';
+import { Link, useRouter } from '@/i18n/routing';
 import { 
   Heart, 
   ShieldCheck, 
@@ -81,8 +81,22 @@ const getAiMonitoringLabel = (lang: string) => {
 export default function Home() {
   const t = useTranslations('Index');
   const locale = useLocale();
+  const router = useRouter();
   
   const [settings, setSettings] = useState<SystemSettings | null>(null);
+
+  // If user is already authenticated, send them straight to the dashboard.
+  // This handles the case where they open the app after being logged in
+  // (but NOT after logging out — signOut() clears the session token).
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        router.replace('/dashboard');
+      }
+    };
+    checkSession();
+  }, [router]);
 
   useEffect(() => {
     const fetchSettings = async () => {
