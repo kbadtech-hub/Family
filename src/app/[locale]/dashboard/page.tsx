@@ -200,9 +200,9 @@ function DashboardContent() {
     const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        // No active session — clear stale cache and redirect to login
+        // No active session — clear stale cache and redirect to landing page
         OfflineCache.clearAll?.();
-        router.replace('/login');
+        router.replace('/');
         return;
       }
 
