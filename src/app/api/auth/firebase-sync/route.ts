@@ -19,6 +19,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
+import crypto from 'crypto';
 
 // ─── Firebase Admin SDK (singleton) ──────────────────────────────────────────
 
@@ -51,6 +52,17 @@ function getSupabaseAdmin() {
   });
 }
 
+// Helper to derive a valid UUID v3 deterministically from a Firebase alphanumeric UID
+function firebaseUidToUuid(uid: string): string {
+  const hash = crypto.createHash('md5').update(uid).digest('hex');
+  const part1 = hash.substring(0, 8);
+  const part2 = hash.substring(8, 12);
+  const part3 = '3' + hash.substring(13, 16); // Version 3
+  const part4 = 'a' + hash.substring(17, 20); // Variant
+  const part5 = hash.substring(20, 32);
+  return `${part1}-${part2}-${part3}-${part4}-${part5}`;
+}
+
 // ─── POST Handler ─────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
@@ -74,6 +86,7 @@ export async function POST(request: NextRequest) {
     }
 
     const firebaseUid = decodedToken.uid;
+    const supabaseUid = firebaseUidToUuid(firebaseUid);
     const email       = decodedToken.email       || '';
     const phone       = decodedToken.phone       || '';
     const fullName    = decodedToken.name         || '';
@@ -81,7 +94,6 @@ export async function POST(request: NextRequest) {
 
     // Generate a secure derived password that only our server can compute.
     // We use Node's crypto to create a secure SHA-256 HMAC of the UID salted with the service role key.
-    const crypto = await import('crypto');
     const derivedPassword = crypto
       .createHmac('sha256', process.env.SUPABASE_SERVICE_ROLE_KEY!)
       .update(firebaseUid)
@@ -94,12 +106,12 @@ export async function POST(request: NextRequest) {
     const supabaseAdmin = getSupabaseAdmin();
 
     // Step 3: Check if user already exists in Supabase auth.users
-    const { data: existingAuthUser } = await supabaseAdmin.auth.admin.getUserById(firebaseUid);
+    const { data: existingAuthUser } = await supabaseAdmin.auth.admin.getUserById(supabaseUid);
 
     if (!existingAuthUser?.user) {
       // Create a new Supabase auth user with the same UID as Firebase
       const { error: createError } = await supabaseAdmin.auth.admin.createUser({
-        id:             firebaseUid,       // Use Firebase UID as Supabase UID
+        id:             supabaseUid,       // Use derived UUID as Supabase UID
         email:          loginEmail,
         password:       derivedPassword,   // Set the derived secure password
         email_confirm:  true,              // Auto-confirm social login emails
@@ -116,7 +128,7 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // If user exists but might have had a different password structure, update it to match the derived one
-      const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(firebaseUid, {
+      const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(supabaseUid, {
         password: derivedPassword,
         email: loginEmail
       });
@@ -129,7 +141,7 @@ export async function POST(request: NextRequest) {
     const { data: existingProfile } = await supabaseAdmin
       .from('profiles')
       .select('id, onboarding_completed, phone')
-      .eq('id', firebaseUid)
+      .eq('id', supabaseUid)
       .maybeSingle();
 
     let isNewUser = false;
@@ -148,7 +160,7 @@ export async function POST(request: NextRequest) {
       await supabaseAdmin
         .from('profiles')
         .update(updateData)
-        .eq('id', firebaseUid);
+        .eq('id', supabaseUid);
 
       isNewUser = !existingProfile.onboarding_completed;
     } else {
@@ -156,7 +168,7 @@ export async function POST(request: NextRequest) {
       const { error: insertError } = await supabaseAdmin
         .from('profiles')
         .insert({
-          id:                   firebaseUid,
+          id:                   supabaseUid,
           email:                loginEmail,
           phone:                phone || null,
           full_name:            fullName,
@@ -180,7 +192,7 @@ export async function POST(request: NextRequest) {
       success: true,
       isNewUser,
       hasPhone,
-      profileId: firebaseUid,
+      profileId: supabaseUid,
       loginEmail,
       derivedPassword
     });
