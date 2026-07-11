@@ -168,6 +168,14 @@ export default function GiftsView({ locale }: { locale: string }) {
 
       if (error) throw error;
 
+      // Queue vendor dispatch SMS notification
+      await supabase
+        .from('sms_queue')
+        .insert({
+          recipient_phone: '+251911000000', // Mock Vendor dispatch phone
+          message_content: `ORDER DISPATCH: Gift "${deliveryGift.gift_catalog?.name_en || 'Item'}" requested for delivery to: ${deliveryAddress}. Phone: ${deliveryPhone}. Size: ${clothingSize || 'N/A'}. Date: ${deliveryDate || 'N/A'}. Details: ${specialInstructions || 'None'}.`
+        });
+
       setDeliverySuccess(locale === 'am' 
         ? 'የአካል አቅርቦት ጥያቄዎ በተሳካ ሁኔታ ቀርቧል! በአስተዳዳሪው ጸድቆ በቅርቡ ይደርሶታል።' 
         : 'Physical delivery requested successfully! Admins will process it shortly.');

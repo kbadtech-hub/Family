@@ -867,7 +867,7 @@ function OnboardingContent() {
                            <button key={c.name} type="button" aria-label={cleanName} onClick={() => {
                              if (c.name === 'Anywhere') return updateField('partner_countries', ['Anywhere']);
                              const next = formData.partner_countries.filter(pc => pc !== 'Anywhere');
-                             updateField('partner_countries', formData.partner_countries.includes(c.name) ? next.filter(pc => pc !== c.name) : [...next, c.name].slice(0, 5));
+                             updateField('partner_countries', formData.partner_countries.includes(c.name) ? next.filter(pc => pc !== c.name) : [...next, c.name].slice(0, 3));
                            }} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${formData.partner_countries.includes(c.name) ? 'bg-primary text-white' : 'bg-white text-gray-400'}`}>
                              {cleanName}
                            </button>
@@ -879,7 +879,7 @@ function OnboardingContent() {
                        if (formData.partner_countries.includes('Others')) {
                          updateField('partner_countries', next.filter(pc => pc !== 'Others'));
                        } else {
-                         updateField('partner_countries', [...next, 'Others'].slice(0, 5));
+                          updateField('partner_countries', [...next, 'Others'].slice(0, 3));
                        }
                      }} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${formData.partner_countries.includes('Others') ? 'bg-primary text-white' : 'bg-white text-gray-400'}`}>
                        {locale === 'am' ? 'ሌላ' : 'Others'}

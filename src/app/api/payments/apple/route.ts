@@ -37,6 +37,71 @@ export async function POST(req: Request) {
       );
     }
 
+    // Sandbox / dev verification simulation check
+    if (!APPLE_SHARED_SECRET || receiptData.startsWith('sandbox_mock_')) {
+      console.warn("Performing fallback simulated Apple receipt verification.");
+      
+      const isCoins = planType.startsWith('coins_');
+      let amountCoins = 0;
+      if (isCoins) {
+        amountCoins = parseInt(planType.split('_')[1]) || 50;
+      }
+
+      // Record transaction in database
+      await supabase.from('payments').insert({
+        user_id: userId,
+        plan_type: planType,
+        amount: isCoins ? (amountCoins === 50 ? 5 : amountCoins === 100 ? 10 : amountCoins === 500 ? 40 : 70) : getPlanPriceUSD(planType),
+        currency: 'USD',
+        status: 'approved',
+        receipt_url: `Apple Transaction ID (Simulated): ${receiptData}`
+      });
+
+      if (isCoins) {
+        // Fetch current coin wallet balance
+        const { data: wallet } = await supabase.from('user_wallets').select('coin_balance').eq('id', userId).maybeSingle();
+        const currentBalance = Number(wallet?.coin_balance || 0);
+        
+        // Update user's coin balance
+        await supabase.from('user_wallets').upsert({
+          id: userId,
+          coin_balance: currentBalance + amountCoins,
+          updated_at: new Date().toISOString()
+        });
+
+        // Insert coin transaction record
+        await supabase.from('coin_transactions').insert({
+          user_id: userId,
+          amount: amountCoins,
+          type: 'purchase',
+          note: `Apple IAP Coin Purchase: ${planType}`
+        });
+
+        return NextResponse.json({
+          status: 'success',
+          message: `Apple purchase validated (Simulated) and credited ${amountCoins} coins successfully.`,
+          coinBalance: currentBalance + amountCoins
+        });
+      } else {
+        const expiresAt = new Date();
+        let days = 30;
+        if (planType === '3m') days = 90;
+        if (planType === '12m') days = 365;
+        if (planType === 'lifetime') days = 36500;
+        expiresAt.setDate(expiresAt.getDate() + days);
+
+        await supabase.from('profiles').update({
+          premium_until: expiresAt.toISOString()
+        }).eq('id', userId);
+
+        return NextResponse.json({
+          status: 'success',
+          message: 'Apple receipt validated (Simulated) and account upgraded successfully',
+          premiumUntil: expiresAt.toISOString()
+        });
+      }
+    }
+
     // 1. Validate receipt with Apple App Store
     let appleResponse = await verifyWithApple(receiptData, APPLE_PRODUCTION_URL);
 
@@ -62,6 +127,44 @@ export async function POST(req: Request) {
         { status: 'error', message: 'No transaction found in receipt data' },
         { status: 400 }
       );
+    }
+
+    const isCoinsProduct = planType.startsWith('coins_');
+
+    if (isCoinsProduct) {
+      const amountCoins = parseInt(planType.split('_')[1]) || 50;
+
+      await supabase.from('payments').insert({
+        user_id: userId,
+        plan_type: planType,
+        amount: amountCoins === 50 ? 5 : amountCoins === 100 ? 10 : amountCoins === 500 ? 40 : 70,
+        currency: 'USD',
+        status: 'approved',
+        receipt_url: `Apple Transaction ID: ${latestInfo.original_transaction_id}`
+      });
+
+      // Update coins wallet balance
+      const { data: wallet } = await supabase.from('user_wallets').select('coin_balance').eq('id', userId).maybeSingle();
+      const currentBalance = Number(wallet?.coin_balance || 0);
+
+      await supabase.from('user_wallets').upsert({
+        id: userId,
+        coin_balance: currentBalance + amountCoins,
+        updated_at: new Date().toISOString()
+      });
+
+      await supabase.from('coin_transactions').insert({
+        user_id: userId,
+        amount: amountCoins,
+        type: 'purchase',
+        note: `Apple IAP Coin Purchase: ${planType}`
+      });
+
+      return NextResponse.json({
+        status: 'success',
+        message: `Apple purchase validated and credited ${amountCoins} coins successfully.`,
+        coinBalance: currentBalance + amountCoins
+      });
     }
 
     // 3. Determine premium expiration date

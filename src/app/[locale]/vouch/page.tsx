@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { useLocale } from 'next-intl';
 import { CheckCircle2, ShieldCheck, Heart, Users, Sparkles, Send } from 'lucide-react';
 import Image from 'next/image';
+import { queueSMS } from '@/lib/sms';
 
 function VouchContent() {
   const searchParams = useSearchParams();
@@ -87,6 +88,21 @@ function VouchContent() {
         .eq('id', vouchId);
 
       if (error) throw error;
+
+      // Select candidate phone details
+      const { data: candidate } = await supabase
+        .from('profiles')
+        .select('phone, full_name, preferred_language')
+        .eq('id', vouchRecord.user_id)
+        .single();
+
+      if (candidate?.phone) {
+        const text = candidate.preferred_language === 'am'
+          ? `ሰላም ${candidate.full_name}፥ ምስክርዎ ${vouchRecord.voucher_name} ምስክርነታቸውን በተሳካ ሁኔታ አስገብተዋል። አሁን የPlatinum ደረጃን ለማግኝት ብቁ ሆነዋል።`
+          : `Hello ${candidate.full_name}, your witness ${vouchRecord.voucher_name} has successfully vouched for you! Your Beteseb Platinum Tier eligibility is now active.`;
+        await queueSMS(candidate.phone, text).catch(() => {});
+      }
+
       setCompleted(true);
     } catch (err: any) {
       alert('Failed to submit vouch: ' + err.message);

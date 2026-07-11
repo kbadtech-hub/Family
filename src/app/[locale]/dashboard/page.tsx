@@ -72,6 +72,7 @@ function DashboardContent() {
     name: string;
     match_percent: number;
     image: string;
+    profile?: any;
   }
 
   const [matches, setMatches] = useState<Match[]>([]);
@@ -298,10 +299,29 @@ function DashboardContent() {
         matchQuery = matchQuery.eq('gender', 'Male');
       }
 
-      const { data: profiles } = await matchQuery.limit(10);
+      const { data: profiles } = await matchQuery.limit(20);
 
       if (profiles && profileData) {
-        const candidateIds = profiles.map(p => p.id);
+        let filteredProfiles = profiles || [];
+        if (profileData.partner_location && profileData.partner_location.length > 0) {
+          const prefs = Array.isArray(profileData.partner_location)
+            ? profileData.partner_location
+            : typeof profileData.partner_location === 'string'
+            ? [profileData.partner_location]
+            : [];
+          
+          const hasAnywhere = prefs.some((p: string) => p.toLowerCase() === 'anywhere');
+          if (!hasAnywhere) {
+            filteredProfiles = (profiles || []).filter(p => {
+              const candidateCountry = typeof p.location === 'string'
+                ? p.location
+                : p.location?.country || '';
+              return prefs.some((pref: string) => pref.trim().toLowerCase() === candidateCountry.trim().toLowerCase());
+            });
+          }
+        }
+
+        const candidateIds = filteredProfiles.map(p => p.id);
         const { data: vouchedData } = await supabase
           .from('vouch_records')
           .select('user_id')
@@ -316,17 +336,18 @@ function DashboardContent() {
           .eq('status', 'approved');
         const guardiansSet = new Set((guardiansData || []).map(g => g.user_id));
 
-        const candidatesWithTrust = profiles.map(p => ({
+        const candidatesWithTrust = filteredProfiles.map(p => ({
           ...p,
           has_vouched: vouchedSet.has(p.id),
           is_guardian_linked: guardiansSet.has(p.id)
         }));
         setCandidates(candidatesWithTrust);
-        const processedMatches = profiles.map(p => ({
+        const processedMatches = candidatesWithTrust.map(p => ({
           id: p.id,
           name: p.full_name || 'Anonymous',
           match_percent: calculateCompatibility(profileData, p),
-          image: p.avatar_url || 'https://images.unsplash.com/photo-1531123897727-8f129e16fd3c?auto=format&fit=crop&q=80&w=200'
+          image: p.avatar_url || 'https://images.unsplash.com/photo-1531123897727-8f129e16fd3c?auto=format&fit=crop&q=80&w=200',
+          profile: p
         }));
         setMatches(processedMatches);
         OfflineCache.cacheData(`matches_${user.id}`, processedMatches);
@@ -343,7 +364,7 @@ function DashboardContent() {
       // 7. Fetch Friend Suggestions (Strict Gender Separation)
       let suggestionsQuery = supabase
         .from('profiles')
-        .select('id, full_name, avatar_url, role')
+        .select('*')
         .neq('id', user.id);
       
       if (blockedIds.length > 0) {
@@ -597,38 +618,55 @@ function DashboardContent() {
                    </h2>
                  </div>
                  <div className="flex overflow-x-auto pb-6 gap-6 no-scrollbar -mx-2 px-2">
-                   {suggestions.map((person) => (
-                     <div key={person.id} className="flex-shrink-0 w-64 bg-white p-6 rounded-[2.5rem] border border-border shadow-sm hover:shadow-xl transition-all duration-500 group">
-                       <div className="relative w-20 h-20 mx-auto mb-4 rounded-2xl overflow-hidden bg-muted border border-border">
-                          {person.avatar_url ? (
-                            <Image src={person.avatar_url} alt={person.full_name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-primary/20"><UserCircle size={40} /></div>
-                          )}
-                       </div>
-                       <h3 className="font-black text-sm text-[#0F172A] text-center mb-1">{person.full_name}</h3>
-                       <p className="text-[10px] text-primary font-black uppercase tracking-widest text-center mb-4">{person.role}</p>
-                       
-                       <button 
-                         onClick={async () => {
-                           const { data: { user } } = await supabase.auth.getUser();
-                           if (!user) return;
-                           const { error } = await supabase.from('friendships').insert({
-                             sender_id: user.id,
-                             receiver_id: person.id,
-                             status: 'pending'
-                           });
-                           if (!error) {
-                             setFriendshipStatuses(prev => ({ ...prev, [person.id]: 'pending' }));
-                             setSuggestions(prev => prev.filter(s => s.id !== person.id));
-                           }
-                         }}
-                         className="w-full bg-primary/10 text-primary py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all"
-                       >
-                          {t('suggestions.addFriend')}
-                       </button>
-                     </div>
-                   ))}
+                    {suggestions.map((person) => {
+                      const personCompletion = calculateCompletionRate(person);
+                      const personTier = getUserTier(person, false); // Vouched count is optional, default false
+                      const isRoyal = personCompletion === 100 && personTier === 'diamond';
+                      return (
+                        <div key={person.id} className="flex-shrink-0 w-64 bg-white p-6 rounded-[2.5rem] border border-border shadow-sm hover:shadow-xl transition-all duration-500 group relative">
+                          <div className={`relative w-20 h-20 mx-auto mb-4 rounded-2xl overflow-hidden bg-muted border ${
+                            isRoyal
+                              ? (person.gender === 'Male' ? 'border-amber-400 ring-2 ring-amber-300' : 'border-pink-400 ring-2 ring-pink-300')
+                              : 'border-border'
+                          }`}>
+                             {isRoyal && (
+                               <div className="absolute top-1 left-1/2 -translate-x-1/2 text-xs drop-shadow-md z-10 animate-bounce">
+                                 👑
+                               </div>
+                             )}
+                             {person.avatar_url ? (
+                               <Image src={person.avatar_url} alt={person.full_name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
+                             ) : (
+                               <div className="w-full h-full flex items-center justify-center text-primary/20"><UserCircle size={40} /></div>
+                             )}
+                          </div>
+                          <h3 className="font-black text-sm text-[#0F172A] text-center mb-0.5 flex items-center justify-center gap-1">
+                            <span>{person.full_name}</span>
+                            <span className="text-xs" title={getTierName(personTier)}>{getTierIcon(personTier)}</span>
+                          </h3>
+                          <p className="text-[9px] text-primary font-black uppercase tracking-widest text-center mb-4">{getTierName(personTier)}</p>
+                          
+                          <button 
+                            onClick={async () => {
+                              const { data: { user } } = await supabase.auth.getUser();
+                              if (!user) return;
+                              const { error } = await supabase.from('friendships').insert({
+                                sender_id: user.id,
+                                receiver_id: person.id,
+                                status: 'pending'
+                              });
+                              if (!error) {
+                                setFriendshipStatuses(prev => ({ ...prev, [person.id]: 'pending' }));
+                                setSuggestions(prev => prev.filter(s => s.id !== person.id));
+                              }
+                            }}
+                            className="w-full bg-primary/10 text-primary py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all"
+                          >
+                             {t('suggestions.addFriend')}
+                          </button>
+                        </div>
+                      );
+                    })}
                  </div>
               </section>
             )}
@@ -694,21 +732,39 @@ function DashboardContent() {
                          {t('searching')}
                       </div>
                     ) : (
-                      matches.map(match => (
-                        <div 
-                          key={match.id} 
-                          onClick={() => setSelectedMatchId(match.id)}
-                          className="bg-white p-4 md:p-6 rounded-[2.5rem] border border-border shadow-sm group hover:shadow-xl transition-all duration-500 cursor-pointer w-full"
-                        >
-                          <div className="relative aspect-square rounded-[2rem] overflow-hidden mb-5">
-                            <Image src={match.image} alt={match.name} width={400} height={400} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                            <div className={`absolute top-4 ${locale === 'ar' ? 'left-4' : 'right-4'} bg-primary text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg`}>
-                              {match.match_percent}% {t('matching.percent')}
+                      matches.map(match => {
+                        const matchCompletion = match.profile ? calculateCompletionRate(match.profile) : 0;
+                        const matchTier = match.profile ? getUserTier(match.profile, !!match.profile.has_vouched) : 'bronze';
+                        const isRoyal = matchCompletion === 100 && matchTier === 'diamond';
+                        return (
+                          <div 
+                            key={match.id} 
+                            onClick={() => setSelectedMatchId(match.id)}
+                            className="bg-white p-4 md:p-6 rounded-[2.5rem] border border-border shadow-sm group hover:shadow-xl transition-all duration-500 cursor-pointer w-full relative"
+                          >
+                            <div className={`relative aspect-square rounded-[2rem] overflow-hidden mb-5 border ${
+                              isRoyal
+                                ? (match.profile?.gender === 'Male' ? 'border-amber-400 ring-4 ring-amber-300' : 'border-pink-400 ring-4 ring-pink-300')
+                                : 'border-border'
+                            }`}>
+                              {isRoyal && (
+                                <div className="absolute top-2 left-1/2 -translate-x-1/2 text-lg drop-shadow-md z-10 animate-bounce">
+                                  👑
+                                </div>
+                              )}
+                              <Image src={match.image} alt={match.name} width={400} height={400} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 animate-duration-1000" />
+                              <div className={`absolute top-4 ${locale === 'ar' ? 'left-4' : 'right-4'} bg-primary text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg z-10`}>
+                                {match.match_percent}% {t('matching.percent')}
+                              </div>
                             </div>
+                            <h3 className="text-base md:text-lg font-black text-[#0F172A] text-center md:text-left flex items-center justify-center md:justify-start gap-1">
+                              <span>{match.name}</span>
+                              <span className="text-xs" title={getTierName(matchTier)}>{getTierIcon(matchTier)}</span>
+                            </h3>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest text-center md:text-left">{getTierName(matchTier)}</p>
                           </div>
-                          <h3 className="text-base md:text-lg font-black text-[#0F172A] text-center md:text-left">{match.name}</h3>
-                        </div>
-                      ))
+                        );
+                      })
                     )}
                   </div>
                 )}
@@ -868,6 +924,7 @@ function DashboardContent() {
         {selectedMatchId && (
           <MatchDetailView 
             matchId={selectedMatchId} 
+            currentUserProfile={profile}
             isPremium={isPremium}
             onClose={() => setSelectedMatchId(null)} 
             onStartChat={() => {

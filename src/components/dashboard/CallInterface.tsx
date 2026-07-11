@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { PhoneOff, Mic, MicOff, Video, VideoOff, PhoneCall, Heart, ShieldCheck, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { getIceServers } from '@/lib/turn';
+import { getUserTier, getTierLimits } from '@/lib/tiers';
 
 interface CallInterfaceProps {
   matchProfile: any;
@@ -27,8 +28,13 @@ export default function CallInterface({
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
+  const callDurationRef = useRef(0);
 
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUserProfile, setCurrentUserProfile] = useState<any>(null);
+  const [hasVouched, setHasVouched] = useState(false);
+  const [callerLimits, setCallerLimits] = useState<any>(null);
+  
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 
@@ -38,14 +44,30 @@ export default function CallInterface({
   const channelRef = useRef<any>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
 
-  // 1. Fetch Auth User on Mount
+  // Sync ref
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setCurrentUser(user);
+    callDurationRef.current = callDuration;
+  }, [callDuration]);
+
+  // 1. Fetch Auth User and Profile limits on Mount
+  useEffect(() => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (user) {
+        setCurrentUser(user);
+        
+        // Fetch full profile and vouched status to determine tier
+        const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+        if (profile) setCurrentUserProfile(profile);
+
+        const { count } = await supabase.from('vouch_records').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('vouch_status', 'approved');
+        setHasVouched(count !== null && count > 0);
+
+        // Fetch current daily limits
+        const { data: limitsData } = await supabase.from('daily_limits').select('*').eq('user_id', user.id).single();
+        setCallerLimits(limitsData || { calls_duration_seconds: 0, ad_extensions: 0 });
+      }
     });
   }, []);
-
-  // Connected call duration timer is defined below handleEndAndReport.
 
   // 3. Initialize WebRTC and Signaling
   useEffect(() => {
@@ -57,6 +79,25 @@ export default function CallInterface({
     channelRef.current = channel;
 
     const setupCall = async () => {
+      // Check caller limits first
+      if (!isIncoming) {
+         const userTier = getUserTier(currentUserProfile, hasVouched);
+         const limits = getTierLimits(userTier);
+         if (limits.maxAudioCallMinutes !== Infinity) {
+           const allowed = (limits.maxAudioCallMinutes * 60) + ((callerLimits?.ad_extensions || 0) * 60);
+           if ((callerLimits?.calls_duration_seconds || 0) >= allowed) {
+              alert(
+                navigator.language.startsWith('am')
+                  ? 'የዕለታዊ የጥሪ ጊዜ ገደብዎ አልቋል። እባክዎ መለያዎን ያሳድጉ!' 
+                  : 'Your daily call duration limit has been reached. Please upgrade to premium!'
+              );
+              setCallState('ended');
+              setTimeout(onEndCall, 1500);
+              return;
+           }
+         }
+      }
+
       try {
         // Access Local Devices
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -287,26 +328,60 @@ export default function CallInterface({
     }
   };
 
+  const saveCallDuration = async (seconds: number) => {
+    if (!currentUser || seconds <= 0 || isIncoming) return;
+    try {
+      const { data: limitsData } = await supabase
+        .from('daily_limits')
+        .select('calls_duration_seconds')
+        .eq('user_id', currentUser.id)
+        .single();
+      
+      const currentSeconds = limitsData?.calls_duration_seconds || 0;
+      await supabase
+        .from('daily_limits')
+        .update({ calls_duration_seconds: currentSeconds + seconds })
+        .eq('user_id', currentUser.id);
+    } catch (err) {
+      console.error("Failed to save call duration:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (callState === 'ended') {
+      saveCallDuration(callDurationRef.current);
+    }
+  }, [callState]);
+
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (callState === 'connected') {
       timer = setInterval(() => {
         setCallDuration(prev => {
           const nextDuration = prev + 1;
-          if (!isPremium && nextDuration >= 120) {
-            alert(
-              navigator.language.startsWith('am')
-                ? 'የ120 ሰከንድ የድምጽ ጥሪ ገደብ አልፏል። እባክዎ አካውንትዎን ያሳድጉ!' 
-                : 'Free daily audio call limit of 120 seconds reached. Please upgrade to premium!'
-            );
-            handleEndCall();
+          const userTier = getUserTier(currentUserProfile, hasVouched);
+          const limits = getTierLimits(userTier);
+
+          if (limits.maxAudioCallMinutes !== Infinity) {
+            const todayUsed = (callerLimits?.calls_duration_seconds || 0) + nextDuration;
+            const allowed = (limits.maxAudioCallMinutes * 60) + ((callerLimits?.ad_extensions || 0) * 60);
+
+            if (todayUsed >= allowed) {
+              alert(
+                navigator.language.startsWith('am')
+                  ? 'የዕለታዊ የጥሪ ጊዜ ገደብዎ አልቋል። እባክዎ መለያዎን ያሳድጉ!' 
+                  : 'Your daily call duration limit has been reached. Please upgrade to premium!'
+              );
+              handleEndCall();
+              return prev;
+            }
           }
           return nextDuration;
         });
       }, 1000);
     }
     return () => clearInterval(timer);
-  }, [callState, isPremium]);
+  }, [callState, currentUserProfile, hasVouched, callerLimits]);
 
   const toggleMute = () => {
     if (localStream) {

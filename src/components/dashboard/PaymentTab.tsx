@@ -29,6 +29,8 @@ export default function PaymentTab() {
   const [pendingPayment, setPendingPayment] = useState<any>(null);
   const [success, setSuccess] = useState(false);
   const [isMobileNative, setIsMobileNative] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'online' | 'bank'>('online');
 
   useEffect(() => {
     if (typeof window !== 'undefined' && (window as any).Capacitor) {
@@ -44,15 +46,18 @@ export default function PaymentTab() {
         const userPhone = user.phone || '';
         const isEthiopianPhone = userPhone.startsWith('+251') || userPhone.startsWith('251') || (userPhone && !userPhone.startsWith('+'));
 
-        supabase.from('profiles').select('location').eq('id', user.id).single().then(({ data }) => {
-          let loc = 'Ethiopia';
-          if (data?.location) {
-             loc = typeof data.location === 'string' ? data.location : data.location.country;
-          }
-          if (isEthiopianPhone) {
-            setUserLocation('Ethiopia');
-          } else {
-            setUserLocation(loc || 'US');
+        supabase.from('profiles').select('location, email, full_name').eq('id', user.id).single().then(({ data }) => {
+          if (data) {
+            setUserProfile(data);
+            let loc = 'Ethiopia';
+            if (data.location) {
+               loc = typeof data.location === 'string' ? data.location : data.location.country;
+            }
+            if (isEthiopianPhone) {
+              setUserLocation('Ethiopia');
+            } else {
+              setUserLocation(loc || 'US');
+            }
           }
         });
 
@@ -149,6 +154,67 @@ export default function PaymentTab() {
     }, 1500);
   };
 
+  const handleOnlineCheckout = async () => {
+    if (!userId || !selectedPlan) return;
+    setIsSubmitting(true);
+    const plan = plans.find(p => p.id === selectedPlan);
+    if (!plan) return;
+
+    try {
+      const email = userProfile?.email || 'user@example.com';
+      const nameParts = (userProfile?.full_name || 'Beteseb User').split(' ');
+      const firstName = nameParts[0] || 'Beteseb';
+      const lastName = nameParts.slice(1).join(' ') || 'User';
+
+      if (currency === 'ETB') {
+        const txRef = `${userId}-${plan.id}-${Date.now()}`;
+        const response = await fetch('/api/payments/chapa/initialize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: plan.price,
+            email,
+            first_name: firstName,
+            last_name: lastName,
+            tx_ref: txRef,
+            callback_url: window.location.origin + `/api/payments/chapa/webhook`
+          })
+        });
+
+        const data = await response.json();
+        if (data.status === 'success' && data.data?.checkout_url) {
+          window.location.href = data.data.checkout_url;
+        } else {
+          throw new Error(data.message || 'Chapa initialization failed');
+        }
+      } else {
+        const response = await fetch('/api/payments/stripe/initialize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: plan.price,
+            email,
+            planType: plan.id,
+            userId,
+            successUrl: window.location.origin + `/${locale}/dashboard?status=success`,
+            cancelUrl: window.location.origin + `/${locale}/dashboard?status=cancel`
+          })
+        });
+
+        const data = await response.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          throw new Error(data.error || 'Stripe initialization failed');
+        }
+      }
+    } catch (err: any) {
+      alert("Online checkout initialization failed: " + err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (success || (pendingPayment && !isMobileNative)) {
     return (
       <div className="max-w-md mx-auto text-center space-y-8 p-12 bg-white rounded-[3rem] shadow-2xl border border-primary/10 animate-in zoom-in duration-500">
@@ -233,67 +299,109 @@ export default function PaymentTab() {
              </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in slide-in-from-bottom-8 duration-500">
-             {/* Step 1: Bank Details */}
-             <div className="bg-white p-8 rounded-[2.5rem] border border-primary/10 shadow-xl space-y-6">
-                <div className="flex items-center gap-3">
-                   <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-                      <Landmark size={20} />
-                   </div>
-                   <h3 className="font-black text-accent uppercase tracking-tight text-sm italic">Step 1: Make Payment</h3>
-                </div>
-                <div className="space-y-4">
-                   {banks.map((bank: any, i: number) => (
-                     <div key={i} className="p-4 bg-muted rounded-2xl space-y-1">
-                        <p className="text-[10px] font-black text-primary uppercase tracking-widest">{bank.bank || bank.method}</p>
-                        <p className="text-sm font-black text-accent italic">{bank.account || bank.link}</p>
-                        {bank.name && <p className="text-[10px] text-gray-400 font-bold uppercase">{bank.name}</p>}
-                     </div>
-                   ))}
-                </div>
-                
-                {/* Refund Policy */}
-                <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 space-y-2">
-                   <div className="flex items-center gap-2 text-primary font-bold text-[10px] uppercase tracking-widest">
-                      <ShieldCheck size={14} /> 3-Day Refund Policy
-                   </div>
-                   <p className="text-[10px] text-gray-500 font-medium leading-relaxed italic">
-                      {locale === 'am' 
-                        ? 'ክፍያ በፈጸሙ በ3 ቀናት ውስጥ በማንኛውም ምክንያት ካልረኩ ሙሉ ክፍያዎን መመለስ ይችላሉ።' 
-                        : 'If you are not satisfied, you can request a full refund within 3 days of your payment.'}
-                   </p>
-                </div>
-             </div>
-
-             {/* Step 2: Proof Upload */}
-             <div className="bg-white p-8 rounded-[2.5rem] border border-primary/10 shadow-xl space-y-6">
-                <div className="flex items-center gap-3">
-                   <div className="w-10 h-10 bg-secondary/10 rounded-xl flex items-center justify-center text-secondary">
-                      <Upload size={20} />
-                   </div>
-                   <h3 className="font-black text-accent uppercase tracking-tight text-sm italic">Step 2: Upload Proof</h3>
-                </div>
-                
-                <label className="block w-full aspect-video rounded-[2rem] border-2 border-dashed border-muted hover:border-primary/20 hover:bg-muted/50 transition-all cursor-pointer relative overflow-hidden group">
-                   {proofUrl ? (
-                      <Image src={proofUrl} fill className="object-cover" alt="Payment Proof" />
-                   ) : (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                         {isUploading ? <Loader2 className="animate-spin text-primary" /> : <Camera className="text-gray-300 group-hover:scale-110 transition-all" />}
-                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Upload Screenshot</span>
-                      </div>
-                   )}
-                   <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-                </label>
-
+          <div className="space-y-8 animate-in slide-in-from-bottom-8 duration-500">
+             {/* Payment Method Switcher */}
+             <div className="flex bg-[#F1F5F9] p-1.5 rounded-2xl w-fit border border-gray-150 shadow-sm mx-auto">
                 <button 
-                  disabled={!proofUrl || isSubmitting}
-                  onClick={handleSubmitPayment}
-                  className="btn-primary w-full py-4 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 disabled:opacity-50"
+                  onClick={() => setPaymentMethod('online')} 
+                  className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${paymentMethod === 'online' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-accent'}`}
                 >
-                  {isSubmitting ? <Loader2 className="animate-spin" /> : 'Submit for Verification'} <ArrowRight size={16} />
+                  {locale === 'am' ? 'በኦንላይን ይክፈሉ (Online Checkout)' : 'Pay Online Instantly'}
+                </button>
+                <button 
+                  onClick={() => setPaymentMethod('bank')} 
+                  className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${paymentMethod === 'bank' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-accent'}`}
+                >
+                  {locale === 'am' ? 'በባንክ ማስተላለፍ (Bank / Manual)' : 'Bank Transfer / Manual'}
                 </button>
              </div>
+
+             {paymentMethod === 'online' ? (
+                <div className="max-w-md mx-auto bg-white p-10 rounded-[3rem] border border-primary/10 shadow-2xl text-center space-y-8">
+                   <div className="w-20 h-20 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mx-auto text-primary">
+                      <CreditCard size={36} />
+                   </div>
+                   <div className="space-y-3">
+                      <h3 className="font-black text-accent uppercase tracking-tight text-lg italic">Instant Online Gateway</h3>
+                      <p className="text-xs text-gray-500 italic max-w-xs mx-auto leading-relaxed">
+                         {locale === 'am'
+                           ? `የመረጡትን የፕሪሚየም ዕቅድ በ${currency === 'ETB' ? 'ቻፓ/ቴሌብር (Chapa)' : 'ስትራይፕ (Stripe)'} በኩል ክፍያውን በቅጽበት ይፈጽሙ። መለያዎ ወዲያውኑ ይነቃል።`
+                           : `Pay securely online via ${currency === 'ETB' ? 'Chapa (Mobile Banking & Telebirr)' : 'Stripe (Cards)'}. Your account is activated instantly.`}
+                      </p>
+                   </div>
+                   <button 
+                     disabled={isSubmitting}
+                     onClick={handleOnlineCheckout}
+                     className="btn-primary w-full py-4.5 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2"
+                   >
+                     {isSubmitting ? <Loader2 className="animate-spin text-white" /> : <ArrowRight size={16} />} 
+                     {locale === 'am' ? 'በቀጥታ አሁኑኑ ይክፈሉ' : 'Pay Safely Online'}
+                   </button>
+                </div>
+             ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in duration-500">
+                   {/* Step 1: Bank Details */}
+                   <div className="bg-white p-8 rounded-[2.5rem] border border-primary/10 shadow-xl space-y-6">
+                      <div className="flex items-center gap-3">
+                         <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+                            <Landmark size={20} />
+                         </div>
+                         <h3 className="font-black text-accent uppercase tracking-tight text-sm italic">Step 1: Make Payment</h3>
+                      </div>
+                      <div className="space-y-4">
+                         {banks.map((bank: any, i: number) => (
+                           <div key={i} className="p-4 bg-[#F8FAFC] rounded-2xl space-y-1">
+                              <p className="text-[10px] font-black text-primary uppercase tracking-widest">{bank.bank || bank.method}</p>
+                              <p className="text-sm font-black text-accent italic">{bank.account || bank.link}</p>
+                              {bank.name && <p className="text-[10px] text-gray-400 font-bold uppercase">{bank.name}</p>}
+                           </div>
+                         ))}
+                      </div>
+                      
+                      {/* Refund Policy */}
+                      <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 space-y-2">
+                         <div className="flex items-center gap-2 text-primary font-bold text-[10px] uppercase tracking-widest">
+                            <ShieldCheck size={14} /> 3-Day Refund Policy
+                         </div>
+                         <p className="text-[10px] text-gray-500 font-medium leading-relaxed italic">
+                            {locale === 'am' 
+                              ? 'ክፍያ በፈጸሙ በ3 ቀናት ውስጥ በማንኛውም ምክንያት ካልረኩ ሙሉ ክፍያዎን መመለስ ይችላሉ።' 
+                              : 'If you are not satisfied, you can request a full refund within 3 days of your payment.'}
+                         </p>
+                      </div>
+                   </div>
+
+                   {/* Step 2: Proof Upload */}
+                   <div className="bg-white p-8 rounded-[2.5rem] border border-primary/10 shadow-xl space-y-6">
+                      <div className="flex items-center gap-3">
+                         <div className="w-10 h-10 bg-secondary/10 rounded-xl flex items-center justify-center text-secondary">
+                            <Upload size={20} />
+                         </div>
+                         <h3 className="font-black text-accent uppercase tracking-tight text-sm italic">Step 2: Upload Proof</h3>
+                      </div>
+                      
+                      <label className="block w-full aspect-video rounded-[2rem] border-2 border-dashed border-muted hover:border-primary/20 hover:bg-muted/50 transition-all cursor-pointer relative overflow-hidden group">
+                         {proofUrl ? (
+                            <Image src={proofUrl} fill className="object-cover" alt="Payment Proof" />
+                         ) : (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                               {isUploading ? <Loader2 className="animate-spin text-primary" /> : <Camera className="text-gray-300 group-hover:scale-110 transition-all" />}
+                               <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Upload Screenshot</span>
+                            </div>
+                         )}
+                         <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                      </label>
+
+                      <button 
+                        disabled={!proofUrl || isSubmitting}
+                        onClick={handleSubmitPayment}
+                        className="btn-primary w-full py-4 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        {isSubmitting ? <Loader2 className="animate-spin" /> : 'Submit for Verification'} <ArrowRight size={16} />
+                      </button>
+                   </div>
+                </div>
+             )}
           </div>
         )
       )}

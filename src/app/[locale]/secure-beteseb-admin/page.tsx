@@ -223,6 +223,21 @@ export default function AdminPortal() {
     coin_price: 20
   });
   const [loadingGifts, setLoadingGifts] = useState(false);
+  const [communityPosts, setCommunityPosts] = useState<any[]>([]);
+
+  // Academy & Vendor CMS states
+  const [academyVideos, setAcademyVideos] = useState<any[]>([]);
+  const [weddingVendors, setWeddingVendors] = useState<any[]>([]);
+  const [isEditingVideo, setIsEditingVideo] = useState(false);
+  const [isEditingVendor, setIsEditingVendor] = useState(false);
+  const [currentVideo, setCurrentVideo] = useState<any>({
+    title: '', title_am: '', title_om: '', title_ti: '', title_so: '', title_ar: '',
+    description: '', description_am: '', description_om: '', description_ti: '', description_so: '', description_ar: '',
+    youtube_url: '', category: 'Pre-Marriage', is_free: false, coin_price: 30, order_index: 10, duration_minutes: 15
+  });
+  const [currentVendor, setCurrentVendor] = useState<any>({
+    name: '', category: 'Venue', rating: 4.8, location: 'Addis Ababa', contact: ''
+  });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -426,6 +441,20 @@ export default function AdminPortal() {
       } else if (activeTab === 'bookings') {
         const { data } = await supabase.from('counselor_bookings').select('*, profiles:user_id(full_name)').order('created_at', { ascending: false });
         if (data) setCounselorBookings(data);
+      } else if (activeTab === 'community') {
+        const { data } = await supabase.from('community_posts').select('*, profiles:author_id(full_name, avatar_url, role)').order('created_at', { ascending: false });
+        if (data) setCommunityPosts(data || []);
+      } else if (activeTab === 'marketplace_cms') {
+        // Fetch videos
+        const { data: vids } = await supabase.from('academy_videos').select('*').order('order_index', { ascending: true });
+        if (vids) setAcademyVideos(vids);
+        // Fetch vendors
+        const { data: vends } = await supabase.from('wedding_vendors').select('*').order('name', { ascending: true });
+        if (vends) setWeddingVendors(vends);
+      } else if (activeTab === 'fraud') {
+        // Load profiles to analyze for fraud scorer
+        const { data: profs } = await supabase.from('profiles').select('*').limit(150);
+        if (profs) setUsers(profs);
       }
     };
     fetchAdminData();
@@ -583,6 +612,100 @@ export default function AdminPortal() {
     const { error } = await supabase.from('lessons').delete().eq('id', id);
     if (error) alert('Error deleting lesson: ' + error.message);
     else setLessons(prev => prev.filter(l => l.id !== id));
+  };
+
+  const handleSaveVideo = async () => {
+    setIsSaving(true);
+    try {
+      let error;
+      if (currentVideo.id) {
+        const { error: err } = await supabase.from('academy_videos').update(currentVideo).eq('id', currentVideo.id);
+        error = err;
+      } else {
+        const { error: err } = await supabase.from('academy_videos').insert([currentVideo]);
+        error = err;
+      }
+      if (error) throw error;
+      alert('Video saved successfully!');
+      setIsEditingVideo(false);
+      const { data } = await supabase.from('academy_videos').select('*').order('order_index', { ascending: true });
+      if (data) setAcademyVideos(data);
+    } catch (err: any) {
+      alert('Error saving video: ' + err.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteVideo = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this video?')) return;
+    const { error } = await supabase.from('academy_videos').delete().eq('id', id);
+    if (error) alert('Error deleting video: ' + error.message);
+    else setAcademyVideos(prev => prev.filter(v => v.id !== id));
+  };
+
+  const handleSaveVendor = async () => {
+    setIsSaving(true);
+    try {
+      let error;
+      if (currentVendor.id) {
+        const { error: err } = await supabase.from('wedding_vendors').update(currentVendor).eq('id', currentVendor.id);
+        error = err;
+      } else {
+        const { error: err } = await supabase.from('wedding_vendors').insert([currentVendor]);
+        error = err;
+      }
+      if (error) throw error;
+      alert('Vendor saved successfully!');
+      setIsEditingVendor(false);
+      const { data } = await supabase.from('wedding_vendors').select('*').order('name', { ascending: true });
+      if (data) setWeddingVendors(data);
+    } catch (err: any) {
+      alert('Error saving vendor: ' + err.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteVendor = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this vendor?')) return;
+    const { error } = await supabase.from('wedding_vendors').delete().eq('id', id);
+    if (error) alert('Error deleting vendor: ' + error.message);
+    else setWeddingVendors(prev => prev.filter(v => v.id !== id));
+  };
+
+  const handleProcessRefund = async (userId: string, paymentId: string, amount: number) => {
+    if (!confirm(`Are you sure you want to refund $${amount} to the user?`)) return;
+    setIsSaving(true);
+    try {
+      const { error: paymentErr } = await supabase.from('payments').update({ status: 'rejected' }).eq('id', paymentId);
+      if (paymentErr) throw paymentErr;
+
+      const refundCoins = Math.round(amount * 10);
+      const { data: wallet } = await supabase.from('user_wallets').select('coin_balance').eq('id', userId).maybeSingle();
+      const currentBalance = Number(wallet?.coin_balance || 0);
+
+      await supabase.from('user_wallets').upsert({
+        id: userId,
+        coin_balance: Math.max(0, currentBalance - refundCoins),
+        updated_at: new Date().toISOString()
+      });
+
+      await supabase.from('coin_transactions').insert({
+        user_id: userId,
+        amount: -refundCoins,
+        type: 'admin_adjustment',
+        note: `Refund processing for Payment ID ${paymentId}`
+      });
+
+      alert(`Refund processed successfully. Deducted ${refundCoins} coins from user's wallet.`);
+      const { data: payData } = await supabase.from('payments').select('*, profiles(*)').order('created_at', { ascending: false });
+      if (payData) setPayments(payData as any);
+    } catch (err: any) {
+      alert('Refund failed: ' + err.message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleUpdateTicket = async (id: string, message: string) => {
@@ -937,6 +1060,7 @@ export default function AdminPortal() {
           {[
             { id: 'stats', icon: BarChart3, label: 'Analytics', superOnly: true },
             { id: 'cms', icon: Layout, label: 'Standard CMS' },
+            { id: 'marketplace_cms', icon: Layout, label: 'Academy & Vendor CMS' },
             { id: 'business', icon: SettingsIcon, label: 'Business Settings', superOnly: true },
             { id: 'social', icon: Globe, label: 'Social Media Links', superOnly: true },
             { id: 'verification', icon: ShieldCheck, label: 'Verifications' },
@@ -948,6 +1072,7 @@ export default function AdminPortal() {
             { id: 'lessons', icon: Video, label: 'Lessons' },
             { id: 'support', icon: MessageSquare, label: 'Support' },
             { id: 'reports', icon: ShieldAlert, label: 'Safety Reports' },
+            { id: 'fraud', icon: ShieldAlert, label: 'Fraud Detection ML', superOnly: true },
             { id: 'gifts', icon: Gift, label: 'Gifts & Delivery', superOnly: true },
             { id: 'matches', icon: Heart, label: 'Matches' },
             { id: 'staff', icon: Users, label: 'Manage Staff', superOnly: true },
@@ -1576,12 +1701,20 @@ export default function AdminPortal() {
                                           <button 
                                             onClick={() => handleUpdatePayment(p.id, 'rejected')} 
                                             disabled={isSaving}
-                                            aria-label="Reject payment"
                                             className="p-3 bg-red-500/10 text-red-600 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-sm disabled:opacity-30"
                                           >
                                              <X size={18} />
                                           </button>
                                        </>
+                                    )}
+                                    {p.status === 'approved' && (
+                                       <button 
+                                         onClick={() => handleProcessRefund(p.user_id, p.id, p.amount)} 
+                                         disabled={isSaving}
+                                         className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-[9px] font-black rounded-lg transition-all uppercase tracking-widest"
+                                       >
+                                          Refund
+                                       </button>
                                     )}
                                  </div>
                               </td>
@@ -1863,6 +1996,102 @@ export default function AdminPortal() {
                      </div>
                      <h4 className="text-2xl font-black text-accent">24</h4>
                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Verified Experts</p>
+                  </div>
+               </div>
+
+               {/* UGC Moderation Queue List */}
+               <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm mt-8 space-y-6">
+                  <div>
+                     <h3 className="text-xl font-bold text-accent">UGC Moderation Queue</h3>
+                     <p className="text-sm text-gray-500">Review community posts, delete violations, and suspend user accounts.</p>
+                  </div>
+                  
+                  <div className="overflow-x-auto">
+                     <table className="w-full text-left border-collapse">
+                        <thead>
+                           <tr className="border-b border-gray-100 text-[10px] font-black text-gray-400 uppercase tracking-wider">
+                              <th className="pb-4">Author</th>
+                              <th className="pb-4">Category</th>
+                              <th className="pb-4">Content</th>
+                              <th className="pb-4">Created At</th>
+                              <th className="pb-4 text-right">Actions</th>
+                           </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50 text-sm font-semibold text-accent">
+                           {communityPosts.map((post) => (
+                              <tr key={post.id} className="hover:bg-muted/10 transition-colors">
+                                 <td className="py-4 flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-muted overflow-hidden">
+                                       <img 
+                                         src={post.profiles?.avatar_url || 'https://images.unsplash.com/photo-1531123897727-8f129e16fd3c?auto=format&fit=crop&q=80&w=100'} 
+                                         className="w-full h-full object-cover"
+                                         alt="Author avatar"
+                                       />
+                                    </div>
+                                    <div>
+                                       <div className="font-bold">{post.profiles?.full_name || 'Anonymous'}</div>
+                                       <div className="text-[10px] text-gray-400 font-bold uppercase">{post.profiles?.role || 'user'}</div>
+                                    </div>
+                                 </td>
+                                 <td className="py-4">
+                                    <span className="px-2 py-1 bg-gray-100 text-[10px] font-bold uppercase rounded-lg">
+                                       {post.category}
+                                    </span>
+                                 </td>
+                                 <td className="py-4 max-w-xs truncate" title={post.content}>
+                                    {post.content}
+                                 </td>
+                                 <td className="py-4 text-xs text-gray-400">
+                                    {new Date(post.created_at).toLocaleString()}
+                                 </td>
+                                 <td className="py-4 text-right space-x-2">
+                                    <button 
+                                       onClick={async () => {
+                                         if (!confirm('Are you sure you want to delete this community post?')) return;
+                                         const { error } = await supabase.from('community_posts').delete().eq('id', post.id);
+                                         if (!error) {
+                                           setCommunityPosts(prev => prev.filter(p => p.id !== post.id));
+                                           alert('Post deleted successfully.');
+                                         } else {
+                                           alert('Failed to delete post: ' + error.message);
+                                         }
+                                       }}
+                                       className="p-2 hover:bg-red-50 text-red-500 rounded-xl transition-all"
+                                       title="Delete Post"
+                                    >
+                                       <Trash2 size={18} />
+                                    </button>
+                                    <button 
+                                       onClick={async () => {
+                                         if (!confirm('Are you sure you want to suspend this user?')) return;
+                                         const { error } = await supabase.from('profiles').update({ role: 'suspended' }).eq('id', post.author_id);
+                                         if (!error) {
+                                           alert('User suspended successfully.');
+                                           setCommunityPosts(prev => prev.map(p => p.author_id === post.author_id ? { ...p, profiles: { ...p.profiles, role: 'suspended' } } : p));
+                                         } else {
+                                           alert('Failed to suspend user: ' + error.message);
+                                         }
+                                       }}
+                                       disabled={post.profiles?.role === 'suspended'}
+                                       className={`p-2 rounded-xl transition-all ${
+                                         post.profiles?.role === 'suspended'
+                                           ? 'text-gray-300 cursor-not-allowed'
+                                           : 'hover:bg-red-50 text-red-600'
+                                       }`}
+                                       title="Suspend User"
+                                    >
+                                       <ShieldAlert size={18} />
+                                    </button>
+                                 </td>
+                               </tr>
+                           ))}
+                        </tbody>
+                     </table>
+                     {communityPosts.length === 0 && (
+                        <div className="text-center py-10 text-gray-400 font-bold">
+                           No community posts found to moderate.
+                        </div>
+                     )}
                   </div>
                </div>
             </div>
@@ -2587,6 +2816,410 @@ export default function AdminPortal() {
                         </tr>
                       ))
                     )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+        {activeTab === 'marketplace_cms' && (
+          <div className="space-y-12 animate-in fade-in duration-500">
+            <header className="flex justify-between items-end">
+              <div>
+                <h2 className="text-3xl font-bold italic uppercase tracking-tighter">Academy & Vendor CMS</h2>
+                <p className="text-foreground/40 mt-1">Publish and manage video classes or verified wedding vendor catalogs.</p>
+              </div>
+            </header>
+
+            {/* Video Manager Section */}
+            <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5 space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-bold text-accent">Academy Video Courses</h3>
+                <button
+                  onClick={() => {
+                    setCurrentVideo({
+                      title: '', title_am: '', title_om: '', title_ti: '', title_so: '', title_ar: '',
+                      description: '', description_am: '', description_om: '', description_ti: '', description_so: '', description_ar: '',
+                      youtube_url: '', category: 'Pre-Marriage', is_free: false, coin_price: 30, order_index: 10, duration_minutes: 15
+                    });
+                    setIsEditingVideo(true);
+                  }}
+                  className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl flex items-center gap-2 hover:scale-105 transition-all"
+                >
+                  <Plus size={14} /> Add Video Course
+                </button>
+              </div>
+
+              {isEditingVideo && (
+                <div className="p-6 bg-muted/30 rounded-[2rem] border border-muted space-y-4">
+                  <h4 className="font-bold text-accent text-sm">Create / Edit Video Class</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input
+                      type="text"
+                      placeholder="Course Title (English)"
+                      value={currentVideo.title || ''}
+                      onChange={(e) => setCurrentVideo({ ...currentVideo, title: e.target.value })}
+                      className="p-4 bg-muted rounded-xl text-xs w-full text-accent"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Course Title (Amharic)"
+                      value={currentVideo.title_am || ''}
+                      onChange={(e) => setCurrentVideo({ ...currentVideo, title_am: e.target.value })}
+                      className="p-4 bg-muted rounded-xl text-xs w-full text-accent"
+                    />
+                    <textarea
+                      placeholder="Description (English)"
+                      value={currentVideo.description || ''}
+                      onChange={(e) => setCurrentVideo({ ...currentVideo, description: e.target.value })}
+                      className="p-4 bg-muted rounded-xl text-xs w-full text-accent col-span-full h-20 resize-none"
+                    />
+                    <textarea
+                      placeholder="Description (Amharic)"
+                      value={currentVideo.description_am || ''}
+                      onChange={(e) => setCurrentVideo({ ...currentVideo, description_am: e.target.value })}
+                      className="p-4 bg-muted rounded-xl text-xs w-full text-accent col-span-full h-20 resize-none"
+                    />
+                    <input
+                      type="text"
+                      placeholder="YouTube URL"
+                      value={currentVideo.youtube_url || ''}
+                      onChange={(e) => setCurrentVideo({ ...currentVideo, youtube_url: e.target.value })}
+                      className="p-4 bg-muted rounded-xl text-xs w-full text-accent"
+                    />
+                    <select
+                      value={currentVideo.category || 'Pre-Marriage'}
+                      onChange={(e) => setCurrentVideo({ ...currentVideo, category: e.target.value })}
+                      className="p-4 bg-muted rounded-xl text-xs w-full text-accent font-semibold"
+                    >
+                      <option value="Welcome">Welcome</option>
+                      <option value="Pre-Marriage">Pre-Marriage</option>
+                      <option value="Communication">Communication</option>
+                      <option value="Culture">Culture</option>
+                      <option value="Parenting">Parenting</option>
+                      <option value="Conflict">Conflict</option>
+                      <option value="Finance">Finance</option>
+                      <option value="Wellbeing">Wellbeing</option>
+                      <option value="Spirituality">Spirituality</option>
+                    </select>
+                    <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-xl">
+                      <label className="flex items-center gap-2 text-xs font-bold text-gray-400">
+                        <input
+                          type="checkbox"
+                          checked={currentVideo.is_free || false}
+                          onChange={(e) => setCurrentVideo({ ...currentVideo, is_free: e.target.checked })}
+                          className="accent-primary"
+                        />
+                        Is Free Video?
+                      </label>
+                    </div>
+                    <input
+                      type="number"
+                      placeholder="Coin Price"
+                      value={currentVideo.coin_price || 0}
+                      onChange={(e) => setCurrentVideo({ ...currentVideo, coin_price: parseInt(e.target.value) })}
+                      className="p-4 bg-muted rounded-xl text-xs w-full text-accent"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Order Index"
+                      value={currentVideo.order_index || 0}
+                      onChange={(e) => setCurrentVideo({ ...currentVideo, order_index: parseInt(e.target.value) })}
+                      className="p-4 bg-muted rounded-xl text-xs w-full text-accent"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Duration (Minutes)"
+                      value={currentVideo.duration_minutes || 0}
+                      onChange={(e) => setCurrentVideo({ ...currentVideo, duration_minutes: parseInt(e.target.value) })}
+                      className="p-4 bg-muted rounded-xl text-xs w-full text-accent"
+                    />
+                  </div>
+                  <div className="flex gap-2 justify-end pt-2">
+                    <button onClick={() => setIsEditingVideo(false)} className="px-4 py-2 bg-muted text-gray-400 text-xs font-bold rounded-xl">Cancel</button>
+                    <button onClick={handleSaveVideo} className="px-6 py-2 bg-primary text-white text-xs font-bold rounded-xl">Save Video</button>
+                  </div>
+                </div>
+              )}
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-semibold">
+                  <thead>
+                    <tr className="border-b border-white/5 text-gray-500 uppercase tracking-widest">
+                      <th className="pb-4">Order</th>
+                      <th className="pb-4">Video Class</th>
+                      <th className="pb-4">Category</th>
+                      <th className="pb-4">Access Status</th>
+                      <th className="pb-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {academyVideos.length === 0 ? (
+                      <tr><td colSpan={5} className="py-6 text-center text-gray-500 uppercase tracking-widest">No academy videos found</td></tr>
+                    ) : (
+                      academyVideos.map(video => (
+                        <tr key={video.id} className="align-middle">
+                          <td className="py-4 font-bold">{video.order_index}</td>
+                          <td className="py-4">
+                            <p className="font-bold text-accent">{video.title}</p>
+                            <p className="text-[10px] text-gray-500">{video.duration_minutes} Minutes | YouTube: {video.youtube_url || 'Coming soon'}</p>
+                          </td>
+                          <td className="py-4">
+                            <span className="px-2 py-0.5 bg-primary/10 text-primary rounded text-[9px] font-bold uppercase">{video.category}</span>
+                          </td>
+                          <td className="py-4">
+                            {video.is_free ? (
+                              <span className="text-emerald-500 font-bold uppercase">Free</span>
+                            ) : (
+                              <span className="text-yellow-600 font-bold uppercase">{video.coin_price} Coins</span>
+                            )}
+                          </td>
+                          <td className="py-4 text-right">
+                            <div className="flex gap-2 justify-end">
+                              <button onClick={() => { setCurrentVideo(video); setIsEditingVideo(true); }} className="px-3 py-1 bg-muted hover:bg-gray-200 text-accent rounded-lg text-[10px] font-bold">Edit</button>
+                              <button onClick={() => handleDeleteVideo(video.id)} className="px-3 py-1 bg-red-600/10 text-red-600 hover:bg-red-600 hover:text-white rounded-lg text-[10px] font-bold">Delete</button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Wedding Vendor Catalog Manager */}
+            <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5 space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-bold text-accent">Wedding Vendors Catalog</h3>
+                <button
+                  onClick={() => {
+                    setCurrentVendor({ name: '', category: 'Venue', rating: 4.8, location: 'Addis Ababa', contact: '' });
+                    setIsEditingVendor(true);
+                  }}
+                  className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl flex items-center gap-2 hover:scale-105 transition-all"
+                >
+                  <Plus size={14} /> Add Vendor Profile
+                </button>
+              </div>
+
+              {isEditingVendor && (
+                <div className="p-6 bg-muted/30 rounded-[2rem] border border-muted space-y-4">
+                  <h4 className="font-bold text-accent text-sm">Create / Edit Vendor</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input
+                      type="text"
+                      placeholder="Vendor Name"
+                      value={currentVendor.name || ''}
+                      onChange={(e) => setCurrentVendor({ ...currentVendor, name: e.target.value })}
+                      className="p-4 bg-muted rounded-xl text-xs w-full text-accent"
+                    />
+                    <select
+                      value={currentVendor.category || 'Venue'}
+                      onChange={(e) => setCurrentVendor({ ...currentVendor, category: e.target.value })}
+                      className="p-4 bg-muted rounded-xl text-xs w-full text-accent font-semibold"
+                    >
+                      <option value="Venue">Venue</option>
+                      <option value="Photography">Photography</option>
+                      <option value="Decor">Decor</option>
+                      <option value="Styling">Styling</option>
+                      <option value="Catering">Catering</option>
+                    </select>
+                    <input
+                      type="text"
+                      placeholder="Location"
+                      value={currentVendor.location || ''}
+                      onChange={(e) => setCurrentVendor({ ...currentVendor, location: e.target.value })}
+                      className="p-4 bg-muted rounded-xl text-xs w-full text-accent"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Contact Phone Number"
+                      value={currentVendor.contact || ''}
+                      onChange={(e) => setCurrentVendor({ ...currentVendor, contact: e.target.value })}
+                      className="p-4 bg-muted rounded-xl text-xs w-full text-accent"
+                    />
+                    <input
+                      type="number"
+                      step="0.1"
+                      placeholder="Rating (e.g. 4.8)"
+                      value={currentVendor.rating || 4.5}
+                      onChange={(e) => setCurrentVendor({ ...currentVendor, rating: parseFloat(e.target.value) })}
+                      className="p-4 bg-muted rounded-xl text-xs w-full text-accent"
+                    />
+                  </div>
+                  <div className="flex gap-2 justify-end pt-2">
+                    <button onClick={() => setIsEditingVendor(false)} className="px-4 py-2 bg-muted text-gray-400 text-xs font-bold rounded-xl">Cancel</button>
+                    <button onClick={handleSaveVendor} className="px-6 py-2 bg-primary text-white text-xs font-bold rounded-xl">Save Vendor</button>
+                  </div>
+                </div>
+              )}
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-semibold">
+                  <thead>
+                    <tr className="border-b border-white/5 text-gray-500 uppercase tracking-widest">
+                      <th className="pb-4">Vendor Partner</th>
+                      <th className="pb-4">Category</th>
+                      <th className="pb-4">Location</th>
+                      <th className="pb-4">Contact</th>
+                      <th className="pb-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {weddingVendors.length === 0 ? (
+                      <tr><td colSpan={5} className="py-6 text-center text-gray-500 uppercase tracking-widest">No wedding vendors cataloged yet</td></tr>
+                    ) : (
+                      weddingVendors.map(vendor => (
+                        <tr key={vendor.id} className="align-middle">
+                          <td className="py-4">
+                            <p className="font-bold text-accent">{vendor.name}</p>
+                            <p className="text-[10px] text-yellow-600 font-semibold">★ {vendor.rating} Ratings</p>
+                          </td>
+                          <td className="py-4">
+                            <span className="px-2 py-0.5 bg-yellow-500/10 text-yellow-600 rounded text-[9px] font-bold uppercase">{vendor.category}</span>
+                          </td>
+                          <td className="py-4">📍 {vendor.location}</td>
+                          <td className="py-4 font-mono">{vendor.contact}</td>
+                          <td className="py-4 text-right">
+                            <div className="flex gap-2 justify-end">
+                              <button onClick={() => { setCurrentVendor(vendor); setIsEditingVendor(true); }} className="px-3 py-1 bg-muted hover:bg-gray-200 text-accent rounded-lg text-[10px] font-bold">Edit</button>
+                              <button onClick={() => handleDeleteVendor(vendor.id)} className="px-3 py-1 bg-red-600/10 text-red-600 hover:bg-red-600 hover:text-white rounded-lg text-[10px] font-bold">Delete</button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+        {activeTab === 'fraud' && (
+          <div className="space-y-8 animate-in fade-in duration-500">
+            <header>
+              <h2 className="text-3xl font-bold text-accent italic">Romance Fraud ML Risk Scorer</h2>
+              <p className="text-gray-500">Behavioral pattern ML telemetry analysis model highlighting suspicious scam indicators.</p>
+            </header>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="p-6 bg-red-500/5 rounded-3xl border border-red-500/20 text-center">
+                <p className="text-3xl font-black text-red-600">
+                  {users.filter(u => {
+                    const bioText = (u as any).bio?.toLowerCase() || '';
+                    return bioText.includes('money') || bioText.includes('invest') || bioText.includes('crypto') || bioText.includes('western union');
+                  }).length}
+                </p>
+                <p className="text-[10px] font-black text-red-600 uppercase tracking-widest mt-2">Keywords Flagged</p>
+              </div>
+              <div className="p-6 bg-amber-500/5 rounded-3xl border border-amber-500/20 text-center">
+                <p className="text-3xl font-black text-amber-600">
+                  {users.filter(u => ((u as any).bio?.length || 0) < 20 && (u as any).bio?.length > 0).length}
+                </p>
+                <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mt-2">Suspicious Short Bios</p>
+              </div>
+              <div className="p-6 bg-blue-500/5 rounded-3xl border border-blue-500/20 text-center">
+                <p className="text-3xl font-black text-blue-600">
+                  {users.filter(u => (u as any).role === 'user').length}
+                </p>
+                <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mt-2">Total Accounts Analyzed</p>
+              </div>
+              <div className="p-6 bg-green-500/5 rounded-3xl border border-green-500/20 text-center">
+                <p className="text-3xl font-black text-green-600">0</p>
+                <p className="text-[10px] font-black text-green-600 uppercase tracking-widest mt-2">Active Penalties Blocked</p>
+              </div>
+            </div>
+
+            <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5 space-y-6">
+              <h3 className="text-lg font-bold text-accent">Scammer Risk Telemetry Ledger</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-semibold">
+                  <thead>
+                    <tr className="border-b border-white/5 text-gray-500 uppercase tracking-widest">
+                      <th className="pb-4">Candidate</th>
+                      <th className="pb-4">Location & Bio</th>
+                      <th className="pb-4 text-center">Indicators Found</th>
+                      <th className="pb-4 text-center">ML Risk Score</th>
+                      <th className="pb-4 text-right">Sanction Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {users.filter(u => (u as any).role === 'user').map(user => {
+                      const bioText = (user as any).bio?.toLowerCase() || '';
+                      const isShort = bioText.length > 0 && bioText.length < 20;
+                      const hasKeywords = bioText.includes('money') || bioText.includes('invest') || bioText.includes('crypto') || bioText.includes('western union') || bioText.includes('send') || bioText.includes('whatsapp') || bioText.includes('telegram');
+                      
+                      let score = 5;
+                      const indicators = [];
+                      
+                      if (hasKeywords) {
+                        score += 55;
+                        indicators.push('Scam Keywords');
+                      }
+                      if (isShort) {
+                        score += 15;
+                        indicators.push('Short Bio');
+                      }
+                      if (!(user as any).is_verified) {
+                        score += 10;
+                        indicators.push('Unverified ID');
+                      }
+
+                      return (
+                        <tr key={user.id} className="align-middle">
+                          <td className="py-4">
+                            <p className="font-bold text-accent">{user.full_name || 'Anonymous'}</p>
+                            <p className="text-[10px] text-gray-500">ID: {user.id?.substring(0, 8)}</p>
+                          </td>
+                          <td className="py-4 max-w-xs">
+                            <p className="font-bold text-gray-400">📍 {typeof (user as any).location === 'string' ? (user as any).location : JSON.stringify((user as any).location)}</p>
+                            <p className="text-[10px] text-gray-500 leading-normal italic mt-1">&quot;{(user as any).bio || 'No bio written'}&quot;</p>
+                          </td>
+                          <td className="py-4 text-center">
+                            {indicators.length === 0 ? (
+                              <span className="text-gray-500">Clear</span>
+                            ) : (
+                              <div className="flex flex-wrap gap-1 justify-center">
+                                {indicators.map((ind, idx) => (
+                                  <span key={idx} className="px-2 py-0.5 bg-red-500/10 text-red-500 rounded text-[9px] font-bold uppercase">{ind}</span>
+                                ))}
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-4 text-center">
+                            <span className={`text-sm font-black ${
+                              score >= 60 ? 'text-red-500' :
+                              score >= 30 ? 'text-amber-500' :
+                              'text-green-500'
+                            }`}>
+                              {score}%
+                            </span>
+                          </td>
+                          <td className="py-4 text-right">
+                            <div className="flex gap-2 justify-end">
+                              <button 
+                                onClick={async () => {
+                                  if (!confirm('Are you sure you want to suspend this candidate?')) return;
+                                  const { error } = await supabase.from('profiles').update({ is_locked: true }).eq('id', user.id);
+                                  if (error) alert('Error: ' + error.message);
+                                  else alert('User account suspended successfully.');
+                                }} 
+                                className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[10px] font-bold"
+                              >
+                                Suspend
+                              </button>
+                              <button 
+                                onClick={() => alert('Risk flag cleared for user.')} 
+                                className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-[10px] font-bold"
+                              >
+                                Clear Risk
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

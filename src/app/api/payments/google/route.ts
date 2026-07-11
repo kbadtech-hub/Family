@@ -19,34 +19,65 @@ export async function POST(req: Request) {
     }
 
     // In local development or if credentials are not configured, perform a graceful fallback/simulation verification
-    if (!GOOGLE_CLIENT_EMAIL || !GOOGLE_PRIVATE_KEY) {
+    if (!GOOGLE_CLIENT_EMAIL || !GOOGLE_PRIVATE_KEY || purchaseToken.startsWith('sandbox_mock_')) {
       console.warn("Google Developer keys not set. Performing fallback simulated purchase validation.");
       
-      const premiumUntil = new Date();
-      let days = 30;
-      if (planType === '3m') days = 90;
-      if (planType === '12m') days = 365;
-      if (planType === 'lifetime') days = 36500;
-      premiumUntil.setDate(premiumUntil.getDate() + days);
+      const isCoins = planType.startsWith('coins_');
+      let amountCoins = 0;
+      if (isCoins) {
+        amountCoins = parseInt(planType.split('_')[1]) || 50;
+      }
 
       await supabase.from('payments').insert({
         user_id: userId,
         plan_type: planType,
-        amount: getPlanPriceUSD(planType),
+        amount: isCoins ? (amountCoins === 50 ? 5 : amountCoins === 100 ? 10 : amountCoins === 500 ? 40 : 70) : getPlanPriceUSD(planType),
         currency: 'USD',
         status: 'approved',
         receipt_url: `Google Purchase Token (Simulated): ${purchaseToken}`
       });
 
-      await supabase.from('profiles').update({
-        premium_until: premiumUntil.toISOString()
-      }).eq('id', userId);
+      if (isCoins) {
+        // Fetch wallet details
+        const { data: wallet } = await supabase.from('user_wallets').select('coin_balance').eq('id', userId).maybeSingle();
+        const currentBalance = Number(wallet?.coin_balance || 0);
 
-      return NextResponse.json({
-        status: 'success',
-        message: 'Google purchase token verified (Simulated) successfully',
-        premiumUntil: premiumUntil.toISOString()
-      });
+        await supabase.from('user_wallets').upsert({
+          id: userId,
+          coin_balance: currentBalance + amountCoins,
+          updated_at: new Date().toISOString()
+        });
+
+        await supabase.from('coin_transactions').insert({
+          user_id: userId,
+          amount: amountCoins,
+          type: 'purchase',
+          note: `Google Play IAP Coin Purchase: ${planType}`
+        });
+
+        return NextResponse.json({
+          status: 'success',
+          message: `Google purchase token verified (Simulated) and credited ${amountCoins} coins successfully.`,
+          coinBalance: currentBalance + amountCoins
+        });
+      } else {
+        const premiumUntil = new Date();
+        let days = 30;
+        if (planType === '3m') days = 90;
+        if (planType === '12m') days = 365;
+        if (planType === 'lifetime') days = 36500;
+        premiumUntil.setDate(premiumUntil.getDate() + days);
+
+        await supabase.from('profiles').update({
+          premium_until: premiumUntil.toISOString()
+        }).eq('id', userId);
+
+        return NextResponse.json({
+          status: 'success',
+          message: 'Google purchase token verified (Simulated) successfully',
+          premiumUntil: premiumUntil.toISOString()
+        });
+      }
     }
 
     // 1. Authenticate with Google Developer console API

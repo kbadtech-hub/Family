@@ -101,10 +101,55 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
+  const [vendors, setVendors] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [selectedSlot, setSelectedSlot] = useState('10:00 AM');
+  const [loadingExtra, setLoadingExtra] = useState(true);
+
+  const loadExtraData = async (uid: string) => {
+    try {
+      // 1. Fetch wedding vendors from DB or set fallbacks
+      const { data: vendorData } = await supabase
+        .from('wedding_vendors')
+        .select('*')
+        .order('name', { ascending: true });
+      
+      if (vendorData && vendorData.length > 0) {
+        setVendors(vendorData);
+      } else {
+        setVendors([
+          { id: 'v1', name: 'Sheraton Addis Grand Ballroom', category: 'Venue', rating: 4.9, location: 'Addis Ababa', contact: '+251115171717' },
+          { id: 'v2', name: 'Skyline Hotel Event Hall', category: 'Venue', rating: 4.8, location: 'Addis Ababa', contact: '+251116676000' },
+          { id: 'v3', name: 'Simien Studio Cinema', category: 'Photography', rating: 4.9, location: 'Addis Ababa & Gondar', contact: '+251911223344' },
+          { id: 'v4', name: 'Habesha Bridal Decor & Flowers', category: 'Decor', rating: 4.7, location: 'Addis Ababa', contact: '+251922334455' },
+          { id: 'v5', name: 'Lucy Traditional Bridal Salon', category: 'Styling', rating: 4.8, location: 'Addis Ababa', contact: '+251933445566' }
+        ]);
+      }
+
+      // 2. Fetch existing planner bookings
+      const { data: bookingData } = await supabase
+        .from('counselor_bookings')
+        .select('*')
+        .eq('user_id', uid)
+        .order('created_at', { ascending: false });
+      
+      if (bookingData) {
+        setBookings(bookingData);
+      }
+    } catch (err) {
+      console.error('Error loading extra wedding planner data:', err);
+    } finally {
+      setLoadingExtra(false);
+    }
+  };
+
   useEffect(() => {
     async function getUser() {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) setUserId(user.id);
+      if (user) {
+        setUserId(user.id);
+        loadExtraData(user.id);
+      }
     }
     getUser();
   }, []);
@@ -139,7 +184,7 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
         expert_name: 'Beteseb Royal Wedding Planner',
         topic: 'Wedding Planning Inquiry',
         scheduled_date: weddingDate,
-        scheduled_time: '10:00 AM',
+        scheduled_time: selectedSlot,
         status: 'pending',
         payment_status: 'free_inquiry',
         payment_method: 'inquiry',
@@ -155,6 +200,7 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
       
       setNotes('');
       setWeddingDate('');
+      loadExtraData(userId);
     } catch (err: any) {
       alert('Inquiry failed: ' + err.message);
     } finally {
@@ -369,9 +415,9 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
           </div>
           
           <form onSubmit={handleInquirySubmit} className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <label className="block">
-                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Proposed Wedding Date</span>
+                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Proposed Date</span>
                 <input 
                   type="date" 
                   required
@@ -382,7 +428,22 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
               </label>
 
               <label className="block">
-                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Estimated Guest Count</span>
+                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Time Slot</span>
+                <select
+                  value={selectedSlot}
+                  onChange={(e) => setSelectedSlot(e.target.value)}
+                  className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none focus:ring-1 focus:ring-primary/20 text-accent font-semibold"
+                >
+                  <option value="10:00 AM">10:00 AM</option>
+                  <option value="11:30 AM">11:30 AM</option>
+                  <option value="02:00 PM">02:00 PM</option>
+                  <option value="03:30 PM">03:30 PM</option>
+                  <option value="05:00 PM">05:00 PM</option>
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Guest Count</span>
                 <input 
                   type="number" 
                   min={50}
@@ -420,6 +481,94 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
           </form>
         </div>
 
+      </div>
+
+      {/* Verified Vendors Grid Section (Step 4) */}
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-xl font-black text-accent tracking-tighter uppercase italic flex items-center gap-2">
+            <Sparkles className="text-primary fill-primary/10" size={20} />
+            {locale === 'am' ? 'የተረጋገጡ የሰርግ አገልግሎት አቅራቢዎች' : 'Verified Wedding Vendors'}
+          </h3>
+          <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">
+            {locale === 'am' 
+              ? 'በቤተሰብ የተረጋገጡ ምርጥ ሰርግ አዳራሾች፥ ዲዛይነሮች እና ፎቶግራፍ አንሺዎች' 
+              : 'Beteseb-partnered luxury wedding services, venues, and cinema studios'}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {vendors.map((vendor) => (
+            <div key={vendor.id} className="bg-white rounded-[2rem] p-6 border border-muted shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+              <div>
+                <span className="inline-block text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg bg-primary/10 text-primary mb-2">
+                  {vendor.category}
+                </span>
+                <h4 className="font-black text-sm text-accent">{vendor.name}</h4>
+                <p className="text-gray-400 text-[10px] font-semibold mt-1">📍 {vendor.location}</p>
+              </div>
+              <div className="flex justify-between items-center pt-3 border-t border-muted/50 text-[10px] font-bold text-gray-500">
+                <span>📞 {vendor.contact}</span>
+                <span className="text-yellow-600">★ {vendor.rating}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Existing Bookings & Counselor Inquiries Section (Step 5) */}
+      <div className="space-y-6 pt-6">
+        <div>
+          <h3 className="text-xl font-black text-accent tracking-tighter uppercase italic flex items-center gap-2">
+            <Calendar className="text-primary fill-primary/10" size={20} />
+            {locale === 'am' ? 'የእርስዎ የቀጠሮ ጥያቄዎች' : 'Your Consultation Bookings'}
+          </h3>
+          <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">
+            {locale === 'am' 
+              ? 'የሰርግ እቅድ አውጪ የምክር እና የሂሳብ ግምት ቀጠሮዎች ዝርዝር' 
+              : 'Track the status of your royal wedding planning consultations'}
+          </p>
+        </div>
+
+        <div className="bg-white rounded-[2.5rem] border border-muted p-8 shadow-sm">
+          {bookings.length === 0 ? (
+            <p className="text-center text-xs text-gray-400 font-bold uppercase tracking-wider py-6">
+              {locale === 'am' ? 'እስካሁን ምንም ቀጠሮ አልተያዘም።' : 'No planning consultations scheduled yet.'}
+            </p>
+          ) : (
+            <div className="divide-y divide-muted/50">
+              {bookings.map((booking) => {
+                let details: any = {};
+                try {
+                  details = JSON.parse(booking.notes || '{}');
+                } catch (e) {}
+
+                return (
+                  <div key={booking.id} className="py-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 first:pt-0 last:pb-0">
+                    <div className="space-y-1">
+                      <h4 className="font-bold text-sm text-accent">{booking.expert_name}</h4>
+                      <p className="text-[10px] text-gray-400 font-medium">
+                        📅 {booking.scheduled_date} | ⏰ {booking.scheduled_time}
+                      </p>
+                      {details.guests && (
+                        <p className="text-[10px] text-slate-500 font-semibold">
+                          Guests: {details.guests} | Venue: {details.hall} | Estimate: {currency === 'USD' ? '$' : 'Br'} {details.totalCostEstimate?.toLocaleString()}
+                        </p>
+                      )}
+                    </div>
+                    <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                      booking.status === 'approved' ? 'bg-green-50 text-green-700 border border-green-200' :
+                      booking.status === 'rejected' ? 'bg-red-50 text-red-700 border border-red-200' :
+                      'bg-amber-50 text-amber-700 border border-amber-200'
+                    }`}>
+                      {booking.status}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
     </div>

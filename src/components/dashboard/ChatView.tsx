@@ -525,42 +525,31 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
       await showRewardedAd(
         currentUser.id,
         async (rewardAmount) => {
-          // Grant 20 coins reward
-          const { error: creditError } = await supabase
-            .from('coin_transactions')
-            .insert({
-              user_id: currentUser.id,
-              amount: 20,
-              type: 'admin_adjustment',
-              note: 'Rewarded Ad: Limit extension reward'
-            });
+          // Grant ad extension in daily_limits
+          const { data: limitsData } = await supabase
+            .from('daily_limits')
+            .select('ad_extensions')
+            .eq('user_id', currentUser.id)
+            .single();
 
-          if (!creditError) {
-            setCoinBalance(prev => prev + 20);
+          const currentAds = limitsData?.ad_extensions || 0;
+          const { error: updateError } = await supabase
+            .from('daily_limits')
+            .update({ ad_extensions: currentAds + 1 })
+            .eq('user_id', currentUser.id);
+
+          if (!updateError) {
             alert(locale === 'am' 
-              ? "ማስታወቂያውን ስለተመለከቱ 20 ሳንቲም ተሸልመዋል! መልእክትዎ አሁን ይላካል።"
-              : "You earned 20 coins for watching the ad! Your message is being sent.");
-
-            // Deduct 10 coins to auto-send the pending message
-            const { error: debitError } = await supabase
-              .from('coin_transactions')
-              .insert({
-                user_id: currentUser.id,
-                amount: -10,
-                type: 'gift_send',
-                note: 'Limit break bypass (ad funded)'
-              });
-
-            if (!debitError) {
-              setCoinBalance(prev => prev - 10);
-              setShowLimitModal(false);
-              if (pendingMessageSend) {
-                await pendingMessageSend();
-                setPendingMessageSend(null);
-              }
+              ? "ማስታወቂያውን ስለተመለከቱ +2 ተጨማሪ መልእክት በነፃ ተፈቅዶልዎታል! መልእክትዎ አሁን ይላካል።"
+              : "You earned +2 extra messages for watching the ad! Your message is being sent.");
+            
+            setShowLimitModal(false);
+            if (pendingMessageSend) {
+              await pendingMessageSend();
+              setPendingMessageSend(null);
             }
           } else {
-            alert("Failed to grant ad reward: " + creditError.message);
+            alert("Failed to grant ad reward: " + updateError.message);
           }
         },
         () => {
@@ -592,15 +581,16 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
     }
 
     if (limits.maxTexts !== Infinity) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const { count, error: countError } = await supabase
-        .from('messages')
-        .select('*', { count: 'exact', head: true })
-        .eq('sender_id', currentUser.id)
-        .gte('created_at', today.toISOString());
+      const { data: limitsData } = await supabase
+        .from('daily_limits')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .single();
+      
+      const currentLimits = limitsData || { messages_sent: 0, ad_extensions: 0 };
+      const allowedTexts = limits.maxTexts + (currentLimits.ad_extensions * 2);
 
-      if (!countError && count !== null && count >= limits.maxTexts) {
+      if (currentLimits.messages_sent >= allowedTexts) {
         // Save the pending send action to execute after bypass succeeds
         setPendingMessageSend(() => async () => {
           const msgData = {
@@ -612,6 +602,11 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
           if (!error && data) {
             setMessages((prev) => [...prev, data]);
             setNewMessage('');
+            // Increment message sent in database daily_limits
+            await supabase
+              .from('daily_limits')
+              .update({ messages_sent: currentLimits.messages_sent + 1 })
+              .eq('user_id', currentUser.id);
           }
         });
         setShowLimitModal(true);
@@ -661,6 +656,20 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
     if (!error && data) {
       setMessages((prev) => [...prev, data]);
       setNewMessage('');
+      
+      // Increment messages_sent in daily_limits
+      if (limits.maxTexts !== Infinity) {
+        const { data: limitsData } = await supabase
+          .from('daily_limits')
+          .select('messages_sent')
+          .eq('user_id', currentUser.id)
+          .single();
+        const currentSent = limitsData?.messages_sent || 0;
+        await supabase
+          .from('daily_limits')
+          .update({ messages_sent: currentSent + 1 })
+          .eq('user_id', currentUser.id);
+      }
     }
   };
 

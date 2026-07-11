@@ -15,23 +15,44 @@ import {
   UserPlus, 
   UserCheck, 
   Clock, 
-  Loader2 
+  Loader2,
+  Lightbulb 
 } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import Image from 'next/image';
+import { getUserTier, calculateCompletionRate } from '@/lib/tiers';
+import { calculateCompatibility } from '@/lib/compatibility';
 
 interface MatchDetailProps {
   matchId: string;
+  currentUserProfile?: any;
   isPremium?: boolean;
   onClose: () => void;
   onStartChat: (id: string) => void;
 }
 
-export default function MatchDetailView({ matchId, isPremium = false, onClose, onStartChat }: MatchDetailProps) {
+export default function MatchDetailView({ matchId, currentUserProfile, isPremium = false, onClose, onStartChat }: MatchDetailProps) {
   const [profile, setProfile] = useState<any>(null);
   const [photos, setPhotos] = useState<any[]>([]);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  const candCompletionRate = calculateCompletionRate(profile);
+  const candTier = getUserTier(profile, !!profile?.has_vouched);
+  const isRoyal = candCompletionRate === 100 && candTier === 'diamond';
+  const matchPercent = currentUserProfile && profile ? calculateCompatibility(currentUserProfile, profile) : 75;
+
+  const getTierBadge = (tier: string) => {
+    switch (tier) {
+      case 'diamond': return { label: 'Diamond', color: 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20', emoji: '💎' };
+      case 'platinum': return { label: 'Platinum', color: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20', emoji: '🌟' };
+      case 'gold': return { label: 'Gold', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', emoji: '🥇' };
+      case 'silver': return { label: 'Silver', color: 'bg-slate-400/10 text-slate-600 border-slate-400/20', emoji: '🥈' };
+      case 'bronze':
+      default: return { label: 'Unverified', color: 'bg-orange-500/10 text-orange-600 border-orange-500/20', emoji: '🥉' };
+    }
+  };
+  const badge = getTierBadge(candTier);
   const [friendshipStatus, setFriendshipStatus] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
@@ -193,15 +214,24 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
         </button>
 
         {/* Image Slider Section */}
-        <div className="relative w-full md:w-1/2 h-2/3 md:h-full bg-accent">
+        <div className={`relative w-full md:w-1/2 h-2/3 md:h-full bg-accent ${
+          isRoyal 
+            ? (profile?.gender === 'Male' ? 'border-8 border-amber-400 ring-4 ring-amber-300/50 ring-inset' : 'border-8 border-pink-400 ring-4 ring-pink-300/50 ring-inset')
+            : 'border-none'
+        }`}>
+           {isRoyal && (
+             <div className="absolute top-4 left-1/2 -translate-x-1/2 text-3xl drop-shadow-xl animate-bounce z-20">
+               👑
+             </div>
+           )}
            <Image 
              src={allPhotos[currentPhotoIndex].url} 
              alt="Profile" 
              fill 
-             className="object-cover transition-all duration-700"
+             className="object-cover transition-all duration-700 pointer-events-none select-none"
            />
            
-           <div className="absolute inset-0 bg-gradient-to-t from-accent/80 via-transparent to-transparent" />
+           <div className="absolute inset-0 bg-gradient-to-t from-accent/85 via-transparent to-transparent" />
 
            {allPhotos.length > 1 && (
              <>
@@ -222,23 +252,48 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
 
         {/* Info Section */}
         <div className="w-full md:w-1/2 h-1/3 md:h-full overflow-y-auto p-10 md:p-16 custom-scrollbar space-y-10">
-           <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                 <h2 className="text-4xl font-black text-accent italic tracking-tighter">{profile?.full_name}</h2>
-                 {profile?.is_verified && <CheckCircle2 size={28} className="text-primary fill-primary/10" />}
-              </div>
-              <div className="flex flex-wrap gap-3">
-                 <span className="px-4 py-2 bg-primary/10 text-primary text-[10px] font-black rounded-full uppercase tracking-widest flex items-center gap-2">
-                    <Sparkles size={12} /> {profile?.star_sign}
-                 </span>
-                 <span className="px-4 py-2 bg-muted text-gray-500 text-[10px] font-black rounded-full uppercase tracking-widest flex items-center gap-2">
-                    <MapPin size={12} /> {profile?.location}
-                 </span>
-              </div>
-              <p className="text-[9px] text-gray-400 font-bold italic leading-relaxed">
-                 {locale === 'am' 
-                   ? '*የአቡሻህር ባህላዊ የኮከብ ምልክት ግንዛቤዎች ለተጨማሪ መረጃ ብቻ የሚያገለግሉ ሲሆን ለትዳር ስኬት ፍጹም ዋስትና አይደሉም።'
-                   : '*Abushakir star sign insights are supplementary cultural indicators only and do not guarantee relationship or marriage success.'}
+           <div className="space-y-6">
+               <div className="flex items-center gap-3">
+                  <h2 className="text-4xl font-black text-accent italic tracking-tighter">{profile?.full_name}</h2>
+                  {profile?.is_verified && <CheckCircle2 size={28} className="text-primary fill-primary/10" />}
+               </div>
+               
+               {/* Compatibility & Trust Row */}
+               <div className="flex flex-wrap gap-3">
+                  <span className="px-4 py-2 bg-primary/20 text-primary border border-primary/30 text-[10px] font-black rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-sm">
+                     <Sparkles size={12} className="fill-primary animate-pulse" /> {matchPercent}% {locale === 'am' ? 'ተኳኋኝነት' : 'Compatibility'}
+                  </span>
+                  <span className={`px-4 py-2 border text-[10px] font-black rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-sm ${badge.color}`}>
+                     <span>{badge.emoji}</span> <span>{badge.label}</span>
+                  </span>
+                  <span className="px-4 py-2 bg-muted text-gray-500 text-[10px] font-black rounded-full uppercase tracking-widest flex items-center gap-2">
+                     <MapPin size={12} /> {typeof profile?.location === 'string' ? profile.location : profile?.location?.city || 'Addis Ababa'}
+                  </span>
+               </div>
+
+               {/* Profile Completion Bar */}
+               <div className="p-5 bg-muted/40 rounded-2xl border border-muted space-y-2.5">
+                  <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-wider text-gray-400">
+                    <span>{locale === 'am' ? 'የመገለጫ ማጠናቀቂያ' : 'Profile Completion'}</span>
+                    <span className="text-primary">{candCompletionRate}%</span>
+                  </div>
+                  <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden shadow-inner border border-border">
+                    <div 
+                      style={{ width: `${candCompletionRate}%` }}
+                      className="h-full bg-gradient-to-r from-primary to-orange-400 rounded-full transition-all duration-1000"
+                    />
+                  </div>
+                  {candCompletionRate === 100 && (
+                    <p className="text-[8px] text-green-600 font-bold uppercase tracking-widest text-center leading-none">
+                      💯 100% Completed Profile Badge Unlocked
+                    </p>
+                  )}
+               </div>
+
+               <p className="text-[9px] text-gray-400 font-bold italic leading-relaxed">
+                  {locale === 'am' 
+                    ? '*የአቡሻህር ባህላዊ የኮከብ ምልክት ግንዛቤዎች ለተጨማሪ መረጃ ብቻ የሚያገለግሉ ሲሆን ለትዳር ስኬት ፍጹም ዋስትና አይደሉም።'
+                    : '*Abushakir star sign insights are supplementary cultural indicators only and do not guarantee relationship or marriage success.'}
                </p>
            </div>
 
@@ -280,6 +335,86 @@ export default function MatchDetailView({ matchId, isPremium = false, onClose, o
                 </div>
              </div>
            )}
+            {/* Abushakir Compatibility Insights Section */}
+            {currentUserProfile && (
+              <div className="space-y-6 bg-slate-50 p-6 rounded-[2.5rem] border border-slate-100">
+                <div className="flex items-center gap-2 text-accent font-black text-xs uppercase tracking-widest border-b border-slate-200 pb-2">
+                  <Sparkles size={14} className="text-primary fill-primary/10" />
+                  {locale === 'am' ? 'የአቡሻህር ዝርዝር ተኳኋኝነት' : 'Abushakir Compatibility Breakdown'}
+                </div>
+
+                <div className="space-y-4">
+                  {/* Hobbies Match */}
+                  {(() => {
+                    const parseHobbies = (h: any) => {
+                      if (Array.isArray(h)) return h;
+                      if (typeof h === 'string') return h.split(',').map(x => x.trim().toLowerCase());
+                      return [];
+                    };
+                    const userH = parseHobbies(currentUserProfile.hobbies);
+                    const candH = parseHobbies(profile?.hobbies);
+                    const shared = userH.filter((h: string) => candH.includes(h));
+                    
+                    if (shared.length > 0) {
+                      return (
+                        <div className="text-xs space-y-1">
+                          <p className="font-black text-accent uppercase tracking-wider">
+                            🎒 {locale === 'am' ? 'የጋራ መዝናኛዎች (Shared Hobbies)' : 'Shared Hobbies'}
+                          </p>
+                          <div className="flex flex-wrap gap-1.5 pt-1">
+                            {shared.map((h: string, idx: number) => (
+                              <span key={idx} className="bg-primary/5 border border-primary/10 text-primary px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
+                                {h}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+
+                  {/* Values Match */}
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div className="bg-white p-3 rounded-xl border border-slate-100">
+                      <p className="font-bold text-[8px] text-gray-400 uppercase tracking-widest">{locale === 'am' ? 'የቤተሰብ እሴቶች' : 'Family Values'}</p>
+                      <p className="font-black text-accent mt-0.5 uppercase tracking-wide truncate">
+                        {profile?.family_values === currentUserProfile.family_values ? '🤝 Shared' : profile?.family_values || 'Traditional'}
+                      </p>
+                    </div>
+                    <div className="bg-white p-3 rounded-xl border border-slate-100">
+                      <p className="font-bold text-[8px] text-gray-400 uppercase tracking-widest">{locale === 'am' ? 'የግጭት አፈታት' : 'Conflict Style'}</p>
+                      <p className="font-black text-accent mt-0.5 uppercase tracking-wide truncate">
+                        {profile?.conflict_resolution === currentUserProfile.conflict_resolution ? '🤝 Shared' : profile?.conflict_resolution || 'Discussion'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Cultural Conversation Starters */}
+                  <div className="space-y-2 pt-2 border-t border-slate-200/50">
+                    <p className="font-black text-[9px] text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                      <Lightbulb size={12} className="text-yellow-600 fill-yellow-100" />
+                      {locale === 'am' ? 'የውይይት መጀመሪያ ሀሳቦች' : 'Conversation Starters'}
+                    </p>
+                    <div className="space-y-1.5">
+                      <p className="p-3 bg-white rounded-xl border border-slate-100 text-[10px] text-gray-600 leading-relaxed font-bold italic">
+                        {locale === 'am'
+                          ? `« በአቡሻህር ተኳኋኝነት መሰረት፥ የእናንተ የኮከብ ምልክት ${currentUserProfile.star_sign || 'Hamel'} እና ${profile?.star_sign || 'Sunbula'} እሴቶች ጋር ስለ ትዳር እና የረጅም ጊዜ ህይወት መነጋገር ትችላላችሁ። »`
+                          : `« Based on Abushakir zodiac, discuss how ${currentUserProfile.star_sign || 'Aries'} and ${profile?.star_sign || 'Virgo'} elements influence your long term family vision. »`}
+                      </p>
+                      {profile?.family_values === currentUserProfile.family_values && (
+                        <p className="p-3 bg-white rounded-xl border border-slate-100 text-[10px] text-gray-600 leading-relaxed font-bold italic">
+                          {locale === 'am'
+                            ? `« ሁለታችሁም የ${profile?.family_values} እሴቶችን ስለምትደግፉ፥ በባህላዊ የቤተሰብ ግንባታ ውስጥ ዋና ዋና መሰረቶች የትኞቹ ናቸው የሚለውን ተወያዩ። »`
+                            : `« Since you both share ${profile?.family_values} family values, share your favorite cultural family traditions and how you want to preserve them. »`}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            )}
 
            <div className="space-y-4">
               <h3 className="text-sm font-black text-accent uppercase tracking-widest border-b border-muted pb-2">

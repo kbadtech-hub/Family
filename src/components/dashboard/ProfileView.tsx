@@ -14,9 +14,11 @@ import {
   CheckCircle2, 
   ShieldCheck,
   Star,
-  Sparkles
+  Sparkles,
+  Coins
 } from 'lucide-react';
 import Image from 'next/image';
+import { getUserTier, calculateCompletionRate } from '@/lib/tiers';
 
 export default function ProfileView({ profile, onUpdate }: { profile: any, onUpdate: () => void }) {
   const t = useTranslations('Dashboard.profile');
@@ -51,6 +53,23 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
   const [vouchDuration, setVouchDuration] = useState(1);
   const [isSendingVouchInvite, setIsSendingVouchInvite] = useState(false);
 
+  const userCompletion = calculateCompletionRate(profile);
+  const hasVouched = vouchRequests.some(v => v.vouch_status === 'approved');
+  const userTier = getUserTier(profile, hasVouched);
+  const isRoyal = userCompletion === 100 && userTier === 'diamond';
+
+  const getTierBadge = (tier: string) => {
+    switch (tier) {
+      case 'diamond': return { label: 'Diamond', color: 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20', emoji: '💎' };
+      case 'platinum': return { label: 'Platinum', color: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20', emoji: '🌟' };
+      case 'gold': return { label: 'Gold', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', emoji: '🥇' };
+      case 'silver': return { label: 'Silver', color: 'bg-slate-400/10 text-slate-600 border-slate-400/20', emoji: '🥈' };
+      case 'bronze':
+      default: return { label: 'Unverified', color: 'bg-orange-500/10 text-orange-600 border-orange-500/20', emoji: '🥉' };
+    }
+  };
+  const badge = getTierBadge(userTier);
+
   useEffect(() => {
     const fetchGuardian = async () => {
       const { data } = await supabase.from('guardians').select('*').eq('user_id', profile.id).limit(1);
@@ -68,6 +87,30 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
     fetchVouches();
   }, [profile.id]);
 
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [loadingTx, setLoadingTx] = useState(true);
+
+  useEffect(() => {
+    if (!profile?.id) return;
+    const fetchTransactions = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('coin_transactions')
+          .select('*')
+          .eq('user_id', profile.id)
+          .order('created_at', { ascending: false });
+        if (!error && data) {
+          setTransactions(data);
+        }
+      } catch (err) {
+        console.error("Failed to load coin transactions:", err);
+      } finally {
+         setLoadingTx(false);
+      }
+    };
+    fetchTransactions();
+  }, [profile.id]);
+
   const linkGuardian = async () => {
     setIsLinking(true);
     const { data, error } = await supabase.from('guardians').insert({
@@ -79,6 +122,13 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
     
     if (!error && data) {
       setGuardian(data);
+      // Queue SMS notification task for the guardian
+      if (guardianPhone) {
+        const smsContent = profile?.preferred_language === 'am'
+          ? `ሰላም፥ ${profile?.full_name || 'የቤተሰብ እጩ'} እርስዎን የሚዜ/ወላጅ አስታራቂ አድርጎ መርጦዎታል። የገቡበት ኮድ፡ ${data.access_code}። በዚ ሊንክ ይግቡ፡ http://beteseb1.online/${profile?.preferred_language || 'en'}/guardian`
+          : `Hello, ${profile?.full_name || 'a Beteseb candidate'} has invited you to be their family mediator. Your access code is: ${data.access_code}. Login here: http://beteseb1.online/${profile?.preferred_language || 'en'}/guardian`;
+        await queueSMS(guardianPhone, smsContent).catch(() => {});
+      }
       alert("Guardian connection code generated successfully!");
     } else {
       alert("Failed to link guardian: " + (error?.message || "Unknown error"));
@@ -260,7 +310,16 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
         
         <div className="relative flex flex-col md:flex-row items-center gap-6 md:gap-10">
           <div className="relative group">
-            <div className="w-32 h-32 md:w-40 md:h-40 rounded-[2rem] md:rounded-[2.5rem] bg-muted border-4 border-white shadow-2xl overflow-hidden">
+            <div className={`w-32 h-32 md:w-40 md:h-40 rounded-[2.5rem] bg-muted overflow-hidden border-4 shadow-2xl relative ${
+              isRoyal 
+                ? (profile?.gender === 'Male' ? 'border-amber-400 ring-4 ring-amber-300' : 'border-pink-400 ring-4 ring-pink-300')
+                : 'border-white'
+            }`}>
+               {isRoyal && (
+                 <div className="absolute top-2 left-1/2 -translate-x-1/2 text-2xl z-10 animate-bounce">
+                   👑
+                 </div>
+               )}
                <Image 
                 src={profile?.avatar_url || 'https://images.unsplash.com/photo-1531123897727-8f129e16fd3c?auto=format&fit=crop&q=80&w=200'} 
                 alt="Avatar" 
@@ -278,10 +337,15 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
             </button>
             <input type="file" ref={avatarInputRef} className="hidden" onChange={handleAvatarUpload} accept="image/*" />
           </div>
-
+ 
           <div className="flex-1 text-center md:text-left space-y-3 md:space-y-4">
              <div className="flex flex-col md:flex-row md:items-center justify-center md:justify-start gap-2">
-                <h2 className="text-2xl md:text-3xl font-black text-accent italic tracking-tighter">{profile?.full_name}</h2>
+                <h2 className="text-2xl md:text-3xl font-black text-accent italic tracking-tighter flex items-center gap-2 justify-center md:justify-start">
+                  <span>{profile?.full_name}</span>
+                  <span className={`px-3 py-1 text-[8px] font-black rounded-full border ${badge.color}`}>
+                     <span>{badge.emoji}</span> <span>{badge.label}</span>
+                  </span>
+                </h2>
                 <div className="flex items-center justify-center gap-2">
                    {profile?.is_verified && <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 text-primary fill-primary/10" />}
                    {profile?.username && <span className="text-[10px] md:text-xs font-bold text-gray-400">@{profile.username}</span>}
@@ -291,6 +355,20 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                 <span className="px-3 py-1 md:px-4 md:py-1.5 bg-primary/10 text-primary text-[8px] md:text-[10px] font-black rounded-full uppercase tracking-widest">{profile?.star_sign}</span>
                 <span className="px-3 py-1 md:px-4 md:py-1.5 bg-muted text-gray-500 text-[8px] md:text-[10px] font-black rounded-full uppercase tracking-widest">{profile?.location?.city || t('defaultCity')}</span>
                 <span className="px-3 py-1 md:px-4 md:py-1.5 bg-accent/5 text-accent text-[8px] md:text-[10px] font-black rounded-full uppercase tracking-widest">{t('roles.' + (profile?.role || 'user'))}</span>
+             </div>
+
+             {/* Profile Completion Indicator */}
+             <div className="max-w-xs mx-auto md:mx-0 p-3 bg-muted/40 rounded-xl border border-muted space-y-1.5">
+                <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-wider text-gray-400">
+                  <span>Profile Completion</span>
+                  <span className="text-primary font-bold">{userCompletion}%</span>
+                </div>
+                <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden shadow-inner border border-border">
+                  <div 
+                    style={{ width: `${userCompletion}%` }}
+                    className="h-full bg-gradient-to-r from-primary to-orange-400 rounded-full transition-all duration-1000"
+                  />
+                </div>
              </div>
           </div>
         </div>
@@ -607,6 +685,62 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
            </div>
         </div>
       </div>
+
+      {/* Wallet & Coin Ledger Section */}
+      <div className="bg-white rounded-[2rem] md:rounded-[3rem] p-8 md:p-10 border border-gray-100 shadow-xl space-y-8">
+        <div className="flex justify-between items-center">
+          <div className="space-y-1">
+            <h3 className="text-lg md:text-xl font-black text-accent italic tracking-tighter flex items-center gap-2">
+               <Coins className="text-amber-500 animate-pulse" />
+               {profile?.preferred_language === 'am' ? 'የሳንቲም ኮሌጅ እና ሂሳብ' : 'Wallet & Coin Ledger'}
+            </h3>
+            <p className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-widest">
+              {profile?.preferred_language === 'am' ? 'የቀረው የሳንቲም መጠን እና የግብይቶች ታሪክ' : 'Coin balance and full transaction history'}
+            </p>
+          </div>
+          <div className="px-5 py-3 bg-amber-500/10 rounded-2xl border border-amber-500/20 text-center">
+             <div className="text-[8px] font-black text-amber-600 uppercase tracking-widest">Balance</div>
+             <div className="text-2xl font-black text-accent">{profile?.coins || 0} 🪙</div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+           <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">
+             {profile?.preferred_language === 'am' ? 'የግብይት ታሪክ' : 'Transaction History'}
+           </h4>
+
+           {loadingTx ? (
+             <div className="text-center py-6 text-xs text-gray-400 font-bold uppercase">
+               Loading transactions...
+             </div>
+           ) : transactions.length === 0 ? (
+             <p className="text-xs text-slate-400 leading-relaxed font-semibold italic text-center py-4 bg-muted/20 rounded-2xl">
+               {profile?.preferred_language === 'am' 
+                 ? 'እስካሁን ምንም የሳንቲም ግብይት አልተደረገም' 
+                 : 'No transaction records found.'}
+             </p>
+           ) : (
+             <div className="max-h-60 overflow-y-auto space-y-3 pr-2">
+               {transactions.map((tx) => {
+                 const isPositive = Number(tx.amount) > 0;
+                 return (
+                   <div key={tx.id} className="p-4 bg-muted/20 border border-muted/50 rounded-2xl flex justify-between items-center text-xs">
+                     <div>
+                       <p className="font-bold text-accent capitalize">{tx.type.replace('_', ' ')}</p>
+                       <p className="text-[10px] text-gray-400">{tx.note || 'No description'}</p>
+                       <p className="text-[9px] text-gray-400 mt-1">{new Date(tx.created_at).toLocaleString()}</p>
+                     </div>
+                     <span className={`text-sm font-black ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                       {isPositive ? '+' : ''}{tx.amount} 🪙
+                     </span>
+                   </div>
+                 );
+               })}
+             </div>
+           )}
+        </div>
+      </div>
+
       {/* Account Lifecycle & Security Compliance */}
       <div className="bg-white rounded-[2rem] md:rounded-[3rem] p-8 md:p-10 border border-red-100 shadow-xl space-y-8">
         <div className="space-y-1">
