@@ -17,7 +17,9 @@ import {
   ThumbsUp,
   ThumbsDown,
   Info,
-  X
+  X,
+  Send,
+  MessageCircle
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -61,6 +63,68 @@ export default function GuardianPortal() {
   const [feedbackStatus, setFeedbackStatus] = useState<'endorsed' | 'disapproved'>('endorsed');
   const [feedbackNote, setFeedbackNote] = useState('');
   const [submittingFeedback, setSubmittingFeedback] = useState(false);
+
+  // Wali Room State
+  const [waliRooms, setWaliRooms] = useState<Record<string, string>>({});
+  const [activeWaliRoomId, setActiveWaliRoomId] = useState<string | null>(null);
+  const [waliMessages, setWaliMessages] = useState<any[]>([]);
+  const [newWaliMessage, setNewWaliMessage] = useState('');
+  const [loadingWali, setLoadingWali] = useState(false);
+
+  useEffect(() => {
+    if (!activeWaliRoomId) return;
+
+    const loadWaliMessages = async () => {
+      setLoadingWali(true);
+      const { data } = await supabase
+        .from('wali_messages')
+        .select('*')
+        .eq('room_id', activeWaliRoomId)
+        .order('created_at', { ascending: true });
+      if (data) setWaliMessages(data);
+      setLoadingWali(false);
+    };
+
+    loadWaliMessages();
+
+    // Subscribe to new messages
+    const channel = supabase
+      .channel(`wali_room_${activeWaliRoomId}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'wali_messages',
+        filter: `room_id=eq.${activeWaliRoomId}`
+      }, (payload) => {
+        setWaliMessages(prev => [...prev, payload.new]);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [activeWaliRoomId]);
+
+  const handleSendWaliMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newWaliMessage.trim() || !activeWaliRoomId || !guardian) return;
+
+    try {
+      const { error } = await supabase
+        .from('wali_messages')
+        .insert({
+          room_id: activeWaliRoomId,
+          sender_id: null,
+          sender_name: `Guardian of ${candidate?.full_name || 'Candidate'}`,
+          content: newWaliMessage.trim()
+        });
+
+      if (error) throw error;
+      setNewWaliMessage('');
+    } catch (err: any) {
+      alert("Failed to send message: " + err.message);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,11 +178,30 @@ export default function GuardianPortal() {
           .or(`sender_id.eq.${guardianData.user_id},receiver_id.eq.${guardianData.user_id}`)
           .eq('status', 'accepted');
 
+        const matchedProfiles: Profile[] = [];
         if (friendships) {
-          const matchedProfiles = friendships.map((f: any) => {
-            return f.sender_id === guardianData.user_id ? f.receiver : f.sender;
+          friendships.forEach((f: any) => {
+            const p = f.sender_id === guardianData.user_id ? f.receiver : f.sender;
+            if (p) matchedProfiles.push(p as Profile);
           });
-          setMatches(matchedProfiles as Profile[]);
+          setMatches(matchedProfiles);
+        }
+
+        // 3.1 Fetch wali rooms for matches
+        if (matchedProfiles.length > 0) {
+          const { data: rooms } = await supabase
+            .from('wali_rooms')
+            .select('*')
+            .or(`candidate1_id.eq.${guardianData.user_id},candidate2_id.eq.${guardianData.user_id}`);
+          
+          if (rooms) {
+            const roomMap: Record<string, string> = {};
+            rooms.forEach((r: any) => {
+              const partnerId = r.candidate1_id === guardianData.user_id ? r.candidate2_id : r.candidate1_id;
+              roomMap[partnerId] = r.id;
+            });
+            setWaliRooms(roomMap);
+          }
         }
 
         // 4. Fetch existing endorsements
@@ -356,24 +439,33 @@ export default function GuardianPortal() {
                                  </div>
                               </div>
                            )}
+                            <div className="flex flex-col gap-2">
+                               {waliRooms[match.id] && (
+                                 <button 
+                                   onClick={() => setActiveWaliRoomId(waliRooms[match.id])}
+                                   className="w-full py-3.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-1.5 border border-primary/20 transition-all font-bold"
+                                 >
+                                    💬 የጋራ መድረክ ውይይት (Wali Chat Room)
+                                 </button>
+                               )}
 
-                           {/* Endorsement Form Action Trigger */}
-                           <button 
-                             onClick={() => {
-                               setActiveMatchId(match.id);
-                               if (endorsement) {
-                                 setFeedbackStatus(endorsement.status);
-                                 setFeedbackNote(endorsement.note || '');
-                               } else {
-                                 setFeedbackStatus('endorsed');
-                                 setFeedbackNote('');
-                               }
-                             }}
-                             className="w-full btn-primary py-3.5 rounded-xl font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-1.5"
-                           >
-                              ✍️ {endorsement ? 'ምክር/ምርቃት አስተካክል (Modify Blessing)' : 'ምክር ወይም ምርቃት ስጥ (Give Advice)'}
-                           </button>
-                        </div>
+                               <button 
+                                 onClick={() => {
+                                   setActiveMatchId(match.id);
+                                   if (endorsement) {
+                                     setFeedbackStatus(endorsement.status);
+                                     setFeedbackNote(endorsement.note || '');
+                                   } else {
+                                     setFeedbackStatus('endorsed');
+                                     setFeedbackNote('');
+                                   }
+                                 }}
+                                 className="w-full btn-primary py-3.5 rounded-xl font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-1.5"
+                               >
+                                  ✍️ {endorsement ? 'ምክር/ምርቃት አስተካክል (Modify Blessing)' : 'ምክር ወይም ምርቃት ስጥ (Give Advice)'}
+                               </button>
+                            </div>
+                         </div>
                      );
                   })
                )}
@@ -455,7 +547,84 @@ export default function GuardianPortal() {
            </div>
          </div>
       )}
+      {activeWaliRoomId && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] flex items-center justify-center p-6 animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-2xl h-[600px] rounded-[3.5rem] border border-muted p-8 md:p-10 relative shadow-2xl flex flex-col justify-between animate-in slide-in-from-bottom-8 duration-500 overflow-hidden">
+            {/* Header */}
+            <div>
+              <button 
+                onClick={() => { setActiveWaliRoomId(null); }}
+                className="absolute top-8 right-8 p-3 bg-muted/30 hover:bg-muted rounded-full transition-all text-gray-500 z-10"
+              >
+                <X size={18} />
+              </button>
 
+              <div className="text-center space-y-2 border-b border-muted pb-4">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary text-[10px] font-black uppercase tracking-[0.2em]">
+                  💬 Wali Meeting Chat Room
+                </div>
+                <h3 className="text-2xl font-black text-accent italic tracking-tighter">
+                  የጋራ የቤተሰብ መወያያ መድረክ
+                </h3>
+                <p className="text-[10px] text-amber-600 font-bold uppercase tracking-wide">
+                  ⚠️ ማሳሰቢያ፡ በዚህ የጋራ ውይይት ውስጥ አስታራቂዎች (Walis) እና እጩዎች ብቻ ይሳተፋሉ።
+                </p>
+              </div>
+            </div>
+
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto my-6 space-y-4 pr-2 custom-scrollbar flex flex-col">
+              {loadingWali ? (
+                <div className="flex-1 flex items-center justify-center"><Loader2 className="animate-spin text-primary" size={24} /></div>
+              ) : waliMessages.length === 0 ? (
+                <div className="h-full flex-1 flex flex-col items-center justify-center text-center p-6 text-gray-400 space-y-2">
+                  <MessageCircle size={36} className="opacity-30" />
+                  <p className="text-xs uppercase tracking-widest font-bold">No messages yet</p>
+                  <p className="text-[10px] max-w-xs leading-relaxed">Walis and candidates can chat about marriage criteria here.</p>
+                </div>
+              ) : (
+                waliMessages.map(msg => {
+                  const isOwn = msg.sender_id === null; // Guardian sends with null
+                  return (
+                    <div key={msg.id} className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className="text-[10px] font-bold text-gray-500">{msg.sender_name}</span>
+                        {!isOwn && (
+                          <span className="px-1.5 py-0.5 bg-primary/10 text-primary rounded text-[9px] font-black uppercase">Candidate / እጩ</span>
+                        )}
+                      </div>
+                      <div className={`p-4 rounded-2xl max-w-md text-xs font-semibold leading-relaxed shadow-sm ${
+                        isOwn ? 'bg-primary text-white rounded-tr-none' : 'bg-muted/50 text-accent rounded-tl-none border border-muted'
+                      }`}>
+                        {msg.content}
+                      </div>
+                      <span className="text-[9px] text-gray-400 mt-1">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Form Input */}
+            <form onSubmit={handleSendWaliMessage} className="flex gap-4 items-center border-t border-muted pt-4">
+              <input 
+                type="text" 
+                placeholder="መልእክትዎን እዚህ ይጻፉ..."
+                value={newWaliMessage}
+                onChange={(e) => setNewWaliMessage(e.target.value)}
+                className="flex-1 bg-muted/30 border border-muted rounded-2xl p-4 text-xs focus:outline-none text-accent"
+              />
+              <button 
+                type="submit"
+                disabled={!newWaliMessage.trim()}
+                className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center hover:scale-105 transition-transform disabled:opacity-50 disabled:hover:scale-100 shadow-lg shadow-primary/20 shrink-0"
+              >
+                <Send size={18} className="ml-0.5" />
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

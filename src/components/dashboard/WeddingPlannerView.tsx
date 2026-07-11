@@ -159,6 +159,35 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
   const beautyPrice = BEAUTY_PACKAGES.find(p => p.id === selectedBeauty)?.[currency === 'USD' ? 'priceUsd' : 'priceEtb'] || 0;
   const totalPrice = hallPrice + photoPrice + beautyPrice;
 
+  const getGoogleCalendarLink = (booking: any) => {
+    const title = encodeURIComponent("Beteseb Wedding Planning Consultation");
+    const details = encodeURIComponent(`Consultation with ${booking.expert_name}. Topic: ${booking.topic}`);
+    const location = encodeURIComponent("Beteseb App Video Consultation");
+    const dateStr = booking.scheduled_date || "2026-07-20";
+    const datePart = dateStr.replace(/-/g, "");
+    
+    let timeStr = booking.scheduled_time || "10:00 AM";
+    let hour = 10;
+    let minute = 0;
+    
+    const timeMatch = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (timeMatch) {
+      hour = parseInt(timeMatch[1]);
+      minute = parseInt(timeMatch[2]);
+      const ampm = timeMatch[3].toUpperCase();
+      if (ampm === "PM" && hour < 12) hour += 12;
+      if (ampm === "AM" && hour === 12) hour = 0;
+    }
+    
+    const hh = hour.toString().padStart(2, "0");
+    const mm = minute.toString().padStart(2, "0");
+    const endH = (hour + 1) % 24;
+    const eh = endH.toString().padStart(2, "0");
+    
+    const dates = `${datePart}T${hh}${mm}00/${datePart}T${eh}${mm}00`;
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}&location=${location}`;
+  };
+
   const handleInquirySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userId) return;
@@ -556,13 +585,25 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
                         </p>
                       )}
                     </div>
-                    <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                      booking.status === 'approved' ? 'bg-green-50 text-green-700 border border-green-200' :
-                      booking.status === 'rejected' ? 'bg-red-50 text-red-700 border border-red-200' :
-                      'bg-amber-50 text-amber-700 border border-amber-200'
-                    }`}>
-                      {booking.status}
-                    </span>
+                     <div className="flex items-center gap-3">
+                       {booking.status === 'approved' && (
+                         <a 
+                           href={getGoogleCalendarLink(booking)}
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           className="px-3 py-1 bg-primary/10 hover:bg-primary/20 text-primary text-[9px] font-black rounded-lg border border-primary/20 uppercase tracking-widest decoration-transparent transition-all"
+                         >
+                           🗓️ Sync Calendar
+                         </a>
+                       )}
+                       <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                         booking.status === 'approved' ? 'bg-green-50 text-green-700 border border-green-200' :
+                         booking.status === 'rejected' ? 'bg-red-50 text-red-700 border border-red-200' :
+                         'bg-amber-50 text-amber-700 border border-amber-200'
+                       }`}>
+                         {booking.status}
+                       </span>
+                     </div>
                   </div>
                 );
               })}

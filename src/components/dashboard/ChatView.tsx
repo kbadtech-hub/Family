@@ -93,6 +93,10 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [pendingMessageSend, setPendingMessageSend] = useState<(() => Promise<void>) | null>(null);
 
+  // Call Consent Overlay States
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const [pendingCallVideo, setPendingCallVideo] = useState(false);
+
   // Privacy Telemetry & Safe Space States (Phase 4.5)
   const [telemetry, setTelemetry] = useState<any>(null);
   const [showPulseCheck, setShowPulseCheck] = useState(false);
@@ -965,6 +969,32 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                 >
                   <Gift size={20} />
                 </button>
+                 <button 
+                   onClick={() => {
+                     setPendingCallVideo(false);
+                     setShowConsentModal(true);
+                   }}
+                   aria-label="Start phone call" 
+                   className="hover:text-primary transition-colors"
+                 >
+                   <Phone size={20} />
+                 </button>
+                 <button 
+                   onClick={() => {
+                     if (!isPremium) {
+                       alert(locale === 'am' 
+                         ? "የቪዲዮ ጥሪዎችን ለመጠቀም እባክዎ ፕሪሚየም አባል ይሁኑ!" 
+                         : "Video calling is a premium feature. Please upgrade to Premium!");
+                       return;
+                     }
+                     setPendingCallVideo(true);
+                     setShowConsentModal(true);
+                   }}
+                   aria-label="Start video call" 
+                   className="hover:text-primary transition-colors"
+                 >
+                   <Video size={20} />
+                 </button>
                 <button 
                   onClick={handleSendCoins}
                   aria-label="Send coins" 
@@ -973,32 +1003,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                 >
                   <Coins size={20} />
                 </button>
-                <button 
-                  onClick={() => {
-                    setIsCallVideo(false);
-                    setActiveCallMatch(selectedMatch);
-                  }}
-                  aria-label="Start phone call" 
-                  className="hover:text-primary transition-colors"
-                >
-                  <Phone size={20} />
-                </button>
-                <button 
-                  onClick={() => {
-                    if (!isPremium) {
-                      alert(locale === 'am' 
-                        ? "የቪዲዮ ጥሪዎችን ለመጠቀም እባክዎ ፕሪሚየም አባል ይሁኑ!" 
-                        : "Video calling is a premium feature. Please upgrade to Premium!");
-                      return;
-                    }
-                    setIsCallVideo(true);
-                    setActiveCallMatch(selectedMatch);
-                  }}
-                  aria-label="Start video call" 
-                  className="hover:text-primary transition-colors"
-                >
-                  <Video size={20} />
-                </button>
+
                 <div className="relative">
                   <button 
                     onClick={() => setShowMenu(!showMenu)}
@@ -1517,6 +1522,44 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                 className="w-full bg-muted text-gray-500 py-4 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-muted/75 transition-all"
               >
                 {locale === 'am' ? 'ዝጋ' : 'Close'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showConsentModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-md rounded-[3rem] border border-muted p-8 text-center space-y-6 shadow-2xl animate-in slide-in-from-bottom-8 duration-500">
+            <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto animate-pulse">
+              <ShieldCheck size={28} />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-xl font-black text-accent italic tracking-tighter">
+                {locale === 'am' ? 'የጥሪ ፈቃደኝነት ማረጋገጫ' : 'Mutual Call Consent'}
+              </h3>
+              <p className="text-xs text-gray-500 leading-relaxed font-medium px-2">
+                {locale === 'am' 
+                  ? 'ጥሪውን ለመጀመር ፈቃደኛ መሆንዎን ያረጋግጡ። ጥሪው የሚጀምረው ሁለቱም ወገኖች ፈቃደኛነታቸውን ሲያረጋግጡ ብቻ ነው።' 
+                  : 'Please confirm your consent to start this secure call. Communication will establish only when both candidates consent.'}
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 pt-2">
+              <button
+                onClick={() => {
+                  setShowConsentModal(false);
+                  setIsCallVideo(pendingCallVideo);
+                  setActiveCallMatch(selectedMatch);
+                }}
+                className="w-full bg-primary text-white py-4 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-primary/20 hover:scale-102 active:scale-98 transition-all"
+              >
+                {locale === 'am' ? 'እስማማለሁ (I Consent)' : 'I Consent'}
+              </button>
+              <button
+                onClick={() => setShowConsentModal(false)}
+                className="w-full bg-muted text-gray-500 py-4 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-muted/75 transition-all"
+              >
+                {locale === 'am' ? 'አልስማማም (Decline)' : 'Decline'}
               </button>
             </div>
           </div>
