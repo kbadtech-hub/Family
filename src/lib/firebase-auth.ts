@@ -171,15 +171,15 @@ async function syncFirebaseUserWithSupabase(firebaseUser: FirebaseUser): Promise
   if (!res.ok) {
     let errorMsg = '';
     try {
-      const errData = await res.json();
-      errorMsg = errData.error || `HTTP Error ${res.status}`;
-    } catch {
+      const text = await res.text();
       try {
-        const text = await res.text();
-        errorMsg = text ? (text.length > 200 ? `${text.substring(0, 200)}...` : text) : `HTTP Error ${res.status}`;
+        const errData = JSON.parse(text);
+        errorMsg = errData.error || `HTTP Error ${res.status}`;
       } catch {
-        errorMsg = `HTTP Error ${res.status}`;
+        errorMsg = text ? (text.length > 200 ? `${text.substring(0, 200)}...` : text) : `HTTP Error ${res.status}`;
       }
+    } catch {
+      errorMsg = `HTTP Error ${res.status}`;
     }
     console.error('[FirebaseAuth] Sync API error:', errorMsg);
     throw new Error(errorMsg);
