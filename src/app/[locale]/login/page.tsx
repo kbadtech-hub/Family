@@ -100,16 +100,6 @@ function LoginContent() {
   }, [view]);
 
   const handleSocialLogin = async (provider: 'google' | 'facebook' | 'apple') => {
-    if (provider === 'apple') {
-      setToast({
-        message: locale === 'am'
-          ? 'Apple ID መግባት በቅርቡ ይመጣል። እባክዎ ለጊዜው በኢሜይል ወይም በስልክ ቁጥር ይጠቀሙ።'
-          : 'Apple ID login is coming soon. Please use Email or Phone for now.',
-        show: true
-      });
-      return;
-    }
-
     setError('');
     setIsLoading(true);
 
@@ -117,7 +107,9 @@ function LoginContent() {
       // Use Firebase Auth popup — no page redirect, no loop risk
       const result = provider === 'google'
         ? await signInWithGoogle()
-        : await signInWithFacebook();
+        : provider === 'facebook'
+        ? await signInWithFacebook()
+        : await signInWithApple();
 
       if (!result.success || !result.firebaseUser) {
         setError(result.error || 'Sign-in failed. Please try again.');

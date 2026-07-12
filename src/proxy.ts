@@ -91,5 +91,6 @@ export const config = {
   // - /_next (Next.js internals)
   // - /_static (inside /public)
   // - all root files inside /public (e.g. /favicon.ico)
-  matcher: ['/((?!api|auth|_next|_static|_vercel|[\\w-]+\\.\\w+).*)']
+  // - /__ (Firebase auth domain routes)
+  matcher: ['/((?!api|auth|__|_next|_static|_vercel|[\\w-]+\\.\\w+).*)']
 };

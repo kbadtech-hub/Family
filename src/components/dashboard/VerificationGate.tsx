@@ -107,7 +107,7 @@ export default function VerificationGate({ userId, onVerified }: VerificationGat
 
       // 2. Call simulateIdentityVerification helper
       const { simulateIdentityVerification } = await import('@/lib/verification');
-      const result = await simulateIdentityVerification(idUrl, selfieUrl, {
+      const result = await simulateIdentityVerification(userId, idUrl, selfieUrl, {
         full_name: profile.full_name || '',
         birth_date: profile.birth_date || '',
         location: profile.location || {}

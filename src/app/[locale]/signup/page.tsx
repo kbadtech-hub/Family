@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { signInWithGoogle, signInWithFacebook } from '@/lib/firebase-auth';
+import { signInWithGoogle, signInWithFacebook, signInWithApple } from '@/lib/firebase-auth';
 import GeoGuard from '@/components/GeoGuard';
 import { useRouter } from '@/i18n/routing';
 import Image from 'next/image';
@@ -154,23 +154,15 @@ function SignupContent() {
   }, [ethBirthDay, ethBirthMonth, ethBirthYear, calendarType]);
 
   const handleSocialLogin = async (provider: 'google' | 'facebook' | 'apple') => {
-    if (provider === 'apple') {
-      setToast({
-        message: locale === 'am'
-          ? 'Apple ID መግባት በቅርቡ ይመጣል። እባክዎ ለጊዜው በኢሜይል ወይም በስልክ ቁጥር ይጠቀሙ።'
-          : 'Apple ID login is coming soon. Please use Email or Phone for now.',
-        show: true
-      });
-      return;
-    }
-
     setError('');
     setIsLoading(true);
 
     try {
       const result = provider === 'google'
         ? await signInWithGoogle()
-        : await signInWithFacebook();
+        : provider === 'facebook'
+        ? await signInWithFacebook()
+        : await signInWithApple();
 
       if (!result.success || !result.firebaseUser) {
         setError(result.error || 'Sign-in failed. Please try again.');

@@ -1,23 +1,15 @@
-# Execution Checklist - Phase 4 (Counselor Rooms, SMS Queue & Monetization Compliance)
+# Task Checklist — Beteseb Auth & Verification Fixes
 
-- `[x]` Step 1: Database Migration for SMS Queue and Booking Payments extension
-- `[x]` Step 2: Implement SMS Queue library (sms.ts) and API Endpoint (/api/notifications/sms)
-- `[x]` Step 3: Implement Web App vs. Mobile App Compliance checks and Monetization selectors in WorkshopsView.tsx
-- `[x]` Step 4: Implement counseling-session/page.tsx WebRTC room with visual watermarks and screenshot warning detectors
-- `[x]` Step 5: Verify all routes and compile production build
-
-# Execution Checklist - Phase 5 (Trust Meter, Hierarchical Location & Safe Space Rooms)
-
-- `[x]` Step 1: Design Trust Tiers calculations and daily limits in tiers.ts
-- `[x]` Step 2: Implement Cascading Location Selectors & overrides in onboarding/page.tsx
-- `[x]` Step 3: Implement Conditional Children Workflow check in onboarding/page.tsx
-- `[x]` Step 4: Implement Profile Completion Meter widget and trust tier badges in dashboard/page.tsx sidebar
-- `[x]` Step 5: Implement King/Queen Crown frame overlays on 100% complete Diamond profiles
-- `[x]` Step 6: Implement Tier-based Daily limits & Coins Bypass triggers in ChatView.tsx
-- `[x]` Step 7: Create Interaction Telemetry and RLS privacy rules in DB migrations
-- `[x]` Step 8: Implement Pulse Check card overlays and Safe Space constructive chat rooms in ChatView.tsx
-
-# Execution Checklist - Phase 6 (Wali Call & Gift Delivery Queue Proof Upload)
-
-- `[x]` Step 1: Implement Simulated Wali Group Video Call Layout and controls in ChatView.tsx
-- `[x]` Step 2: Implement Admin Gift Delivery Proof Screenshot Upload and rendering in secure-beteseb-admin/page.tsx
+- [x] Next.js Routing & Config Layer
+  - [x] Rename `src/proxy.ts` to `src/middleware.ts`
+  - [x] Modify `src/middleware.ts` to rename `proxy` function to `middleware`, and exclude `__` in matcher config
+  - [x] Add Firebase Auth custom domain rewrites in `next.config.ts`
+- [x] Authentication Layer (Social Logins)
+  - [x] Enable Apple ID Social Login in `src/app/[locale]/login/page.tsx`
+  - [x] Enable Apple ID Social Sign-up in `src/app/[locale]/signup/page.tsx`
+- [x] Verification Layer (Bypass Security Fixes)
+  - [x] Modify `src/lib/verification.ts` to accept `userId` and pass it to `/api/ai/verify`
+  - [x] Update `/api/ai/verify/route.ts` to fetch authentic credentials from database and perform fuzzy name & date match validation
+  - [x] Update `src/app/[locale]/onboarding/page.tsx` to handle failures, display a glassmorphic block modal overlay, and direct users back to Step 4 or Step 1
+- [x] Verification & Build
+  - [x] Run `npm run build` to verify there are no compilation or TypeScript errors

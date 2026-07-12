@@ -20,6 +20,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/__/auth/:path*',
+        destination: 'https://beteseb-89bae.firebaseapp.com/__/auth/:path*',
+      },
+    ];
+  },
 };
 
 export default withNextIntl(nextConfig);

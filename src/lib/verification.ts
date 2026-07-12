@@ -14,6 +14,7 @@ export interface VerificationResult {
 }
 
 export async function simulateIdentityVerification(
+  userId: string,
   idPhotoUrl: string,
   selfiePhotoUrl: string,
   profileData: { 
@@ -24,6 +25,10 @@ export async function simulateIdentityVerification(
       region?: string;
       city?: string;
     }
+  },
+  mockOcrData?: {
+    full_name?: string;
+    birth_date?: string;
   }
 ): Promise<VerificationResult> {
   if (!idPhotoUrl || !selfiePhotoUrl) {
@@ -37,9 +42,11 @@ export async function simulateIdentityVerification(
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
+        userId,
         idPhotoUrl,
         selfiePhotoUrl,
-        profileData
+        profileData,
+        mockOcrData
       })
     });
 

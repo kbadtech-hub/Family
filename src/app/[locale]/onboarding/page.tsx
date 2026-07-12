@@ -113,6 +113,7 @@ function OnboardingContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
+  const [showMismatchModal, setShowMismatchModal] = useState(false);
   const [formData, setFormData] = useState({
     full_name: '',
     birth_date: '',
@@ -243,7 +244,7 @@ function OnboardingContent() {
 
           setIsVerifying(true);
           if (formData.id_photo) {
-            simulateIdentityVerification(formData.id_photo, publicUrl, {
+            simulateIdentityVerification(userId, formData.id_photo, publicUrl, {
               full_name: formData.full_name,
               birth_date: formData.birth_date,
               location: {
@@ -275,6 +276,7 @@ function OnboardingContent() {
               } else {
                 setFormData(prev => ({ ...prev, verification_status: 'rejected' }));
                 setErrorMsg(result.reason || t('idVerification.rejected'));
+                setShowMismatchModal(true);
               }
             });
           } else {
@@ -1288,6 +1290,62 @@ function OnboardingContent() {
           <div className={`absolute bottom-0 ${locale === 'ar' ? 'right-0' : 'left-0'} w-32 h-32 bg-secondary/10 rounded-full ${locale === 'ar' ? '-mr-16' : '-ml-16'} -mb-16 blur-2xl opacity-40`} />
           
           <div className="relative">
+            {showMismatchModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+                <div className="bg-white rounded-[2rem] max-w-md w-full p-8 border border-red-100 shadow-2xl mx-4 relative overflow-hidden animate-in zoom-in-95 duration-300">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full -mr-16 -mt-16 blur-2xl opacity-60" />
+                  <div className="absolute bottom-0 left-0 w-32 h-32 bg-amber-500/5 rounded-full -ml-16 -mb-16 blur-2xl opacity-40" />
+                  <div className="relative flex flex-col items-center text-center">
+                    <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center text-red-500 mb-6 border border-red-100 shadow-sm animate-pulse">
+                      <AlertCircle size={32} />
+                    </div>
+                    <h3 className="text-xl font-extrabold text-gray-900 tracking-tight mb-3">
+                      {locale === 'am' ? 'የማንነት ማረጋገጫ አልተሳካም' : 'Identity Mismatch Detected'}
+                    </h3>
+                    <p className="text-sm text-gray-600 leading-relaxed mb-8">
+                      {locale === 'am' 
+                        ? 'ያስገቡት ሰነድ ከተመዘገበው ማንነትዎ ጋር አይዛመድም። እባክዎን ትክክለኛ ማንነትዎን የሚወክል መታወቂያ/ፓስፖርት ይጫኑ ወይም መረጃዎን ያስተካክሉ።'
+                        : 'The document provided does not match your registered identity. Please upload a valid ID/Passport that represents your true identity, or correct your information.'}
+                    </p>
+                    <div className="w-full flex flex-col gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            id_photo: '',
+                            selfie_photo: '',
+                            verification_status: 'unverified'
+                          }));
+                          setErrorMsg('');
+                          setShowMismatchModal(false);
+                          setStep(4);
+                        }}
+                        className="w-full bg-primary hover:bg-primary/95 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30"
+                      >
+                        {locale === 'am' ? 'መታወቂያ እንደገና ይጫኑ' : 'Re-upload ID Document'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            verification_status: 'unverified'
+                          }));
+                          setErrorMsg('');
+                          setShowMismatchModal(false);
+                          setStep(1);
+                        }}
+                        className="w-full bg-slate-100 hover:bg-slate-200 text-gray-700 py-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all"
+                      >
+                        {locale === 'am' ? 'መረጃ ያስተካክሉ' : 'Correct Profile Info'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {errorMsg && (
               <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-sm font-bold animate-in fade-in slide-in-from-top-2">
                 {errorMsg}

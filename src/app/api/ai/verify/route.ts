@@ -1,43 +1,240 @@
 import { NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/lib/supabase-admin';
+
+// Levenshtein Distance helper for fuzzy matching (minor typos)
+function levenshteinDistance(a: string, b: string): number {
+  const tmp = [];
+  let i, j, alen = a.length, blen = b.length;
+  if (alen === 0) return blen;
+  if (blen === 0) return alen;
+  for (i = 0; i <= alen; i++) tmp[i] = [i];
+  for (j = 0; j <= blen; j++) tmp[0][j] = j;
+  for (i = 1; i <= alen; i++) {
+    for (j = 1; j <= blen; j++) {
+      tmp[i][j] = Math.min(
+        tmp[i - 1][j] + 1,
+        tmp[i][j - 1] + 1,
+        tmp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+      );
+    }
+  }
+  return tmp[alen][blen];
+}
+
+// Fuzzy matching to verify that all parts of the registered name match the ID document
+function verifyNameMatch(dbName: string, ocrText: string): { matches: boolean; reason?: string } {
+  const dbNormalized = dbName.toLowerCase().trim();
+  const ocrNormalized = ocrText.toLowerCase();
+
+  // 1. Direct match
+  if (ocrNormalized.includes(dbNormalized)) {
+    return { matches: true };
+  }
+
+  // 2. Word-by-word matching
+  const dbParts = dbNormalized.split(/\s+/).filter(part => part.length > 0);
+  if (dbParts.length === 0) {
+    return { matches: false, reason: 'Registered profile name is empty.' };
+  }
+
+  // Split OCR text into words (removing non-alphabetic separators)
+  const ocrWords = ocrNormalized.split(/[^a-zA-Z0-9\u0100-\u017F\u0400-\u04FF\u1200-\u137F]+/g).filter(w => w.length > 0);
+
+  const missingParts: string[] = [];
+  for (const part of dbParts) {
+    // If it's too short (1 character), require exact match
+    if (part.length <= 1) {
+      if (!ocrNormalized.includes(part)) {
+        missingParts.push(part);
+      }
+      continue;
+    }
+
+    // Check if the part is in OCR directly
+    if (ocrNormalized.includes(part)) {
+      continue;
+    }
+
+    // Try fuzzy match on each word in the OCR text
+    const hasFuzzyMatch = ocrWords.some(word => levenshteinDistance(part, word) <= 1);
+    if (!hasFuzzyMatch) {
+      missingParts.push(part);
+    }
+  }
+
+  if (missingParts.length > 0) {
+    return {
+      matches: false,
+      reason: `The name on the ID document does not match your registered profile name. Registered name parts [${missingParts.join(', ')}] were not found on the ID.`
+    };
+  }
+
+  return { matches: true };
+}
+
+// Verification logic for Date of Birth
+function verifyBirthDateMatch(dbBirthDate: string, ocrText: string): { matches: boolean; reason?: string } {
+  if (!dbBirthDate) {
+    return { matches: false, reason: 'No birth date registered on your profile.' };
+  }
+
+  const dateObj = new Date(dbBirthDate);
+  if (isNaN(dateObj.getTime())) {
+    return { matches: false, reason: 'Invalid birth date registered on your profile.' };
+  }
+
+  const year = dateObj.getFullYear().toString(); // e.g. "1995"
+  const monthVal = dateObj.getMonth() + 1; // 1-12
+  const day = dateObj.getDate().toString(); // e.g. "25"
+  const dayPadded = day.padStart(2, '0'); // e.g. "25"
+  const monthPadded = monthVal.toString().padStart(2, '0'); // e.g. "03"
+
+  const lowerText = ocrText.toLowerCase();
+
+  // 1. Year check
+  const hasYear = lowerText.includes(year);
+
+  // 2. Month check (supports padded, slash/hyphen wrapped, or English/Amharic month names)
+  const monthsEnglish = [
+    ['jan', 'january'], ['feb', 'february'], ['mar', 'march'], ['apr', 'april'],
+    ['may'], ['jun', 'june'], ['jul', 'july'], ['aug', 'august'],
+    ['sep', 'september', 'sept'], ['oct', 'october'], ['nov', 'november'], ['dec', 'december']
+  ];
+  const currentEngMonths = monthsEnglish[monthVal - 1] || [];
+
+  const monthsAmharic = [
+    ['መስከረም', 'meskerem', 'ጃንዋሪ', 'january'],
+    ['ጥቅምት', 'tikimt', 'ፌብሩዋሪ', 'february'],
+    ['ህዳር', 'hidar', 'ማርች', 'march'],
+    ['ታህሳስ', 'tahsas', 'ኤፕሪል', 'april'],
+    ['ጥር', 'tir', 'ሜይ', 'may'],
+    ['የካቲት', 'yakatit', 'ጁን', 'june'],
+    ['መጋቢት', 'megabit', 'ጁላይ', 'july'],
+    ['ሚያዝያ', 'miyazya', 'ኦገስት', 'august'],
+    ['ግንቦት', 'ginbot', 'ሴፕቴምበር', 'september'],
+    ['ሰኔ', 'sene', 'ኦክቶበር', 'october'],
+    ['ሐምሌ', 'hamle', 'ኖቬምበር', 'november'],
+    ['ነሐሴ', 'nehase', 'ዲሴምበር', 'december'],
+    ['ጳጉሜ', 'pagume']
+  ];
+  const currentAmhMonths = monthsAmharic[monthVal - 1] || [];
+
+  const hasMonth = lowerText.includes(monthPadded) ||
+                   lowerText.includes(`/${monthVal}/`) ||
+                   lowerText.includes(`-${monthVal}-`) ||
+                   lowerText.includes(` ${monthVal} `) ||
+                   currentEngMonths.some(m => lowerText.includes(m)) ||
+                   currentAmhMonths.some(m => lowerText.includes(m));
+
+  // 3. Day check (numeric, padded, or boundary word)
+  const hasDay = lowerText.includes(dayPadded) ||
+                 new RegExp(`\\b${day}\\b`).test(lowerText) ||
+                 lowerText.includes(`/${day}/`) ||
+                 lowerText.includes(`-${day}-`) ||
+                 lowerText.includes(` ${day} `);
+
+  if (!hasYear || !hasMonth || !hasDay) {
+    const missing = [];
+    if (!hasDay) missing.push(`day (${day})`);
+    if (!hasMonth) missing.push(`month (${monthPadded})`);
+    if (!hasYear) missing.push(`year (${year})`);
+    return {
+      matches: false,
+      reason: `Could not verify your complete birth date (${dbBirthDate}) on the ID document. Make sure the day (${day}), month (${monthPadded}), and year (${year}) are clearly visible and match your profile.`
+    };
+  }
+
+  return { matches: true };
+}
 
 export async function POST(req: Request) {
   try {
-    const { idPhotoUrl, selfiePhotoUrl, profileData } = await req.json();
+    const { userId, idPhotoUrl, selfiePhotoUrl, profileData, mockOcrData } = await req.json();
+
+    if (!userId) {
+      return NextResponse.json({ isMatch: false, reason: 'Missing userId for verification' });
+    }
 
     if (!idPhotoUrl || !selfiePhotoUrl) {
       return NextResponse.json({ isMatch: false, reason: 'Missing images for verification' });
     }
 
+    // Fetch original registered profile data from database (trusted source)
+    const { data: dbProfile, error: dbError } = await supabaseAdmin
+      .from('profiles')
+      .select('full_name, birth_date, location')
+      .eq('id', userId)
+      .single();
+
+    if (dbError || !dbProfile) {
+      console.error("Database query failed during verification:", dbError);
+      return NextResponse.json({ isMatch: false, reason: 'Could not fetch onboarding profile metadata from database.' });
+    }
+
+    const dbFullName = (dbProfile.full_name || '').trim();
+    const dbBirthDate = (dbProfile.birth_date || '').trim();
+
+    if (!dbFullName) {
+      return NextResponse.json({ isMatch: false, reason: 'Profile name is empty. Please set your full name in your profile before verification.' });
+    }
+
+    if (!dbBirthDate) {
+      return NextResponse.json({ isMatch: false, reason: 'No birth date registered on your profile. Please set your birth date before verification.' });
+    }
+
     const apiKey = process.env.GOOGLE_VISION_API_KEY;
 
+    // ─── Simulated Mode ───────────────────────────────────────────────────────
     if (!apiKey) {
       console.warn("GOOGLE_VISION_API_KEY is not defined. Falling back to simulated verification.");
       
-      const lowerName = (profileData?.full_name || '').toLowerCase();
       const lowerIdUrl = idPhotoUrl.toLowerCase();
-      const isFake = lowerName.includes('fake') || lowerName.includes('test') || lowerName.includes('dummy') ||
-                     lowerIdUrl.includes('fake') || lowerIdUrl.includes('test') || lowerIdUrl.includes('cartoon') || lowerIdUrl.includes('dummy');
+      const isTriggeredFake = lowerIdUrl.includes('fake') || lowerIdUrl.includes('test') || lowerIdUrl.includes('dummy') || lowerIdUrl.includes('cartoon');
+      const isMismatchTrigger = lowerIdUrl.includes('mismatch') || lowerIdUrl.includes('wrong') || lowerIdUrl.includes('rejected');
 
-      if (isFake) {
+      if (isTriggeredFake) {
         return NextResponse.json({
           isMatch: false,
-          reason: 'Simulation Verification: Only official Passport or Digital ID is accepted. Cartoon, fake, or non-matching documents are rejected.'
+          reason: 'Simulation Verification: Only official Passport or Digital ID is accepted. Cartoon, fake, or non-standard documents are rejected.'
         });
       }
 
-      // Verification logic simulation for onboarding success in testing
-      const score = 0.98;
+      // Determine simulated OCR text based on payload inputs or trigger keywords
+      let simulatedOcrText = `${dbFullName} ${dbBirthDate}`;
+      if (mockOcrData) {
+        simulatedOcrText = `${mockOcrData.full_name || ''} ${mockOcrData.birth_date || ''}`;
+      } else if (isMismatchTrigger) {
+        simulatedOcrText = `Kalid Seid 1990-05-15`; // Simulate a complete mismatch
+      }
+
+      // Enforce the exact same database matching rules on simulated text
+      const nameCheck = verifyNameMatch(dbFullName, simulatedOcrText);
+      if (!nameCheck.matches) {
+        return NextResponse.json({
+          isMatch: false,
+          reason: `Simulation Match Error: ${nameCheck.reason}`
+        });
+      }
+
+      const dobCheck = verifyBirthDateMatch(dbBirthDate, simulatedOcrText);
+      if (!dobCheck.matches) {
+        return NextResponse.json({
+          isMatch: false,
+          reason: `Simulation Match Error: ${dobCheck.reason}`
+        });
+      }
+
       return NextResponse.json({
         isMatch: true,
-        score,
+        score: 0.98,
         extractedData: {
-          full_name: profileData?.full_name || 'Verified User',
-          birth_date: profileData?.birth_date || '1995-01-01'
+          full_name: dbFullName,
+          birth_date: dbBirthDate
         }
       });
     }
 
-    // Google Cloud Vision API Call
+    // ─── Production Google Cloud Vision API Mode ──────────────────────────────
     const visionUrl = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
     
     const requestBody = {
@@ -77,8 +274,6 @@ export async function POST(req: Request) {
 
     const extractedText = textAnnotations[0].description;
     console.log("Extracted OCR Text from ID:", extractedText);
-
-    // Normalize text for parsing
     const lowerText = extractedText.toLowerCase();
 
     // 1. Strict Document Type Check (Passport or official Digital ID only)
@@ -95,134 +290,35 @@ export async function POST(req: Request) {
       });
     }
 
-    // 2. Name Matching Check
-    const fullName = (profileData?.full_name || '').toLowerCase().trim();
-    if (!fullName) {
+    // 2. Enforce Name matching check against database values
+    const nameCheck = verifyNameMatch(dbFullName, extractedText);
+    if (!nameCheck.matches) {
       return NextResponse.json({
         isMatch: false,
-        reason: 'Profile name is empty. Please set your full name in your profile before verification.'
+        reason: nameCheck.reason
       });
     }
 
-    const nameParts = fullName.split(' ').filter((part: string) => part.trim().length > 0);
-    if (nameParts.length === 0) {
+    // 3. Enforce Birth Date matching check against database values
+    const dobCheck = verifyBirthDateMatch(dbBirthDate, extractedText);
+    if (!dobCheck.matches) {
       return NextResponse.json({
         isMatch: false,
-        reason: 'Invalid profile name.'
-      });
-    }
-
-    // Check if all parts of the full name appear in the ID text (legible)
-    const nameMatches = nameParts.every((part: string) => 
-      part.length < 2 || lowerText.includes(part)
-    );
-
-    if (!nameMatches) {
-      return NextResponse.json({
-        isMatch: false,
-        reason: 'The full name on the ID does not match the name registered on your profile. Please ensure all parts of your registered name are clearly visible on the ID document.'
-      });
-    }
-
-    // 3. Birth Date Check (Checking if day, month, and year appear in the ID text)
-    const birthDateStr = profileData?.birth_date;
-    if (!birthDateStr) {
-      return NextResponse.json({
-        isMatch: false,
-        reason: 'No birth date provided on your profile. Please set your birth date before verification.'
-      });
-    }
-
-    const dateObj = new Date(birthDateStr);
-    if (isNaN(dateObj.getTime())) {
-      return NextResponse.json({
-        isMatch: false,
-        reason: 'Invalid birth date registered on your profile.'
-      });
-    }
-
-    const year = dateObj.getFullYear().toString(); // e.g. "1995"
-    const monthVal = dateObj.getMonth() + 1; // 1-12
-    const day = dateObj.getDate().toString(); // e.g. "25"
-    const dayPadded = day.padStart(2, '0'); // e.g. "25"
-    const month = monthVal.toString(); // e.g. "3"
-    const monthPadded = month.padStart(2, '0'); // e.g. "03"
-
-    // Standard English month names
-    const monthsEnglish = [
-      ['jan', 'january'],
-      ['feb', 'february'],
-      ['mar', 'march'],
-      ['apr', 'april'],
-      ['may'],
-      ['jun', 'june'],
-      ['jul', 'july'],
-      ['aug', 'august'],
-      ['sep', 'september', 'sept'],
-      ['oct', 'october'],
-      ['nov', 'november'],
-      ['dec', 'december']
-    ];
-    const currentEngMonths = monthsEnglish[monthVal - 1] || [];
-
-    // Ethiopian/Amharic month names and common transliterations
-    const monthsAmharic = [
-      ['መስከረም', 'meskerem', 'ጃንዋሪ', 'january'],
-      ['ጥቅምት', 'tikimt', 'ፌብሩዋሪ', 'february'],
-      ['ህዳር', 'hidar', 'ማርች', 'march'],
-      ['ታህሳስ', 'tahsas', 'ኤፕሪል', 'april'],
-      ['ጥር', 'tir', 'ሜይ', 'may'],
-      ['የካቲት', 'yakatit', 'ጁን', 'june'],
-      ['መጋቢት', 'megabit', 'ጁላይ', 'july'],
-      ['ሚያዝያ', 'miyazya', 'ኦገስት', 'august'],
-      ['ግንቦት', 'ginbot', 'ሴፕቴምበር', 'september'],
-      ['ሰኔ', 'sene', 'ኦክቶበር', 'october'],
-      ['ሐምሌ', 'hamle', 'ኖቬምበር', 'november'],
-      ['ነሐሴ', 'nehase', 'ዲሴምበር', 'december'],
-      ['ጳጉሜ', 'pagume']
-    ];
-    const currentAmhMonths = monthsAmharic[monthVal - 1] || [];
-
-    // Match Year
-    const hasYear = lowerText.includes(year);
-
-    // Match Month (numeric, padded, slash/hyphen wrapped, or English/Amharic name)
-    const hasMonth = lowerText.includes(monthPadded) ||
-                     lowerText.includes(`/${month}/`) ||
-                     lowerText.includes(`-${month}-`) ||
-                     lowerText.includes(` ${month} `) ||
-                     currentEngMonths.some(m => lowerText.includes(m)) ||
-                     currentAmhMonths.some(m => lowerText.includes(m));
-
-    // Match Day (numeric, padded, or boundary word)
-    const hasDay = lowerText.includes(dayPadded) ||
-                   new RegExp(`\\b${day}\\b`).test(lowerText) ||
-                   lowerText.includes(`/${day}/`) ||
-                   lowerText.includes(`-${day}-`) ||
-                   lowerText.includes(` ${day} `);
-
-    const birthDateMatches = hasYear && hasMonth && hasDay;
-
-    if (!birthDateMatches) {
-      return NextResponse.json({
-        isMatch: false,
-        reason: `Could not verify your complete birth date (${birthDateStr}) on the ID document. Make sure the day (${day}), month (${monthPadded}), and year (${year}) are clearly visible and match your profile.`
+        reason: dobCheck.reason
       });
     }
 
     // 4. Residence Area / Address Verification Check
     let locationMatches = false;
-    const locationData = profileData?.location || {};
+    const locationData = dbProfile.location || {};
     const country = (locationData.country || '').toLowerCase().trim();
     const region = (locationData.region || '').toLowerCase().trim();
     const city = (locationData.city || '').toLowerCase().trim();
 
-    // Check if the registered location (city, region, or country) matches OCR text
     if (city && lowerText.includes(city)) locationMatches = true;
     if (region && lowerText.includes(region)) locationMatches = true;
     if (country && lowerText.includes(country)) locationMatches = true;
 
-    // Common labels for addresses on official ID documents across languages
     const addressIndicators = [
       'address', 'residence', 'place of birth', 'issuing authority', 'region', 'city', 'zone', 'woreda', 'kebele',
       'አድራሻ', 'ክልል', 'ከተማ', 'ቀበሌ', 'ወረዳ', 'ዞን', 'የመኖሪያ',
@@ -241,8 +337,8 @@ export async function POST(req: Request) {
       isMatch: true,
       score: 0.99,
       extractedData: {
-        full_name: profileData.full_name,
-        birth_date: profileData.birth_date
+        full_name: dbFullName,
+        birth_date: dbBirthDate
       }
     });
 
