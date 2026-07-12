@@ -63,6 +63,23 @@ function firebaseUidToUuid(uid: string): string {
   return `${part1}-${part2}-${part3}-${part4}-${part5}`;
 }
 
+// ─── GET Diagnostic Handler ───────────────────────────────────────────────────
+
+export async function GET() {
+  return NextResponse.json({
+    status: 'active',
+    message: 'Beteseb Auth Sync API is operational',
+    timestamp: new Date().toISOString(),
+    environment: {
+      hasFirebaseProjectId: !!process.env.FIREBASE_PROJECT_ID,
+      hasFirebaseClientEmail: !!process.env.FIREBASE_CLIENT_EMAIL,
+      hasFirebasePrivateKey: !!process.env.FIREBASE_PRIVATE_KEY,
+      hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      hasSupabaseServiceRoleKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
+    }
+  });
+}
+
 // ─── POST Handler ─────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
