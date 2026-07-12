@@ -86,7 +86,7 @@ export async function signInWithGoogle(): Promise<SocialAuthResult> {
     return { success: true, isNewUser: syncRes.isNewUser, hasPhone: syncRes.hasPhone, firebaseUser };
   } catch (error: any) {
     console.error('[FirebaseAuth] Google Sign-In error:', error);
-    const message = translateFirebaseError(error.code);
+    const message = translateFirebaseError(error);
     return { success: false, isNewUser: false, hasPhone: false, firebaseUser: null, error: message };
   }
 }
@@ -114,7 +114,7 @@ export async function signInWithFacebook(): Promise<SocialAuthResult> {
     return { success: true, isNewUser: syncRes.isNewUser, hasPhone: syncRes.hasPhone, firebaseUser };
   } catch (error: any) {
     console.error('[FirebaseAuth] Facebook Sign-In error:', error);
-    const message = translateFirebaseError(error.code);
+    const message = translateFirebaseError(error);
     return { success: false, isNewUser: false, hasPhone: false, firebaseUser: null, error: message };
   }
 }
@@ -142,7 +142,7 @@ export async function signInWithApple(): Promise<SocialAuthResult> {
     return { success: true, isNewUser: syncRes.isNewUser, hasPhone: syncRes.hasPhone, firebaseUser };
   } catch (error: any) {
     console.error('[FirebaseAuth] Apple Sign-In error:', error);
-    const message = translateFirebaseError(error.code);
+    const message = translateFirebaseError(error);
     return { success: false, isNewUser: false, hasPhone: false, firebaseUser: null, error: message };
   }
 }
@@ -225,7 +225,18 @@ export function onFirebaseAuthStateChanged(
 
 // ─── Error Translation ────────────────────────────────────────────────────────
 
-function translateFirebaseError(code: string): string {
+function translateFirebaseError(error: any): string {
+  if (!error) return 'An unknown authentication error occurred.';
+  
+  // Extract error code if it's an object, otherwise use as string code
+  const code = (error && typeof error === 'object' && 'code' in error) ? error.code : error;
+  
+  if (!code) {
+    if (error instanceof Error) return error.message;
+    if (error && typeof error === 'object' && 'message' in error) return error.message;
+    return 'An unknown authentication error occurred.';
+  }
+
   switch (code) {
     case 'auth/popup-closed-by-user':
       return 'Sign-in popup was closed. Please try again.';
@@ -268,7 +279,8 @@ function translateFirebaseError(code: string): string {
     case 'auth/app-not-authorized':
       return 'This app is not authorized to use Firebase Authentication. Please contact support.';
     default:
-      return `Authentication error (${code || 'unknown'}). Please try again.`;
+      const details = (error && typeof error === 'object' && error.message) ? `: ${error.message}` : '';
+      return `Authentication error (${code || 'unknown'})${details}. Please try again.`;
   }
 }
 
@@ -289,7 +301,7 @@ export async function signUpWithEmail(email: string, password: string): Promise<
     return { success: true, isNewUser: syncRes.isNewUser, hasPhone: syncRes.hasPhone, firebaseUser: result.user };
   } catch (error: any) {
     console.error('[FirebaseAuth] Email sign-up error:', error);
-    const message = translateFirebaseError(error.code);
+    const message = translateFirebaseError(error);
     return { success: false, isNewUser: false, hasPhone: false, firebaseUser: null, error: message };
   }
 }
@@ -309,7 +321,7 @@ export async function signInWithEmail(email: string, password: string): Promise<
     return { success: true, isNewUser: syncRes.isNewUser, hasPhone: syncRes.hasPhone, firebaseUser: result.user };
   } catch (error: any) {
     console.error('[FirebaseAuth] Email login error:', error);
-    const message = translateFirebaseError(error.code);
+    const message = translateFirebaseError(error);
     return { success: false, isNewUser: false, hasPhone: false, firebaseUser: null, error: message };
   }
 }
@@ -381,7 +393,7 @@ export async function sendPhoneOtp(
     return { success: true, confirmationResult };
   } catch (error: any) {
     console.error('[FirebaseAuth] Send OTP error:', error);
-    const message = translateFirebaseError(error.code);
+    const message = translateFirebaseError(error);
     return { success: false, confirmationResult: null, error: message };
   }
 }
@@ -401,7 +413,7 @@ export async function confirmPhoneOtp(
     return { success: true, isNewUser: syncRes.isNewUser, hasPhone: syncRes.hasPhone, firebaseUser: result.user };
   } catch (error: any) {
     console.error('[FirebaseAuth] OTP confirmation error:', error);
-    const message = translateFirebaseError(error.code);
+    const message = translateFirebaseError(error);
     return { success: false, isNewUser: false, hasPhone: false, firebaseUser: null, error: message };
   }
 }
@@ -430,7 +442,7 @@ export async function linkPhoneWithCurrentUser(
     return { success: true, isNewUser: syncRes.isNewUser, hasPhone: syncRes.hasPhone, firebaseUser: result.user };
   } catch (error: any) {
     console.error('[FirebaseAuth] Phone linking error:', error);
-    const message = translateFirebaseError(error.code);
+    const message = translateFirebaseError(error);
     return { success: false, isNewUser: false, hasPhone: false, firebaseUser: null, error: message };
   }
 }
