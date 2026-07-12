@@ -1,24 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
 import crypto from 'crypto';
-
-// ─── Firebase Admin SDK (singleton) ──────────────────────────────────────────
-
-function getFirebaseAdmin(projectId: string, clientEmail: string, privateKey: string) {
-  if (getApps().length > 0) return getApps()[0];
-
-  const formattedPrivateKey = privateKey.replace(/^"|"$/g, '').replace(/\\n/g, '\n');
-
-  return initializeApp({
-    credential: cert({
-      projectId,
-      clientEmail,
-      privateKey: formattedPrivateKey,
-    }),
-  });
-}
 
 // ─── Supabase Admin Client (service role — bypasses RLS) ─────────────────────
 
@@ -39,17 +21,96 @@ function firebaseUidToUuid(uid: string): string {
   return `${part1}-${part2}-${part3}-${part4}-${part5}`;
 }
 
+// Manual verification of Firebase ID Token using Google's public certificates
+async function verifyFirebaseIdToken(idToken: string, projectId: string) {
+  const parts = idToken.split('.');
+  if (parts.length !== 3) {
+    throw new Error('Token structure is invalid: must contain exactly 3 segments.');
+  }
+
+  // 1. Decode header and payload
+  let header;
+  let payload;
+  try {
+    header = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8'));
+    payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
+  } catch (err: any) {
+    throw new Error(`Failed to decode token segments: ${err.message}`);
+  }
+
+  // 2. Perform validations according to Firebase ID token specifications
+  if (header.alg !== 'RS256') {
+    throw new Error(`Unsupported token signing algorithm: expected RS256, got ${header.alg}`);
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  
+  // exp check (allow 60s clock skew)
+  if (payload.exp < now - 60) {
+    throw new Error(`Token has expired. Expiry time: ${payload.exp}, Current time: ${now}`);
+  }
+
+  // auth_time check
+  if (payload.auth_time > now + 60) {
+    throw new Error(`Token issue time is in the future. Issue time: ${payload.auth_time}, Current time: ${now}`);
+  }
+
+  // aud check
+  if (payload.aud !== projectId) {
+    throw new Error(`Invalid audience: expected ${projectId}, got ${payload.aud}`);
+  }
+
+  // iss check
+  if (payload.iss !== `https://securetoken.google.com/${projectId}`) {
+    throw new Error(`Invalid issuer: expected https://securetoken.google.com/${projectId}, got ${payload.iss}`);
+  }
+
+  // sub check
+  if (typeof payload.sub !== 'string' || !payload.sub) {
+    throw new Error('Subject (sub) claim must be a non-empty string');
+  }
+
+  // 3. Fetch Google public certificates and verify signature
+  const certRes = await fetch(
+    'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com',
+    { next: { revalidate: 3600 } } // Cache Google certs for 1 hour
+  );
+  if (!certRes.ok) {
+    throw new Error(`Failed to fetch Google public keys: ${certRes.statusText}`);
+  }
+  
+  const publicKeys = await certRes.json();
+  const certificate = publicKeys[header.kid];
+  if (!certificate) {
+    throw new Error(`Public key not found for Google kid: ${header.kid}`);
+  }
+
+  const data = Buffer.from(`${parts[0]}.${parts[1]}`);
+  const signature = Buffer.from(parts[2], 'base64url');
+
+  const isVerified = crypto.verify('RSA-SHA256', data, certificate, signature);
+  if (!isVerified) {
+    throw new Error('Cryptographic signature verification failed');
+  }
+
+  return {
+    uid: payload.sub,
+    email: payload.email,
+    phone: payload.phone_number || payload.phone || '',
+    name: payload.name || '',
+    picture: payload.picture || '',
+  };
+}
+
 // ─── GET Diagnostic Handler ───────────────────────────────────────────────────
 
 export async function GET() {
   return NextResponse.json({
     status: 'active',
-    message: 'Beteseb Auth Sync API is operational',
+    message: 'Beteseb Auth Sync API is operational (Native JWT Verification Edition)',
     timestamp: new Date().toISOString(),
     environment: {
       hasFirebaseProjectId: !!process.env.FIREBASE_PROJECT_ID,
-      hasFirebaseClientEmail: !!process.env.FIREBASE_CLIENT_EMAIL,
-      hasFirebasePrivateKey: !!process.env.FIREBASE_PRIVATE_KEY,
       hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
       hasSupabaseServiceRoleKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
     }
@@ -60,24 +121,22 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Strict Validation of Environment variables before initializing SDKs
-    const firebaseProjectId = process.env.FIREBASE_PROJECT_ID;
-    const firebaseClientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-    const firebasePrivateKey = process.env.FIREBASE_PRIVATE_KEY;
+    // 1. Strict Validation of Environment variables before initiating database clients
+    const firebaseProjectId = process.env.FIREBASE_PROJECT_ID || 'beteseb-89bae'; // fallback to known project id
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!firebaseProjectId || !firebaseClientEmail || !firebasePrivateKey) {
+    if (!firebaseProjectId) {
       return NextResponse.json({
         success: false,
-        error: 'Firebase Admin credentials are not configured in server environment variables.'
+        error: 'FIREBASE_PROJECT_ID environment variable is missing on server.'
       }, { status: 500 });
     }
 
     if (!supabaseUrl || !supabaseServiceKey || supabaseServiceKey === 'YOUR_SUPABASE_SERVICE_ROLE_KEY_HERE') {
       return NextResponse.json({
         success: false,
-        error: 'Supabase credentials are not configured in server environment variables.'
+        error: 'Supabase URL or service role key is not configured in production settings.'
       }, { status: 500 });
     }
 
@@ -94,23 +153,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'idToken is required.' }, { status: 400 });
     }
 
-    // 3. Verify Firebase ID Token
-    let adminApp;
-    let adminAuth;
-    try {
-      adminApp = getFirebaseAdmin(firebaseProjectId, firebaseClientEmail, firebasePrivateKey);
-      adminAuth = getAuth(adminApp);
-    } catch (firebaseInitError: any) {
-      console.error('[firebase-sync] Firebase Admin initialization failed:', firebaseInitError);
-      return NextResponse.json({ success: false, error: `Firebase Admin initialization failed: ${firebaseInitError.message}` }, { status: 500 });
-    }
-
+    // 3. Verify Firebase ID Token manually (bypasses firebase-admin library bundling conflicts)
     let decodedToken;
     try {
-      decodedToken = await adminAuth.verifyIdToken(idToken);
+      decodedToken = await verifyFirebaseIdToken(idToken, firebaseProjectId);
     } catch (tokenVerifyError: any) {
       console.error('[firebase-sync] Token verification failed:', tokenVerifyError);
-      return NextResponse.json({ success: false, error: `Invalid or expired Firebase token: ${tokenVerifyError.message}` }, { status: 401 });
+      return NextResponse.json({ success: false, error: `Token verification failed: ${tokenVerifyError.message}` }, { status: 401 });
     }
 
     const firebaseUid = decodedToken.uid;
