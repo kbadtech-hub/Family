@@ -169,12 +169,7 @@ function SignupContent() {
         return;
       }
 
-      // Security gate: all users must verify phone before accessing the app
-      if (!result.hasPhone) {
-        setVerificationUser(result.firebaseUser);
-        setView('phone-verification-gate');
-        return;
-      }
+      // Social users bypass the phone verification gate and go directly to onboarding or dashboard
 
       router.push(result.isNewUser ? '/onboarding' : '/dashboard');
     } catch (err: any) {
