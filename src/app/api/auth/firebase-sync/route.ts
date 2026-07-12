@@ -1,20 +1,3 @@
-/**
- * BETESEB — Firebase Social Auth Sync API Route
- * POST /api/auth/firebase-sync
- *
- * Flow:
- *  1. Client (Firebase Auth popup succeeds) sends Firebase ID token
- *  2. This server route verifies the token using Firebase Admin SDK
- *  3. Uses Supabase SERVICE ROLE key to upsert user into auth.users + profiles
- *     (Service role bypasses RLS and FK constraints safely)
- *  4. Returns { isNewUser, profileId } to the client
- *
- * WHY SERVER-SIDE?
- *  - profiles.id has FK → auth.users. Only service role can insert into auth.users.
- *  - Firebase UIDs don't exist in Supabase auth.users, so client-side insert fails.
- *  - Server-side admin client resolves this cleanly.
- */
-
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
@@ -23,30 +6,23 @@ import crypto from 'crypto';
 
 // ─── Firebase Admin SDK (singleton) ──────────────────────────────────────────
 
-function getFirebaseAdmin() {
+function getFirebaseAdmin(projectId: string, clientEmail: string, privateKey: string) {
   if (getApps().length > 0) return getApps()[0];
 
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/^"|"$/g, '').replace(/\\n/g, '\n');
+  const formattedPrivateKey = privateKey.replace(/^"|"$/g, '').replace(/\\n/g, '\n');
 
   return initializeApp({
     credential: cert({
-      projectId:   process.env.FIREBASE_PROJECT_ID!,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL!,
-      privateKey,
+      projectId,
+      clientEmail,
+      privateKey: formattedPrivateKey,
     }),
   });
 }
 
 // ─── Supabase Admin Client (service role — bypasses RLS) ─────────────────────
 
-function getSupabaseAdmin() {
-  const url     = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const roleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-  if (!roleKey || roleKey === 'YOUR_SUPABASE_SERVICE_ROLE_KEY_HERE') {
-    throw new Error('SUPABASE_SERVICE_ROLE_KEY is not configured in .env.local');
-  }
-
+function getSupabaseAdmin(url: string, roleKey: string) {
   return createClient(url, roleKey, {
     auth: { autoRefreshToken: false, persistSession: false }
   });
@@ -84,22 +60,57 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { idToken } = body;
+    // 1. Strict Validation of Environment variables before initializing SDKs
+    const firebaseProjectId = process.env.FIREBASE_PROJECT_ID;
+    const firebaseClientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+    const firebasePrivateKey = process.env.FIREBASE_PRIVATE_KEY;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!idToken) {
-      return NextResponse.json({ error: 'idToken is required' }, { status: 400 });
+    if (!firebaseProjectId || !firebaseClientEmail || !firebasePrivateKey) {
+      return NextResponse.json({
+        success: false,
+        error: 'Firebase Admin credentials are not configured in server environment variables.'
+      }, { status: 500 });
     }
 
-    // Step 1: Verify the Firebase ID token server-side
-    const adminApp  = getFirebaseAdmin();
-    const adminAuth = getAuth(adminApp);
+    if (!supabaseUrl || !supabaseServiceKey || supabaseServiceKey === 'YOUR_SUPABASE_SERVICE_ROLE_KEY_HERE') {
+      return NextResponse.json({
+        success: false,
+        error: 'Supabase credentials are not configured in server environment variables.'
+      }, { status: 500 });
+    }
+
+    // 2. Parse request payload
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ success: false, error: 'Request body must be a valid JSON object.' }, { status: 400 });
+    }
+
+    const { idToken } = body;
+    if (!idToken) {
+      return NextResponse.json({ success: false, error: 'idToken is required.' }, { status: 400 });
+    }
+
+    // 3. Verify Firebase ID Token
+    let adminApp;
+    let adminAuth;
+    try {
+      adminApp = getFirebaseAdmin(firebaseProjectId, firebaseClientEmail, firebasePrivateKey);
+      adminAuth = getAuth(adminApp);
+    } catch (firebaseInitError: any) {
+      console.error('[firebase-sync] Firebase Admin initialization failed:', firebaseInitError);
+      return NextResponse.json({ success: false, error: `Firebase Admin initialization failed: ${firebaseInitError.message}` }, { status: 500 });
+    }
 
     let decodedToken;
     try {
       decodedToken = await adminAuth.verifyIdToken(idToken);
-    } catch {
-      return NextResponse.json({ error: 'Invalid or expired Firebase token' }, { status: 401 });
+    } catch (tokenVerifyError: any) {
+      console.error('[firebase-sync] Token verification failed:', tokenVerifyError);
+      return NextResponse.json({ success: false, error: `Invalid or expired Firebase token: ${tokenVerifyError.message}` }, { status: 401 });
     }
 
     const firebaseUid = decodedToken.uid;
@@ -110,28 +121,39 @@ export async function POST(request: NextRequest) {
     const avatarUrl   = decodedToken.picture      || '';
 
     // Generate a secure derived password that only our server can compute.
-    // We use Node's crypto to create a secure SHA-256 HMAC of the UID salted with the service role key.
     const derivedPassword = crypto
-      .createHmac('sha256', process.env.SUPABASE_SERVICE_ROLE_KEY!)
+      .createHmac('sha256', supabaseServiceKey)
       .update(firebaseUid)
       .digest('hex');
 
     // Use a unique dummy email for phone-only users to satisfy Supabase auth constraints
     const loginEmail = email || `${firebaseUid}@beteseb.auth`;
 
-    // Step 2: Use Supabase admin client
-    const supabaseAdmin = getSupabaseAdmin();
+    // 4. Initialize Supabase Admin client
+    let supabaseAdmin;
+    try {
+      supabaseAdmin = getSupabaseAdmin(supabaseUrl, supabaseServiceKey);
+    } catch (supabaseInitError: any) {
+      console.error('[firebase-sync] Supabase Admin initialization failed:', supabaseInitError);
+      return NextResponse.json({ success: false, error: `Supabase Admin client creation failed: ${supabaseInitError.message}` }, { status: 500 });
+    }
 
-    // Step 3: Check if user already exists in Supabase auth.users
-    const { data: existingAuthUser } = await supabaseAdmin.auth.admin.getUserById(supabaseUid);
+    // 5. Query / Create Supabase Auth User
+    let existingAuthUser;
+    try {
+      const { data } = await supabaseAdmin.auth.admin.getUserById(supabaseUid);
+      existingAuthUser = data;
+    } catch (getUserError: any) {
+      console.warn('[firebase-sync] getUserById threw exception, treating user as non-existent:', getUserError);
+      existingAuthUser = null;
+    }
 
     if (!existingAuthUser?.user) {
-      // Create a new Supabase auth user with the same UID as Firebase
       const { error: createError } = await supabaseAdmin.auth.admin.createUser({
-        id:             supabaseUid,       // Use derived UUID as Supabase UID
+        id:             supabaseUid,
         email:          loginEmail,
-        password:       derivedPassword,   // Set the derived secure password
-        email_confirm:  true,              // Auto-confirm social login emails
+        password:       derivedPassword,
+        email_confirm:  true,
         user_metadata: {
           full_name:   fullName,
           avatar_url:  avatarUrl,
@@ -141,25 +163,29 @@ export async function POST(request: NextRequest) {
 
       if (createError && createError.message !== 'User already registered') {
         console.error('[firebase-sync] Auth user creation error:', createError);
-        return NextResponse.json({ error: createError.message }, { status: 500 });
+        return NextResponse.json({ success: false, error: `Supabase auth user creation failed: ${createError.message}` }, { status: 500 });
       }
     } else {
-      // If user exists but might have had a different password structure, update it to match the derived one
       const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(supabaseUid, {
         password: derivedPassword,
         email: loginEmail
       });
       if (updateError) {
-        console.error('[firebase-sync] Auth user update error:', updateError);
+        console.warn('[firebase-sync] Auth user update error:', updateError);
       }
     }
 
-    // Step 4: Check if profile exists
-    const { data: existingProfile } = await supabaseAdmin
+    // 6. Query / Create Supabase User Profile
+    const { data: existingProfile, error: profileSelectError } = await supabaseAdmin
       .from('profiles')
       .select('id, onboarding_completed, phone')
       .eq('id', supabaseUid)
       .maybeSingle();
+
+    if (profileSelectError) {
+      console.error('[firebase-sync] Profile select error:', profileSelectError);
+      return NextResponse.json({ success: false, error: `Supabase profile lookup failed: ${profileSelectError.message}` }, { status: 500 });
+    }
 
     let isNewUser = false;
     let hasPhone = !!phone;
@@ -167,17 +193,20 @@ export async function POST(request: NextRequest) {
     if (existingProfile) {
       hasPhone = !!existingProfile.phone;
       
-      // Update last login and phone if verified in Firebase now but missing in profiles
       const updateData: any = { last_login_at: new Date().toISOString() };
       if (!existingProfile.phone && phone) {
         updateData.phone = phone;
         hasPhone = true;
       }
 
-      await supabaseAdmin
+      const { error: profileUpdateError } = await supabaseAdmin
         .from('profiles')
         .update(updateData)
         .eq('id', supabaseUid);
+
+      if (profileUpdateError) {
+        console.warn('[firebase-sync] Profile update error:', profileUpdateError);
+      }
 
       isNewUser = !existingProfile.onboarding_completed;
     } else {
@@ -198,13 +227,12 @@ export async function POST(request: NextRequest) {
 
       if (insertError) {
         console.error('[firebase-sync] Profile insert error:', insertError);
-        return NextResponse.json({ error: insertError.message }, { status: 500 });
+        return NextResponse.json({ success: false, error: `Supabase profile insertion failed: ${insertError.message}` }, { status: 500 });
       }
 
       isNewUser = true;
     }
 
-    // Return the login credentials so the client-side Supabase client can authenticate
     return NextResponse.json({
       success: true,
       isNewUser,
@@ -215,7 +243,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (err: any) {
-    console.error('[firebase-sync] Unexpected error:', err);
-    return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
+    console.error('[firebase-sync] Uncaught exception:', err);
+    return NextResponse.json({ success: false, error: err.message || 'Internal server error' }, { status: 500 });
   }
 }
