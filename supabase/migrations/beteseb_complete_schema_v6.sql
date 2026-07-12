@@ -705,6 +705,12 @@ GRANT SELECT ON public.resolved_kb       TO authenticated;
 GRANT ALL ON public.daily_limits         TO authenticated;
 GRANT ALL ON public.daily_limits         TO service_role;
 
+-- Grant all permissions on all tables and sequences in public schema to service_role
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO service_role;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO service_role;
+
 
 -- =========================================================================
 -- PART 15: PERFORMANCE INDEXES
