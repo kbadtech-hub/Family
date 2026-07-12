@@ -169,9 +169,20 @@ async function syncFirebaseUserWithSupabase(firebaseUser: FirebaseUser): Promise
   });
 
   if (!res.ok) {
-    const errData = await res.json().catch(() => ({}));
-    console.error('[FirebaseAuth] Sync API error:', errData);
-    throw new Error(errData.error || 'Failed to sync user with Supabase');
+    let errorMsg = '';
+    try {
+      const errData = await res.json();
+      errorMsg = errData.error || `HTTP Error ${res.status}`;
+    } catch {
+      try {
+        const text = await res.text();
+        errorMsg = text ? (text.length > 200 ? `${text.substring(0, 200)}...` : text) : `HTTP Error ${res.status}`;
+      } catch {
+        errorMsg = `HTTP Error ${res.status}`;
+      }
+    }
+    console.error('[FirebaseAuth] Sync API error:', errorMsg);
+    throw new Error(errorMsg);
   }
 
   const data = await res.json();
@@ -228,8 +239,10 @@ export function onFirebaseAuthStateChanged(
 function translateFirebaseError(error: any): string {
   if (!error) return 'An unknown authentication error occurred.';
   
-  // Extract error code if it's an object, otherwise use as string code
-  const code = (error && typeof error === 'object' && 'code' in error) ? error.code : error;
+  // Extract error code if it's an object with a code property, or if it's a string. Otherwise, set code to undefined.
+  const code = (error && typeof error === 'object' && 'code' in error) 
+    ? error.code 
+    : (typeof error === 'string' ? error : undefined);
   
   if (!code) {
     if (error instanceof Error) return error.message;
