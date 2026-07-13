@@ -11,20 +11,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 2. Perform global reset of limits
-    const { data, error } = await supabaseAdmin
-      .from('daily_limits')
-      .update({
-        messages_sent: 0,
-        calls_duration_seconds: 0,
-        ad_extensions: 0,
-        last_reset: new Date().toISOString()
-      })
-      .neq('user_id', '00000000-0000-0000-0000-000000000000'); // matches all user_ids
-
-    if (error) {
-      throw error;
-    }
+    // 2. Disabled global SQL update query to prevent midnight database write spikes.
+    // The application now utilizes scalable, on-demand Lazy Resetting (reset-on-write) 
+    // inside ChatView and CallInterface components.
+    console.log("Daily limits reset cron called. SQL update skipped (Lazy Reset active).");
 
     return NextResponse.json({ 
       status: 'success', 

@@ -64,7 +64,35 @@ export default function CallInterface({
 
         // Fetch current daily limits
         const { data: limitsData } = await supabase.from('daily_limits').select('*').eq('user_id', user.id).single();
-        setCallerLimits(limitsData || { calls_duration_seconds: 0, ad_extensions: 0 });
+        
+        let currentLimits = limitsData || { calls_duration_seconds: 0, ad_extensions: 0, last_reset: new Date().toISOString() };
+        
+        // Lazy Reset Logic: check if last_reset is on a previous day (UTC)
+        const now = new Date();
+        const lastReset = currentLimits.last_reset ? new Date(currentLimits.last_reset) : new Date(0);
+        const isNewDay = now.getUTCFullYear() !== lastReset.getUTCFullYear() ||
+                          now.getUTCMonth() !== lastReset.getUTCMonth() ||
+                          now.getUTCDate() !== lastReset.getUTCDate();
+
+        if (isNewDay) {
+          currentLimits = {
+            ...currentLimits,
+            calls_duration_seconds: 0,
+            ad_extensions: 0,
+            last_reset: now.toISOString()
+          };
+          // Lazy reset DB
+          await supabase
+            .from('daily_limits')
+            .update({
+              calls_duration_seconds: 0,
+              ad_extensions: 0,
+              last_reset: now.toISOString()
+            })
+            .eq('user_id', user.id);
+        }
+        
+        setCallerLimits(currentLimits);
       }
     });
   }, []);

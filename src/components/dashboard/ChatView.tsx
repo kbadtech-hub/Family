@@ -576,6 +576,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
     // Tiers & Daily Action Limits (Beteseb v3.6)
     const userTier = getUserTier(userProfile, hasVouchedRecords);
     const limits = getTierLimits(userTier);
+    let currentSentCount = 0;
 
     if (userTier === 'bronze') {
       alert(locale === 'am'
@@ -591,10 +592,37 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
         .eq('user_id', currentUser.id)
         .single();
       
-      const currentLimits = limitsData || { messages_sent: 0, ad_extensions: 0 };
+      let currentLimits = limitsData || { messages_sent: 0, ad_extensions: 0, last_reset: new Date().toISOString() };
+      
+      // Lazy Reset Logic: check if last_reset is on a previous day (UTC)
+      const now = new Date();
+      const lastReset = currentLimits.last_reset ? new Date(currentLimits.last_reset) : new Date(0);
+      const isNewDay = now.getUTCFullYear() !== lastReset.getUTCFullYear() ||
+                        now.getUTCMonth() !== lastReset.getUTCMonth() ||
+                        now.getUTCDate() !== lastReset.getUTCDate();
+
+      if (isNewDay) {
+        currentLimits = {
+          ...currentLimits,
+          messages_sent: 0,
+          ad_extensions: 0,
+          last_reset: now.toISOString()
+        };
+        // Update database in background (lazy reset)
+        await supabase
+          .from('daily_limits')
+          .update({
+            messages_sent: 0,
+            ad_extensions: 0,
+            last_reset: now.toISOString()
+          })
+          .eq('user_id', currentUser.id);
+      }
+
+      currentSentCount = currentLimits.messages_sent;
       const allowedTexts = limits.maxTexts + (currentLimits.ad_extensions * 2);
 
-      if (currentLimits.messages_sent >= allowedTexts) {
+      if (currentSentCount >= allowedTexts) {
         // Save the pending send action to execute after bypass succeeds
         setPendingMessageSend(() => async () => {
           const msgData = {
@@ -609,7 +637,10 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
             // Increment message sent in database daily_limits
             await supabase
               .from('daily_limits')
-              .update({ messages_sent: currentLimits.messages_sent + 1 })
+              .update({ 
+                messages_sent: currentSentCount + 1,
+                last_reset: new Date().toISOString()
+              })
               .eq('user_id', currentUser.id);
           }
         });
@@ -661,17 +692,14 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
       setMessages((prev) => [...prev, data]);
       setNewMessage('');
       
-      // Increment messages_sent in daily_limits
+      // Increment messages_sent in daily_limits (optimized to reuse already fetched counter)
       if (limits.maxTexts !== Infinity) {
-        const { data: limitsData } = await supabase
-          .from('daily_limits')
-          .select('messages_sent')
-          .eq('user_id', currentUser.id)
-          .single();
-        const currentSent = limitsData?.messages_sent || 0;
         await supabase
           .from('daily_limits')
-          .update({ messages_sent: currentSent + 1 })
+          .update({ 
+            messages_sent: currentSentCount + 1,
+            last_reset: new Date().toISOString()
+          })
           .eq('user_id', currentUser.id);
       }
     }

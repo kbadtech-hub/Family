@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import OpenAI from 'openai';
 
 // Levenshtein Distance helper for fuzzy matching (minor typos)
 function levenshteinDistance(a: string, b: string): number {
@@ -21,8 +22,44 @@ function levenshteinDistance(a: string, b: string): number {
   return tmp[alen][blen];
 }
 
+// Transliterate Amharic/Ge'ez text to closest English phonetic sounds
+function transliterateAmharicToEnglish(text: string): string {
+  const mapping: Record<string, string> = {
+    'አ': 'a', 'ኡ': 'u', 'ኢ': 'i', 'ኣ': 'a', 'ኤ': 'e', 'እ': 'e', 'ኦ': 'o',
+    'ዐ': 'a', 'ዑ': 'u', 'ዒ': 'i', 'ዓ': 'a', 'ዔ': 'e', 'ዕ': 'e', 'ዖ': 'o',
+    'በ': 'b', 'ቡ': 'bu', 'ቢ': 'bi', 'ባ': 'ba', 'ቤ': 'be', 'ብ': 'b', 'ቦ': 'bo',
+    'ተ': 't', 'ቱ': 'tu', 'ቲ': 'ti', 'ታ': 'ta', 'ቴ': 'te', 'ት': 't', 'ቶ': 'to',
+    'ከ': 'k', 'ኩ': 'ku', 'ኪ': 'ki', 'ካ': 'ka', 'ኬ': 'ke', 'ክ': 'k', 'ኮ': 'ko',
+    'ደ': 'd', 'ዱ': 'du', 'ዲ': 'di', 'ዳ': 'da', 'ዴ': 'de', 'ድ': 'd', 'ዶ': 'do',
+    'ለ': 'l', 'ሉ': 'lu', 'ሊ': 'li', 'ላ': 'la', 'ሌ': 'le', 'ል': 'l', 'ሎ': 'lo',
+    'መ': 'm', 'ሙ': 'mu', 'ሚ': 'mi', 'ማ': 'ma', 'ሜ': 'me', 'ም': 'm', 'ሞ': 'mo',
+    'ረ': 'r', 'ሩ': 'ru', 'ሪ': 'ri', 'ራ': 'ra', 'ሬ': 're', 'ር': 'r', 'ሮ': 'ro',
+    'ሰ': 's', 'ሱ': 'su', 'ሲ': 'si', 'ሳ': 'sa', 'ሴ': 'se', 'ስ': 's', 'ሶ': 'so',
+    'ሠ': 's', 'ሡ': 'su', 'ሢ': 'si', 'ሣ': 'sa', 'ሤ': 'se', 'ሥ': 's', 'ሦ': 'so',
+    'ሸ': 'sh', 'ሹ': 'shu', 'ሺ': 'shi', 'ሻ': 'sha', 'ሼ': 'she', 'ሽ': 'sh', 'ሾ': 'sho',
+    'ቀ': 'k', 'ቁ': 'ku', 'ቂ': 'ki', 'ቃ': 'ka', 'ቄ': 'ke', 'ቅ': 'k', 'ቆ': 'ko',
+    'ነ': 'n', 'ኑ': 'nu', 'ኒ': 'ni', 'ና': 'na', 'ኔ': 'ne', 'ን': 'n', 'ኖ': 'no',
+    'ገ': 'g', 'ጉ': 'gu', 'ጊ': 'gi', 'ጋ': 'ga', 'ጌ': 'ge', 'ግ': 'g', 'ጎ': 'go',
+    'ሀ': 'h', 'ሁ': 'hu', 'ሂ': 'hi', 'ሃ': 'ha', 'ሄ': 'he', 'ህ': 'h', 'ሆ': 'ho',
+    'ሐ': 'h', 'ሑ': 'hu', 'ሒ': 'hi', 'ሓ': 'ha', 'ሔ': 'he', 'ሕ': 'h', 'ሖ': 'ho',
+    'ኀ': 'h', 'ኁ': 'hu', 'ኂ': 'hi', 'ኃ': 'ha', 'ኄ': 'he', 'ኅ': 'h', 'ኆ': 'ho',
+    'ወ': 'w', 'ዉ': 'wu', 'ዊ': 'wi', 'ዋ': 'wa', 'ዌ': 'we', 'ው': 'w', 'ዎ': 'o',
+    'ዘ': 'z', 'ዙ': 'zu', 'ዚ': 'zi', 'ዛ': 'za', 'ዜ': 'ze', 'ዝ': 'z', 'ዞ': 'zo',
+    'የ': 'y', 'ዩ': 'yu', 'ይ': 'yi', 'ያ': 'ya', 'ዬ': 'ye', 'ዮ': 'yo',
+    'ጀ': 'j', 'ጁ': 'ju', 'ጂ': 'ji', 'ጃ': 'ja', 'ጄ': 'je', 'ጅ': 'j', 'ጆ': 'jo',
+    'ጠ': 't', 'ጡ': 'tu', 'ጢ': 'ti', 'ጣ': 'ta', 'ጤ': 'te', 'ጥ': 't', 'ጦ': 'to',
+    'ጨ': 'ch', 'ጩ': 'chu', 'ጪ': 'chi', 'ጫ': 'cha', 'ጬ': 'che', 'ጭ': 'ch', 'ጮ': 'cho',
+    'ፈ': 'f', 'ፉ': 'fu', 'ፊ': 'fi', 'ፋ': 'fa', 'ፌ': 'fe', 'ፍ': 'f', 'ፎ': 'fo',
+    'ፐ': 'p', 'ፑ': 'pu', 'ፒ': 'pi', 'ፓ': 'pa', 'ፔ': 'pe', 'ፕ': 'p', 'ፖ': 'po',
+    'ጸ': 'ts', 'ጹ': 'tsu', 'ጺ': 'tsi', 'ጻ': 'tsa', 'ጼ': 'tse', 'ጽ': 'ts', 'ጾ': 'tso',
+    'ፀ': 'ts', 'ፁ': 'tsu', 'ፂ': 'tsi', 'ፃ': 'tsa', 'ፄ': 'tse', 'ፅ': 'ts', 'ፆ': 'tso'
+  };
+
+  return text.split('').map(char => mapping[char] || char).join('');
+}
+
 // Fuzzy matching to verify that all parts of the registered name match the ID document
-function verifyNameMatch(dbName: string, ocrText: string): { matches: boolean; reason?: string } {
+async function verifyNameMatch(dbName: string, ocrText: string): Promise<{ matches: boolean; reason?: string }> {
   const dbNormalized = dbName.toLowerCase().trim();
   const ocrNormalized = ocrText.toLowerCase();
 
@@ -31,32 +68,83 @@ function verifyNameMatch(dbName: string, ocrText: string): { matches: boolean; r
     return { matches: true };
   }
 
-  // 2. Word-by-word matching
-  const dbParts = dbNormalized.split(/\s+/).filter(part => part.length > 0);
+  // 2. OpenAI Semantic Check (if API key is present)
+  if (process.env.OPENAI_API_KEY) {
+    try {
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      const prompt = `You are a trust and safety identity verification agent for the Beteseb matrimonial platform.
+Compare the registered profile name of the user with the raw text extracted from their ID document.
+Determine if they refer to the same person. Note that:
+1. The registered name is in English or Amharic (Ge'ez script).
+2. The ID text might be in Amharic, Oromo, Somali, English, or Arabic.
+3. OCR extraction might contain typos, noise, or truncated text.
+4. Ethiopian names use different spelling variations when transliterated (e.g., "Abebe" / "Abbebe", "Seid" / "Sayed", "Mohammed" / "Muhammed").
+
+Registered User Name: "${dbName}"
+Extracted ID Document OCR Text: "${ocrText}"
+
+Return your decision in strict JSON format:
+{
+  "matches": boolean,
+  "confidence": number (from 0 to 1),
+  "reason": "Clear explanation in English why it matches or mismatch details"
+}`;
+
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+        response_format: { type: 'json_object' }
+      });
+
+      const resultText = completion.choices[0]?.message?.content;
+      if (resultText) {
+        const result = JSON.parse(resultText);
+        if (typeof result.matches === 'boolean' && result.matches === true) {
+          return { matches: true };
+        } else if (typeof result.matches === 'boolean' && result.matches === false) {
+          return {
+            matches: false,
+            reason: result.reason || 'Name mismatch on ID document.'
+          };
+        }
+      }
+    } catch (err: any) {
+      console.error("OpenAI name verification failed, falling back to transliteration:", err);
+    }
+  }
+
+  // 3. Fallback to Transliteration & Phonetic Levenshtein Matching
+  const dbTransliterated = transliterateAmharicToEnglish(dbNormalized);
+  const ocrTransliterated = transliterateAmharicToEnglish(ocrNormalized);
+
+  // Check if direct transliterated match works
+  if (ocrTransliterated.includes(dbTransliterated)) {
+    return { matches: true };
+  }
+
+  // Word-by-word transliterated matching
+  const dbParts = dbTransliterated.split(/\s+/).filter(part => part.length > 0);
   if (dbParts.length === 0) {
     return { matches: false, reason: 'Registered profile name is empty.' };
   }
 
-  // Split OCR text into words (removing non-alphabetic separators)
-  const ocrWords = ocrNormalized.split(/[^a-zA-Z0-9\u0100-\u017F\u0400-\u04FF\u1200-\u137F]+/g).filter(w => w.length > 0);
+  const ocrWords = ocrTransliterated.split(/[^a-zA-Z0-9]/g).filter(w => w.length > 0);
 
   const missingParts: string[] = [];
   for (const part of dbParts) {
-    // If it's too short (1 character), require exact match
     if (part.length <= 1) {
-      if (!ocrNormalized.includes(part)) {
+      if (!ocrTransliterated.includes(part)) {
         missingParts.push(part);
       }
       continue;
     }
 
-    // Check if the part is in OCR directly
-    if (ocrNormalized.includes(part)) {
+    if (ocrTransliterated.includes(part)) {
       continue;
     }
 
     // Try fuzzy match on each word in the OCR text
-    const hasFuzzyMatch = ocrWords.some(word => levenshteinDistance(part, word) <= 1);
+    const hasFuzzyMatch = ocrWords.some(word => levenshteinDistance(part, word) <= 2);
     if (!hasFuzzyMatch) {
       missingParts.push(part);
     }
@@ -208,7 +296,7 @@ export async function POST(req: Request) {
       }
 
       // Enforce the exact same database matching rules on simulated text
-      const nameCheck = verifyNameMatch(dbFullName, simulatedOcrText);
+      const nameCheck = await verifyNameMatch(dbFullName, simulatedOcrText);
       if (!nameCheck.matches) {
         return NextResponse.json({
           isMatch: false,
@@ -291,7 +379,7 @@ export async function POST(req: Request) {
     }
 
     // 2. Enforce Name matching check against database values
-    const nameCheck = verifyNameMatch(dbFullName, extractedText);
+    const nameCheck = await verifyNameMatch(dbFullName, extractedText);
     if (!nameCheck.matches) {
       return NextResponse.json({
         isMatch: false,

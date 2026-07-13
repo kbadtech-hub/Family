@@ -290,13 +290,6 @@ export default function PaymentTab() {
                    <ShieldCheck size={12} /> App Store Verified Checkout
                 </div>
              </div>
-             <div className="p-4 bg-yellow-50/50 rounded-2xl border border-yellow-100/50 space-y-1 text-center">
-                <p className="text-[10px] text-yellow-800 font-bold leading-relaxed">
-                   {locale === 'am'
-                     ? 'ማሳሰቢያ፦ በቴሌብር (Telebirr) ወይም በጫፓ (Chapa) ክፍያ መፈጸም ከፈለጉ፣ እባክዎ በስልክዎ/ኮምፒውተርዎ ብሮውዘር በመጠቀም ወደ beteseb1.online የድህረ-ገጽ ፖርታል በመሄድ ይክፈሉ።'
-                     : 'Notice: If you wish to pay using local Ethiopian payment options (Telebirr, Chapa), please visit our web portal at beteseb1.online using your browser.'}
-                </p>
-             </div>
           </div>
         ) : (
           <div className="space-y-8 animate-in slide-in-from-bottom-8 duration-500">
