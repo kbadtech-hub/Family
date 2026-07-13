@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "YOUR_APPLE_TEAM_ID.com.beteseb.app",
+        "paths": [
+          "/auth/*",
+          "/onboarding*",
+          "/dashboard*"
+        ]
+      }
+    ]
+  }
+}

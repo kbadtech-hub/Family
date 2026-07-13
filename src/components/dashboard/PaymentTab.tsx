@@ -183,40 +183,117 @@ export default function PaymentTab() {
   };
 
   const handleNativeIAP = async () => {
+    if (!userId || !selectedPlan) return;
     setIsSubmitting(true);
-    // Simulate App Store / Google Play In-App Purchase response
-    setTimeout(async () => {
-      const plan = plans.find(p => p.id === selectedPlan);
-      const { error } = await supabase.from('payments').insert({
-        user_id: userId,
-        amount: plan?.price,
-        currency: currency,
-        plan_type: plan?.period,
-        receipt_url: 'In-App Purchase (Native Shell)',
-        status: 'approved'
-      });
 
-      if (!error) {
-        // Upgrade profile premium validity
-        let days = 30;
-        if (plan?.period === '3m') days = 90;
-        if (plan?.period === '12m') days = 365;
-        if (plan?.period === 'lifetime') days = 36500;
-
-        const premiumUntil = new Date();
-        premiumUntil.setDate(premiumUntil.getDate() + days);
-
-        await supabase.from('profiles').update({
-          premium_until: premiumUntil.toISOString()
-        }).eq('id', userId);
-
-        alert(locale === 'am' ? 'ፕሪሚየም አገልግሎት በተሳካ ሁኔታ በርቷል!' : 'Premium upgraded successfully via App Store!');
-        window.location.reload();
-      } else {
-        alert("Payment trigger failed: " + error.message);
-      }
+    const plan = plans.find(p => p.id === selectedPlan);
+    if (!plan) {
       setIsSubmitting(false);
-    }, 1500);
+      return;
+    }
+
+    const productId = `com.beteseb.app.${selectedPlan}`;
+
+    // Check if running inside native shell (Capacitor)
+    if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.()) {
+      try {
+        const { NativePurchases, PURCHASE_TYPE } = await import('@capgo/native-purchases');
+        
+        // Trigger native purchases billing sheet
+        const transaction = await NativePurchases.purchaseProduct({
+          productIdentifier: productId,
+          productType: selectedPlan === 'lifetime' ? PURCHASE_TYPE.INAPP : PURCHASE_TYPE.SUBS,
+          quantity: 1
+        });
+
+        if (!transaction || !transaction.transactionId) {
+          throw new Error("No transaction ID returned from native purchase.");
+        }
+
+        const isAndroid = (window as any).Capacitor.getPlatform() === 'android';
+        
+        if (isAndroid) {
+          // Verify with Google Play Developer backend API
+          const verifyResponse = await fetch('/api/payments/google', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              purchaseToken: transaction.transactionId,
+              productId: productId,
+              userId: userId,
+              planType: selectedPlan
+            })
+          });
+
+          const verifyData = await verifyResponse.json();
+          if (verifyData.status === 'success') {
+            alert(locale === 'am' ? 'ፕሪሚየም አገልግሎት በተሳካ ሁኔታ በርቷል!' : 'Premium upgraded successfully via Google Play!');
+            window.location.reload();
+          } else {
+            throw new Error(verifyData.message || 'Google Play validation failed on server.');
+          }
+        } else {
+          // Verify with Apple App Store backend API
+          const verifyResponse = await fetch('/api/payments/apple', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              receiptData: transaction.transactionId,
+              userId: userId,
+              planType: selectedPlan
+            })
+          });
+
+          const verifyData = await verifyResponse.json();
+          if (verifyData.status === 'success') {
+            alert(locale === 'am' ? 'ፕሪሚየም አገልግሎት በተሳካ ሁኔታ በርቷል!' : 'Premium upgraded successfully via App Store!');
+            window.location.reload();
+          } else {
+            throw new Error(verifyData.message || 'Apple receipt validation failed on server.');
+          }
+        }
+      } catch (err: any) {
+        console.error("Native Purchase error details:", err);
+        alert(locale === 'am' ? `የክፍያ ሙከራው ተቋርጧል፡ ${err.message}` : `Purchase failed: ${err.message}`);
+      } finally {
+        setIsSubmitting(false);
+      }
+    } else {
+      // ── Web Fallback (Simulated Mode) ──────────────────────────────────────
+      console.warn("Not on native device. Falling back to simulated Apple/Google Billing.");
+      setTimeout(async () => {
+        const { error } = await supabase.from('payments').insert({
+          user_id: userId,
+          amount: plan.price,
+          currency: currency,
+          plan_type: selectedPlan,
+          receipt_url: `In-App Purchase (Web Simulator Mock: sandbox_mock_${Date.now()})`,
+          status: 'approved'
+        });
+
+        if (!error) {
+          // Upgrade profile premium validity
+          let days = 30;
+          if (selectedPlan === '3m') days = 90;
+          if (selectedPlan === '6m') days = 180;
+          if (selectedPlan === '12m') days = 365;
+          if (selectedPlan === 'lifetime') days = 36500;
+
+          const premiumUntil = new Date();
+          premiumUntil.setDate(premiumUntil.getDate() + days);
+
+          await supabase.from('profiles').update({
+            premium_until: premiumUntil.toISOString()
+          }).eq('id', userId);
+
+          alert(locale === 'am' ? 'ፕሪሚየም አገልግሎት በተሳካ ሁኔታ በርቷል (የሙከራ ማስመሰያ)!' : 'Premium upgraded successfully (Simulated)!');
+          window.location.reload();
+        } else {
+          alert("Payment trigger failed: " + error.message);
+        }
+        setIsSubmitting(false);
+      }, 1500);
+    }
   };
 
   const handleOnlineCheckout = async () => {

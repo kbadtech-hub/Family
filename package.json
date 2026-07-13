@@ -23,6 +23,7 @@
     "@capacitor/device": "^8.0.2",
     "@capacitor/ios": "^8.4.0",
     "@capacitor/push-notifications": "^8.1.1",
+    "@capgo/native-purchases": "^8.6.4",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.104.1",
     "ethiopian-date": "^0.0.6",
