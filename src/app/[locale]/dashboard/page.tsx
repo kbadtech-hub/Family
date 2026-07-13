@@ -204,10 +204,10 @@ function DashboardContent() {
 
   const languages = [
     { id: 'en', label: 'English' },
-    { id: 'am', label: 'áŠ áˆ›áˆ­áŠ›' },
+    { id: 'am', label: 'አማርኛ' },
     { id: 'om', label: 'Oromoo' },
-    { id: 'ar', label: 'Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©' },
-    { id: 'ti', label: 'á‰µáŒáˆ­áŠ›' },
+    { id: 'ar', label: 'العربية' },
+    { id: 'ti', label: 'ትግርኛ' },
     { id: 'so', label: 'Soomaali' }
   ];
 
@@ -224,12 +224,12 @@ function DashboardContent() {
 
   const getTierName = (tier: string) => {
     switch (tier) {
-      case 'diamond': return locale === 'am' ? 'á‹³á‹­áˆ˜áŠ•á‹µ (Diamond Tier)' : 'Diamond Tier';
-      case 'platinum': return locale === 'am' ? 'á•áˆ‹á‰²áŠ’á‹¨áˆ (Platinum Tier)' : 'Platinum Tier';
-      case 'gold': return locale === 'am' ? 'áŒŽáˆá‹°áŠ• (Gold Tier)' : 'Gold Tier';
-      case 'silver': return locale === 'am' ? 'á‰¤á‹šáŠ­ áˆ›áˆ¨áŒ‹áŒˆáŒ« (Silver Tier)' : 'Basic Verified (Silver Tier)';
+      case 'diamond': return locale === 'am' ? 'ዳይመንድ (Diamond Tier)' : 'Diamond Tier';
+      case 'platinum': return locale === 'am' ? 'ፕላቲኒየም (Platinum Tier)' : 'Platinum Tier';
+      case 'gold': return locale === 'am' ? 'ጎልደን (Gold Tier)' : 'Gold Tier';
+      case 'silver': return locale === 'am' ? 'ቤዚክ ማረጋገጫ (Silver Tier)' : 'Basic Verified (Silver Tier)';
       case 'bronze':
-      default: return locale === 'am' ? 'á‹«áˆá‰°áˆ¨áŒ‹áŒˆáŒ  (Bronze Tier)' : 'Unverified (Bronze Tier)';
+      default: return locale === 'am' ? 'ያልተረጋገጠ (Bronze Tier)' : 'Unverified (Bronze Tier)';
     }
   };
 
@@ -576,7 +576,7 @@ function DashboardContent() {
       const userCoins = profile?.coins || 0;
       if (userCoins < COIN_PER_POST) {
         alert(locale === 'am' 
-          ? `áˆˆáˆ›áˆµáŒ á‰€áˆ ${COIN_PER_POST} á‰¤á‰°áˆ°á‰¥ áŠ®á‹­áŠ• á‹«áˆµáˆáˆáŒ‹á‰¸á‹‹áˆá¢ áˆ°á‰¥áˆµáŠ­áˆªá•áˆ½áŠ• á‹ˆá‹­áˆ áŠ®á‹­áŠ• á‹­áŒá‹™á¢`
+          ? `ለማሳተም ${COIN_PER_POST} ቤተሰብ ኮይኖች ያስፈልጉዎታል። እባክዎ አካውንትዎን ያሳድጉ ወይም ኮይኖችን ይግዙ።`
           : `You need ${COIN_PER_POST} Beteseb Coins to post. Please subscribe or buy coins.`);
         return;
       }
@@ -793,7 +793,7 @@ function DashboardContent() {
 
       if (!error) {
         setFriendshipStatuses(prev => ({ ...prev, [candidateId]: 'accepted' }));
-        alert(locale === 'am' ? 'á‰°á‹›áˆá‹°á‹‹áˆ! áŠ áˆáŠ• áˆ˜áŠáŒ‹áŒˆáˆ­ á‹­á‰½áˆ‹áˆ‰á¢' : "It's a Match! You can now start chatting.");
+        alert(locale === 'am' ? 'ተዛምደዋል! አሁን መነጋገር ይችላሉ።' : "It's a Match! You can now start chatting.");
         
         // Transition to chat with this user
         localStorage.setItem('beteseb_active_chat_user_id', candidateId);
@@ -813,7 +813,7 @@ function DashboardContent() {
 
       if (!error) {
         setFriendshipStatuses(prev => ({ ...prev, [candidateId]: 'pending' }));
-        alert(locale === 'am' ? 'áˆ‹á‹­áŠ­ á‰°á‹°áˆ­áŒ“áˆ!' : 'Profile liked!');
+        alert(locale === 'am' ? 'ላይክ ተደርጓል!' : 'Profile liked!');
         
         // Try sending push
         fetch(`/${locale}/api/notifications/send-push`, {
@@ -829,7 +829,7 @@ function DashboardContent() {
               locale === 'so' ? 'Like Profile Cusub' :
               'New Profile Like',
             body: locale === 'am'
-              ? `${profile.full_name} áˆ‹á‹­áŠ­ áŠ á‹µáˆ­áŒŽá‹Žá‰³áˆ!`
+              ? `${profile.full_name} ላይክ አድርጎዎታል!`
               : `${profile.full_name} liked your profile!`
           })
         }).catch(() => {});
@@ -871,7 +871,7 @@ function DashboardContent() {
 
     if (!error) {
       setFriendshipStatuses(prev => ({ ...prev, [targetId]: 'pending' }));
-      alert(locale === 'am' ? 'á‹¨áŒ“á‹°áŠáŠá‰µ áŒ¥á‹«á‰„ á‰°áˆáŠ³áˆ!' : 'Friend request sent!');
+      alert(locale === 'am' ? 'የጓደኝነት ጥያቄ ተልኳል!' : 'Friend request sent!');
       
       // Trigger push notification to target user
       fetch(`/${locale}/api/notifications/send-push`, {
@@ -879,9 +879,9 @@ function DashboardContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: targetId,
-          title: locale === 'am' ? 'áŠ á‹²áˆµ á‹¨áŒ“á‹°áŠáŠá‰µ áŒ¥á‹«á‰„' : 'New Friend Request',
+          title: locale === 'am' ? 'አዲስ የጓደኝነት ጥያቄ' : 'New Friend Request',
           body: locale === 'am'
-            ? `${profile.full_name} á‹¨áŒ“á‹°áŠáŠá‰µ áŒ¥á‹«á‰„ áˆáŠ®áˆá‹Žá‰³áˆ!`
+            ? `${profile.full_name} የጓደኝነት ጥያቄ ልኮልዎታል።`
             : `${profile.full_name} has sent you a friend request.`
         })
       }).catch(() => {});
@@ -920,7 +920,7 @@ function DashboardContent() {
     if (!error) {
       setActiveRequestNotification(null);
       setPendingRequestsCount(prev => Math.max(0, prev - 1));
-      alert(locale === 'am' ? 'áŒ“á‹°áŠáŠá‰µ á‰°áˆ¨áŒ‹áŒáŒ§áˆ!' : 'Friend request accepted!');
+      alert(locale === 'am' ? 'ጓደኝነት ተረጋግጧል!' : 'Friend request accepted!');
       
       // Automatically open chat with the sender!
       localStorage.setItem('beteseb_active_chat_user_id', senderId);
@@ -952,7 +952,7 @@ function DashboardContent() {
         <div className="flex items-center gap-4 mb-12 group cursor-pointer">
           <Heart size={32} className="text-primary fill-primary/10 group-hover:fill-primary transition-all duration-300" />
           <span className="text-xl font-black italic uppercase tracking-tighter">
-            {locale === 'am' ? 'á‰¤á‰°áˆ°á‰¥' : locale === 'ar' ? 'Ø¨ÙŠØªØ³Ø¨' : 'BETESEB'}
+            {locale === 'am' ? 'ቤተሰብ' : locale === 'ar' ? 'بيتسب' : 'BETESEB'}
           </span>
         </div>
 
@@ -962,8 +962,8 @@ function DashboardContent() {
             { id: 'chat', icon: MessageCircle, label: n('chat') },
             { id: 'community', icon: Users, label: n('community') },
             { id: 'workshops', icon: GraduationCap, label: n('workshops') },
-            { id: 'wedding', icon: Sparkles, label: locale === 'am' ? 'á‹¨áˆ°áˆ­áŒ áŠ¥á‰…á‹µ' : 'Wedding Planner' },
-            { id: 'gifts', icon: Gift, label: locale === 'am' ? 'áˆµáŒ¦á‰³á‹Žá‰½' : 'Gifts' },
+            { id: 'wedding', icon: Sparkles, label: locale === 'am' ? 'የሰርግ እቅድ' : 'Wedding Planner' },
+            { id: 'gifts', icon: Gift, label: locale === 'am' ? 'ስጦታዎች' : 'Gifts' },
             { id: 'profile', icon: UserCircle, label: n('profile') }
           ].map((item) => (
             <button
@@ -1000,7 +1000,7 @@ function DashboardContent() {
           { id: 'chat', icon: MessageCircle, label: n('chat') },
           { id: 'community', icon: Users, label: n('community') },
           { id: 'workshops', icon: GraduationCap, label: n('workshops') },
-          { id: 'gifts', icon: Gift, label: locale === 'am' ? 'áˆµáŒ¦á‰³á‹Žá‰½' : 'Gifts' }
+          { id: 'gifts', icon: Gift, label: locale === 'am' ? 'ስጦታዎች' : 'Gifts' }
         ].map((item) => (
           <button
             key={item.id}
@@ -1083,8 +1083,8 @@ function DashboardContent() {
                       { id: 'chat', icon: MessageCircle, label: n('chat') },
                       { id: 'community', icon: Users, label: n('community') },
                       { id: 'workshops', icon: GraduationCap, label: n('workshops') },
-                      { id: 'wedding', icon: Sparkles, label: locale === 'am' ? 'á‹¨áˆ°áˆ­áŒ áŠ¥á‰…á‹µ' : 'Wedding Planner' },
-                      { id: 'gifts', icon: Gift, label: locale === 'am' ? 'áˆµáŒ¦á‰³á‹Žá‰½' : 'Gifts' },
+                      { id: 'wedding', icon: Sparkles, label: locale === 'am' ? 'የሰርግ እቅድ' : 'Wedding Planner' },
+                      { id: 'gifts', icon: Gift, label: locale === 'am' ? 'ስጦታዎች' : 'Gifts' },
                       { id: 'profile', icon: UserCircle, label: n('profile') }
                     ].map((item) => (
                       <button
@@ -1160,7 +1160,7 @@ function DashboardContent() {
               <div className="flex-1 min-w-0">
                 <p className="text-[11px] font-black text-accent leading-snug">
                   <span className="text-primary">{activeRequestNotification.senderName}</span>{' '}
-                  {locale === 'am' ? 'á‹¨áŒ“á‹°áŠáŠá‰µ áŒ¥á‹«á‰„ áˆáŠ³áˆá‹Žá¢' : 'sent you a friend request.'}
+                  {locale === 'am' ? 'የጓደኝነት ጥያቄ ልኮልዎታል።' : 'sent you a friend request.'}
                 </p>
                 <div className="flex gap-2 mt-2">
                   <button
@@ -1171,13 +1171,13 @@ function DashboardContent() {
                     )}
                     className="flex-1 py-2 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-wider shadow-md hover:bg-primary/90 active:scale-95 transition-all"
                   >
-                    {locale === 'am' ? 'á‰€á‰ áˆ' : 'Accept'}
+                    {locale === 'am' ? 'ተቀበል' : 'Accept'}
                   </button>
                   <button
                     onClick={() => handleDeclineNotification(activeRequestNotification.friendshipId)}
                     className="flex-1 py-2 rounded-xl border-2 border-border text-gray-500 text-[10px] font-black uppercase tracking-wider hover:bg-muted active:scale-95 transition-all"
                   >
-                    {locale === 'am' ? 'áŠ á‰µá‰€á‰ áˆ' : 'Decline'}
+                    {locale === 'am' ? 'አትቀበል' : 'Decline'}
                   </button>
                 </div>
               </div>
@@ -1212,12 +1212,11 @@ function DashboardContent() {
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-black uppercase tracking-tighter text-[#0F172A] flex items-center gap-2">
                 <Heart size={20} className="text-primary fill-primary/20" />
-                {locale === 'am' ? 'á‰°á‹›áˆ›áŒ…' : 'á‰°á‹›áˆ›áŒ…'}
+                {t('matching.title')}
               </h2>
               {profile && (
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                  {matches.filter(m => !dislikedIds.has(m.id)).length}{' '}
-                  {locale === 'am' ? 'á‹•áŒ©á‹Žá‰½' : 'candidates'}
+                  {getCandidatesLabel(matches.filter(m => !dislikedIds.has(m.id)).length, locale)}
                 </span>
               )}
             </div>
@@ -1256,19 +1255,17 @@ function DashboardContent() {
                   </div>
                   <div className="space-y-2 relative">
                     <h3 className="text-2xl font-black italic tracking-tight">
-                      {locale === 'am' ? 'á•áˆªáˆšá‹¨áˆ á‹­áŠ­áˆá‰±' : 'á•áˆªáˆšá‹¨áˆ á‹­áŠ­áˆá‰±'}
+                      {t('premium.unlock')}
                     </h3>
                     <p className="text-white/80 text-xs font-bold max-w-xs mx-auto leading-relaxed">
-                      {locale === 'am'
-                        ? 'á‹«áˆá‰°áŒˆá‹°á‰  áŒáŒ¥áˆšá‹«á‹Žá‰½áŠ•á£ áˆ™áˆ‰ á‹¨á•áˆ®á‹á‹­áˆ á‹áˆ­á‹áˆ®á‰½áŠ• áŠ¥áŠ“ á‰…á‹µáˆšá‹« á‹¨áˆšáˆ°áŒ á‹áŠ• á‹µáŒ‹á á‹«áŒáŠ™á¢'
-                        : 'Unlock unlimited matches, full profile details, and priority support.'}
+                      {getPremiumSub(locale)}
                     </p>
                   </div>
                   <button
                     onClick={() => setShowPayment(true)}
                     className="w-full bg-white text-primary py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
                   >
-                    {t('premium.unlock')} â†’
+                    {t('premium.unlock')} →
                   </button>
                 </div>
               )}
@@ -1358,7 +1355,7 @@ function DashboardContent() {
                 </div>
                 <div className="space-y-2">
                    <h3 className="font-black text-accent text-lg uppercase tracking-tight italic">
-                     {locale === 'am' ? 'áŠ áˆµá‰¸áŠ³á‹­ á‹¨áŠ áˆµá‰°á‹³á‹³áˆª áˆ›áˆ³áˆ°á‰¢á‹«' : 'Urgent System Alert'}
+                     {locale === 'am' ? 'አስቸኳይ የአስተዳዳሪ ማሳሰቢያ' : 'Urgent System Alert'}
                    </h3>
                    <p className="text-xs text-gray-500 leading-relaxed italic">
                       {warningMessage}
@@ -1375,7 +1372,7 @@ function DashboardContent() {
                   }}
                   className="btn-primary w-full py-4.5 rounded-xl font-black uppercase tracking-widest text-[10px]"
                 >
-                  {locale === 'am' ? 'á‰°áˆ¨á‹µá‰»áˆˆáˆ (Acknowledge)' : 'I Acknowledge'}
+                  {locale === 'am' ? 'ተረድቻለሁ (Acknowledge)' : 'I Acknowledge'}
                 </button>
              </div>
           </div>
