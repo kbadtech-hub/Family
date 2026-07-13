@@ -42,6 +42,9 @@ import GiftsView from '@/components/dashboard/GiftsView';
 import WeddingPlannerView from '@/components/dashboard/WeddingPlannerView';
 import MatchDetailView from '@/components/dashboard/MatchDetailView';
 import SwipeCards from '@/components/dashboard/SwipeCards';
+import DashboardCard from '@/components/dashboard/DashboardCard';
+import LockOverlay from '@/components/dashboard/LockOverlay';
+import GiftModal from '@/components/dashboard/GiftModal';
 import AcademyView from '@/components/dashboard/AcademyView';
 import SubscriptionGate from '@/components/SubscriptionGate';
 import { getUserTier, calculateCompletionRate } from '@/lib/tiers';
@@ -90,7 +93,7 @@ function DashboardContent() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [verificationStatus, setVerificationStatus] = useState<string>('loading');
   const [warningMessage, setWarningMessage] = useState<string | null>(null);
-  // Trial model removed (Blueprint v4.0) — using freemium tier-based limits
+  // Trial model removed (Blueprint v4.0) â€” using freemium tier-based limits
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -99,6 +102,11 @@ function DashboardContent() {
   const [candidates, setCandidates] = useState<any[]>([]);
   const [hasVouchedRecords, setHasVouchedRecords] = useState(false);
   const [isGuardianLinked, setIsGuardianLinked] = useState(false);
+  const [unlockedProfileIds, setUnlockedProfileIds] = useState<Set<string>>(new Set());
+  const [showPaywallTarget, setShowPaywallTarget] = useState<any>(null);
+  const [dislikedIds, setDislikedIds] = useState<Set<string>>(new Set());
+  const [activeGiftCandidate, setActiveGiftCandidate] = useState<any>(null);
+  const [activeRequestNotification, setActiveRequestNotification] = useState<any>(null);
 
   // Social Feed Integration States (vibe matching)
   const tc = useTranslations('Community');
@@ -135,32 +143,32 @@ function DashboardContent() {
 
   const languages = [
     { id: 'en', label: 'English' },
-    { id: 'am', label: 'አማርኛ' },
+    { id: 'am', label: 'áŠ áˆ›áˆ­áŠ›' },
     { id: 'om', label: 'Oromoo' },
-    { id: 'ar', label: 'العربية' },
-    { id: 'ti', label: 'ትግርኛ' },
+    { id: 'ar', label: 'Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©' },
+    { id: 'ti', label: 'á‰µáŒáˆ­áŠ›' },
     { id: 'so', label: 'Soomaali' }
   ];
 
   const getTierIcon = (tier: string) => {
     switch (tier) {
-      case 'diamond': return '💎';
-      case 'platinum': return '🌟';
-      case 'gold': return '🥇';
-      case 'silver': return '🥈';
+      case 'diamond': return 'ðŸ’Ž';
+      case 'platinum': return 'ðŸŒŸ';
+      case 'gold': return 'ðŸ¥‡';
+      case 'silver': return 'ðŸ¥ˆ';
       case 'bronze':
-      default: return '🥉';
+      default: return 'ðŸ¥‰';
     }
   };
 
   const getTierName = (tier: string) => {
     switch (tier) {
-      case 'diamond': return locale === 'am' ? 'ዳይመንድ (Diamond Tier)' : 'Diamond Tier';
-      case 'platinum': return locale === 'am' ? 'ፕላቲኒየም (Platinum Tier)' : 'Platinum Tier';
-      case 'gold': return locale === 'am' ? 'ጎልደን (Gold Tier)' : 'Gold Tier';
-      case 'silver': return locale === 'am' ? 'ቤዚክ ማረጋገጫ (Silver Tier)' : 'Basic Verified (Silver Tier)';
+      case 'diamond': return locale === 'am' ? 'á‹³á‹­áˆ˜áŠ•á‹µ (Diamond Tier)' : 'Diamond Tier';
+      case 'platinum': return locale === 'am' ? 'á•áˆ‹á‰²áŠ’á‹¨áˆ (Platinum Tier)' : 'Platinum Tier';
+      case 'gold': return locale === 'am' ? 'áŒŽáˆá‹°áŠ• (Gold Tier)' : 'Gold Tier';
+      case 'silver': return locale === 'am' ? 'á‰¤á‹šáŠ­ áˆ›áˆ¨áŒ‹áŒˆáŒ« (Silver Tier)' : 'Basic Verified (Silver Tier)';
       case 'bronze':
-      default: return locale === 'am' ? 'ያልተረጋገጠ (Bronze Tier)' : 'Unverified (Bronze Tier)';
+      default: return locale === 'am' ? 'á‹«áˆá‰°áˆ¨áŒ‹áŒˆáŒ  (Bronze Tier)' : 'Unverified (Bronze Tier)';
     }
   };
 
@@ -199,7 +207,7 @@ function DashboardContent() {
       <div className="relative flex items-center justify-center shrink-0">
         {isRoyal && (
           <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 text-[10px] animate-bounce z-10">
-            👑
+            ðŸ‘‘
           </div>
         )}
         <div className={`${sizeClass} rounded-full overflow-hidden flex items-center justify-center bg-muted transition-all border-2 ${
@@ -242,7 +250,7 @@ function DashboardContent() {
     const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        // No active session — clear stale cache and redirect to login
+        // No active session â€” clear stale cache and redirect to login
         OfflineCache.clearAll?.();
         router.replace('/login');
         return;
@@ -287,11 +295,19 @@ function DashboardContent() {
           .eq('user_id', user.id)
           .eq('status', 'approved');
         setIsGuardianLinked(guardianCount !== null && guardianCount > 0);
+
+        // Fetch profile unlocks
+        const { data: unlocksData } = await supabase
+          .from('profile_unlocks')
+          .select('target_id')
+          .eq('user_id', user.id);
+        const unlockSet = new Set((unlocksData || []).map(u => u.target_id));
+        setUnlockedProfileIds(unlockSet);
       }
 
-      // 2. Fetch Verification — profiles.verification_status is the source of truth
+      // 2. Fetch Verification â€” profiles.verification_status is the source of truth
       // If the profile says 'verified', trust it permanently (no re-verification needed)
-      // NOTE: Parentheses are REQUIRED — without them JS evaluates left-to-right and
+      // NOTE: Parentheses are REQUIRED â€” without them JS evaluates left-to-right and
       //       any truthy verification_status string (e.g. 'unverified') makes the whole
       //       expression resolve to 'verified', which is incorrect.
       const profileVerifyStatus = (profileData?.verification_status === 'verified' || profileData?.is_verified === true) ? 'verified' : null;
@@ -336,7 +352,7 @@ function DashboardContent() {
                        ['admin', 'super_admin', 'expert'].includes(profileData?.role);
       
       setProfile(prev => prev ? { ...prev, is_premium: isPremium } : null);
-      // No trial tracking — Freemium model uses tier-based limits (Blueprint v4.0)
+      // No trial tracking â€” Freemium model uses tier-based limits (Blueprint v4.0)
 
       // 5. Fetch Matches (Gender-Based Logic)
       // Load Cached Matches if available
@@ -420,8 +436,9 @@ function DashboardContent() {
           image: p.avatar_url || 'https://images.unsplash.com/photo-1531123897727-8f129e16fd3c?auto=format&fit=crop&q=80&w=200',
           profile: p
         }));
-        setMatches(processedMatches);
-        OfflineCache.cacheData(`matches_${user.id}`, processedMatches);
+        const sortedMatches = processedMatches.sort((a, b) => b.match_percent - a.match_percent);
+        setMatches(sortedMatches);
+        OfflineCache.cacheData(`matches_${user.id}`, sortedMatches);
       }
 
       // 6. Fetch Pending Friend Requests Count
@@ -498,7 +515,7 @@ function DashboardContent() {
       const userCoins = profile?.coins || 0;
       if (userCoins < COIN_PER_POST) {
         alert(locale === 'am' 
-          ? `ለማስጠቀም ${COIN_PER_POST} ቤተሰብ ኮይን ያስፈልጋቸዋል። ሰብስክሪፕሽን ወይም ኮይን ይግዙ።`
+          ? `áˆˆáˆ›áˆµáŒ á‰€áˆ ${COIN_PER_POST} á‰¤á‰°áˆ°á‰¥ áŠ®á‹­áŠ• á‹«áˆµáˆáˆáŒ‹á‰¸á‹‹áˆá¢ áˆ°á‰¥áˆµáŠ­áˆªá•áˆ½áŠ• á‹ˆá‹­áˆ áŠ®á‹­áŠ• á‹­áŒá‹™á¢`
           : `You need ${COIN_PER_POST} Beteseb Coins to post. Please subscribe or buy coins.`);
         return;
       }
@@ -652,6 +669,212 @@ function DashboardContent() {
     setIsUploading(false);
   };
 
+  // Real-time friend request listener
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    const channel = supabase
+      .channel(`incoming-friendships-${profile.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'friendships',
+          filter: `receiver_id=eq.${profile.id}`
+        },
+        async (payload: any) => {
+          const newRequest = payload.new;
+          if (newRequest && newRequest.status === 'pending') {
+            const { data: senderProfile } = await supabase
+              .from('profiles')
+              .select('id, full_name, avatar_url')
+              .eq('id', newRequest.sender_id)
+              .single();
+
+            if (senderProfile) {
+              setActiveRequestNotification({
+                friendshipId: newRequest.id,
+                senderId: senderProfile.id,
+                senderName: senderProfile.full_name || 'Someone',
+                senderAvatar: senderProfile.avatar_url
+              });
+              setPendingRequestsCount(prev => prev + 1);
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile?.id]);
+
+  const handleLike = async (candidateId: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || !profile) return;
+
+    // Check for incoming friend request from candidate to current user
+    const { data: incoming } = await supabase
+      .from('friendships')
+      .select('*')
+      .eq('sender_id', candidateId)
+      .eq('receiver_id', user.id)
+      .maybeSingle();
+
+    if (incoming) {
+      // Auto-accept it to make them friends!
+      const { error } = await supabase
+        .from('friendships')
+        .update({ status: 'accepted' })
+        .eq('id', incoming.id);
+
+      if (!error) {
+        setFriendshipStatuses(prev => ({ ...prev, [candidateId]: 'accepted' }));
+        alert(locale === 'am' ? 'á‰°á‹›áˆá‹°á‹‹áˆ! áŠ áˆáŠ• áˆ˜áŠáŒ‹áŒˆáˆ­ á‹­á‰½áˆ‹áˆ‰á¢' : "It's a Match! You can now start chatting.");
+        
+        // Transition to chat with this user
+        localStorage.setItem('beteseb_active_chat_user_id', candidateId);
+        setActiveTab('chat');
+      } else {
+        alert(error.message);
+      }
+    } else {
+      // Create pending friendship request
+      const { error } = await supabase
+        .from('friendships')
+        .insert({
+          sender_id: user.id,
+          receiver_id: candidateId,
+          status: 'pending'
+        });
+
+      if (!error) {
+        setFriendshipStatuses(prev => ({ ...prev, [candidateId]: 'pending' }));
+        alert(locale === 'am' ? 'áˆ‹á‹­áŠ­ á‰°á‹°áˆ­áŒ“áˆ!' : 'Profile liked!');
+        
+        // Try sending push
+        fetch(`/${locale}/api/notifications/send-push`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: candidateId,
+            title: locale === 'am' ? 'áŠ á‹²áˆµ áˆ‹á‹­áŠ­' : 'New Profile Like',
+            body: locale === 'am'
+              ? `${profile.full_name} áˆ‹á‹­áŠ­ áŠ á‹µáˆ­áŒŽá‹Žá‰³áˆ!`
+              : `${profile.full_name} liked your profile!`
+          })
+        }).catch(() => {});
+      } else {
+        alert(error.message);
+      }
+    }
+  };
+
+  const handleDislike = async (candidateId: string) => {
+    setDislikedIds(prev => {
+      const next = new Set(prev);
+      next.add(candidateId);
+      return next;
+    });
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      // Silently ignore duplicate-key errors (user already passed this candidate)
+      await supabase.from('friendships').insert({
+        sender_id: user.id,
+        receiver_id: candidateId,
+        status: 'rejected'
+      }).then(() => {}).catch(() => {});
+    }
+  };
+
+  const handleSendFriendRequest = async (targetId: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || !profile) return;
+
+    const { error } = await supabase.from('friendships').insert({
+      sender_id: user.id,
+      receiver_id: targetId,
+      status: 'pending'
+    });
+
+    if (!error) {
+      setFriendshipStatuses(prev => ({ ...prev, [targetId]: 'pending' }));
+      alert(locale === 'am' ? 'á‹¨áŒ“á‹°áŠáŠá‰µ áŒ¥á‹«á‰„ á‰°áˆáŠ³áˆ!' : 'Friend request sent!');
+      
+      // Trigger push notification to target user
+      fetch(`/${locale}/api/notifications/send-push`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: targetId,
+          title: locale === 'am' ? 'áŠ á‹²áˆµ á‹¨áŒ“á‹°áŠáŠá‰µ áŒ¥á‹«á‰„' : 'New Friend Request',
+          body: locale === 'am'
+            ? `${profile.full_name} á‹¨áŒ“á‹°áŠáŠá‰µ áŒ¥á‹«á‰„ áˆáŠ®áˆá‹Žá‰³áˆ!`
+            : `${profile.full_name} has sent you a friend request.`
+        })
+      }).catch(() => {});
+    } else {
+      alert(error.message);
+    }
+  };
+
+  const handleCardClick = (candidate: any) => {
+    // If premium, or self, or already unlocked, open details
+    if (profile?.is_premium || profile?.id === candidate.id || unlockedProfileIds.has(candidate.id)) {
+      setSelectedMatchId(candidate.id);
+    } else {
+      // Trigger Lock Overlay paywall
+      setShowPaywallTarget(candidate);
+    }
+  };
+
+  const handleUnlockSuccess = (targetId: string) => {
+    setUnlockedProfileIds(prev => {
+      const next = new Set(prev);
+      next.add(targetId);
+      return next;
+    });
+    setProfile(prev => prev ? { ...prev, coins: Math.max(0, (prev.coins || 0) - 10) } : null);
+    setSelectedMatchId(targetId);
+    setShowPaywallTarget(null);
+  };
+
+  const handleAcceptNotification = async (friendshipId: string, senderId: string, senderName: string) => {
+    const { error } = await supabase
+      .from('friendships')
+      .update({ status: 'accepted' })
+      .eq('id', friendshipId);
+
+    if (!error) {
+      setActiveRequestNotification(null);
+      setPendingRequestsCount(prev => Math.max(0, prev - 1));
+      alert(locale === 'am' ? 'áŒ“á‹°áŠáŠá‰µ á‰°áˆ¨áŒ‹áŒáŒ§áˆ!' : 'Friend request accepted!');
+      
+      // Automatically open chat with the sender!
+      localStorage.setItem('beteseb_active_chat_user_id', senderId);
+      setActiveTab('chat');
+    } else {
+      alert(error.message);
+    }
+  };
+
+  const handleDeclineNotification = async (friendshipId: string) => {
+    const { error } = await supabase
+      .from('friendships')
+      .delete()
+      .eq('id', friendshipId);
+
+    if (!error) {
+      setActiveRequestNotification(null);
+      setPendingRequestsCount(prev => Math.max(0, prev - 1));
+    } else {
+      alert(error.message);
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-[#FDFBF9] flex flex-col md:flex-row overflow-x-hidden pb-20 md:pb-0" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
@@ -660,7 +883,7 @@ function DashboardContent() {
         <div className="flex items-center gap-4 mb-12 group cursor-pointer">
           <Heart size={32} className="text-primary fill-primary/10 group-hover:fill-primary transition-all duration-300" />
           <span className="text-xl font-black italic uppercase tracking-tighter">
-            {locale === 'am' ? 'ቤተሰብ' : locale === 'ar' ? 'بيتسب' : 'BETESEB'}
+            {locale === 'am' ? 'á‰¤á‰°áˆ°á‰¥' : locale === 'ar' ? 'Ø¨ÙŠØªØ³Ø¨' : 'BETESEB'}
           </span>
         </div>
 
@@ -670,8 +893,8 @@ function DashboardContent() {
             { id: 'chat', icon: MessageCircle, label: n('chat') },
             { id: 'community', icon: Users, label: n('community') },
             { id: 'workshops', icon: GraduationCap, label: n('workshops') },
-            { id: 'wedding', icon: Sparkles, label: locale === 'am' ? 'የሰርግ እቅድ' : 'Wedding Planner' },
-            { id: 'gifts', icon: Gift, label: locale === 'am' ? 'ስጦታዎች' : 'Gifts' },
+            { id: 'wedding', icon: Sparkles, label: locale === 'am' ? 'á‹¨áˆ°áˆ­áŒ áŠ¥á‰…á‹µ' : 'Wedding Planner' },
+            { id: 'gifts', icon: Gift, label: locale === 'am' ? 'áˆµáŒ¦á‰³á‹Žá‰½' : 'Gifts' },
             { id: 'profile', icon: UserCircle, label: n('profile') }
           ].map((item) => (
             <button
@@ -708,7 +931,7 @@ function DashboardContent() {
           { id: 'chat', icon: MessageCircle, label: n('chat') },
           { id: 'community', icon: Users, label: n('community') },
           { id: 'workshops', icon: GraduationCap, label: n('workshops') },
-          { id: 'gifts', icon: Gift, label: locale === 'am' ? 'ስጦታዎች' : 'Gifts' }
+          { id: 'gifts', icon: Gift, label: locale === 'am' ? 'áˆµáŒ¦á‰³á‹Žá‰½' : 'Gifts' }
         ].map((item) => (
           <button
             key={item.id}
@@ -791,8 +1014,8 @@ function DashboardContent() {
                       { id: 'chat', icon: MessageCircle, label: n('chat') },
                       { id: 'community', icon: Users, label: n('community') },
                       { id: 'workshops', icon: GraduationCap, label: n('workshops') },
-                      { id: 'wedding', icon: Sparkles, label: locale === 'am' ? 'የሰርግ እቅድ' : 'Wedding Planner' },
-                      { id: 'gifts', icon: Gift, label: locale === 'am' ? 'ስጦታዎች' : 'Gifts' },
+                      { id: 'wedding', icon: Sparkles, label: locale === 'am' ? 'á‹¨áˆ°áˆ­áŒ áŠ¥á‰…á‹µ' : 'Wedding Planner' },
+                      { id: 'gifts', icon: Gift, label: locale === 'am' ? 'áˆµáŒ¦á‰³á‹Žá‰½' : 'Gifts' },
                       { id: 'profile', icon: UserCircle, label: n('profile') }
                     ].map((item) => (
                       <button
@@ -827,7 +1050,7 @@ function DashboardContent() {
           </div>
         </header>
 
-        {/* Verification Banner — use the synced local verificationStatus state, NOT the raw
+        {/* Verification Banner â€” use the synced local verificationStatus state, NOT the raw
             profile fields which may be stale on first render before DB sync completes */}
         {verificationStatus !== 'verified' && verificationStatus !== 'pending' && verificationStatus !== 'loading' && (
           <div className="mb-10 bg-gradient-to-r from-primary to-orange-400 p-8 md:p-10 rounded-[3rem] text-white shadow-2xl shadow-primary/20 relative overflow-hidden group">
@@ -854,461 +1077,137 @@ function DashboardContent() {
           </div>
         )}
 
-        {activeTab === 'dashboard' && (
-          <div className="space-y-10">
-            {/* Friend Suggestions Carousel */}
-            {suggestions.length > 0 && (
-              <section className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-                 <div className="flex justify-between items-center mb-6">
-                   <h2 className="text-xl font-black uppercase tracking-tighter text-[#0F172A] flex items-center gap-2">
-                      <Users size={20} className="text-primary" /> {t('suggestions.title')}
-                   </h2>
-                 </div>
-                 <div className="flex overflow-x-auto pb-6 gap-6 no-scrollbar -mx-2 px-2">
-                    {suggestions.map((person) => {
-                      const personCompletion = calculateCompletionRate(person);
-                      const personTier = getUserTier(person, false); // Vouched count is optional, default false
-                      const isRoyal = personCompletion === 100 && personTier === 'diamond';
-                      return (
-                        <div key={person.id} className="flex-shrink-0 w-64 bg-white p-6 rounded-[2.5rem] border border-border shadow-sm hover:shadow-xl transition-all duration-500 group relative">
-                          <div className={`relative w-20 h-20 mx-auto mb-4 rounded-2xl overflow-hidden bg-muted border ${
-                            isRoyal
-                              ? (person.gender === 'Male' ? 'border-amber-400 ring-2 ring-amber-300' : 'border-pink-400 ring-2 ring-pink-300')
-                              : 'border-border'
-                          }`}>
-                             {isRoyal && (
-                               <div className="absolute top-1 left-1/2 -translate-x-1/2 text-xs drop-shadow-md z-10 animate-bounce">
-                                 👑
-                               </div>
-                             )}
-                             {person.avatar_url ? (
-                               <Image src={person.avatar_url} alt={person.full_name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
-                             ) : (
-                               <div className="w-full h-full flex items-center justify-center text-primary/20"><UserCircle size={40} /></div>
-                             )}
-                          </div>
-                          <h3 className="font-black text-sm text-[#0F172A] text-center mb-0.5 flex items-center justify-center gap-1">
-                            <span>{person.full_name}</span>
-                            <span className="text-xs" title={getTierName(personTier)}>{getTierIcon(personTier)}</span>
-                          </h3>
-                          <p className="text-[9px] text-primary font-black uppercase tracking-widest text-center mb-4">{getTierName(personTier)}</p>
-                          
-                          <button 
-                            onClick={async () => {
-                              const { data: { user } } = await supabase.auth.getUser();
-                              if (!user) return;
-                              const { error } = await supabase.from('friendships').insert({
-                                sender_id: user.id,
-                                receiver_id: person.id,
-                                status: 'pending'
-                              });
-                              if (!error) {
-                                setFriendshipStatuses(prev => ({ ...prev, [person.id]: 'pending' }));
-                                setSuggestions(prev => prev.filter(s => s.id !== person.id));
-                              }
-                            }}
-                            className="w-full bg-primary/10 text-primary py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all"
-                          >
-                             {t('suggestions.addFriend')}
-                          </button>
-                        </div>
-                      );
-                    })}
-                 </div>
-              </section>
-            )}
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-            <div className="lg:col-span-2 space-y-10">
-              <section>
-                <div className="flex justify-between items-center mb-8 flex-col sm:flex-row gap-4">
-                  <h2 className="text-xl font-black uppercase tracking-tighter text-[#0F172A]">{t('matching.title')}</h2>
-                  
-                  <div className="flex items-center gap-4">
-                    {/* View Switcher Toggle */}
-                    {!showPayment && matches.length > 0 && (
-                      <div className="flex p-1 bg-muted rounded-2xl w-fit border border-gray-100 shadow-sm">
-                        <button 
-                          onClick={() => setMatchingView('grid')} 
-                          className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${matchingView === 'grid' ? 'bg-primary text-white shadow-sm' : 'text-gray-400'}`}
-                        >
-                          Grid View
-                        </button>
-                        <button 
-                          onClick={() => setMatchingView('swipe')} 
-                          className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${matchingView === 'swipe' ? 'bg-primary text-white shadow-sm' : 'text-gray-400'}`}
-                        >
-                          Swipe Deck
-                        </button>
-                      </div>
-                    )}
-                    <button className="text-primary font-bold text-[10px] uppercase tracking-widest flex items-center gap-2 underline decoration-primary/20">
-                      {t('matching.viewAll')} <ArrowUpRight size={14} />
-                    </button>
-                  </div>
-                </div>
-
-                {matchingView === 'swipe' && !showPayment && matches.length > 0 && profile ? (
-                  <div className="animate-in zoom-in-95 duration-500 py-4">
-                    <SwipeCards 
-                      userProfile={profile} 
-                      candidates={candidates} 
-                      onLike={(id) => setSelectedMatchId(id)}
-                      onPass={(id) => console.log("Passed candidate:", id)}
-                      isPremium={profile?.is_premium}
-                    />
-                  </div>
+        {/* â”€â”€ Floating Friend-Request Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {activeRequestNotification && (
+          <div className="fixed bottom-24 md:bottom-8 left-1/2 -translate-x-1/2 z-[300] w-[92vw] max-w-sm animate-in slide-in-from-bottom-6 duration-500">
+            <div className="bg-white rounded-[2rem] shadow-2xl border border-primary/20 p-5 flex items-center gap-4">
+              <div className="relative w-12 h-12 rounded-2xl overflow-hidden bg-muted flex-shrink-0 border border-border">
+                {activeRequestNotification.senderAvatar ? (
+                  <Image src={activeRequestNotification.senderAvatar} alt="" fill className="object-cover" />
                 ) : (
-                  <div className="animate-in fade-in duration-500">
-                    {showPayment && profile ? (
-                      <div className="w-full">
-                        <button onClick={() => setShowPayment(false)} className="mb-6 text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">← {t('backToDash')}</button>
-                        <PaymentTab />
-                      </div>
-                    ) : !profile?.is_premium && paymentStatus !== 'approved' && matches.length === 0 ? (
-                      <div className="bg-white p-8 md:p-12 rounded-[2.5rem] md:rounded-[3rem] border border-primary/10 text-center space-y-6">
-                        <div className="w-14 h-14 md:w-16 md:h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto">
-                          <Sparkles className="w-7 h-7 md:w-8 md:h-8" />
-                        </div>
-                        <h3 className="text-xl md:text-2xl font-black text-accent italic">{t('upgradeForMore')}</h3>
-                        <p className="text-xs md:text-gray-500 max-w-sm mx-auto">{t('freemiumLimitNote')}</p>
-                        <button onClick={() => setShowPayment(true)} className="w-full md:w-auto bg-primary text-white px-10 py-4 rounded-2xl font-bold uppercase tracking-widest shadow-xl shadow-primary/20">{t('upgradeNow')}</button>
-                      </div>
-                    ) : matches.length === 0 ? (
-                      <div className="py-20 text-center text-gray-400 font-bold uppercase tracking-widest text-[10px]">
-                         {t('searching')}
-                      </div>
-                    ) : (
-                      <div className="flex overflow-x-auto pb-6 gap-6 no-scrollbar -mx-2 px-2">
-                        {matches.map(match => {
-                          const matchCompletion = match.profile ? calculateCompletionRate(match.profile) : 0;
-                          const matchTier = match.profile ? getUserTier(match.profile, !!match.profile.has_vouched) : 'bronze';
-                          const isRoyal = matchCompletion === 100 && matchTier === 'diamond';
-                          return (
-                            <div 
-                              key={match.id} 
-                              onClick={() => setSelectedMatchId(match.id)}
-                              className="flex-shrink-0 w-64 bg-white p-4 md:p-6 rounded-[2.5rem] border border-border shadow-sm group hover:shadow-xl transition-all duration-500 cursor-pointer relative"
-                            >
-                              <div className={`relative aspect-square rounded-[2rem] overflow-hidden mb-5 border ${
-                                isRoyal
-                                  ? (match.profile?.gender === 'Male' ? 'border-amber-400 ring-4 ring-amber-300' : 'border-pink-400 ring-4 ring-pink-300')
-                                  : 'border-border'
-                              }`}>
-                                {isRoyal && (
-                                  <div className="absolute top-2 left-1/2 -translate-x-1/2 text-lg drop-shadow-md z-10 animate-bounce">
-                                    👑
-                                  </div>
-                                )}
-                                <Image src={match.image} alt={match.name} width={400} height={400} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 animate-duration-1000" />
-                                <div className={`absolute top-4 ${locale === 'ar' ? 'left-4' : 'right-4'} bg-primary text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg z-10`}>
-                                  {match.match_percent}% {t('matching.percent')}
-                                </div>
-                              </div>
-                              <h3 className="text-base md:text-lg font-black text-[#0F172A] text-center md:text-left flex items-center justify-center md:justify-start gap-1">
-                                <span>{match.name}</span>
-                                <span className="text-xs" title={getTierName(matchTier)}>{getTierIcon(matchTier)}</span>
-                              </h3>
-                              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest text-center md:text-left">{getTierName(matchTier)}</p>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </section>
-
-              {/* Social Feed (Stacked Feed Integration) */}
-              <section className="space-y-6">
-                <div className="flex items-center justify-between border-b border-border pb-4">
-                  <h2 className="text-xl font-black uppercase tracking-tighter text-[#0F172A] flex items-center gap-2">
-                    <Sparkles size={20} className="text-primary" /> {locale === 'am' ? 'የኮሚኒቲ መጋቢ' : 'Community Feed'}
-                  </h2>
-                </div>
-
-                {/* Post Creator Box */}
-                {profile?.verification_status === 'verified' && (
-                  <div className="bg-card p-6 md:p-8 rounded-[2.5rem] border border-primary/20 shadow-xl relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl opacity-50" />
-                    <div className="flex flex-col md:flex-row gap-4 relative z-10 items-center md:items-start">
-                      <div className="w-12 h-12 rounded-2xl bg-muted border border-border flex-shrink-0 flex items-center justify-center text-primary relative">
-                        {profile?.avatar_url ? (
-                          <Image src={profile.avatar_url} alt="" fill className="rounded-2xl object-cover" />
-                        ) : (
-                          <User className="w-6 h-6 text-gray-400" />
-                        )}
-                      </div>
-                      <form onSubmit={handlePostSubmit} className="w-full flex-1 space-y-4">
-                        <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-                           {[
-                             { id: 'general', label: tc('categories.all').replace('All Posts', 'General').replace('ሁሉም ፖስቶች', 'ጠቅላላ') },
-                             { id: 'success_story', label: tc('categories.success_story') },
-                             { id: 'lesson_learned', label: tc('categories.lesson_learned') },
-                             ...(profile?.role === 'admin' || profile?.role === 'super_admin' ? [{ id: 'expert_class', label: tc('categories.expert_class') }] : [])
-                           ].map(topic => (
-                             <button
-                               key={topic.id}
-                               type="button"
-                               onClick={() => setSelectedTopic(topic.id)}
-                               className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border ${selectedTopic === topic.id ? 'bg-primary text-white border-primary border-2 shadow-lg' : 'bg-muted text-gray-500 border-border hover:border-primary/50'}`}
-                             >
-                                {topic.label}
-                             </button>
-                           ))}
-                        </div>
-                        <textarea 
-                          ref={textareaRef}
-                          value={newPostContent}
-                          onChange={(e) => setNewPostContent(e.target.value)}
-                          placeholder={tc('newPostPlaceholder')} 
-                          aria-label="Post content"
-                          className="w-full bg-background/30 border border-border rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-6 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[100px] resize-none text-foreground"
-                        />
-
-                        {mediaUrl && (
-                          <div className="relative w-full aspect-video rounded-3xl overflow-hidden border border-border">
-                            <img src={mediaUrl} className="w-full h-full object-cover" alt="Preview" />
-                            <button 
-                              type="button"
-                              onClick={() => { setMediaUrl(null); setMediaType('none'); }}
-                              aria-label="Remove media"
-                              className="absolute top-4 right-4 bg-red-500 text-white p-2 rounded-xl shadow-lg"
-                            >
-                              <X size={16} />
-                            </button>
-                          </div>
-                        )}
-
-                        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-                            <div className="flex items-center gap-4">
-                              <button
-                                type="button"
-                                onClick={() => fileInputRef.current?.click()}
-                                className="p-3 bg-muted rounded-xl text-primary hover:bg-primary/10 transition-colors flex items-center gap-2"
-                              >
-                                <Camera size={18} />
-                                <span className="text-[10px] font-black uppercase tracking-widest hidden md:block">{tc('photo')}</span>
-                              </button>
-                              <input 
-                                type="file" 
-                                ref={fileInputRef} 
-                                className="hidden" 
-                                aria-label="Upload photo"
-                                accept="image/*"
-                                onChange={handlePhotoUpload}
-                              />
-                              <div className="flex items-center gap-2 text-[10px] text-primary font-black uppercase tracking-widest">
-                                  <Sparkles size={12} className="animate-pulse" /> {tc('aiFilter')}
-                              </div>
-                            </div>
-                            <button 
-                            type="submit"
-                            disabled={isSubmitting || isUploading || (!newPostContent.trim() && !mediaUrl)}
-                            className="w-full md:w-auto btn-primary py-4 md:py-3 px-8 text-xs flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50"
-                            >
-                            <Send size={16} /> {isSubmitting ? tc('checking') : tc('postButton')}
-                            </button>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                )}
-
-                {/* Coin Confirmation Modal */}
-                {coinPostConfirm && (
-                  <div className="fixed inset-0 z-[10000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl border border-primary/20 text-center space-y-5">
-                      <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto">
-                        <span className="text-3xl">🪙</span>
-                      </div>
-                      <div>
-                        <h4 className="font-black text-accent text-lg italic">
-                          {locale === 'am' ? `${COIN_PER_POST} ኮይን ይጠቀሙ?` : `Use ${COIN_PER_POST} Coins?`}
-                        </h4>
-                        <p className="text-xs text-gray-500 font-medium mt-2">
-                          {locale === 'am' 
-                            ? `ይህ ፖስት ለማደርግ ${COIN_PER_POST} ቤተሰብ ኮይን ይቀነሳሉ። ቀሪ ኮይን: ${(profile?.coins || 0) - COIN_PER_POST}`
-                            : `This post will deduct ${COIN_PER_POST} Beteseb Coins. Remaining: ${(profile?.coins || 0) - COIN_PER_POST}`}
-                        </p>
-                      </div>
-                      <div className="flex gap-3">
-                        <button
-                          onClick={() => setCoinPostConfirm(false)}
-                          className="flex-1 py-3 rounded-2xl border-2 border-border text-accent font-black text-xs uppercase tracking-wider hover:bg-muted transition-all"
-                        >
-                          {locale === 'am' ? 'ሰርዝ' : 'Cancel'}
-                        </button>
-                        <button
-                          onClick={(e) => { setCoinPostConfirm(false); handlePostSubmit(e as any); }}
-                          className="flex-1 py-3 rounded-2xl bg-primary text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
-                        >
-                          {locale === 'am' ? 'አረጋግጥ' : 'Confirm'}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Social Feed List */}
-                {feedLoading ? (
-                  <div className="p-12 text-center text-foreground/40 font-black uppercase tracking-widest text-xs animate-pulse">
-                    {tc('loadingFeed')}
-                  </div>
-                ) : posts.length === 0 ? (
-                  <div className="p-12 text-center text-foreground/40 font-bold uppercase tracking-widest text-xs">
-                    No community posts yet.
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {posts.map((post) => {
-                      const matchCompatibilityMap = new Map(matches.map(m => [m.id, m.match_percent]));
-                      const compatibilityScore = matchCompatibilityMap.get(post.author_id);
-                      return (
-                        <PostCard 
-                          key={post.id}
-                          post={post}
-                          currentUserId={profile?.id}
-                          compatibility={compatibilityScore}
-                          isVerified={profile?.verification_status === 'verified'}
-                          isPremium={profile?.is_premium}
-                          isAdmin={['admin', 'super_admin'].includes(profile?.role || '')}
-                        />
-                      );
-                    })}
-                  </div>
-                )}
-              </section>
-            </div>
-
-
-            <aside className="space-y-8">
-              {/* Profile Completion & Trust Tier Dashboard Widget (Phase 4.5) */}
-              <div className="bg-white p-10 rounded-[3rem] border border-border shadow-sm space-y-6">
-                <div className="text-center space-y-1">
-                  <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">
-                    {locale === 'am' ? 'የእምነት ደረጃ' : 'Trust Meter'}
-                  </h3>
-                  <div className="flex items-center justify-center gap-2 pt-2">
-                    <span className="text-3xl">{getTierIcon(userTier)}</span>
-                    <span className="font-black text-accent text-sm uppercase tracking-wide">
-                      {getTierName(userTier)}
-                    </span>
-                  </div>
-                  {userTier === 'diamond' && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-[8px] font-black uppercase tracking-widest mt-1">
-                      🛡️ High-Trust Seal Approved
-                    </span>
-                  )}
-                </div>
-
-                {/* Completion Rate Meter */}
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-gray-400">
-                    <span>{locale === 'am' ? 'የመገለጫ ማጠናቀቂያ' : 'Profile Completion'}</span>
-                    <span className="text-primary">{completionRate}%</span>
-                  </div>
-                  <div className="w-full h-3 bg-muted rounded-full overflow-hidden shadow-inner border border-border">
-                    <div 
-                      style={{ width: `${completionRate}%` }}
-                      className="h-full bg-gradient-to-r from-primary to-orange-400 rounded-full transition-all duration-1000"
-                    />
-                  </div>
-                  {completionRate === 100 && (
-                    <p className="text-[9px] text-green-600 font-bold uppercase tracking-wide text-center">
-                      💯 100% Completed! Advanced badges unlocked.
-                    </p>
-                  )}
-                </div>
-
-                {/* Guardian Linked Indicator */}
-                {isGuardianLinked && (
-                  <div className="p-4 bg-amber-50 border border-amber-100 rounded-2xl flex items-center justify-center gap-2">
-                    <span className="text-base">👨‍👩‍👦</span>
-                    <span className="text-[10px] font-black text-amber-700 uppercase tracking-widest">
-                      Guardian-Linked / ዋሊ ተገናኝቷል
-                    </span>
-                  </div>
-                )}
-
-                {/* Royal Frame Design Details */}
-                {completionRate === 100 && userTier === 'diamond' && (
-                  <div className="p-4 bg-primary/5 border border-primary/10 rounded-2xl text-center space-y-1">
-                    <p className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center justify-center gap-1">
-                      👑 {(profile as any)?.gender === 'Male' ? "King's Crown Frame Active" : "Queen's Crown Frame Active"}
-                    </p>
-                    <p className="text-[8px] text-gray-400 font-bold">
-                      Your avatar across the system is highlighted with a royal border.
-                    </p>
-                  </div>
+                  <UserCircle className="w-full h-full text-gray-300 p-2" />
                 )}
               </div>
-
-              <div className="bg-white p-10 rounded-[3rem] border border-border shadow-sm text-center">
-                <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-6">{t('subscription')}</h3>
-                {paymentStatus === 'approved' ? (
-                  <div className="p-5 bg-green-500/5 border border-green-500/20 rounded-[1.5rem] flex items-center justify-center gap-3">
-                    <CheckCircle2 className="text-green-500" size={20} />
-                    <p className="font-bold text-xs uppercase tracking-widest text-green-700">{t('premium.active')}</p>
-                  </div>
-                ) : paymentStatus === 'pending' ? (
-                  <div className="p-8 bg-primary/5 border border-primary/20 rounded-[2.5rem] space-y-4">
-                    <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mx-auto animate-pulse">
-                       <ShieldCheck size={24} />
-                    </div>
-                    <div>
-                       <p className="font-black text-xs uppercase tracking-widest text-primary">{t('reviewPending')}</p>
-                       <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-tighter">{t('reviewNote')}</p>
-                    </div>
-                  </div>
-                ) : (
-                  <button onClick={() => setShowPayment(true)} className="w-full bg-primary text-white py-5 rounded-[2rem] font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20">
-                    {t('premium.unlock')}
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-black text-accent leading-snug">
+                  <span className="text-primary">{activeRequestNotification.senderName}</span>{' '}
+                  {locale === 'am' ? 'á‹¨áŒ“á‹°áŠáŠá‰µ áŒ¥á‹«á‰„ áˆáŠ³áˆá‹Žá¢' : 'sent you a friend request.'}
+                </p>
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={() => handleAcceptNotification(
+                      activeRequestNotification.friendshipId,
+                      activeRequestNotification.senderId,
+                      activeRequestNotification.senderName
+                    )}
+                    className="flex-1 py-2 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-wider shadow-md hover:bg-primary/90 active:scale-95 transition-all"
+                  >
+                    {locale === 'am' ? 'á‰€á‰ áˆ' : 'Accept'}
                   </button>
-                )}
+                  <button
+                    onClick={() => handleDeclineNotification(activeRequestNotification.friendshipId)}
+                    className="flex-1 py-2 rounded-xl border-2 border-border text-gray-500 text-[10px] font-black uppercase tracking-wider hover:bg-muted active:scale-95 transition-all"
+                  >
+                    {locale === 'am' ? 'áŠ á‰µá‰€á‰ áˆ' : 'Decline'}
+                  </button>
+                </div>
               </div>
-
-              {/* Family Poll Widget (Social Vibe) */}
-              <div className="bg-white p-8 rounded-[3rem] border border-border text-left relative overflow-hidden group">
-                 <div className="absolute top-0 left-0 w-2 h-full bg-secondary group-hover:w-4 transition-all" />
-                 <div className="flex items-center gap-3 mb-6">
-                    <BarChart2 className="text-secondary" />
-                    <h4 className="text-lg font-black text-accent italic">Family Poll</h4>
-                 </div>
-                 <p className="font-bold text-accent mb-6 leading-relaxed">"What is the most important trait for a long-distance relationship?"</p>
-                 <div className="space-y-3">
-                    {[
-                       { label: "Daily Video Chat", percent: 45 },
-                       { label: "Trust & Transparency", percent: 82 },
-                       { label: "Future Plan", percent: 34 }
-                    ].map((opt, i) => (
-                       <button key={i} type="button" className="w-full p-4 rounded-2xl border border-gray-100 hover:border-secondary transition-all text-left relative overflow-hidden group/opt">
-                          <div className="relative z-10 flex justify-between items-center font-bold text-sm">
-                             <span>{opt.label}</span>
-                             <span className="text-secondary">{opt.percent}%</span>
-                          </div>
-                          <div 
-                            ref={el => { dashboardPollRef.current[i] = el; }}
-                            className="absolute inset-y-0 left-0 bg-secondary/5 transition-all group-hover/opt:bg-secondary/10" 
-                          />
-                       </button>
-                    ))}
-                 </div>
-              </div>
-
-              {/* AI Topic of the Day */}
-              <div className="bg-white p-8 rounded-[3rem] shadow-2xl border border-border text-left">
-                 <div className="flex items-center gap-2 text-secondary mb-2">
-                    <Sparkles size={18} />
-                    <span className="font-black text-xs uppercase tracking-widest">AI Topic of Day</span>
-                 </div>
-                 <p className="text-sm font-bold text-accent italic">"How can traditional Abushakir logic solve modern dating burnout?"</p>
-              </div>
-            </aside>
+              <button
+                onClick={() => setActiveRequestNotification(null)}
+                className="text-gray-300 hover:text-gray-500 flex-shrink-0 p-1"
+                aria-label="Dismiss"
+              >
+                <X size={16} />
+              </button>
             </div>
           </div>
-
         )}
+
+        {/* â”€â”€ Lock Overlay Paywall â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {showPaywallTarget && profile && (
+          <LockOverlay
+            targetUserId={showPaywallTarget.id}
+            targetUserName={showPaywallTarget.full_name || 'this user'}
+            currentCoins={profile.coins || 0}
+            costCoins={10}
+            locale={locale}
+            onClose={() => setShowPaywallTarget(null)}
+            onUnlockSuccess={() => handleUnlockSuccess(showPaywallTarget.id)}
+            onUpgrade={() => { setShowPaywallTarget(null); setShowPayment(true); }}
+          />
+        )}
+
+        {activeTab === 'dashboard' && (
+          <div className="space-y-6">
+            {/* Section heading */}
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-black uppercase tracking-tighter text-[#0F172A] flex items-center gap-2">
+                <Heart size={20} className="text-primary fill-primary/20" />
+                {locale === 'am' ? 'á‰°á‹›áˆ›áŒ…' : 'á‰°á‹›áˆ›áŒ…'}
+              </h2>
+              {profile && (
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                  {matches.filter(m => !dislikedIds.has(m.id)).length}{' '}
+                  {locale === 'am' ? 'á‹•áŒ©á‹Žá‰½' : 'candidates'}
+                </span>
+              )}
+            </div>
+
+            {/* Vertical DashboardCard feed */}
+            <div className="flex flex-col items-center gap-8 pb-6">
+              {matches.length === 0 ? (
+                <div className="py-24 text-center text-gray-400 font-bold uppercase tracking-widest text-[10px]">
+                  {t('searching')}
+                </div>
+              ) : (
+                matches
+                  .filter(m => !dislikedIds.has(m.id))
+                  .map(match => (
+                    <DashboardCard
+                      key={match.id}
+                      currentUser={profile}
+                      candidate={match.profile || match}
+                      locale={locale}
+                      onLike={handleLike}
+                      onDislike={handleDislike}
+                      onSendFriendRequest={handleSendFriendRequest}
+                      onSendGift={(c) => setActiveGiftCandidate(c)}
+                      onCardClick={() => handleCardClick(match.profile || match)}
+                      friendshipStatus={friendshipStatuses[match.id] || null}
+                    />
+                  ))
+              )}
+
+              {/* Premium CTA card at absolute bottom of feed */}
+              {!isPremium && (
+                <div className="w-full max-w-md mx-auto bg-gradient-to-br from-primary via-orange-400 to-amber-400 rounded-[3rem] p-10 text-white text-center space-y-5 shadow-2xl shadow-primary/30 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-white/5 pointer-events-none" />
+                  <div className="w-16 h-16 bg-white/20 rounded-3xl flex items-center justify-center mx-auto">
+                    <Sparkles size={32} className="fill-white" />
+                  </div>
+                  <div className="space-y-2 relative">
+                    <h3 className="text-2xl font-black italic tracking-tight">
+                      {locale === 'am' ? 'á•áˆªáˆšá‹¨áˆ á‹­áŠ­áˆá‰±' : 'á•áˆªáˆšá‹¨áˆ á‹­áŠ­áˆá‰±'}
+                    </h3>
+                    <p className="text-white/80 text-xs font-bold max-w-xs mx-auto leading-relaxed">
+                      {locale === 'am'
+                        ? 'á‹«áˆá‰°áŒˆá‹°á‰  áŒáŒ¥áˆšá‹«á‹Žá‰½áŠ•á£ áˆ™áˆ‰ á‹¨á•áˆ®á‹á‹­áˆ á‹áˆ­á‹áˆ®á‰½áŠ• áŠ¥áŠ“ á‰…á‹µáˆšá‹« á‹¨áˆšáˆ°áŒ á‹áŠ• á‹µáŒ‹á á‹«áŒáŠ™á¢'
+                        : 'Unlock unlimited matches, full profile details, and priority support.'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowPayment(true)}
+                    className="w-full bg-white text-primary py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  >
+                    {t('premium.unlock')} â†’
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+
 
         {/* Tab Components */}
         {activeTab === 'chat' && (
@@ -1390,7 +1289,7 @@ function DashboardContent() {
                 </div>
                 <div className="space-y-2">
                    <h3 className="font-black text-accent text-lg uppercase tracking-tight italic">
-                     {locale === 'am' ? 'አስቸኳይ የአስተዳዳሪ ማሳሰቢያ' : 'Urgent System Alert'}
+                     {locale === 'am' ? 'áŠ áˆµá‰¸áŠ³á‹­ á‹¨áŠ áˆµá‰°á‹³á‹³áˆª áˆ›áˆ³áˆ°á‰¢á‹«' : 'Urgent System Alert'}
                    </h3>
                    <p className="text-xs text-gray-500 leading-relaxed italic">
                       {warningMessage}
@@ -1407,7 +1306,7 @@ function DashboardContent() {
                   }}
                   className="btn-primary w-full py-4.5 rounded-xl font-black uppercase tracking-widest text-[10px]"
                 >
-                  {locale === 'am' ? 'ተረድቻለሁ (Acknowledge)' : 'I Acknowledge'}
+                  {locale === 'am' ? 'á‰°áˆ¨á‹µá‰»áˆˆáˆ (Acknowledge)' : 'I Acknowledge'}
                 </button>
              </div>
           </div>

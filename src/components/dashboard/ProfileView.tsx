@@ -34,7 +34,10 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
     bio: profile?.bio || '',
     interests: profile?.interests || '',
     preferred_language: profile?.preferred_language || 'en',
-    enable_abushakir: profile?.enable_abushakir !== false
+    enable_abushakir: profile?.enable_abushakir !== false,
+    show_age: profile?.show_age !== false,
+    show_city: profile?.show_city !== false,
+    allow_friend_requests: profile?.allow_friend_requests !== false
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -436,7 +439,50 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                    ? '*ሲበራ የኮከብ ምልክትዎን በኢትዮጵያ ዘመን አቆጣጠር መሰረት በማስላት ተጨማሪ ባህላዊ ተኳኋኝነትን ያሳያል።'
                    : '*Allows supplementary cultural/heritage calculations based on the Ethiopian calendar.'}
                </p>
-            </div>
+             </div>
+
+             <div className="space-y-4 pt-4 col-span-full border-t border-gray-100">
+                <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">
+                  {profile?.preferred_language === 'am' ? 'የደህንነት እና ሚስጥራዊነት ቅንጅቶች' : 'Privacy Settings'}
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input 
+                      type="checkbox"
+                      checked={formData.show_age}
+                      onChange={(e) => setFormData({...formData, show_age: e.target.checked})}
+                      className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary"
+                    />
+                    <span className="text-xs font-bold text-slate-600">
+                      {profile?.preferred_language === 'am' ? 'እድሜዬ ለሌሎች ይታይ (Show my Age)' : 'Show my Age on matching card'}
+                    </span>
+                  </label>
+
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input 
+                      type="checkbox"
+                      checked={formData.show_city}
+                      onChange={(e) => setFormData({...formData, show_city: e.target.checked})}
+                      className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary"
+                    />
+                    <span className="text-xs font-bold text-slate-600">
+                      {profile?.preferred_language === 'am' ? 'መኖሪያ ከተማዬ ለሌሎች ይታይ (Show my City)' : 'Show my City on matching card'}
+                    </span>
+                  </label>
+
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input 
+                      type="checkbox"
+                      checked={formData.allow_friend_requests}
+                      onChange={(e) => setFormData({...formData, allow_friend_requests: e.target.checked})}
+                      className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary"
+                    />
+                    <span className="text-xs font-bold text-slate-600">
+                      {profile?.preferred_language === 'am' ? 'የጓደኝነት ጥያቄዎችን ፍቀድ (Allow Friend Requests)' : 'Allow others to send me Friend Requests'}
+                    </span>
+                  </label>
+                </div>
+             </div>
          </div>
       </div>
 

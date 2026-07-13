@@ -222,6 +222,18 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
         const merged = [...friendList, ...(profiles || []).filter(p => !friendList.find(f => f.id === p.id))];
         setMatches(merged);
 
+        // Check if there is an active chat transition key
+        if (typeof window !== 'undefined') {
+          const transitionId = localStorage.getItem('beteseb_active_chat_user_id');
+          if (transitionId) {
+            const found = merged.find(p => p.id === transitionId);
+            if (found) {
+              setSelectedMatch(found);
+              localStorage.removeItem('beteseb_active_chat_user_id');
+            }
+          }
+        }
+
         // Fetch Pending Requests
         const { data: requests } = await supabase
           .from('friendships')
