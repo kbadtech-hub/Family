@@ -782,11 +782,13 @@ function DashboardContent() {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       // Silently ignore duplicate-key errors (user already passed this candidate)
-      await supabase.from('friendships').insert({
-        sender_id: user.id,
-        receiver_id: candidateId,
-        status: 'rejected'
-      }).then(() => {}).catch(() => {});
+      try {
+        await supabase.from('friendships').insert({
+          sender_id: user.id,
+          receiver_id: candidateId,
+          status: 'rejected'
+        });
+      } catch (_) { /* ignore */ }
     }
   };
 
