@@ -27,6 +27,8 @@ import {
   MoreHorizontal
 } from 'lucide-react';
 import { translator, SupportedLocale } from '@/lib/translator';
+import PostCard from '@/components/dashboard/PostCard';
+
 
 interface Post {
   id: string;
@@ -94,6 +96,8 @@ export default function CommunityView({
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
   const [userReactions, setUserReactions] = useState<Record<string, 'heart' | 'dislike' | null>>({});
   const pollRef = React.useRef<(HTMLDivElement | null)[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
+
 
   useEffect(() => {
     const pollOptions = [
@@ -125,15 +129,17 @@ export default function CommunityView({
       if (postsData) setPosts(postsData as any[]);
 
       if (user) {
+        setCurrentUserId(user.id);
         const { data: reactionsData } = await supabase
           .from('post_reactions')
-          .select('post_id, type')
+          .select('post_id, reaction_type')
           .eq('user_id', user.id);
         
         const reactions: Record<string, 'heart' | 'dislike' | null> = {};
-        reactionsData?.forEach(r => reactions[r.post_id] = r.type as any);
+        reactionsData?.forEach(r => reactions[r.post_id] = r.reaction_type as any);
         setUserReactions(reactions);
       }
+
       
       setLoading(false);
     };
@@ -184,9 +190,10 @@ export default function CommunityView({
       if (currentReaction) {
         await supabase.from('post_reactions').delete().eq('post_id', postId).eq('user_id', user.id);
       }
-      await supabase.from('post_reactions').insert({ post_id: postId, user_id: user.id, type });
+      await supabase.from('post_reactions').insert({ post_id: postId, user_id: user.id, reaction_type: type });
       setUserReactions(prev => ({ ...prev, [postId]: type }));
     }
+
     
     // Refresh post counts (simplified for demo, usually use RPC or triggers)
     const { data } = await supabase.from('community_posts').select('heart_count, dislike_count').eq('id', postId).single();
@@ -623,154 +630,14 @@ export default function CommunityView({
             {/* Posts Timeline Feed */}
             <div className="space-y-4 md:space-y-6">
               {posts.map((post) => (
-                <article key={post.id} className="bg-card p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-primary/20 hover:border-primary/60 shadow-sm hover:shadow-md transition-shadow group text-left">
-                  <div className="flex justify-between mb-4 md:mb-6">
-                    <div className="flex gap-4">
-                       <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-muted border border-border overflow-hidden">
-                          {post.profiles?.avatar_url ? (
-                            <Image 
-                              src={post.profiles.avatar_url} 
-                              alt={post.profiles.full_name || 'User Avatar'} 
-                              width={48} 
-                              height={48} 
-                              className="w-full h-full object-cover" 
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-primary"><User size={24} /></div>
-                          )}
-                       </div>
-                        <div>
-                          <h4 className="font-black text-foreground group-hover:text-primary transition-colors uppercase tracking-widest text-xs flex items-center gap-1">
-                            {post.profiles?.full_name || t('anonymousUser')}
-                            {post.profiles?.is_verified && <CheckCircle2 size={12} className="text-primary fill-primary/10" />}
-                          </h4>
-                          <div className="flex items-center gap-2 mt-1">
-                             <p className="text-[10px] text-primary font-black uppercase tracking-widest">{post.profiles?.star_sign || t('memberBadge')}</p>
-                             <span className="w-1 h-1 bg-border rounded-full" />
-                             <p className="text-[8px] bg-primary/5 text-primary px-2 py-0.5 rounded-full font-black uppercase tracking-widest">
-                                {post.category === 'success_story' && t('categories.success_story')}
-                                {post.category === 'lesson_learned' && t('categories.lesson_learned')}
-                                {post.category === 'expert_class' && t('categories.expert_class')}
-                                {post.category !== 'success_story' && post.category !== 'lesson_learned' && post.category !== 'expert_class' && (t(`topics.${post.topic || 'General'}`) || 'General')}
-                             </p>
-                          </div>
-                        </div>
-                    </div>
-                    <button className="text-gray-400 hover:text-primary transition-colors p-2"><MoreHorizontal size={16} /></button>
-                  </div>
-
-                  <div className="mb-4 pl-4 border-l-4 border-primary/20">
-                     <p className="text-foreground/70 leading-relaxed italic text-lg font-medium">
-                       &quot;{post.content}&quot;
-                     </p>
-                  </div>
-
-                  <div className="mb-4 flex gap-2">
-                     <button 
-                        onClick={() => translatePost(post)}
-                        className="flex items-center gap-1.5 text-[10px] font-black text-primary uppercase tracking-widest bg-primary/5 px-3 py-1 rounded-full hover:bg-primary hover:text-white transition-all"
-                     >
-                        <Languages size={12} /> {locale === 'am' ? 'ተርጉም' : 'Translate'}
-                     </button>
-                  </div>
-
-                  {post.media_url && post.media_type === 'image' && (
-                     <div className="mb-6 rounded-3xl overflow-hidden border border-border shadow-lg">
-                        <img src={post.media_url} className="w-full h-auto object-cover max-h-[500px]" alt="Post Media" />
-                     </div>
-                  )}
-
-                  {post.media_url && post.media_type === 'link' && (
-                     <div className="mb-6 p-6 bg-muted rounded-3xl border border-primary/10 flex items-center gap-4">
-                        <div className="p-3 bg-primary/10 text-primary rounded-xl">
-                           <LinkIcon size={20} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                           <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">{t('sharedLink')}</p>
-                           <a href={post.media_url} target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-accent hover:underline truncate block">
-                              {post.media_url}
-                           </a>
-                        </div>
-                     </div>
-                  )}
-
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-                     <div className="flex items-center gap-6">
-                       <button 
-                        onClick={() => handleReaction(post.id, 'heart')}
-                        className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${userReactions[post.id] === 'heart' ? 'text-primary scale-110' : 'text-gray-400 hover:text-primary'}`}
-                       >
-                          <Heart size={16} className={userReactions[post.id] === 'heart' ? 'fill-primary' : ''} />
-                          {post.heart_count || 0}
-                       </button>
-                       <button 
-                        onClick={() => handleReaction(post.id, 'dislike')}
-                        className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${userReactions[post.id] === 'dislike' ? 'text-red-500 scale-110' : 'text-gray-400 hover:text-red-500'}`}
-                       >
-                          <ThumbsDown size={16} className={userReactions[post.id] === 'dislike' ? 'fill-red-500' : ''} />
-                          {post.dislike_count || 0}
-                       </button>
-                       <button 
-                        onClick={() => {
-                          if (activeCommentPostId === post.id) setActiveCommentPostId(null);
-                          else {
-                            setActiveCommentPostId(post.id);
-                            fetchComments(post.id);
-                          }
-                        }}
-                        className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${activeCommentPostId === post.id ? 'text-primary' : 'text-gray-400 hover:text-primary'}`}
-                       >
-                          <MessageSquare size={16} />
-                          {t('comments')}
-                       </button>
-                     </div>
-                     <button 
-                      onClick={() => {
-                         navigator.clipboard.writeText(`${window.location.origin}/dashboard?post=${post.id}`);
-                         alert(t('linkCopied'));
-                      }}
-                      className="text-gray-400 hover:text-primary transition-all p-2 rounded-full hover:bg-muted"
-                     >
-                        <Share2 size={16} />
-                     </button>
-                  </div>
-
-                  {activeCommentPostId === post.id && (
-                     <div className="mt-6 space-y-6 animate-in slide-in-from-top-4 duration-500">
-                        <div className="flex gap-4">
-                           <div className="w-8 h-8 rounded-lg bg-muted flex-shrink-0 flex items-center justify-center text-primary">
-                              <User size={16} />
-                           </div>
-                           <div className="flex-1 space-y-2">
-                              {replyingToId && (
-                                 <div className="flex items-center justify-between bg-primary/5 p-2 rounded-lg mb-2">
-                                    <span className="text-[8px] font-black text-primary uppercase">{t('replyingTo')}</span>
-                                    <button onClick={() => setReplyingToId(null)} className="text-primary"><X size={12} /></button>
-                                 </div>
-                              )}
-                              <div className="flex gap-2">
-                                 <input 
-                                    value={commentContent}
-                                    onChange={(e) => setCommentContent(e.target.value)}
-                                    placeholder={t('commentPlaceholder')}
-                                    className="flex-1 bg-muted/50 border border-border rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-primary transition-all"
-                                 />
-                                 <button 
-                                    onClick={() => handleCommentSubmit(post.id)}
-                                    className="bg-primary text-white p-2 rounded-xl"
-                                 >
-                                    <Send size={16} />
-                                 </button>
-                              </div>
-                           </div>
-                        </div>
-                        
-                        {postComments[post.id] && (
-                           <RecursiveComments comments={postComments[post.id]} t={t} setReplyingToId={setReplyingToId} translateComment={translateComment} locale={locale} />
-                        )}
-                     </div>
-                  )}
-                </article>
+                <PostCard 
+                  key={post.id}
+                  post={post}
+                  currentUserId={currentUserId}
+                  isVerified={isVerified}
+                  isPremium={isPremium}
+                  isAdmin={isAdmin}
+                />
               ))}
             </div>
          </main>

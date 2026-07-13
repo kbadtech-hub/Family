@@ -24,9 +24,17 @@ import {
   LogOut,
   ChevronRight,
   Gift,
-  Sparkles
+  Sparkles,
+  Camera,
+  Send,
+  Image as ImageIcon,
+  X,
+  BarChart2,
+  User
 } from 'lucide-react';
 import CommunityView from '@/components/dashboard/CommunityView';
+import PostCard from '@/components/dashboard/PostCard';
+
 import PaymentTab from '@/components/dashboard/PaymentTab';
 import ChatView from '@/components/dashboard/ChatView';
 import ProfileView from '@/components/dashboard/ProfileView';
@@ -91,6 +99,39 @@ function DashboardContent() {
   const [candidates, setCandidates] = useState<any[]>([]);
   const [hasVouchedRecords, setHasVouchedRecords] = useState(false);
   const [isGuardianLinked, setIsGuardianLinked] = useState(false);
+
+  // Social Feed Integration States (vibe matching)
+  const tc = useTranslations('Community');
+  const [posts, setPosts] = useState<any[]>([]);
+  const [feedLoading, setFeedLoading] = useState(true);
+  const [newPostContent, setNewPostContent] = useState('');
+  const [mediaUrl, setMediaUrl] = useState<string | null>(null);
+  const [mediaType, setMediaType] = useState<'image' | 'none'>('none');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [selectedTopic, setSelectedTopic] = useState('general');
+  const [coinPostConfirm, setCoinPostConfirm] = useState(false);
+  const COIN_PER_POST = 20;
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const dashboardPollRef = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    if (activeTab === 'dashboard' && !feedLoading) {
+      const pollOptions = [
+        { label: "Daily Video Chat", percent: 45 },
+        { label: "Trust & Transparency", percent: 82 },
+        { label: "Future Plan", percent: 34 }
+      ];
+      pollOptions.forEach((opt, i) => {
+        if (dashboardPollRef.current[i]) {
+          dashboardPollRef.current[i]!.style.width = `${opt.percent}%`;
+        }
+      });
+    }
+  }, [activeTab, feedLoading]);
+
 
   const languages = [
     { id: 'en', label: 'English' },
@@ -425,9 +466,21 @@ function DashboardContent() {
         setFriendshipStatuses(statuses);
         setSuggestions(suggestionsData.filter(s => !statuses[s.id] || statuses[s.id] === 'rejected'));
       }
+
+      // 8. Fetch Community Posts for Social Feed
+      const { data: postsData } = await supabase
+        .from('community_posts')
+        .select('*, profiles(full_name, avatar_url, star_sign, is_verified, role)')
+        .order('created_at', { ascending: false })
+        .limit(10);
+      if (postsData) {
+        setPosts(postsData);
+      }
+      setFeedLoading(false);
     };
     fetchData();
   }, []);
+
 
   const isPremium = ((profile as any)?.premium_until && new Date((profile as any).premium_until) > new Date()) || 
                     paymentStatus === 'approved' || 
@@ -436,6 +489,169 @@ function DashboardContent() {
 
   const completionRate = calculateCompletionRate(profile as any);
   const userTier = getUserTier(profile as any, hasVouchedRecords);
+
+  const handlePostSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPostContent.trim()) return;
+
+    if (!profile?.is_premium && profile?.role !== 'admin' && profile?.role !== 'super_admin') {
+      const userCoins = profile?.coins || 0;
+      if (userCoins < COIN_PER_POST) {
+        alert(locale === 'am' 
+          ? `ለማስጠቀም ${COIN_PER_POST} ቤተሰብ ኮይን ያስፈልጋቸዋል። ሰብስክሪፕሽን ወይም ኮይን ይግዙ።`
+          : `You need ${COIN_PER_POST} Beteseb Coins to post. Please subscribe or buy coins.`);
+        return;
+      }
+      if (!coinPostConfirm) {
+        setCoinPostConfirm(true);
+        return;
+      }
+    }
+
+    const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9-]+\.[a-z]{2,})/gi;
+    const hasLinks = urlRegex.test(newPostContent);
+
+    if (hasLinks && profile?.role !== 'admin' && profile?.role !== 'super_admin') {
+       alert(tc('adminOnly'));
+       return;
+    }
+
+    setIsSubmitting(true);
+    setCoinPostConfirm(false);
+    
+    try {
+      const response = await fetch(`/${locale}/api/ai/moderate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: newPostContent.trim() })
+      });
+      const safety = await response.json();
+      
+      if (!safety.approved) {
+        alert(`${tc('unsafeContent')}: ${safety.reason}`);
+        setIsSubmitting(false);
+        return;
+      }
+    } catch (e) {
+      console.error("AI Moderation failed, using fallback", e);
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Deduct coins
+    if (!profile?.is_premium && profile?.role !== 'admin' && profile?.role !== 'super_admin') {
+      const userCoins = profile?.coins || 0;
+      await supabase.from('profiles').update({ coins: userCoins - COIN_PER_POST }).eq('id', user.id);
+      setProfile(prev => prev ? { ...prev, coins: userCoins - COIN_PER_POST } : null);
+    }
+
+    const { error } = await supabase.from('community_posts').insert({
+      author_id: user.id,
+      content: newPostContent.trim(),
+      topic: selectedTopic,
+      category: selectedTopic,
+      media_url: mediaUrl,
+      media_type: mediaType === 'none' && hasLinks ? 'link' : mediaType,
+      is_approved: true
+    });
+
+    if (!error) {
+      setNewPostContent('');
+      setMediaUrl(null);
+      setMediaType('none');
+      // Re-fetch posts
+      const { data } = await supabase
+        .from('community_posts')
+        .select('*, profiles(full_name, avatar_url, star_sign, is_verified, role)')
+        .order('created_at', { ascending: false })
+        .limit(10);
+      if (data) setPosts(data);
+    }
+    setIsSubmitting(false);
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    
+    let uploadFile: File | Blob = file;
+    if (file.type.startsWith('image/')) {
+      try {
+        const compressed = await new Promise<Blob>((resolve) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = (event) => {
+            const img = new window.Image();
+            img.src = event.target?.result as string;
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              let width = img.width;
+              let height = img.height;
+              
+              const MAX_DIM = 800;
+              if (width > MAX_DIM || height > MAX_DIM) {
+                if (width > height) {
+                  height = Math.round((height * MAX_DIM) / width);
+                  width = MAX_DIM;
+                } else {
+                  width = Math.round((width * MAX_DIM) / height);
+                  height = MAX_DIM;
+                }
+              }
+              
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              if (!ctx) {
+                resolve(file);
+                return;
+              }
+              ctx.drawImage(img, 0, 0, width, height);
+              
+              let quality = 0.7;
+              const tryCompress = () => {
+                canvas.toBlob((blob) => {
+                  if (!blob) {
+                    resolve(file);
+                    return;
+                  }
+                  if (blob.size > 50 * 1024 && quality > 0.1) {
+                    quality -= 0.15;
+                    tryCompress();
+                  } else {
+                    resolve(blob);
+                  }
+                }, 'image/jpeg', quality);
+              };
+              tryCompress();
+            };
+            img.onerror = () => resolve(file);
+          };
+          reader.onerror = () => resolve(file);
+        });
+        uploadFile = compressed;
+      } catch (err) {
+        console.error("Compression failed", err);
+      }
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+        const path = `community/${user.id}-${Date.now()}.jpg`;
+        const { error } = await supabase.storage.from('user_photos').upload(path, uploadFile, {
+          contentType: 'image/jpeg'
+        });
+        if (!error) {
+          const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(path);
+          setMediaUrl(publicUrl);
+          setMediaType('image');
+        }
+    }
+    setIsUploading(false);
+  };
+
 
   return (
     <div className="min-h-screen bg-[#FDFBF9] flex flex-col md:flex-row overflow-x-hidden pb-20 md:pb-0" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
@@ -743,14 +959,14 @@ function DashboardContent() {
                     />
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 animate-in fade-in duration-500">
+                  <div className="animate-in fade-in duration-500">
                     {showPayment && profile ? (
-                      <div className="col-span-full">
+                      <div className="w-full">
                         <button onClick={() => setShowPayment(false)} className="mb-6 text-xs font-bold uppercase tracking-widest text-primary flex items-center gap-2">← {t('backToDash')}</button>
                         <PaymentTab />
                       </div>
                     ) : !profile?.is_premium && paymentStatus !== 'approved' && matches.length === 0 ? (
-                      <div className="col-span-full bg-white p-8 md:p-12 rounded-[2.5rem] md:rounded-[3rem] border border-primary/10 text-center space-y-6">
+                      <div className="bg-white p-8 md:p-12 rounded-[2.5rem] md:rounded-[3rem] border border-primary/10 text-center space-y-6">
                         <div className="w-14 h-14 md:w-16 md:h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto">
                           <Sparkles className="w-7 h-7 md:w-8 md:h-8" />
                         </div>
@@ -759,48 +975,212 @@ function DashboardContent() {
                         <button onClick={() => setShowPayment(true)} className="w-full md:w-auto bg-primary text-white px-10 py-4 rounded-2xl font-bold uppercase tracking-widest shadow-xl shadow-primary/20">{t('upgradeNow')}</button>
                       </div>
                     ) : matches.length === 0 ? (
-                      <div className="col-span-full py-20 text-center text-gray-400 font-bold uppercase tracking-widest text-[10px]">
+                      <div className="py-20 text-center text-gray-400 font-bold uppercase tracking-widest text-[10px]">
                          {t('searching')}
                       </div>
                     ) : (
-                      matches.map(match => {
-                        const matchCompletion = match.profile ? calculateCompletionRate(match.profile) : 0;
-                        const matchTier = match.profile ? getUserTier(match.profile, !!match.profile.has_vouched) : 'bronze';
-                        const isRoyal = matchCompletion === 100 && matchTier === 'diamond';
-                        return (
-                          <div 
-                            key={match.id} 
-                            onClick={() => setSelectedMatchId(match.id)}
-                            className="bg-white p-4 md:p-6 rounded-[2.5rem] border border-border shadow-sm group hover:shadow-xl transition-all duration-500 cursor-pointer w-full relative"
-                          >
-                            <div className={`relative aspect-square rounded-[2rem] overflow-hidden mb-5 border ${
-                              isRoyal
-                                ? (match.profile?.gender === 'Male' ? 'border-amber-400 ring-4 ring-amber-300' : 'border-pink-400 ring-4 ring-pink-300')
-                                : 'border-border'
-                            }`}>
-                              {isRoyal && (
-                                <div className="absolute top-2 left-1/2 -translate-x-1/2 text-lg drop-shadow-md z-10 animate-bounce">
-                                  👑
+                      <div className="flex overflow-x-auto pb-6 gap-6 no-scrollbar -mx-2 px-2">
+                        {matches.map(match => {
+                          const matchCompletion = match.profile ? calculateCompletionRate(match.profile) : 0;
+                          const matchTier = match.profile ? getUserTier(match.profile, !!match.profile.has_vouched) : 'bronze';
+                          const isRoyal = matchCompletion === 100 && matchTier === 'diamond';
+                          return (
+                            <div 
+                              key={match.id} 
+                              onClick={() => setSelectedMatchId(match.id)}
+                              className="flex-shrink-0 w-64 bg-white p-4 md:p-6 rounded-[2.5rem] border border-border shadow-sm group hover:shadow-xl transition-all duration-500 cursor-pointer relative"
+                            >
+                              <div className={`relative aspect-square rounded-[2rem] overflow-hidden mb-5 border ${
+                                isRoyal
+                                  ? (match.profile?.gender === 'Male' ? 'border-amber-400 ring-4 ring-amber-300' : 'border-pink-400 ring-4 ring-pink-300')
+                                  : 'border-border'
+                              }`}>
+                                {isRoyal && (
+                                  <div className="absolute top-2 left-1/2 -translate-x-1/2 text-lg drop-shadow-md z-10 animate-bounce">
+                                    👑
+                                  </div>
+                                )}
+                                <Image src={match.image} alt={match.name} width={400} height={400} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 animate-duration-1000" />
+                                <div className={`absolute top-4 ${locale === 'ar' ? 'left-4' : 'right-4'} bg-primary text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg z-10`}>
+                                  {match.match_percent}% {t('matching.percent')}
                                 </div>
-                              )}
-                              <Image src={match.image} alt={match.name} width={400} height={400} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 animate-duration-1000" />
-                              <div className={`absolute top-4 ${locale === 'ar' ? 'left-4' : 'right-4'} bg-primary text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg z-10`}>
-                                {match.match_percent}% {t('matching.percent')}
                               </div>
+                              <h3 className="text-base md:text-lg font-black text-[#0F172A] text-center md:text-left flex items-center justify-center md:justify-start gap-1">
+                                <span>{match.name}</span>
+                                <span className="text-xs" title={getTierName(matchTier)}>{getTierIcon(matchTier)}</span>
+                              </h3>
+                              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest text-center md:text-left">{getTierName(matchTier)}</p>
                             </div>
-                            <h3 className="text-base md:text-lg font-black text-[#0F172A] text-center md:text-left flex items-center justify-center md:justify-start gap-1">
-                              <span>{match.name}</span>
-                              <span className="text-xs" title={getTierName(matchTier)}>{getTierIcon(matchTier)}</span>
-                            </h3>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest text-center md:text-left">{getTierName(matchTier)}</p>
-                          </div>
-                        );
-                      })
+                          );
+                        })}
+                      </div>
                     )}
                   </div>
                 )}
               </section>
+
+              {/* Social Feed (Stacked Feed Integration) */}
+              <section className="space-y-6">
+                <div className="flex items-center justify-between border-b border-border pb-4">
+                  <h2 className="text-xl font-black uppercase tracking-tighter text-[#0F172A] flex items-center gap-2">
+                    <Sparkles size={20} className="text-primary" /> {locale === 'am' ? 'የኮሚኒቲ መጋቢ' : 'Community Feed'}
+                  </h2>
+                </div>
+
+                {/* Post Creator Box */}
+                {profile?.verification_status === 'verified' && (
+                  <div className="bg-card p-6 md:p-8 rounded-[2.5rem] border border-primary/20 shadow-xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl opacity-50" />
+                    <div className="flex flex-col md:flex-row gap-4 relative z-10 items-center md:items-start">
+                      <div className="w-12 h-12 rounded-2xl bg-muted border border-border flex-shrink-0 flex items-center justify-center text-primary relative">
+                        {profile?.avatar_url ? (
+                          <Image src={profile.avatar_url} alt="" fill className="rounded-2xl object-cover" />
+                        ) : (
+                          <User className="w-6 h-6 text-gray-400" />
+                        )}
+                      </div>
+                      <form onSubmit={handlePostSubmit} className="w-full flex-1 space-y-4">
+                        <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                           {[
+                             { id: 'general', label: tc('categories.all').replace('All Posts', 'General').replace('ሁሉም ፖስቶች', 'ጠቅላላ') },
+                             { id: 'success_story', label: tc('categories.success_story') },
+                             { id: 'lesson_learned', label: tc('categories.lesson_learned') },
+                             ...(profile?.role === 'admin' || profile?.role === 'super_admin' ? [{ id: 'expert_class', label: tc('categories.expert_class') }] : [])
+                           ].map(topic => (
+                             <button
+                               key={topic.id}
+                               type="button"
+                               onClick={() => setSelectedTopic(topic.id)}
+                               className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border ${selectedTopic === topic.id ? 'bg-primary text-white border-primary border-2 shadow-lg' : 'bg-muted text-gray-500 border-border hover:border-primary/50'}`}
+                             >
+                                {topic.label}
+                             </button>
+                           ))}
+                        </div>
+                        <textarea 
+                          ref={textareaRef}
+                          value={newPostContent}
+                          onChange={(e) => setNewPostContent(e.target.value)}
+                          placeholder={tc('newPostPlaceholder')} 
+                          aria-label="Post content"
+                          className="w-full bg-background/30 border border-border rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-6 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[100px] resize-none text-foreground"
+                        />
+
+                        {mediaUrl && (
+                          <div className="relative w-full aspect-video rounded-3xl overflow-hidden border border-border">
+                            <img src={mediaUrl} className="w-full h-full object-cover" alt="Preview" />
+                            <button 
+                              type="button"
+                              onClick={() => { setMediaUrl(null); setMediaType('none'); }}
+                              aria-label="Remove media"
+                              className="absolute top-4 right-4 bg-red-500 text-white p-2 rounded-xl shadow-lg"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        )}
+
+                        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+                            <div className="flex items-center gap-4">
+                              <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                className="p-3 bg-muted rounded-xl text-primary hover:bg-primary/10 transition-colors flex items-center gap-2"
+                              >
+                                <Camera size={18} />
+                                <span className="text-[10px] font-black uppercase tracking-widest hidden md:block">{tc('photo')}</span>
+                              </button>
+                              <input 
+                                type="file" 
+                                ref={fileInputRef} 
+                                className="hidden" 
+                                aria-label="Upload photo"
+                                accept="image/*"
+                                onChange={handlePhotoUpload}
+                              />
+                              <div className="flex items-center gap-2 text-[10px] text-primary font-black uppercase tracking-widest">
+                                  <Sparkles size={12} className="animate-pulse" /> {tc('aiFilter')}
+                              </div>
+                            </div>
+                            <button 
+                            type="submit"
+                            disabled={isSubmitting || isUploading || (!newPostContent.trim() && !mediaUrl)}
+                            className="w-full md:w-auto btn-primary py-4 md:py-3 px-8 text-xs flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50"
+                            >
+                            <Send size={16} /> {isSubmitting ? tc('checking') : tc('postButton')}
+                            </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
+
+                {/* Coin Confirmation Modal */}
+                {coinPostConfirm && (
+                  <div className="fixed inset-0 z-[10000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl border border-primary/20 text-center space-y-5">
+                      <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto">
+                        <span className="text-3xl">🪙</span>
+                      </div>
+                      <div>
+                        <h4 className="font-black text-accent text-lg italic">
+                          {locale === 'am' ? `${COIN_PER_POST} ኮይን ይጠቀሙ?` : `Use ${COIN_PER_POST} Coins?`}
+                        </h4>
+                        <p className="text-xs text-gray-500 font-medium mt-2">
+                          {locale === 'am' 
+                            ? `ይህ ፖስት ለማደርግ ${COIN_PER_POST} ቤተሰብ ኮይን ይቀነሳሉ። ቀሪ ኮይን: ${(profile?.coins || 0) - COIN_PER_POST}`
+                            : `This post will deduct ${COIN_PER_POST} Beteseb Coins. Remaining: ${(profile?.coins || 0) - COIN_PER_POST}`}
+                        </p>
+                      </div>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => setCoinPostConfirm(false)}
+                          className="flex-1 py-3 rounded-2xl border-2 border-border text-accent font-black text-xs uppercase tracking-wider hover:bg-muted transition-all"
+                        >
+                          {locale === 'am' ? 'ሰርዝ' : 'Cancel'}
+                        </button>
+                        <button
+                          onClick={(e) => { setCoinPostConfirm(false); handlePostSubmit(e as any); }}
+                          className="flex-1 py-3 rounded-2xl bg-primary text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
+                        >
+                          {locale === 'am' ? 'አረጋግጥ' : 'Confirm'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Social Feed List */}
+                {feedLoading ? (
+                  <div className="p-12 text-center text-foreground/40 font-black uppercase tracking-widest text-xs animate-pulse">
+                    {tc('loadingFeed')}
+                  </div>
+                ) : posts.length === 0 ? (
+                  <div className="p-12 text-center text-foreground/40 font-bold uppercase tracking-widest text-xs">
+                    No community posts yet.
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {posts.map((post) => {
+                      const matchCompatibilityMap = new Map(matches.map(m => [m.id, m.match_percent]));
+                      const compatibilityScore = matchCompatibilityMap.get(post.author_id);
+                      return (
+                        <PostCard 
+                          key={post.id}
+                          post={post}
+                          currentUserId={profile?.id}
+                          compatibility={compatibilityScore}
+                          isVerified={profile?.verification_status === 'verified'}
+                          isPremium={profile?.is_premium}
+                          isAdmin={['admin', 'super_admin'].includes(profile?.role || '')}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
             </div>
+
 
             <aside className="space-y-8">
               {/* Profile Completion & Trust Tier Dashboard Widget (Phase 4.5) */}
@@ -887,9 +1267,47 @@ function DashboardContent() {
                   </button>
                 )}
               </div>
+
+              {/* Family Poll Widget (Social Vibe) */}
+              <div className="bg-white p-8 rounded-[3rem] border border-border text-left relative overflow-hidden group">
+                 <div className="absolute top-0 left-0 w-2 h-full bg-secondary group-hover:w-4 transition-all" />
+                 <div className="flex items-center gap-3 mb-6">
+                    <BarChart2 className="text-secondary" />
+                    <h4 className="text-lg font-black text-accent italic">Family Poll</h4>
+                 </div>
+                 <p className="font-bold text-accent mb-6 leading-relaxed">"What is the most important trait for a long-distance relationship?"</p>
+                 <div className="space-y-3">
+                    {[
+                       { label: "Daily Video Chat", percent: 45 },
+                       { label: "Trust & Transparency", percent: 82 },
+                       { label: "Future Plan", percent: 34 }
+                    ].map((opt, i) => (
+                       <button key={i} type="button" className="w-full p-4 rounded-2xl border border-gray-100 hover:border-secondary transition-all text-left relative overflow-hidden group/opt">
+                          <div className="relative z-10 flex justify-between items-center font-bold text-sm">
+                             <span>{opt.label}</span>
+                             <span className="text-secondary">{opt.percent}%</span>
+                          </div>
+                          <div 
+                            ref={el => { dashboardPollRef.current[i] = el; }}
+                            className="absolute inset-y-0 left-0 bg-secondary/5 transition-all group-hover/opt:bg-secondary/10" 
+                          />
+                       </button>
+                    ))}
+                 </div>
+              </div>
+
+              {/* AI Topic of the Day */}
+              <div className="bg-white p-8 rounded-[3rem] shadow-2xl border border-border text-left">
+                 <div className="flex items-center gap-2 text-secondary mb-2">
+                    <Sparkles size={18} />
+                    <span className="font-black text-xs uppercase tracking-widest">AI Topic of Day</span>
+                 </div>
+                 <p className="text-sm font-bold text-accent italic">"How can traditional Abushakir logic solve modern dating burnout?"</p>
+              </div>
             </aside>
             </div>
           </div>
+
         )}
 
         {/* Tab Components */}
