@@ -121,6 +121,67 @@ function DashboardContent() {
   const [coinPostConfirm, setCoinPostConfirm] = useState(false);
   const COIN_PER_POST = 20;
 
+  const getCandidatesLabel = (count: number, currentLocale: string) => {
+    switch (currentLocale) {
+      case 'am': return `${count} ዕጩዎች`;
+      case 'om': return `${count} dorgomaa`;
+      case 'ar': return `${count} مرشحين`;
+      case 'ti': return `${count} ሕፁያት`;
+      case 'so': return `${count} musharaxiin`;
+      case 'en':
+      default: return `${count} candidates`;
+    }
+  };
+
+  const getPremiumSub = (currentLocale: string) => {
+    switch (currentLocale) {
+      case 'am': return 'ያልተገደበ ግጥሚያዎችን፣ ሙሉ የፕሮፋይል ዝርዝሮችን እና ቅድሚያ የሚሰጠውን ድጋፍ ያግኙ።';
+      case 'om': return 'Garmalee wal-gitiinsaa daangaa malee, odeeffannoo guutuu piroofaayilaa fi deeggarsa dursa argadhu.';
+      case 'ar': return 'احصل على تطابقات غير محدودة، وتفاصيل الملف الشخصي الكاملة، ودعم ذو أولوية.';
+      case 'ti': return 'ዘይተደረተ ግጥምማት፣ ምሉእ ዝርዝር ፕሮፋይልን ቀዳምነት ዝወሃቦ ደገፍን ረኸቡ።';
+      case 'so': return 'Hel ku-habboonaan aan xadidnayn, faahfaahinta profile-ka oo buuxda, iyo taageero mudnaan leh.';
+      case 'en':
+      default: return 'Unlock unlimited matches, full profile details, and priority support.';
+    }
+  };
+
+  const getFriendRequestText = (senderName: string, currentLocale: string) => {
+    switch (currentLocale) {
+      case 'am': return senderName ? `${senderName} የጓደኝነት ጥያቄ ልኮልዎታል።` : 'የጓደኝነት ጥያቄ ልኮልዎታል።';
+      case 'om': return senderName ? `${senderName} gaaffii michummaa isinii ergeera.` : 'gaaffii michummaa isinii ergeera.';
+      case 'ar': return senderName ? `أرسل لك ${senderName} طلب صداقة.` : 'أرسل لك طلب صداقة.';
+      case 'ti': return senderName ? `${senderName} ናይ ዕርክነት ሕቶ ልኢኹልካ ኣሎ።` : 'ናይ ዕርክነት ሕቶ ልኢኹልካ ኣሎ።';
+      case 'so': return senderName ? `${senderName} wuxuu kuu soo diray codsi saaxiibtinimo.` : 'wuxuu kuu soo diray codsi saaxiibtinimo.';
+      case 'en':
+      default: return senderName ? `${senderName} sent you a friend request.` : 'sent you a friend request.';
+    }
+  };
+
+  const getAcceptLabel = (currentLocale: string) => {
+    switch (currentLocale) {
+      case 'am': return 'ተቀበል';
+      case 'om': return 'Fudhadhu';
+      case 'ar': return 'قبول';
+      case 'ti': return 'ተቐበል';
+      case 'so': return 'Oggolow';
+      case 'en':
+      default: return 'Accept';
+    }
+  };
+
+  const getDeclineLabel = (currentLocale: string) => {
+    switch (currentLocale) {
+      case 'am': return 'አትቀበል';
+      case 'om': return 'Didu';
+      case 'ar': return 'رفض';
+      case 'ti': return 'ኣይትቀበል';
+      case 'so': return 'Diid';
+      case 'en':
+      default: return 'Decline';
+    }
+  };
+
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const dashboardPollRef = useRef<(HTMLDivElement | null)[]>([]);
@@ -152,12 +213,12 @@ function DashboardContent() {
 
   const getTierIcon = (tier: string) => {
     switch (tier) {
-      case 'diamond': return 'ðŸ’Ž';
-      case 'platinum': return 'ðŸŒŸ';
-      case 'gold': return 'ðŸ¥‡';
-      case 'silver': return 'ðŸ¥ˆ';
+      case 'diamond': return '💎';
+      case 'platinum': return '🌟';
+      case 'gold': return '🥇';
+      case 'silver': return '🥈';
       case 'bronze':
-      default: return 'ðŸ¥‰';
+      default: return '🥉';
     }
   };
 
@@ -207,7 +268,7 @@ function DashboardContent() {
       <div className="relative flex items-center justify-center shrink-0">
         {isRoyal && (
           <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 text-[10px] animate-bounce z-10">
-            ðŸ‘‘
+            👑
           </div>
         )}
         <div className={`${sizeClass} rounded-full overflow-hidden flex items-center justify-center bg-muted transition-all border-2 ${
@@ -760,7 +821,13 @@ function DashboardContent() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             userId: candidateId,
-            title: locale === 'am' ? 'áŠ á‹²áˆµ áˆ‹á‹­áŠ­' : 'New Profile Like',
+            title: 
+              locale === 'am' ? 'አዲስ ላይክ' :
+              locale === 'om' ? 'Jaalala Piroofaayilaa Haaraya' :
+              locale === 'ar' ? 'إعجاب جديد بالملف الشخصي' :
+              locale === 'ti' ? 'ሓዱሽ ላይክ' :
+              locale === 'so' ? 'Like Profile Cusub' :
+              'New Profile Like',
             body: locale === 'am'
               ? `${profile.full_name} áˆ‹á‹­áŠ­ áŠ á‹µáˆ­áŒŽá‹Žá‰³áˆ!`
               : `${profile.full_name} liked your profile!`
