@@ -111,8 +111,9 @@ export default function CallInterface({
       if (!isIncoming) {
          const userTier = getUserTier(currentUserProfile, hasVouched);
          const limits = getTierLimits(userTier);
-         if (limits.maxAudioCallMinutes !== Infinity) {
-           const allowed = (limits.maxAudioCallMinutes * 60) + ((callerLimits?.ad_extensions || 0) * 60);
+         const maxMinutes = isVideo ? limits.maxVideoCallMinutes : limits.maxAudioCallMinutes;
+         if (maxMinutes !== Infinity) {
+           const allowed = (maxMinutes * 60) + ((callerLimits?.ad_extensions || 0) * 60);
            if ((callerLimits?.calls_duration_seconds || 0) >= allowed) {
               alert(
                 navigator.language.startsWith('am')
@@ -390,9 +391,10 @@ export default function CallInterface({
           const userTier = getUserTier(currentUserProfile, hasVouched);
           const limits = getTierLimits(userTier);
 
-          if (limits.maxAudioCallMinutes !== Infinity) {
+          const maxMinutes = isVideo ? limits.maxVideoCallMinutes : limits.maxAudioCallMinutes;
+          if (maxMinutes !== Infinity) {
             const todayUsed = (callerLimits?.calls_duration_seconds || 0) + nextDuration;
-            const allowed = (limits.maxAudioCallMinutes * 60) + ((callerLimits?.ad_extensions || 0) * 60);
+            const allowed = (maxMinutes * 60) + ((callerLimits?.ad_extensions || 0) * 60);
 
             if (todayUsed >= allowed) {
               alert(

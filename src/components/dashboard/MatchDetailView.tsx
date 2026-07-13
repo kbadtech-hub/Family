@@ -54,6 +54,8 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
   };
   const badge = getTierBadge(candTier);
   const [friendshipStatus, setFriendshipStatus] = useState<string | null>(null);
+  const [friendshipSenderId, setFriendshipSenderId] = useState<string | null>(null);
+  const [friendshipId, setFriendshipId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState<'abuse' | 'explicit content' | 'scam' | 'other'>('abuse');
@@ -85,10 +87,16 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
           .from('friendships')
           .select('*')
           .or(`and(sender_id.eq.${user.id},receiver_id.eq.${matchId}),and(sender_id.eq.${matchId},receiver_id.eq.${user.id})`)
-          .single();
+          .maybeSingle();
         
         if (friendship) {
           setFriendshipStatus(friendship.status);
+          setFriendshipSenderId(friendship.sender_id);
+          setFriendshipId(friendship.id);
+        } else {
+          setFriendshipStatus(null);
+          setFriendshipSenderId(null);
+          setFriendshipId(null);
         }
 
         const { data: myGuardians } = await supabase
@@ -146,6 +154,51 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
 
       if (error) throw error;
       setFriendshipStatus('pending');
+      setFriendshipSenderId(user.id);
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleAcceptFriend = async () => {
+    setIsProcessing(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('friendships')
+        .update({ status: 'accepted' })
+        .eq('sender_id', matchId)
+        .eq('receiver_id', user.id);
+
+      if (error) throw error;
+      setFriendshipStatus('accepted');
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleDeclineFriend = async () => {
+    setIsProcessing(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('friendships')
+        .delete()
+        .eq('sender_id', matchId)
+        .eq('receiver_id', user.id);
+
+      if (error) throw error;
+      setFriendshipStatus(null);
+      setFriendshipSenderId(null);
+      setFriendshipId(null);
     } catch (error: any) {
       alert(error.message);
     } finally {
@@ -415,8 +468,8 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                 </div>
               </div>
             )}
-
-           <div className="space-y-4">
+            
+            <div className="space-y-4">
               <h3 className="text-sm font-black text-accent uppercase tracking-widest border-b border-muted pb-2">
                  {locale === 'am' ? 'የግንኙነት መረጃ (Contact Info)' : 'Contact Info'}
               </h3>
@@ -430,30 +483,50 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                       : "Direct phone numbers and emails are permanently hidden for privacy. Please use the secure built-in chat, audio call, or video call features."}
                  </p>
               </div>
-           </div>
+            </div>
 
             <div className="pt-10 space-y-4">
-               {/* Friendship Button */}
-               {friendshipStatus === 'accepted' ? (
-                 <div className="w-full bg-green-500/10 text-green-500 py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-4">
-                    <UserCheck size={24} />
-                    {t('friends')}
-                 </div>
-               ) : friendshipStatus === 'pending' ? (
-                 <div className="w-full bg-muted text-gray-400 py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-4">
-                     <Clock size={24} />
-                    {t('requestSent')}
-                 </div>
-               ) : (
-                 <button 
-                  onClick={handleAddFriend}
-                  disabled={isProcessing}
-                  className="w-full bg-accent text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-2xl shadow-accent/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4"
-                 >
-                    {isProcessing ? <Loader2 size={24} className="animate-spin" /> : <UserPlus size={24} />}
-                    {t('addFriend')}
-                 </button>
-               )}
+                {friendshipStatus === 'accepted' ? (
+                  <div className="w-full bg-green-500/10 text-green-500 py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-4">
+                     <UserCheck size={24} />
+                     {t('friends')}
+                  </div>
+                ) : friendshipStatus === 'pending' ? (
+                  friendshipSenderId === matchId ? (
+                    <div className="flex flex-col sm:flex-row gap-4 w-full animate-in fade-in duration-350">
+                      <button
+                        onClick={handleAcceptFriend}
+                        disabled={isProcessing}
+                        className="flex-1 bg-primary text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.1em] shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                      >
+                        {isProcessing ? <Loader2 size={24} className="animate-spin" /> : <UserCheck size={20} />}
+                        {t('accept')}
+                      </button>
+                      <button
+                        onClick={handleDeclineFriend}
+                        disabled={isProcessing}
+                        className="flex-1 bg-red-500/10 text-red-500 py-6 rounded-[2rem] font-black uppercase tracking-[0.1em] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                      >
+                        {isProcessing ? <Loader2 size={24} className="animate-spin" /> : <X size={20} />}
+                        {t('decline')}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-full bg-muted text-gray-400 py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-4">
+                       <Clock size={24} />
+                       {t('requestSent')}
+                    </div>
+                  )
+                ) : (
+                  <button 
+                   onClick={handleAddFriend}
+                   disabled={isProcessing}
+                   className="w-full bg-accent text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-2xl shadow-accent/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4"
+                  >
+                     {isProcessing ? <Loader2 size={24} className="animate-spin" /> : <UserPlus size={24} />}
+                     {t('addFriend')}
+                  </button>
+                )}
 
                 {isPremium || friendshipStatus === 'accepted' ? (
                   <button 

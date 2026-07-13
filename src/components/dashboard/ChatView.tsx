@@ -1009,10 +1009,10 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                  </button>
                  <button 
                    onClick={() => {
-                     if (!isPremium) {
+                     if (limits.maxVideoCallMinutes === 0) {
                        alert(locale === 'am' 
-                         ? "የቪዲዮ ጥሪዎችን ለመጠቀም እባክዎ ፕሪሚየም አባል ይሁኑ!" 
-                         : "Video calling is a premium feature. Please upgrade to Premium!");
+                         ? "ያልተረጋገጠ (Bronze Tier) አባላት የቪዲዮ ጥሪ ማድረግ አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!" 
+                         : "Unverified (Bronze Tier) members are blocked from making video calls. Please complete verification first!");
                        return;
                      }
                      setPendingCallVideo(true);

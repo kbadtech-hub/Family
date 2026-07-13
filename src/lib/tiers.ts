@@ -110,6 +110,7 @@ export function getUserTier(profile: ProfileData | null, hasVouchedRecords: bool
 export interface TierLimits {
   maxTexts: number;
   maxAudioCallMinutes: number;
+  maxVideoCallMinutes: number;
 }
 
 /**
@@ -118,15 +119,15 @@ export interface TierLimits {
 export function getTierLimits(tier: TrustTier): TierLimits {
   switch (tier) {
     case 'diamond':
-      return { maxTexts: Infinity, maxAudioCallMinutes: Infinity };
+      return { maxTexts: Infinity, maxAudioCallMinutes: Infinity, maxVideoCallMinutes: Infinity };
     case 'platinum':
-      return { maxTexts: 7, maxAudioCallMinutes: 3 };
+      return { maxTexts: 7, maxAudioCallMinutes: 3, maxVideoCallMinutes: 3 };
     case 'gold':
-      return { maxTexts: 5, maxAudioCallMinutes: 2 };
+      return { maxTexts: 5, maxAudioCallMinutes: 2, maxVideoCallMinutes: 2 };
     case 'silver':
-      return { maxTexts: 3, maxAudioCallMinutes: 1 };
+      return { maxTexts: 3, maxAudioCallMinutes: 1, maxVideoCallMinutes: 1 };
     case 'bronze':
     default:
-      return { maxTexts: 0, maxAudioCallMinutes: 0 };
+      return { maxTexts: 0, maxAudioCallMinutes: 0, maxVideoCallMinutes: 0 };
   }
 }
