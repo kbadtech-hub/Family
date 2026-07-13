@@ -152,6 +152,14 @@ export default function GiftModal({ recipientId, recipientName, locale, onClose,
       case 'cultural_outfit': return '👗';
       case 'silver_bracelet': return '💍';
       case 'date_voucher': return '🎟️';
+      case 'luxury_cake': return '🍰';
+      case 'movie_ticket': return '🎬';
+      case 'dinner_coupon': return '🍽️';
+      case 'love_postcard': return '💌';
+      case 'chocolate_box': return '🍫';
+      case 'coffee_rekebot': return '☕';
+      case 'gold_ring': return '💍';
+      case 'poetry_book': return '📖';
       default: return '🎁';
     }
   };

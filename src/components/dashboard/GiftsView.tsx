@@ -252,6 +252,21 @@ export default function GiftsView({ locale }: { locale: string }) {
       case 'habesha_flower': return '🌹';
       case 'shamma_candle': return '🕯️';
       case 'jebena_pot': return '🏺';
+      case 'love_doves': return '🕊️';
+      case 'luxury_puppy': return '🐶';
+      case 'luxury_kitten': return '🐱';
+      case 'boxed_flowers': return '💐';
+      case 'cultural_outfit': return '👗';
+      case 'silver_bracelet': return '💍';
+      case 'date_voucher': return '🎟️';
+      case 'luxury_cake': return '🍰';
+      case 'movie_ticket': return '🎬';
+      case 'dinner_coupon': return '🍽️';
+      case 'love_postcard': return '💌';
+      case 'chocolate_box': return '🍫';
+      case 'coffee_rekebot': return '☕';
+      case 'gold_ring': return '💍';
+      case 'poetry_book': return '📖';
       default: return '🎁';
     }
   };
