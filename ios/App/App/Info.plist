@@ -53,5 +53,7 @@
 	<string>Beteseb requires microphone access to enable secure voice calling.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Beteseb requires location access to find matched candidates near you.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Beteseb requires photo library access to allow you to upload profile gallery photos.</string>
 </dict>
 </plist>
