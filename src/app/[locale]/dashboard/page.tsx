@@ -81,6 +81,7 @@ function DashboardContent() {
   const [showPayment, setShowPayment] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [verificationStatus, setVerificationStatus] = useState<string>('loading');
+  const [warningMessage, setWarningMessage] = useState<string | null>(null);
   // Trial model removed (Blueprint v4.0) — using freemium tier-based limits
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
@@ -218,6 +219,9 @@ function DashboardContent() {
         if (!profileData.onboarding_completed) {
           router.push('/onboarding');
           return;
+        }
+        if (profileData.warning_message) {
+          setWarningMessage(profileData.warning_message);
         }
         // Fetch coin balance from user_wallets (Blueprint v4.0)
         const { data: walletData } = await supabase.from('user_wallets').select('coin_balance').eq('id', user.id).single();
@@ -959,6 +963,36 @@ function DashboardContent() {
               setActiveTab('chat');
             }}
           />
+        )}
+        {warningMessage && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
+             <div className="bg-white max-w-md w-full p-8 rounded-[2.5rem] border border-red-500/20 text-center space-y-6 animate-in zoom-in-95 duration-300 shadow-2xl">
+                <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto text-red-500">
+                   <AlertCircle size={32} />
+                </div>
+                <div className="space-y-2">
+                   <h3 className="font-black text-accent text-lg uppercase tracking-tight italic">
+                     {locale === 'am' ? 'አስቸኳይ የአስተዳዳሪ ማሳሰቢያ' : 'Urgent System Alert'}
+                   </h3>
+                   <p className="text-xs text-gray-500 leading-relaxed italic">
+                      {warningMessage}
+                   </p>
+                </div>
+                <button 
+                  onClick={async () => {
+                     // Dismiss warning in DB
+                     const { data: { user } } = await supabase.auth.getUser();
+                     if (user) {
+                        await supabase.from('profiles').update({ warning_message: null }).eq('id', user.id);
+                     }
+                     setWarningMessage(null);
+                  }}
+                  className="btn-primary w-full py-4.5 rounded-xl font-black uppercase tracking-widest text-[10px]"
+                >
+                  {locale === 'am' ? 'ተረድቻለሁ (Acknowledge)' : 'I Acknowledge'}
+                </button>
+             </div>
+          </div>
         )}
       </main>
     </div>

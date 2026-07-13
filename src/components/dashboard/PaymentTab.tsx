@@ -77,8 +77,73 @@ export default function PaymentTab() {
   }, []);
 
   const currency = userLocation === 'Ethiopia' ? 'ETB' : 'USD';
-  const plans = SUBSCRIPTION_PLANS[currency];
-  const banks = BANK_DETAILS[currency];
+  const [plans, setPlans] = useState<any[]>([]);
+  const [banks, setBanks] = useState<any[]>([]);
+  const [activeGateways, setActiveGateways] = useState<any>({
+    stripe: true,
+    chapa: true,
+    telebirr: true,
+    paypal: true,
+    bank_transfer: true
+  });
+  const [loadingConfig, setLoadingConfig] = useState(true);
+
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const { data } = await supabase.from('settings').select('*').limit(1).single();
+        if (data) {
+          const rawPricing = currency === 'ETB' ? data.pricing_etb : data.pricing_usd;
+          if (rawPricing) {
+            const dynamicPlans = [
+              { id: '1m', name: '1 Month', price: rawPricing['1m'] || (currency === 'ETB' ? 500 : 15), period: 'monthly' },
+              { id: '3m', name: '3 Months', price: rawPricing['3m'] || (currency === 'ETB' ? 1200 : 39), period: 'quarterly' },
+              { id: '6m', name: '6 Months', price: rawPricing['6m'] || (currency === 'ETB' ? 2200 : 69), period: 'semi-annually' },
+              { id: '1y', name: '1 Year', price: rawPricing['12m'] || (currency === 'ETB' ? 3500 : 120), period: 'yearly' },
+              { id: 'lifetime', name: 'Lifetime', price: rawPricing['lifetime'] || (currency === 'ETB' ? 9999 : 299), period: 'lifetime' }
+            ];
+            setPlans(dynamicPlans);
+          } else {
+            setPlans(SUBSCRIPTION_PLANS[currency]);
+          }
+
+          const rawBanks = data.bank_details;
+          if (rawBanks) {
+            const dynamicBanks = currency === 'ETB' ? (rawBanks.etb || []) : (rawBanks.usd || []);
+            if (dynamicBanks.length > 0) {
+              setBanks(dynamicBanks);
+            } else {
+              setBanks(BANK_DETAILS[currency]);
+            }
+          } else {
+            setBanks(BANK_DETAILS[currency]);
+          }
+
+          if (data.payment_gateways) {
+            setActiveGateways(data.payment_gateways);
+            // Auto select method based on gateway availability
+            const isOnlineAvailable = currency === 'ETB' ? data.payment_gateways.chapa : data.payment_gateways.stripe;
+            if (!isOnlineAvailable && data.payment_gateways.bank_transfer) {
+              setPaymentMethod('bank');
+            } else if (isOnlineAvailable && !data.payment_gateways.bank_transfer) {
+              setPaymentMethod('online');
+            }
+          }
+        } else {
+          setPlans(SUBSCRIPTION_PLANS[currency]);
+          setBanks(BANK_DETAILS[currency]);
+        }
+      } catch (err) {
+        setPlans(SUBSCRIPTION_PLANS[currency]);
+        setBanks(BANK_DETAILS[currency]);
+      } finally {
+        setLoadingConfig(false);
+      }
+    };
+    if (userLocation) {
+      loadConfig();
+    }
+  }, [userLocation, currency]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -293,45 +358,64 @@ export default function PaymentTab() {
           </div>
         ) : (
           <div className="space-y-8 animate-in slide-in-from-bottom-8 duration-500">
-             {/* Payment Method Switcher */}
-             <div className="flex bg-[#F1F5F9] p-1.5 rounded-2xl w-fit border border-gray-150 shadow-sm mx-auto">
-                <button 
-                  onClick={() => setPaymentMethod('online')} 
-                  className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${paymentMethod === 'online' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-accent'}`}
-                >
-                  {locale === 'am' ? 'በኦንላይን ይክፈሉ (Online Checkout)' : 'Pay Online Instantly'}
-                </button>
-                <button 
-                  onClick={() => setPaymentMethod('bank')} 
-                  className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${paymentMethod === 'bank' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-accent'}`}
-                >
-                  {locale === 'am' ? 'በባንክ ማስተላለፍ (Bank / Manual)' : 'Bank Transfer / Manual'}
-                </button>
-             </div>
-
-             {paymentMethod === 'online' ? (
-                <div className="max-w-md mx-auto bg-white p-10 rounded-[3rem] border border-primary/10 shadow-2xl text-center space-y-8">
-                   <div className="w-20 h-20 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mx-auto text-primary">
-                      <CreditCard size={36} />
-                   </div>
-                   <div className="space-y-3">
-                      <h3 className="font-black text-accent uppercase tracking-tight text-lg italic">Instant Online Gateway</h3>
-                      <p className="text-xs text-gray-500 italic max-w-xs mx-auto leading-relaxed">
-                         {locale === 'am'
-                           ? `የመረጡትን የፕሪሚየም ዕቅድ በ${currency === 'ETB' ? 'ቻፓ/ቴሌብር (Chapa)' : 'ስትራይፕ (Stripe)'} በኩል ክፍያውን በቅጽበት ይፈጽሙ። መለያዎ ወዲያውኑ ይነቃል።`
-                           : `Pay securely online via ${currency === 'ETB' ? 'Chapa (Mobile Banking & Telebirr)' : 'Stripe (Cards)'}. Your account is activated instantly.`}
-                      </p>
-                   </div>
-                   <button 
-                     disabled={isSubmitting}
-                     onClick={handleOnlineCheckout}
-                     className="btn-primary w-full py-4.5 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2"
-                   >
-                     {isSubmitting ? <Loader2 className="animate-spin text-white" /> : <ArrowRight size={16} />} 
-                     {locale === 'am' ? 'በቀጥታ አሁኑኑ ይክፈሉ' : 'Pay Safely Online'}
-                   </button>
+             {loadingConfig ? (
+                <div className="p-12 text-center text-foreground/40 italic flex items-center justify-center gap-2">
+                   <Loader2 className="animate-spin" size={20} /> Loading payment options...
                 </div>
              ) : (
+               <>
+                 {/* Payment Method Switcher */}
+                 {((currency === 'ETB' && activeGateways.chapa) || (currency === 'USD' && activeGateways.stripe)) && activeGateways.bank_transfer && (
+                    <div className="flex bg-[#F1F5F9] p-1.5 rounded-2xl w-fit border border-gray-150 shadow-sm mx-auto">
+                       <button 
+                         onClick={() => setPaymentMethod('online')} 
+                         className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${paymentMethod === 'online' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-accent'}`}
+                       >
+                         {locale === 'am' ? 'በኦንላይን ይክፈሉ (Online Checkout)' : 'Pay Online Instantly'}
+                       </button>
+                       <button 
+                         onClick={() => setPaymentMethod('bank')} 
+                         className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${paymentMethod === 'bank' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-accent'}`}
+                       >
+                         {locale === 'am' ? 'በባንክ ማስተላለፍ (Bank / Manual)' : 'Bank Transfer / Manual'}
+                       </button>
+                    </div>
+                 )}
+
+                 {/* No Active Gateways Alert */}
+                 {!((currency === 'ETB' && activeGateways.chapa) || (currency === 'USD' && activeGateways.stripe)) && !activeGateways.bank_transfer && (
+                    <div className="max-w-md mx-auto bg-red-500/5 p-8 rounded-3xl border border-red-500/20 text-center space-y-4">
+                       <p className="text-sm font-bold text-red-600">
+                         {locale === 'am' ? 'ጊዜያዊ ማሳሰቢያ፦ የክፍያ መንገዶች በአስተዳዳሪው ለጊዜው ተዘግተዋል። እባክዎ ድጋፍ ሰጪዎችን ያነጋግሩ።' : 'Notice: Subscriptions are temporarily paused by the administrator. Please contact support.'}
+                       </p>
+                    </div>
+                 )}
+
+                 {paymentMethod === 'online' && ((currency === 'ETB' && activeGateways.chapa) || (currency === 'USD' && activeGateways.stripe)) && (
+                    <div className="max-w-md mx-auto bg-white p-10 rounded-[3rem] border border-primary/10 shadow-2xl text-center space-y-8">
+                       <div className="w-20 h-20 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mx-auto text-primary">
+                          <CreditCard size={36} />
+                       </div>
+                       <div className="space-y-3">
+                          <h3 className="font-black text-accent uppercase tracking-tight text-lg italic">Instant Online Gateway</h3>
+                          <p className="text-xs text-gray-500 italic max-w-xs mx-auto leading-relaxed">
+                             {locale === 'am'
+                               ? `የመረጡትን የፕሪሚየም ዕቅድ በ${currency === 'ETB' ? 'ቻፓ/ቴሌብር (Chapa)' : 'ስትራይፕ (Stripe)'} በኩል ክፍያውን በቅጽበት ይፈጽሙ። መለያዎ ወዲያውኑ ይነቃል።`
+                               : `Pay securely online via ${currency === 'ETB' ? 'Chapa (Mobile Banking & Telebirr)' : 'Stripe (Cards)'}. Your account is activated instantly.`}
+                          </p>
+                       </div>
+                       <button 
+                         disabled={isSubmitting}
+                         onClick={handleOnlineCheckout}
+                         className="btn-primary w-full py-4.5 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2"
+                       >
+                         {isSubmitting ? <Loader2 className="animate-spin text-white" /> : <ArrowRight size={16} />} 
+                         {locale === 'am' ? 'በቀጥታ አሁኑኑ ይክፈሉ' : 'Pay Safely Online'}
+                       </button>
+                    </div>
+                 )}
+
+                 {paymentMethod === 'bank' && activeGateways.bank_transfer && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in duration-500">
                    {/* Step 1: Bank Details */}
                    <div className="bg-white p-8 rounded-[2.5rem] border border-primary/10 shadow-xl space-y-6">
@@ -394,8 +478,10 @@ export default function PaymentTab() {
                       </button>
                    </div>
                 </div>
+              )}
+              </>
              )}
-          </div>
+           </div>
         )
       )}
     </div>

@@ -285,7 +285,21 @@ export default function AdminPortal() {
     pricing_usd: PricingPlan;
     pricing_etb: PricingPlan;
     website_url: string;
-    [key: string]: string | BankDetail[] | PricingPlan | undefined;
+    payment_gateways: {
+      stripe: boolean;
+      chapa: boolean;
+      telebirr: boolean;
+      paypal: boolean;
+      bank_transfer: boolean;
+    };
+    coin_packages: any[];
+    ad_config: {
+      enabled: boolean;
+      test_mode: boolean;
+      unit_android: string;
+      unit_ios: string;
+    };
+    [key: string]: string | BankDetail[] | PricingPlan | Record<string, boolean> | any[] | { enabled: boolean; test_mode: boolean; unit_android: string; unit_ios: string; } | undefined;
   }
 
   // CMS State
@@ -305,19 +319,27 @@ export default function AdminPortal() {
     instagram: '',
     linkedin: '',
     twitter: '',
-    banks_etb: [
-      { bank_name: '', account_number: '', account_holder: '' },
-      { bank_name: '', account_number: '', account_holder: '' }
-    ],
-    banks_usd: [
-      { bank_name: '', account_number: '', account_holder: '' },
-      { bank_name: '', account_number: '', account_holder: '' }
-    ],
+    banks_etb: [],
+    banks_usd: [],
     pricing_usd: {
       "1m": 0, "3m": 0, "6m": 0, "12m": 0, "class": 0, "lifetime": 0, "discount": 0 },
     pricing_etb: {
       "1m": 0, "3m": 0, "6m": 0, "12m": 0, "class": 0, "lifetime": 0, "discount": 0 },
-    website_url: ''
+    website_url: '',
+    payment_gateways: {
+      stripe: true,
+      chapa: true,
+      telebirr: true,
+      paypal: true,
+      bank_transfer: true
+    },
+    coin_packages: [],
+    ad_config: {
+      enabled: true,
+      test_mode: true,
+      unit_android: 'ca-app-pub-3940256099942544/5224354917',
+      unit_ios: 'ca-app-pub-3940256099942544/1712485313'
+    }
   });
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
@@ -371,16 +393,29 @@ export default function AdminPortal() {
             instagram: data.social_links?.instagram || '',
             linkedin: data.social_links?.linkedin || '',
             twitter: data.social_links?.twitter || '',
-            banks_etb: data.bank_details?.etb || [
-              { bank_name: '', account_number: '', account_holder: '' },
-              { bank_name: '', account_number: '', account_holder: '' }
-            ],
-            banks_usd: data.bank_details?.usd || [
-              { bank_name: '', account_number: '', account_holder: '' },
-              { bank_name: '', account_number: '', account_holder: '' }
-            ],
+            banks_etb: data.bank_details?.etb || [],
+            banks_usd: data.bank_details?.usd || [],
             pricing_usd: data.pricing_usd || { "1m": 50, "3m": 120, "6m": 200, "12m": 350, "class": 25, "lifetime": 999, "discount": 0 },
-            pricing_etb: data.pricing_etb || { "1m": 500, "3m": 1200, "6m": 2000, "12m": 3500, "class": 250, "lifetime": 9999, "discount": 0 }
+            pricing_etb: data.pricing_etb || { "1m": 500, "3m": 1200, "6m": 2000, "12m": 3500, "class": 250, "lifetime": 9999, "discount": 0 },
+            payment_gateways: data.payment_gateways || {
+              stripe: true,
+              chapa: true,
+              telebirr: true,
+              paypal: true,
+              bank_transfer: true
+            },
+            coin_packages: data.coin_packages || [
+              { id: 'coins_50', coins: 50, priceEtb: 50, priceUsd: 1.0 },
+              { id: 'coins_100', coins: 100, priceEtb: 100, priceUsd: 2.0 },
+              { id: 'coins_500', coins: 500, priceEtb: 450, priceUsd: 8.0, discount: '10% OFF' },
+              { id: 'coins_1000', coins: 1000, priceEtb: 800, priceUsd: 15.0, discount: '20% OFF' }
+            ],
+            ad_config: data.ad_config || {
+              enabled: true,
+              test_mode: true,
+              unit_android: 'ca-app-pub-3940256099942544/5224354917',
+              unit_ios: 'ca-app-pub-3940256099942544/1712485313'
+            }
           });
         }
       } else if (activeTab === 'pricing') {
@@ -390,7 +425,26 @@ export default function AdminPortal() {
           setCmsForm(prev => ({
             ...prev,
             pricing_usd: data.pricing_usd || { "1m": 50, "3m": 120, "6m": 200, "12m": 350, "class": 25, "lifetime": 999, "discount": 0 },
-            pricing_etb: data.pricing_etb || { "1m": 500, "3m": 1200, "6m": 2000, "12m": 3500, "class": 250, "lifetime": 9999, "discount": 0 }
+            pricing_etb: data.pricing_etb || { "1m": 500, "3m": 1200, "6m": 2000, "12m": 3500, "class": 250, "lifetime": 9999, "discount": 0 },
+            payment_gateways: data.payment_gateways || {
+              stripe: true,
+              chapa: true,
+              telebirr: true,
+              paypal: true,
+              bank_transfer: true
+            },
+            coin_packages: data.coin_packages || [
+              { id: 'coins_50', coins: 50, priceEtb: 50, priceUsd: 1.0 },
+              { id: 'coins_100', coins: 100, priceEtb: 100, priceUsd: 2.0 },
+              { id: 'coins_500', coins: 500, priceEtb: 450, priceUsd: 8.0, discount: '10% OFF' },
+              { id: 'coins_1000', coins: 1000, priceEtb: 800, priceUsd: 15.0, discount: '20% OFF' }
+            ],
+            ad_config: data.ad_config || {
+              enabled: true,
+              test_mode: true,
+              unit_android: 'ca-app-pub-3940256099942544/5224354917',
+              unit_ios: 'ca-app-pub-3940256099942544/1712485313'
+            }
           }));
         }
       } else if (activeTab === 'verification') {
@@ -531,7 +585,10 @@ export default function AdminPortal() {
           usd: cmsForm.banks_usd
         },
         pricing_usd: cmsForm.pricing_usd,
-        pricing_etb: cmsForm.pricing_etb
+        pricing_etb: cmsForm.pricing_etb,
+        payment_gateways: cmsForm.payment_gateways,
+        coin_packages: cmsForm.coin_packages,
+        ad_config: cmsForm.ad_config
       })
       .eq('id', settings.id);
 
@@ -1234,31 +1291,141 @@ export default function AdminPortal() {
                           <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">HQ Address</span>
                           <input type="text" value={cmsForm.address} onChange={(e) => setCmsForm({...cmsForm, address: e.target.value})} className="input-premium bg-background" />
                        </label>
-
-                       <div className="pt-8 border-t border-white/5">
-                          <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-6">Payment Routes</h4>
-                           {/* Financial accounts */}
+                       <div className="pt-8 border-t border-white/5 space-y-8">
+                           <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2">Payment Accounts</h4>
+                           
+                           {/* ETB Accounts */}
                            <div className="space-y-4">
-                              <div className="p-6 bg-background rounded-[2rem] border border-white/5">
-                                 <p className="text-[10px] font-bold text-foreground/40 mb-3">ETB - Commercial Bank</p>
-                                 <input type="text" value={cmsForm.banks_etb[0]?.account_number || ''} onChange={(e) => {
-                                    const newBanks = [...cmsForm.banks_etb];
-                                    if (!newBanks[0]) newBanks[0] = { bank_name: 'CBE', account_number: '', account_holder: '' };
-                                    newBanks[0].account_number = e.target.value;
-                                    setCmsForm({...cmsForm, banks_etb: newBanks});
-                                 }} placeholder="Account Number" className="input-premium bg-card mb-2" />
+                              <div className="flex justify-between items-center">
+                                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">ETB Bank Accounts</p>
+                                 <button 
+                                    type="button" 
+                                    onClick={() => {
+                                       setCmsForm({
+                                          ...cmsForm,
+                                          banks_etb: [...(cmsForm.banks_etb || []), { bank_name: '', account_number: '', account_holder: '' }]
+                                       });
+                                    }} 
+                                    className="text-xs text-primary font-bold hover:underline"
+                                 >
+                                    + Add ETB Bank
+                                 </button>
                               </div>
-                              <div className="p-6 bg-background rounded-[2rem] border border-white/5">
-                                 <p className="text-[10px] font-bold text-foreground/40 mb-3">USD - Swift/Wise</p>
-                                 <input type="text" value={cmsForm.banks_usd[0]?.account_number || ''} onChange={(e) => {
-                                    const newBanks = [...cmsForm.banks_usd];
-                                    if (!newBanks[0]) newBanks[0] = { bank_name: 'USD Bank', account_number: '', account_holder: '' };
-                                    newBanks[0].account_number = e.target.value;
-                                    setCmsForm({...cmsForm, banks_usd: newBanks});
-                                 }} placeholder="IBAN / Swift" className="input-premium bg-card mb-2" />
-                              </div>
+                              {cmsForm.banks_etb?.map((bank, index) => (
+                                 <div key={index} className="p-6 bg-background rounded-[2rem] border border-white/5 space-y-3 relative">
+                                    <button 
+                                       type="button" 
+                                       onClick={() => {
+                                          const newBanks = cmsForm.banks_etb.filter((_, i) => i !== index);
+                                          setCmsForm({ ...cmsForm, banks_etb: newBanks });
+                                       }} 
+                                       className="absolute top-4 right-4 text-red-500 hover:text-red-700 text-xs font-bold"
+                                    >
+                                       Remove
+                                    </button>
+                                    <input 
+                                       type="text" 
+                                       value={bank.bank_name} 
+                                       onChange={(e) => {
+                                          const newBanks = [...cmsForm.banks_etb];
+                                          newBanks[index].bank_name = e.target.value;
+                                          setCmsForm({ ...cmsForm, banks_etb: newBanks });
+                                       }} 
+                                       placeholder="Bank Name (e.g. CBE, Awash)" 
+                                       className="input-premium bg-card text-xs font-bold text-accent" 
+                                    />
+                                    <input 
+                                       type="text" 
+                                       value={bank.account_number} 
+                                       onChange={(e) => {
+                                          const newBanks = [...cmsForm.banks_etb];
+                                          newBanks[index].account_number = e.target.value;
+                                          setCmsForm({ ...cmsForm, banks_etb: newBanks });
+                                       }} 
+                                       placeholder="Account Number / Phone" 
+                                       className="input-premium bg-card text-xs font-bold text-accent" 
+                                    />
+                                    <input 
+                                       type="text" 
+                                       value={bank.account_holder || ''} 
+                                       onChange={(e) => {
+                                          const newBanks = [...cmsForm.banks_etb];
+                                          newBanks[index].account_holder = e.target.value;
+                                          setCmsForm({ ...cmsForm, banks_etb: newBanks });
+                                       }} 
+                                       placeholder="Account Holder Name" 
+                                       className="input-premium bg-card text-xs font-bold text-accent" 
+                                    />
+                                 </div>
+                              ))}
                            </div>
-                       </div>
+
+                           {/* USD Accounts */}
+                           <div className="space-y-4">
+                              <div className="flex justify-between items-center">
+                                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">USD / International Accounts</p>
+                                 <button 
+                                    type="button" 
+                                    onClick={() => {
+                                       setCmsForm({
+                                          ...cmsForm,
+                                          banks_usd: [...(cmsForm.banks_usd || []), { bank_name: '', account_number: '', account_holder: '' }]
+                                       });
+                                    }} 
+                                    className="text-xs text-primary font-bold hover:underline"
+                                 >
+                                    + Add USD Bank
+                                 </button>
+                              </div>
+                              {cmsForm.banks_usd?.map((bank, index) => (
+                                 <div key={index} className="p-6 bg-background rounded-[2rem] border border-white/5 space-y-3 relative">
+                                    <button 
+                                       type="button" 
+                                       onClick={() => {
+                                          const newBanks = cmsForm.banks_usd.filter((_, i) => i !== index);
+                                          setCmsForm({ ...cmsForm, banks_usd: newBanks });
+                                       }} 
+                                       className="absolute top-4 right-4 text-red-500 hover:text-red-700 text-xs font-bold"
+                                    >
+                                       Remove
+                                    </button>
+                                    <input 
+                                       type="text" 
+                                       value={bank.bank_name} 
+                                       onChange={(e) => {
+                                          const newBanks = [...cmsForm.banks_usd];
+                                          newBanks[index].bank_name = e.target.value;
+                                          setCmsForm({ ...cmsForm, banks_usd: newBanks });
+                                       }} 
+                                       placeholder="Method / Bank (e.g. PayPal, Swift)" 
+                                       className="input-premium bg-card text-xs font-bold text-accent" 
+                                    />
+                                    <input 
+                                       type="text" 
+                                       value={bank.account_number} 
+                                       onChange={(e) => {
+                                          const newBanks = [...cmsForm.banks_usd];
+                                          newBanks[index].account_number = e.target.value;
+                                          setCmsForm({ ...cmsForm, banks_usd: newBanks });
+                                       }} 
+                                       placeholder="Account / Link / Details" 
+                                       className="input-premium bg-card text-xs font-bold text-accent" 
+                                    />
+                                    <input 
+                                       type="text" 
+                                       value={bank.account_holder || ''} 
+                                       onChange={(e) => {
+                                          const newBanks = [...cmsForm.banks_usd];
+                                          newBanks[index].account_holder = e.target.value;
+                                          setCmsForm({ ...cmsForm, banks_usd: newBanks });
+                                       }} 
+                                       placeholder="Holder Name / Extra Details" 
+                                       className="input-premium bg-card text-xs font-bold text-accent" 
+                                    />
+                                 </div>
+                              ))}
+                           </div>
+                        </div>
                     </div>
                  </div>
               </div>
@@ -1433,22 +1600,22 @@ export default function AdminPortal() {
         )}
 
          {activeTab === 'pricing' && (
-           <div className="space-y-8 animate-in fade-in duration-500">
-             <header className="flex justify-between items-end">
-               <div>
-                 <h2 className="text-3xl font-bold italic uppercase tracking-tighter">Pricing & Plans</h2>
-                 <p className="text-foreground/40 mt-1">Control Diamond subscription plans and pricing structure.</p>
-               </div>
-               <button onClick={handleSaveCMS} className="btn-primary">Deploy Updates</button>
-             </header>
+            <div className="space-y-8 animate-in fade-in duration-500">
+              <header className="flex justify-between items-end">
+                <div>
+                  <h2 className="text-3xl font-bold italic uppercase tracking-tighter text-accent">Pricing & Gateways</h2>
+                  <p className="text-foreground/40 mt-1">Control Diamond subscription pricing, coin packages, and payment methods.</p>
+                </div>
+                <button onClick={handleSaveCMS} className="btn-primary">Deploy Updates</button>
+              </header>
 
-             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-               <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5">
-                 <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6">Discount & Logic</h3>
-                 <div className="space-y-6">
-                    {/* Free Trial Days input removed — Beteseb uses Freemium model per Blueprint v4.0 */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-8">
+                {/* 1. Pricing Toggles & Gateways */}
+                <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5 space-y-6">
+                  <div>
+                    <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-3">Discount & Logic</h3>
                     <label className="block">
-                       <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest text-primary italic">Global Holiday Discount (%)</span>
+                       <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest text-primary italic">Global Discount (%)</span>
                        <input 
                          type="number" 
                          value={cmsForm.pricing_usd?.discount || 0}
@@ -1463,52 +1630,219 @@ export default function AdminPortal() {
                          placeholder="0% - 90%"
                        />
                     </label>
-                 </div>
-               </div>
+                  </div>
+                  
+                  <div className="pt-6 border-t border-white/5">
+                    <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-4">Payment Gateways</h3>
+                    <div className="space-y-3">
+                       {(['stripe', 'chapa', 'telebirr', 'paypal', 'bank_transfer'] as const).map(gateway => (
+                          <label key={gateway} className="flex items-center justify-between p-2.5 bg-background rounded-xl border border-white/5">
+                             <span className="text-[9px] font-bold text-foreground/40 uppercase tracking-widest">
+                               {gateway.replace('_', ' ')}
+                             </span>
+                             <input 
+                               type="checkbox" 
+                               checked={cmsForm.payment_gateways?.[gateway] ?? true}
+                               onChange={(e) => setCmsForm({
+                                  ...cmsForm, 
+                                  payment_gateways: {
+                                   ...cmsForm.payment_gateways, [gateway]: e.target.checked }
+                               })}
+                               className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
+                             />
+                          </label>
+                       ))}
+                    </div>
+                  </div>
 
-               <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5">
-                 <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6">USD Pricing ($)</h3>
-                 <div className="space-y-4">
-                    {['1m', '3m', '6m', '12m', 'lifetime'].map(plan => (
-                       <label key={plan} className="flex items-center gap-4">
-                          <span className="text-[10px] w-20 font-bold text-foreground/40 uppercase tracking-widest">{plan === 'lifetime' ? 'Lifetime' : plan}</span>
-                          <input 
-                            type="number" 
-                            value={cmsForm.pricing_usd?.[plan] ?? 0}
-                            onChange={(e) => setCmsForm({
-                               ...cmsForm, 
-                               pricing_usd: {
-                                ...cmsForm.pricing_usd, [plan]: parseInt(e.target.value) }
-                            })}
-                            className="input-premium bg-background flex-1"
-                          />
-                       </label>
-                    ))}
-                 </div>
-               </div>
+                  <div className="pt-6 border-t border-white/5 space-y-4">
+                     <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em]">Google AdMob Settings</h3>
+                     <label className="flex items-center justify-between p-2.5 bg-background rounded-xl border border-white/5">
+                        <span className="text-[9px] font-bold text-foreground/40 uppercase tracking-widest">Enable Ads</span>
+                        <input 
+                          type="checkbox" 
+                          checked={cmsForm.ad_config?.enabled ?? true}
+                          onChange={(e) => setCmsForm({
+                             ...cmsForm, 
+                             ad_config: { ...(cmsForm.ad_config || { enabled: true, test_mode: true, unit_android: '', unit_ios: '' }), enabled: e.target.checked }
+                          })}
+                          className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
+                        />
+                     </label>
+                     <label className="flex items-center justify-between p-2.5 bg-background rounded-xl border border-white/5">
+                        <span className="text-[9px] font-bold text-foreground/40 uppercase tracking-widest">Test Ads Mode</span>
+                        <input 
+                          type="checkbox" 
+                          checked={cmsForm.ad_config?.test_mode ?? true}
+                          onChange={(e) => setCmsForm({
+                             ...cmsForm, 
+                             ad_config: { ...(cmsForm.ad_config || { enabled: true, test_mode: true, unit_android: '', unit_ios: '' }), test_mode: e.target.checked }
+                          })}
+                          className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
+                        />
+                     </label>
+                     <label className="block">
+                        <span className="text-[8px] font-bold text-gray-500 uppercase block mb-1">Android Unit ID</span>
+                        <input 
+                          type="text" 
+                          value={cmsForm.ad_config?.unit_android || ''}
+                          onChange={(e) => setCmsForm({
+                             ...cmsForm, 
+                             ad_config: { ...(cmsForm.ad_config || { enabled: true, test_mode: true, unit_android: '', unit_ios: '' }), unit_android: e.target.value }
+                          })}
+                          className="w-full bg-background rounded border border-white/5 p-1 text-[10px] text-accent font-bold" 
+                        />
+                     </label>
+                     <label className="block">
+                        <span className="text-[8px] font-bold text-gray-500 uppercase block mb-1">iOS Unit ID</span>
+                        <input 
+                          type="text" 
+                          value={cmsForm.ad_config?.unit_ios || ''}
+                          onChange={(e) => setCmsForm({
+                             ...cmsForm, 
+                             ad_config: { ...(cmsForm.ad_config || { enabled: true, test_mode: true, unit_android: '', unit_ios: '' }), unit_ios: e.target.value }
+                          })}
+                          className="w-full bg-background rounded border border-white/5 p-1 text-[10px] text-accent font-bold" 
+                        />
+                     </label>
+                  </div>
+                </div>
 
-               <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5">
-                 <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6">ETB Pricing (ብር)</h3>
-                 <div className="space-y-4">
-                    {['1m', '3m', '6m', '12m', 'lifetime'].map(plan => (
-                       <label key={plan} className="flex items-center gap-4">
-                          <span className="text-[10px] w-20 font-bold text-foreground/40 uppercase tracking-widest">{plan === 'lifetime' ? 'Lifetime' : plan}</span>
-                          <input 
-                            type="number" 
-                            value={cmsForm.pricing_etb?.[plan] ?? 0}
-                            onChange={(e) => setCmsForm({
-                               ...cmsForm, 
-                               pricing_etb: {
-                                ...cmsForm.pricing_etb, [plan]: parseInt(e.target.value) }
-                            })}
-                            className="input-premium bg-background flex-1"
-                          />
-                       </label>
-                    ))}
-                 </div>
-               </div>
-             </div>
-           </div>
+                {/* 2. USD Subscriptions */}
+                <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5">
+                  <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6">USD Subscriptions ($)</h3>
+                  <div className="space-y-4">
+                     {['1m', '3m', '6m', '12m', 'lifetime'].map(plan => (
+                        <label key={plan} className="flex items-center gap-4">
+                           <span className="text-[10px] w-20 font-bold text-foreground/40 uppercase tracking-widest">{plan === 'lifetime' ? 'Lifetime' : plan}</span>
+                           <input 
+                             type="number" 
+                             value={cmsForm.pricing_usd?.[plan] ?? 0}
+                             onChange={(e) => setCmsForm({
+                                ...cmsForm, 
+                                pricing_usd: {
+                                 ...cmsForm.pricing_usd, [plan]: parseInt(e.target.value) }
+                             })}
+                             className="input-premium bg-background flex-1"
+                           />
+                        </label>
+                     ))}
+                  </div>
+                </div>
+
+                {/* 3. ETB Subscriptions */}
+                <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5">
+                  <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6">ETB Subscriptions (ብር)</h3>
+                  <div className="space-y-4">
+                     {['1m', '3m', '6m', '12m', 'lifetime'].map(plan => (
+                        <label key={plan} className="flex items-center gap-4">
+                           <span className="text-[10px] w-20 font-bold text-foreground/40 uppercase tracking-widest">{plan === 'lifetime' ? 'Lifetime' : plan}</span>
+                           <input 
+                             type="number" 
+                             value={cmsForm.pricing_etb?.[plan] ?? 0}
+                             onChange={(e) => setCmsForm({
+                                ...cmsForm, 
+                                pricing_etb: {
+                                 ...cmsForm.pricing_etb, [plan]: parseInt(e.target.value) }
+                             })}
+                             className="input-premium bg-background flex-1"
+                           />
+                        </label>
+                     ))}
+                  </div>
+                </div>
+
+                {/* 4. Coin Packages Editor */}
+                <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5 space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em]">Coin Packs</h3>
+                    <button 
+                       type="button" 
+                       onClick={() => {
+                          setCmsForm({
+                             ...cmsForm,
+                             coin_packages: [...(cmsForm.coin_packages || []), { id: `coins_${Date.now()}`, coins: 50, priceEtb: 50, priceUsd: 1.0, discount: '' }]
+                          });
+                       }}
+                       className="text-[10px] text-primary font-bold hover:underline"
+                    >
+                       + Add Pack
+                    </button>
+                  </div>
+                  <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1">
+                     {cmsForm.coin_packages?.map((pack, idx) => (
+                        <div key={idx} className="p-4 bg-background rounded-2xl border border-white/5 space-y-2 relative">
+                           <button 
+                              type="button" 
+                              onClick={() => {
+                                 const newPacks = cmsForm.coin_packages.filter((_, i) => i !== idx);
+                                 setCmsForm({ ...cmsForm, coin_packages: newPacks });
+                              }}
+                              className="absolute top-2 right-2 text-red-500 hover:text-red-700 text-[10px] font-bold"
+                           >
+                              Remove
+                           </button>
+                           <div className="flex gap-2">
+                              <label className="flex-1">
+                                 <span className="text-[8px] font-bold text-gray-500 uppercase block">Coins</span>
+                                 <input 
+                                    type="number" 
+                                    value={pack.coins} 
+                                    onChange={(e) => {
+                                       const newPacks = [...cmsForm.coin_packages];
+                                       newPacks[idx].coins = Number(e.target.value);
+                                       setCmsForm({ ...cmsForm, coin_packages: newPacks });
+                                    }} 
+                                    className="w-full bg-card rounded border border-white/5 p-1 text-xs text-accent font-bold" 
+                                 />
+                              </label>
+                              <label className="flex-1">
+                                 <span className="text-[8px] font-bold text-gray-500 uppercase block">Price ETB</span>
+                                 <input 
+                                    type="number" 
+                                    value={pack.priceEtb} 
+                                    onChange={(e) => {
+                                       const newPacks = [...cmsForm.coin_packages];
+                                       newPacks[idx].priceEtb = Number(e.target.value);
+                                       setCmsForm({ ...cmsForm, coin_packages: newPacks });
+                                    }} 
+                                    className="w-full bg-card rounded border border-white/5 p-1 text-xs text-accent font-bold" 
+                                 />
+                              </label>
+                              <label className="flex-1">
+                                 <span className="text-[8px] font-bold text-gray-500 uppercase block">Price USD</span>
+                                 <input 
+                                    type="number" 
+                                    value={pack.priceUsd} 
+                                    onChange={(e) => {
+                                       const newPacks = [...cmsForm.coin_packages];
+                                       newPacks[idx].priceUsd = Number(e.target.value);
+                                       setCmsForm({ ...cmsForm, coin_packages: newPacks });
+                                    }} 
+                                    className="w-full bg-card rounded border border-white/5 p-1 text-xs text-accent font-bold" 
+                                 />
+                              </label>
+                           </div>
+                           <label className="block">
+                              <span className="text-[8px] font-bold text-gray-500 uppercase block">Discount Tag</span>
+                              <input 
+                                 type="text" 
+                                 value={pack.discount || ''} 
+                                 onChange={(e) => {
+                                    const newPacks = [...cmsForm.coin_packages];
+                                    newPacks[idx].discount = e.target.value;
+                                    setCmsForm({ ...cmsForm, coin_packages: newPacks });
+                                 }} 
+                                 className="w-full bg-card rounded border border-white/5 p-1 text-xs text-accent font-bold" 
+                                 placeholder="Optional tag..."
+                              />
+                           </label>
+                        </div>
+                     ))}
+                  </div>
+                </div>
+              </div>
+            </div>
          )}
 
         {activeTab === 'staff' && (
@@ -1894,7 +2228,7 @@ export default function AdminPortal() {
           )}
 
 
-         {activeTab === 'staff' && (
+         {activeTab === 'disabled_duplicate_staff' && (
            <div className="space-y-8 animate-in fade-in duration-500">
              <header>
                <h2 className="text-3xl font-bold text-accent italic">Manage Staff</h2>
@@ -3208,6 +3542,18 @@ export default function AdminPortal() {
                                 className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[10px] font-bold"
                               >
                                 Suspend
+                              </button>
+                              <button 
+                                onClick={async () => {
+                                  const msg = prompt('Enter the warning message to display to this user:');
+                                  if (!msg) return;
+                                  const { error } = await supabase.from('profiles').update({ warning_message: msg }).eq('id', user.id);
+                                  if (error) alert('Error: ' + error.message);
+                                  else alert('Warning alert sent to user dashboard.');
+                                }} 
+                                className="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-[10px] font-bold"
+                              >
+                                Warn
                               </button>
                               <button 
                                 onClick={() => alert('Risk flag cleared for user.')} 

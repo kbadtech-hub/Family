@@ -86,17 +86,32 @@ async function showNativeRewardedAd(
   try {
     const { AdMob, RewardAdPluginEvents } = await import('@capacitor-community/admob');
 
-    // Test Ad Unit IDs provided by Google for development:
-    // Android: ca-app-pub-3940256099942544/5224354917
-    // iOS: ca-app-pub-3940256099942544/1712485313
-    const adId = (window as any).Capacitor.getPlatform() === 'ios'
+    let adId = (window as any).Capacitor.getPlatform() === 'ios'
       ? 'ca-app-pub-3940256099942544/1712485313'
       : 'ca-app-pub-3940256099942544/5224354917';
+    let isTesting = true;
+
+    try {
+      const { data } = await supabase.from('settings').select('ad_config').limit(1).single();
+      if (data && data.ad_config) {
+        if (!data.ad_config.enabled) {
+          console.log('[AdMob] Ads are disabled by administrator.');
+          if (onAdClosedOrFailed) onAdClosedOrFailed();
+          return;
+        }
+        isTesting = data.ad_config.test_mode;
+        adId = (window as any).Capacitor.getPlatform() === 'ios'
+          ? (data.ad_config.unit_ios || adId)
+          : (data.ad_config.unit_android || adId);
+      }
+    } catch (e) {
+      console.warn('[AdMob] Failed to fetch dynamic ad settings, falling back to defaults:', e);
+    }
 
     // Prepare Ad
     await AdMob.prepareRewardVideoAd({
       adId,
-      isTesting: true,
+      isTesting,
       ssv: {
         userId, // Server-Side Verification payload
       }
