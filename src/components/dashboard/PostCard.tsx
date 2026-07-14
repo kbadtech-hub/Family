@@ -73,6 +73,7 @@ export default function PostCard({
   isAdmin = false
 }: PostCardProps) {
   const t = useTranslations('Community');
+  const tMatch = useTranslations('Dashboard.matchDetail');
   const locale = useLocale();
   
   const [post, setPost] = useState<Post>(initialPost);
@@ -251,7 +252,7 @@ export default function PostCard({
       {compatibility !== null && compatibility >= 70 && (
         <div className="absolute -top-3.5 right-6 bg-gradient-to-r from-pink-500 to-primary text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg z-10 flex items-center gap-1 animate-pulse">
           <Heart size={10} className="fill-white" />
-          <span>{compatibility}% {locale === 'am' ? 'ተኳኋኝነት' : 'Match'}</span>
+          <span>{compatibility}% {tMatch('match')}</span>
         </div>
       )}
 
@@ -310,7 +311,7 @@ export default function PostCard({
           disabled={isTranslating}
           className="flex items-center gap-1.5 text-[10px] font-black text-primary uppercase tracking-widest bg-primary/5 px-3 py-1 rounded-full hover:bg-primary hover:text-white transition-all disabled:opacity-50"
         >
-          <Languages size={12} /> {locale === 'am' ? 'ተርጉም' : 'Translate'}
+          <Languages size={12} /> {tMatch('translate')}
         </button>
       </div>
 
@@ -479,7 +480,7 @@ const RecursiveComments = ({
                   onClick={() => translateCommentContent(comment.id, comment.content)}
                   className="text-[10px] font-black text-secondary uppercase tracking-widest hover:underline flex items-center gap-1"
                 >
-                  <Languages size={10} /> {locale === 'am' ? 'ተርጉም' : 'Translate'}
+                  <Languages size={10} /> {tMatch('translate')}
                 </button>
               </div>
             </div>

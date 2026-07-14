@@ -145,7 +145,186 @@
         "usernameTaken": "Username already taken. Please choose another.",
         "updateSuccess": "Profile updated successfully!",
         "updateFailed": "Update failed"
+      },
+      "enableAbushakir": "Enable Abushakir Star Sign Matching (Optional)",
+      "abushakirHint": "*Allows supplementary cultural/heritage calculations based on the Ethiopian calendar.",
+      "privacySettings": "Privacy Settings",
+      "showAge": "Show my Age on matching card",
+      "showCity": "Show my City on matching card",
+      "allowFriendRequests": "Allow others to send me Friend Requests",
+      "guardianSystem": "Guardian / Mediator (Mize) System",
+      "guardianSub": "Culturally Safe Mediator Integration",
+      "linkedMediator": "Linked Mediator",
+      "mediatorAccessCode": "Mediator Access Code",
+      "mediatorCodeHint": "Provide this code to your mediator. They can use it to securely log in and overview your compatibility journey.",
+      "mediatorInfo": "In line with our cultural values, you can connect a mediator (such as a parent or mize) to overview your matches. They will receive secure access to guide you.",
+      "generateMediatorCode": "Generate Mediator Access Code",
+      "characterReferences": "Character Vouching & References",
+      "inviteWitnesses": "Invite Witnesses to Verify Intent",
+      "referencesInfo": "Build credit by inviting a trusted friend, spiritual leader, family elder, or colleague to vouch for your serious marriage intent.",
+      "referencesStatus": "References Status",
+      "inviteNewWitness": "Invite a New Witness",
+      "sendVouchInvite": "Send Vouch Invite",
+      "walletCoinLedger": "Wallet & Coin Ledger",
+      "coinBalanceHistory": "Coin balance and full transaction history",
+      "transactionHistory": "Transaction History",
+      "noTransactions": "No transaction records found.",
+      "dangerZone": "Account Lifecycle (Danger Zone)",
+      "unconditionalDeletion": "Unconditional Account Deletion",
+      "deletionWarning": "Warning: Deleting your account will completely and permanently expunge all associated user data, profile images, and chat logs from the database. This action is irreversible.",
+      "deleteAccountButton": "Permanently Delete My Account",
+      "deleteConfirm": "Are you absolutely sure you want to permanently delete your account? This will erase all your messages, profile details, and files. This action is irreversible.",
+      "deleteSuccess": "Your account and all associated data have been permanently deleted.",
+      "generatingCode": "GENERATING CODE...",
+      "sendingInvitation": "SENDING INVITATION..."
+    },
+    "planner": {
+      "title": "Royal Wedding Planner",
+      "subtitle": "Design Your Royal Tomorrow.",
+      "hallCatering": "Halls & Catering",
+      "photoCinema": "Photo & Cinema",
+      "beautyAttire": "Beauty & Attire",
+      "costEstimation": "Cost Estimation summary",
+      "venueFood": "Venue & Food",
+      "photosVideo": "Photos & Video",
+      "beautyClothes": "Beauty & Clothes",
+      "totalEstimate": "Total Estimate",
+      "inquireBook": "Inquire / Book Consultation",
+      "customRequirements": "Write custom requirements here...",
+      "sendInquiry": "Send Planner Inquiry",
+      "verifiedVendors": "Verified Wedding Vendors",
+      "bookings": "Your Consultation Bookings",
+      "noBookings": "No planning consultations scheduled yet.",
+      "gourmetBuffet": "Gourmet Buffet",
+      "cinemaPhotos": "Cinema & Photos",
+      "royalAttire": "Royal Attire",
+      "perfectMemories": "Perfect Memories",
+      "selectDateAlert": "Please select a wedding date.",
+      "successAlert": "Inquiry sent successfully!",
+      "sending": "Sending...",
+      "packages": {
+        "hall-basic": {
+          "name": "Habesha Traditional Celebration",
+          "desc": "Traditional hall venue decorated in Habesha theme, buffet and soft drinks for 150 guests."
+        },
+        "hall-premium": {
+          "name": "Royal Grand Ballroom",
+          "desc": "Luxury ballroom, professional gourmet catering, premium decor, sound/lighting, and capacity for 300+ guests."
+        },
+        "photo-basic": {
+          "name": "Classic Memories",
+          "desc": "1 Photographer + 1 Videographer, coverage of church/nikah and reception, digital delivery."
+        },
+        "photo-premium": {
+          "name": "Cinematic Royal Gold",
+          "desc": "3 Cameras, drone coverage, 4K cinema trailer, luxury printed leather album, and pre-wedding photo shoot."
+        },
+        "beauty-basic": {
+          "name": "Habesha Traditional Attire & Styling",
+          "desc": "Bridal makeup and hair, couple traditional handwoven Habesha Kemis & Kuta outfits (rental)."
+        },
+        "beauty-premium": {
+          "name": "Imperial Royal Styling",
+          "desc": "VIP bridal styling party, custom designer couple attire to keep, and bridesmaid styling packages."
+        }
+      },
+      "introText": "Plan, estimate, and connect with premium service providers in Ethiopia.",
+      "verifiedVendorsSubtitle": "Beteseb-partnered luxury wedding services, venues, and cinema studios",
+      "bookingsSubtitle": "Track the status of your royal wedding planning consultations"
+    },
+    "payments": {
+      "upgradePlaySuccess": "Premium upgraded successfully via Google Play!",
+      "upgradeAppSuccess": "Premium upgraded successfully via App Store!",
+      "upgradeSimSuccess": "Premium upgraded successfully (Simulated)!",
+      "purchaseFailed": "Purchase failed: {error}",
+      "payNatively": "Pay Natively Now",
+      "payOnline": "Pay Online Instantly",
+      "payBank": "Bank Transfer / Manual",
+      "pausedNotice": "Notice: Subscriptions are temporarily paused by the administrator. Please contact support.",
+      "paySafelyOnline": "Pay Safely Online",
+      "pricingPlanTitle": "Choose Plan",
+      "pricingPlanSubtitle": "Unlock your potential match",
+      "uploadSuccess": "Payment submitted for review. You will be premium once approved!",
+      "uploadFailedAlert": "Please upload your payment screenshot",
+      "paymentPending": "Payment Pending",
+      "pendingSub": "We have received your proof of payment. Our team is verifying it now. You will be notified once unlocked.",
+      "statusWaiting": "STATUS: WAITING FOR ADMIN APPROVAL",
+      "onlineCheckoutDesc": "Pay securely online via {gateway}. Your account is activated instantly.",
+      "refundNotice": "If you are not satisfied, you can request a full refund within 3 days of your payment.",
+      "plans": {
+        "1m": {
+          "name": "1 Month Plan",
+          "duration": "1 Month",
+          "features": [
+            "Full Matching Access",
+            "Unlimited Chat",
+            "AI Recommendations"
+          ]
+        },
+        "3m": {
+          "name": "3 Months (Premium)",
+          "duration": "3 Months",
+          "features": [
+            "All Standard Features",
+            "Priority List",
+            "Expert Guidance"
+          ]
+        },
+        "12m": {
+          "name": "1 Year (Family)",
+          "duration": "1 Year",
+          "features": [
+            "All Premium Features",
+            "Offline Event Access",
+            "Unlimited Re-matches"
+          ]
+        },
+        "lifetime": {
+          "name": "Lifetime Access",
+          "duration": "Lifetime",
+          "features": [
+            "Permanent Premium Status",
+            "VIP Support",
+            "Zero Ad Experience"
+          ]
+        }
       }
+    },
+    "reports": {
+      "selectReason": "Select Reason for Report",
+      "reasonAbuse": "Abuse or Harassment",
+      "reasonExplicit": "Explicit Content",
+      "reasonScam": "Scam or Fraud",
+      "reasonOther": "Other Reason",
+      "detailsExplanation": "Details / Explanation",
+      "describeBehavior": "Please describe the behavior...",
+      "submitReport": "Submit Report",
+      "cancel": "Cancel",
+      "compatibilityBreakdown": "Abushakir Compatibility Breakdown",
+      "starSignDisclaimer": "*Abushakir star sign insights are supplementary cultural indicators only and do not guarantee relationship or marriage success.",
+      "zodiacPrompt": "• Based on Abushakir zodiac, discuss how {zodiac1} and {zodiac2} elements influence your long term family vision. •",
+      "match": "Match",
+      "privacyShieldInfo": "Direct phone numbers and emails are permanently hidden for privacy. Please use the secure built-in chat, audio call, or video call features."
+    },
+    "matchDetail": {
+      "compatibility": "Compatibility",
+      "profileCompletion": "Profile Completion",
+      "mediatorApprovalNote": "Mediator Approval Note",
+      "compatibilityBreakdown": "Abushakir Compatibility Breakdown",
+      "sharedHobbies": "Shared Hobbies",
+      "familyValues": "Family Values",
+      "conflictStyle": "Conflict Style",
+      "conversationStarters": "Conversation Starters",
+      "contactInfo": "Contact Info",
+      "privacyShieldEnabled": "Privacy Shield Enabled",
+      "reportUser": "Report User",
+      "blockUser": "Block User",
+      "reportSuccess": "User reported successfully.",
+      "blockSuccess": "User blocked successfully.",
+      "blockConfirm": "Are you sure you want to block this user? They will be removed from your match feed and chat list immediately.",
+      "familyValuesPrompt": "Since you both share {value} family values, share your favorite cultural family traditions and how you want to preserve them.",
+      "translate": "Translate",
+      "match": "Match"
     }
   },
   "Community": {

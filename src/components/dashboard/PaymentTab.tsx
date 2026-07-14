@@ -16,10 +16,11 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import Image from 'next/image';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 export default function PaymentTab() {
   const locale = useLocale();
+  const t = useTranslations('Dashboard.payments');
   const [userId, setUserId] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState('Ethiopia');
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
@@ -227,7 +228,7 @@ export default function PaymentTab() {
 
           const verifyData = await verifyResponse.json();
           if (verifyData.status === 'success') {
-            alert(locale === 'am' ? 'ፕሪሚየም አገልግሎት በተሳካ ሁኔታ በርቷል!' : 'Premium upgraded successfully via Google Play!');
+            alert(t('upgradePlaySuccess'));
             window.location.reload();
           } else {
             throw new Error(verifyData.message || 'Google Play validation failed on server.');
@@ -246,7 +247,7 @@ export default function PaymentTab() {
 
           const verifyData = await verifyResponse.json();
           if (verifyData.status === 'success') {
-            alert(locale === 'am' ? 'ፕሪሚየም አገልግሎት በተሳካ ሁኔታ በርቷል!' : 'Premium upgraded successfully via App Store!');
+            alert(t('upgradeAppSuccess'));
             window.location.reload();
           } else {
             throw new Error(verifyData.message || 'Apple receipt validation failed on server.');
@@ -254,7 +255,7 @@ export default function PaymentTab() {
         }
       } catch (err: any) {
         console.error("Native Purchase error details:", err);
-        alert(locale === 'am' ? `የክፍያ ሙከራው ተቋርጧል፡ ${err.message}` : `Purchase failed: ${err.message}`);
+        alert(t('purchaseFailed', { error: err.message }));
       } finally {
         setIsSubmitting(false);
       }
@@ -286,7 +287,7 @@ export default function PaymentTab() {
             premium_until: premiumUntil.toISOString()
           }).eq('id', userId);
 
-          alert(locale === 'am' ? 'ፕሪሚየም አገልግሎት በተሳካ ሁኔታ በርቷል (የሙከራ ማስመሰያ)!' : 'Premium upgraded successfully (Simulated)!');
+          alert(t('upgradeSimSuccess'));
           window.location.reload();
         } else {
           alert("Payment trigger failed: " + error.message);
@@ -364,15 +365,13 @@ export default function PaymentTab() {
             <Clock size={48} />
          </div>
          <div className="space-y-4">
-            <h2 className="text-3xl font-black text-accent italic uppercase tracking-tighter leading-none">Payment Pending</h2>
+            <h2 className="text-3xl font-black text-accent italic uppercase tracking-tighter leading-none">{t('paymentPending')}</h2>
             <p className="text-gray-500 font-medium italic">
-              {locale === 'am' 
-                ? 'የክፍያ ማረጋገጫዎ ደርሶናል፤ አድሚኑ እስኪያጸድቀው ድረስ ጥቂት ደቂቃዎችን ይጠብቁ።' 
-                : 'We have received your proof of payment. Our team is verifying it now. You will be notified once unlocked.'}
+              {t('pendingSub')}
             </p>
          </div>
          <div className="p-4 bg-muted rounded-2xl text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-            STATUS: WAITING FOR ADMIN APPROVAL
+            {t('statusWaiting')}
          </div>
       </div>
     );
@@ -415,9 +414,7 @@ export default function PaymentTab() {
              <div className="space-y-3">
                 <h3 className="font-black text-accent uppercase tracking-tight text-lg italic">Complete Upgrade Natively</h3>
                 <p className="text-xs text-gray-500 italic max-w-xs mx-auto leading-relaxed">
-                  {locale === 'am' 
-                    ? 'ክፍያዎን በአፕል አፕ ስቶር ወይም ጎግል ፕሌይ በኩል በደህንነት ይፈጽሙ። ሁሉም ዲጂታል አገልግሎቶች ወዲያውኑ ይከፈታሉ።' 
-                    : 'Please complete your purchase securely via Apple App Store or Google Play In-App Billing.'}
+                  {t('nativeCheckoutDesc')}
                 </p>
              </div>
              <button 
@@ -425,7 +422,7 @@ export default function PaymentTab() {
                onClick={handleNativeIAP}
                className="btn-primary w-full py-4.5 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2"
              >
-               {isSubmitting ? <Loader2 className="animate-spin" /> : (locale === 'am' ? 'አሁኑኑ ይክፈቱ' : 'Pay Natively Now')} <ArrowRight size={16} />
+               {isSubmitting ? <Loader2 className="animate-spin" /> : (t('payNatively'))} <ArrowRight size={16} />
              </button>
              <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 space-y-1">
                 <div className="flex items-center justify-center gap-2 text-primary font-bold text-[9px] uppercase tracking-widest">
@@ -448,13 +445,13 @@ export default function PaymentTab() {
                          onClick={() => setPaymentMethod('online')} 
                          className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${paymentMethod === 'online' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-accent'}`}
                        >
-                         {locale === 'am' ? 'በኦንላይን ይክፈሉ (Online Checkout)' : 'Pay Online Instantly'}
+                         {t('payOnline')}
                        </button>
                        <button 
                          onClick={() => setPaymentMethod('bank')} 
                          className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${paymentMethod === 'bank' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-accent'}`}
                        >
-                         {locale === 'am' ? 'በባንክ ማስተላለፍ (Bank / Manual)' : 'Bank Transfer / Manual'}
+                         {t('payBank')}
                        </button>
                     </div>
                  )}
@@ -463,7 +460,7 @@ export default function PaymentTab() {
                  {!((currency === 'ETB' && activeGateways.chapa) || (currency === 'USD' && activeGateways.stripe)) && !activeGateways.bank_transfer && (
                     <div className="max-w-md mx-auto bg-red-500/5 p-8 rounded-3xl border border-red-500/20 text-center space-y-4">
                        <p className="text-sm font-bold text-red-600">
-                         {locale === 'am' ? 'ጊዜያዊ ማሳሰቢያ፦ የክፍያ መንገዶች በአስተዳዳሪው ለጊዜው ተዘግተዋል። እባክዎ ድጋፍ ሰጪዎችን ያነጋግሩ።' : 'Notice: Subscriptions are temporarily paused by the administrator. Please contact support.'}
+                         {t('pausedNotice')}
                        </p>
                     </div>
                  )}
@@ -476,9 +473,7 @@ export default function PaymentTab() {
                        <div className="space-y-3">
                           <h3 className="font-black text-accent uppercase tracking-tight text-lg italic">Instant Online Gateway</h3>
                           <p className="text-xs text-gray-500 italic max-w-xs mx-auto leading-relaxed">
-                             {locale === 'am'
-                               ? `የመረጡትን የፕሪሚየም ዕቅድ በ${currency === 'ETB' ? 'ቻፓ/ቴሌብር (Chapa)' : 'ስትራይፕ (Stripe)'} በኩል ክፍያውን በቅጽበት ይፈጽሙ። መለያዎ ወዲያውኑ ይነቃል።`
-                               : `Pay securely online via ${currency === 'ETB' ? 'Chapa (Mobile Banking & Telebirr)' : 'Stripe (Cards)'}. Your account is activated instantly.`}
+                             {t('onlineCheckoutDesc', { gateway: currency === 'ETB' ? (locale === 'am' ? 'ቻፓ/ቴሌብር (Chapa)' : 'Chapa (Mobile Banking & Telebirr)') : (locale === 'am' ? 'ስትራይፕ (Stripe)' : 'Stripe (Cards)') })}
                           </p>
                        </div>
                        <button 
@@ -487,7 +482,7 @@ export default function PaymentTab() {
                          className="btn-primary w-full py-4.5 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2"
                        >
                          {isSubmitting ? <Loader2 className="animate-spin text-white" /> : <ArrowRight size={16} />} 
-                         {locale === 'am' ? 'በቀጥታ አሁኑኑ ይክፈሉ' : 'Pay Safely Online'}
+                         {t('paySafelyOnline')}
                        </button>
                     </div>
                  )}
@@ -518,9 +513,7 @@ export default function PaymentTab() {
                             <ShieldCheck size={14} /> 3-Day Refund Policy
                          </div>
                          <p className="text-[10px] text-gray-500 font-medium leading-relaxed italic">
-                            {locale === 'am' 
-                              ? 'ክፍያ በፈጸሙ በ3 ቀናት ውስጥ በማንኛውም ምክንያት ካልረኩ ሙሉ ክፍያዎን መመለስ ይችላሉ።' 
-                              : 'If you are not satisfied, you can request a full refund within 3 days of your payment.'}
+                            {t('refundNotice')}
                          </p>
                       </div>
                    </div>

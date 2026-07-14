@@ -110,7 +110,188 @@
     "verifyNow": "ሕጂ አረጋግጹ",
     "matchingLocked": "ምምሳል ተዓጽዩ አሎ",
     "matchingLockedSub": "ተዛመድቲ ሰባት ን ምርኣይ ብኽብረትኩም መገለጺኹም አረጋግጹ።",
-    "completeOnboarding": "ምርግጋጽ ወድኡ"
+    "completeOnboarding": "ምርግጋጽ ወድኡ",
+    "profile": {
+      "enableAbushakir": "ናይ ኣቡሻኪር ኮኸብ ምስምማዕ ኣንቅሕ (Optional)",
+      "abushakirHint": "*ብመሰረት ኣቆጻጽራ ዘመን ኢትዮጵያ ተወሳኺ ባህላዊ ተኳኋኝነት የነቅሕ።",
+      "privacySettings": "ናይ ውልቃውነት ቅንጅታት",
+      "showAge": "ዕድመይ ኣብ ካርዲ ይርአ",
+      "showCity": "ከተማይ ኣብ ካርዲ ይርአ",
+      "allowFriendRequests": "ኻልኦት ናይ ዓርክነት ሕቶ ክሰዱለይ ፍቀድ",
+      "guardianSystem": "ናይ ሚዜ / ዓራቂ ሲስተም (Mize System)",
+      "guardianSub": "ባህላዊ ክብርታት ዝሓለወ ናይ ስድራቤት ምክትታል",
+      "linkedMediator": "ዝተኣሳሰረ ዓራቂ",
+      "mediatorAccessCode": "ኮድ ዓራቂ",
+      "mediatorCodeHint": "ነዚ ኮድ ንዓራቂኹም (ንሚዜ ወይ ወላዲኹም) ሃብዎ። ውሕስነትኩምን ምስምማዕኩምን ንምክትታል ይጥቀሙሉ።",
+      "mediatorInfo": "ባህሊ ብዝሓለወ መገዲ፥ ሓዳር ብንጹር ክትመርጹ ዓራቂ (ሚዜ ወይ ወላዲ) ከተተሓሕዙ ትኽእሉ ኢኹም።",
+      "generateMediatorCode": "ኮድ ሚዜ ፍጠር",
+      "characterReferences": "ናይ እምነት ምስክርነት (Character Reference)",
+      "inviteWitnesses": "ባህላውን ማሕበረሰባውን ምስክርነት",
+      "referencesInfo": "እተአምኑ ዓርኪ፣ ኣቦ ነፍሲ ወይ መቅርብ ብምዕዳም ምስክርነት ክህቡኹም ክትገብሩ ትኽእሉ ኢኹም። ምስክርነት ምስ ተረጋገጸ ናይ እምነት ባጅ ይርአ።",
+      "referencesStatus": "ኩነታት ምስክርነት",
+      "inviteNewWitness": "ሓድሽ ምስክር ዓድም",
+      "sendVouchInvite": "ዕድመ ምስክርነት ስደድ",
+      "walletCoinLedger": "ናይ ሳንቲም ሕሳብን ምንቅስቓስን",
+      "coinBalanceHistory": "ዝተረፈ ሳንቲምን ታሪኽ ክፍሊትን",
+      "transactionHistory": "ታሪኽ ክፍሊት",
+      "noTransactions": "ክሳብ ሕጂ ዝተገብረ ሳንቲም ክፍሊት የለን",
+      "dangerZone": "ኣካውንት ምሉእ ብምሉእ ምድምሳስ (Danger Zone)",
+      "unconditionalDeletion": "ናይ ኣካውንት ሓበሬታታት ምድምሳስ",
+      "deletionWarning": "መጠንቀቕታ፦ ኣካውንትኩም ምድምሳስ ንስእልታትኩም፣ ዕላልኩምን ሓበሬታታትኩምን ምሉእ ብምሉእ የጥፍኦ። እዚ ድርጊት ተመላሲ ኣይኮነን።",
+      "deleteAccountButton": "ኣካውንት ንሓዋሩ ደምስስ",
+      "deleteConfirm": "ብሓቂ ኣካውንትኩም ክትድምስሱ ትደልዩ? እዚ ድርጊት ተመላሲ የብሉን!",
+      "deleteSuccess": "ኣካውንትኩም ብሰላም ተደምሲሱ ኣሎ።",
+      "generatingCode": "ኮድ ይፈጥር ኣሎ...",
+      "sendingInvitation": "ዕድመ ይሰድድ ኣሎ..."
+    },
+    "planner": {
+      "title": "ምድላው መርዓ (Wedding Planner)",
+      "subtitle": "ናይ ጽባሕ ሓዳርኩም ሎሚ ኣቅዱ።",
+      "hallCatering": "ኣዳራሽን ምግብን",
+      "photoCinema": "ስእልን ቪድዮን",
+      "beautyAttire": "ጽባቐን ክዳውንትን",
+      "costEstimation": "ናይ ወጻኢታት ገምጋም",
+      "venueFood": "ቦታን ምግብን",
+      "photosVideo": "ስእልን ቪድዮን",
+      "beautyClothes": "ጽባቐን ክዳውንትን",
+      "totalEstimate": "ሓፈሻዊ ገምጋም",
+      "inquireBook": "ኣማኽሩ / ቆጸራ ሓዙ",
+      "customRequirements": "ፍሉይ ጠለባትኩም ኣብዚ ጽሓፉ...",
+      "sendInquiry": "ሕቶ ስደዱ",
+      "verifiedVendors": "ዝተረጋገጹ ናይ መርዓ ኣቕረብቲ",
+      "bookings": "ዝተትሓዙ ቆጸራታት",
+      "noBookings": "ክሳብ ሕጂ ዝተትሓዘ ቆጸራ የለን።",
+      "gourmetBuffet": "ቡፌ",
+      "cinemaPhotos": "ሲኒማን ስእልታትን",
+      "royalAttire": "ናይ መርዓ ክዳውንቲ",
+      "perfectMemories": "ዝኽርታት",
+      "selectDateAlert": "በጃኹም ዕለት መርዓ ምረጹ።",
+      "successAlert": "ሕቶኹም ብዓወት ተሰዲዱ ኣሎ!",
+      "sending": "ይሰድድ ኣሎ...",
+      "packages": {
+        "hall-basic": {
+          "name": "ባህላዊ ናይ መርዓ ኣዳራሽ",
+          "desc": "ን150 ጋሹ ባህላዊ ናይ ሓበሻ ስልማት፣ ቡፌን ለስላሳ መስተታትን ዝሓዘ ኣዳራሽ።"
+        },
+        "hall-premium": {
+          "name": "ሮያል ግራንድ ኣዳራሽ (ቅንጡ)",
+          "desc": "ብሉጽ ዲዛይን ስልማት፣ ናይ ድምጽን መብራህትን ምድላው፣ ን300+ ጋሹ ብሉጽ መግቢ ዝሓዘ።"
+        },
+        "photo-basic": {
+          "name": "ክላሲክ ናይ ፎቶ ምድላው",
+          "desc": "1 ፎቶግራፍ አልዓልን 1 ቪድዮ ቀራጽን፣ ናይ ሃይማኖት ስነስርዓት ፎቶ ሽፋን ብዲጂታል ዝስደድ።"
+        },
+        "photo-premium": {
+          "name": "ሮያል ሲኒማቲክ (ወርቂ)",
+          "desc": "3 ናይ ፊልም ካሜራታት፣ ናይ ድሮን ቀረጻ፣ 4K ሓጺር ፊልም፣ ካብ መርዓ ቅድሚ ዘሎ ፎቶ ቀረጻ።"
+        },
+        "beauty-basic": {
+          "name": "ባህላዊ ስታይሊንግን ክዳውንትን",
+          "desc": "ንሙሽራታት ሜካፕን ናይ ጸጉሪ ስታይልን፣ ባህላዊ በእጅ ዝተኣለሙ ናይ ሓበሻ ክዳውንቲ (ብክራይ)።"
+        },
+        "beauty-premium": {
+          "name": "ሮያል ስታይሊንግን ናይ ዲዛይነር ክዳንን",
+          "desc": "ምሉእ ናይ ጽባቐ ምድላው ንሙሽራትን ሚዜታትን፣ ንሙሽራት ዝወሃብ ፍሉይ ናይ ዲዛይነር ክዳን።"
+        }
+      },
+      "introText": "ኣብ ኢትዮጵያ ዝበለጹ ናይ መርዓ ዲዛይን፣ ቦታ፣ ጽባቐን ክዳውንትን ብምሉእ ዋጋ ረኽቡ",
+      "verifiedVendorsSubtitle": "ብቤተሰብ ዝተረጋገጹ ብሉጻት ናይ መርዓ ኣዳራሻት፥ ዲዛይነራትን ፎቶግራፈራትን",
+      "bookingsSubtitle": "ናይ መርዓ ምድላው ምኽርን ናይ ሕሳብ ገምጋምን ቆጸራታት ዝርዝር"
+    },
+    "payments": {
+      "upgradePlaySuccess": "ፕሪሚየም ብጉግል ፕለይ ተሻሒሉ ኣሎ!",
+      "upgradeAppSuccess": "ፕሪሚየም ብኣፕ ስቶር ተሻሒሉ ኣሎ!",
+      "upgradeSimSuccess": "ፕሪሚየም ብዓወት ተሻሒሉ ኣሎ (ፈተነ)!",
+      "purchaseFailed": "ክፍሊት ኣይተዓወተን: {error}",
+      "payNatively": "ሕጂ ክፈል",
+      "payOnline": "ብኦንላይን ወዲያው ክፈል",
+      "payBank": "ብባንክ / ማኑዋል",
+      "pausedNotice": "መተሓሳሰቢ፦ ክፍሊት ንግዚኡ ተቋሪጹ ኣሎ። በጃኹም ንደገፍቲ ኣዘራርቡ።",
+      "paySafelyOnline": "ብውሕስነት ብኦንላይን ክፈል",
+      "pricingPlanTitle": "ዕቅድ ምረጽ",
+      "pricingPlanSubtitle": "ናይ ፍለጋ ማዕጾ ኽፈት",
+      "uploadSuccess": "ደረሰኝ ንግምገማ ተሰዲዱ ኣሎ። ምስ ጸደቐ ፕሪሚየም ክትኾኑ ኢኹም!",
+      "uploadFailedAlert": "በጃኹም ናይ ክፍሊት ደረሰኝ ስእሊ ጽዓኑ",
+      "paymentPending": "ክፍሊት ኣብ ምጽባይ ይርከብ",
+      "pendingSub": "ናይ ክፍሊት መረጋገጺኹም በጺሑና ኣሎ፤ አድሚኑ ክሳብ ዘጽድቖ ሒደት ደቓይቕ ተጸበዩ።",
+      "statusWaiting": "ኩነታት፦ ብኣመሓዳሪ ክሳብ ዝጸድቕ ኣብ ምጽባይ",
+      "onlineCheckoutDesc": "ብ{gateway} ጌርኩም ክፍሊትኩም ብቕጽበት ይፈጽሙ። መለያኹም ወዲያው ክነቅሕ እዩ።",
+      "refundNotice": "ክፍሊት በፈጸምኩም ኣብ ውሽጢ 3 መዓልታት ብዝኾነ ምኽንያት እንተዘይዓጊብኩም ምሉእ ክፍሊትኩም ክምለሰልኩም ይኽእል እዩ።",
+      "plans": {
+        "1m": {
+          "name": "ናይ 1 ወርሒ ዕቅድ",
+          "duration": "1 ወርሒ",
+          "features": [
+            "ምሉእ ናይ ምስምማዕ መእተዊ",
+            "ዘይተገደበ ዕላል",
+            "ብAI ዝተመርጹ ሓሳባት"
+          ]
+        },
+        "3m": {
+          "name": "ናይ 3 ወርሒ (Premium)",
+          "duration": "3 ወርሒ",
+          "features": [
+            "ኩሎም መሰረታውያን ጸጋታት",
+            "ቀዳምነት ዝወሃቦ ዝርዝር",
+            "ናይ ሰብ ሞያ መምርሒ"
+          ]
+        },
+        "12m": {
+          "name": "ናይ 1 ዓመት (Family)",
+          "duration": "1 ዓመት",
+          "features": [
+            "ኩሎም ናይ ፕሪሚየም ጸጋታት",
+            "ናይ ኣካል ንጥፈታት መእተዊ",
+            "ዘይተገደበ ዳግም ምስምማዕ"
+          ]
+        },
+        "lifetime": {
+          "name": "ናይ ዕድመ ልክዕ (Lifetime)",
+          "duration": "ንዘልኣለም",
+          "features": [
+            "ቀዋሚ ፕሪሚየም ኩነታት",
+            "ቪአይፒ ሓገዝ",
+            "ካብ ማስታወቂያ ነጻ ዝኾነ"
+          ]
+        }
+      }
+    },
+    "reports": {
+      "selectReason": "ምኽንያት ቅሬታ ምረጽ",
+      "reasonAbuse": "ጸርፊ ወይ ትንኮሳ",
+      "reasonExplicit": "ዘይግቡእ ትሕዝቶ ምስሊ",
+      "reasonScam": "ምጭብርባር ወይ ምትላል",
+      "reasonOther": "ኻልእ ምኽንያት",
+      "detailsExplanation": "ዝርዝር መብርሂ",
+      "describeBehavior": "በጃኹም ዝተፈጠረ ኩነታት ግለጹ...",
+      "submitReport": "ሪፖርት ግበር",
+      "cancel": "ሰርዝ",
+      "compatibilityBreakdown": "ናይ ኣቡሻኪር ምስምማዕ ዝርዝር",
+      "starSignDisclaimer": "*ናይ ኣቡሻኪር ኮኸብ ባህላዊ ምልክት ጥራይ እዩ እምበር ንሓዳር ዋሕስ ኣይኮነን።",
+      "zodiacPrompt": "• ብመሰረት ኮኸብ ኣቡሻኪር፥ {zodiac1} ን {zodiac2} ን ንጽባሕ ስድራቤትኩም ዘለዎ ጽልዋ ተመያየጡሉ። •",
+      "match": "ምስምማዕ",
+      "privacyShieldInfo": "ስልኪ ቁጽርን ኢሜይልን ንውሕስነት ክበሃል ተደቢቆም እዮም። በጃኹም ውሑስ ናይ ውሽጢ ቻት፣ ድምጺ ወይ ቪድዮ ጻውዒት ተጠቐሙ።"
+    },
+    "matchDetail": {
+      "compatibility": "ተኳኋኝነት (ምስምማዕ)",
+      "profileCompletion": "ምልኣት መገለጺ",
+      "mediatorApprovalNote": "ናይ ዓራቂ/ሚዜ ማስታወሻ",
+      "compatibilityBreakdown": "ናይ ኣቡሻኪር ምስምማዕ ዝርዝር",
+      "sharedHobbies": "ናይ ሓባር ተገዳስነት",
+      "familyValues": "ናይ ስድራቤት ክብርታት",
+      "conflictStyle": "ኣፈታትሓ ዘይምርድዳእ",
+      "conversationStarters": "መጀመሪ እዋን ዕላል",
+      "contactInfo": "ናይ መራኸቢ ሓበሬታ",
+      "privacyShieldEnabled": "ናይ ውሕስነት ጋሻ ተነቒሑ ኣሎ",
+      "reportUser": "ሪፖርት ግበር",
+      "blockUser": "ኣግድ",
+      "reportSuccess": "ሪፖርትኩም ብዓወት ተመዝጊቡ ኣሎ።",
+      "blockSuccess": "እቲ ተጠቃሚ ብዓወት ተኣጊዱ ኣሎ።",
+      "blockConfirm": "ብሓቂ ነዚ ተጠቃሚ ክትዓግቶ ትደሊ ዶ? እዚ ተጠቃሚ ካብ መራኸቢታትኩም ክጠፍእ እዩ።",
+      "familyValuesPrompt": "ክልቴኹም ናይ {value} ክብርታት ስለ እትድግፉ፥ ኣብ ባህላዊ ምስረታ ስድራቤት ዘለዎም መሰረታት ተመያየጡ።",
+      "translate": "ተርጉም",
+      "match": "ምስምማዕ"
+    }
   },
   "Footer": {
     "tagline": "ቤተሰብ | Beteseb",

@@ -18,6 +18,7 @@ interface PricingPlan {
 export default function PaymentPortal({ profile, onPaymentStarted }: { profile: any, onPaymentStarted: () => void }) {
   const t = useTranslations('Dashboard');
   const locale = useLocale();
+  const tp = useTranslations('Dashboard.payments');
   const [plans, setPlans] = useState<PricingPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
@@ -51,10 +52,10 @@ export default function PaymentPortal({ profile, onPaymentStarted }: { profile: 
       };
 
       const newPlans: PricingPlan[] = [
-        { id: '1m', name: locale === 'am' ? 'የ1 ወር ፓኬጅ' : '1 Month Plan', originalPrice: pricing['1m'], price: calculatePrice(pricing['1m']), duration: locale === 'am' ? '1 ወር' : '1 Month', features: ['Full Matching Access', 'Unlimited Chat', 'AI Recommendations'] },
-        { id: '3m', name: locale === 'am' ? 'የ3 ወር (Premium)' : '3 Months (Premium)', originalPrice: pricing['3m'], price: calculatePrice(pricing['3m']), duration: locale === 'am' ? '3 ወራት' : '3 Months', features: ['All Standard Features', 'Priority List', 'Expert Guidance'], popular: true },
-        { id: '12m', name: locale === 'am' ? 'የ1 አመት (Family)' : '1 Year (Family)', originalPrice: pricing['12m'], price: calculatePrice(pricing['12m']), duration: locale === 'am' ? '1 አመት' : '1 Year', features: ['All Premium Features', 'Offline Event Access', 'Unlimited Re-matches'] },
-        { id: 'lifetime', name: locale === 'am' ? 'የዘላለም (Lifetime)' : 'Lifetime Access', originalPrice: pricing['lifetime'], price: calculatePrice(pricing['lifetime']), duration: locale === 'am' ? 'ለዘላለም' : 'Lifetime', features: ['Permanent Premium Status', 'VIP Support', 'Zero Ad Experience'] }
+        { id: '1m', name: tp('plans.1m.name'), originalPrice: pricing['1m'], price: calculatePrice(pricing['1m']), duration: tp('plans.1m.duration'), features: [tp('plans.1m.features.0'), tp('plans.1m.features.1'), tp('plans.1m.features.2')] },
+        { id: '3m', name: tp('plans.3m.name'), originalPrice: pricing['3m'], price: calculatePrice(pricing['3m']), duration: tp('plans.3m.duration'), features: [tp('plans.3m.features.0'), tp('plans.3m.features.1'), tp('plans.3m.features.2')], popular: true },
+        { id: '12m', name: tp('plans.12m.name'), originalPrice: pricing['12m'], price: calculatePrice(pricing['12m']), duration: tp('plans.12m.duration'), features: [tp('plans.12m.features.0'), tp('plans.12m.features.1'), tp('plans.12m.features.2')] },
+        { id: 'lifetime', name: tp('plans.lifetime.name'), originalPrice: pricing['lifetime'], price: calculatePrice(pricing['lifetime']), duration: tp('plans.lifetime.duration'), features: [tp('plans.lifetime.features.0'), tp('plans.lifetime.features.1'), tp('plans.lifetime.features.2')] }
       ];
       setPlans(newPlans);
       setSelectedPlan('3m');
@@ -64,7 +65,7 @@ export default function PaymentPortal({ profile, onPaymentStarted }: { profile: 
 
   const handlePayment = async () => {
     if (!selectedPlan || !screenshot) {
-       alert(locale === 'am' ? "እባክዎ የክፍያ ስክሪንሾት ያያይዙ" : "Please upload your payment screenshot");
+       alert(tp('uploadFailedAlert'));
        return;
     }
     setIsProcessing(true);
@@ -101,7 +102,7 @@ export default function PaymentPortal({ profile, onPaymentStarted }: { profile: 
 
        if (insertError) throw insertError;
 
-       alert(locale === 'am' ? "ክፍያዎ ለምርመራ ተልኳል። አድሚኑ ሲያጸድቀው ፕሪሚየም ይሆናሉ!" : "Payment submitted for review. You will be premium once approved!");
+       alert(tp('uploadSuccess'));
        onPaymentStarted();
     } catch (err: any) {
        alert("Error: " + err.message);

@@ -110,7 +110,188 @@
     "verifyNow": "Hadda xaqiiji",
     "matchingLocked": "Ciyaaraha waa la xiray",
     "matchingLockedSub": "Fadlan dhamaystir xaqiijintaada si aad u aragto lammaanahaaga.",
-    "completeOnboarding": "Dhamaystir Onboarding"
+    "completeOnboarding": "Dhamaystir Onboarding",
+    "profile": {
+      "enableAbushakir": "Oggolaan Is-waafajinta Xiddigaha Abushakir (Optional)",
+      "abushakirHint": "*Wuxuu oggolaanayaa xisaabinta hidaha ee ku saleysan taariikhda Itoobiya.",
+      "privacySettings": "Habeynta Khaaska ah",
+      "showAge": "Da'dayda ku muuji kaarka",
+      "showCity": "Magaaladayda ku muuji kaarka",
+      "allowFriendRequests": "U oggolow kuwa kale inay ii soo diraan codsiyo saaxiibtinimo",
+      "guardianSystem": "Nidaamka Dhexdhexaadiyaha/Mize (Mediator System)",
+      "guardianSub": "Isku-xirka dhexdhexaadiyaha ee ilaalinta qiyamka dhaqanka",
+      "linkedMediator": "Dhexdhexaadiyaha ku xiran",
+      "mediatorAccessCode": "Koodhka Dhexdhexaadiyaha",
+      "mediatorCodeHint": "Sii koodhkan dhexdhexaadiyahaaga. Waxay u isticmaali doonaan inay si badbaado leh u galaan oo u eegaan is-waafajintiina.",
+      "mediatorInfo": "Si waafaqsan qiyamkayaga dhaqanka, waxaad ku xiri kartaa dhexdhexaadiye (sida waalid ama mize) si uu u eego is-waafajintaada.",
+      "generateMediatorCode": "Abuur Koodhka Mize",
+      "characterReferences": "Markhaati Kac (Character Reference)",
+      "inviteWitnesses": "Xaqiijinta markhaatiga bulshada",
+      "referencesInfo": "Waxaad ku martiqaadi kartaa saaxiib aad aamminsan tahay, hogaamiye diimeed ama oday qoys si ay kuu markhaati kacaan.",
+      "referencesStatus": "Xaaladda Markhaatiyada",
+      "inviteNewWitness": "Martiqaad Markhaati Cusub",
+      "sendVouchInvite": "Dir Martiqaadka Markhaatiga",
+      "walletCoinLedger": "Akoonka Qadaadiicda & Ganacsiga",
+      "coinBalanceHistory": "Inta qadaadiic ee kuu hartay iyo taariikhda ganacsiga",
+      "transactionHistory": "Taariikhda Ganacsiga",
+      "noTransactions": "Weli wax ganacsi qadaadiic ah ma dhicin",
+      "dangerZone": "Tirtiridda Akoonka (Danger Zone)",
+      "unconditionalDeletion": "Tirtiridda dhammaan macluumaadka akoonka",
+      "deletionWarning": "Digniin: Tirtiridda akoonkaaga waxay tirtiri doontaa dhammaan macluumaadkaaga, sawiradaada iyo sheekeysigaaga. Tani dib uma noqonayso.",
+      "deleteAccountButton": "Weligaa Tirtir Akoonkayga",
+      "deleteConfirm": "Ma hubtaa inaad tirtirto akoonkaaga? Tani dib uma noqonayso!",
+      "deleteSuccess": "Akoonkaaga si badbaado leh ayaa loo tirtiray.",
+      "generatingCode": "Koodhka ayaa la abuurayaa...",
+      "sendingInvitation": "Martiqaadka ayaa la dirayaa..."
+    },
+    "planner": {
+      "title": "Qorsheeyaha Arooska (Wedding Planner)",
+      "subtitle": "Qorshee mustaqbalkaaga barakaysan maanta.",
+      "hallCatering": "Hoolka & Cuntada",
+      "photoCinema": "Sawirada & Muqaalada",
+      "beautyAttire": "Qurxinta & Dharka",
+      "costEstimation": "Warbixinta Qiimaha arooska",
+      "venueFood": "Goobta & Cuntada",
+      "photosVideo": "Sawirada & Muqaalada",
+      "beautyClothes": "Qurxinta & Dharka",
+      "totalEstimate": "Waliigala Qiimaha",
+      "inquireBook": "La tasho / Maalin Qabso",
+      "customRequirements": "Halkan ku qor waxyaabaha dheeraadka ah ee aad u baahan tahay...",
+      "sendInquiry": "Dir Codsiga",
+      "verifiedVendors": "Ganacsatada Arooska ee la Xaqiijiyay",
+      "bookings": "Taariikhaha la Qabsaday",
+      "noBookings": "Weli ma jirto taariikh la qabsaday.",
+      "gourmetBuffet": "Cuntada Bufeega",
+      "cinemaPhotos": "Muqaalada & Sawirada",
+      "royalAttire": "Dharka Boqortooyada",
+      "perfectMemories": "Xusuus Cajiib Ah",
+      "selectDateAlert": "Fadlan dooro taariikhda arooska.",
+      "successAlert": "Codsiga arooska si guul leh ayaa loo diray!",
+      "sending": "Waa la dirayaa...",
+      "packages": {
+        "hall-basic": {
+          "name": "Hoolka Arooska Dhaqanka",
+          "desc": "Hoolka arooska oo lagu qurxiyey hiddaha Habashada, cunto bufe ah iyo cabitaano loogu talagalay 150 marti ah."
+        },
+        "hall-premium": {
+          "name": "Royal Ballroom (Premium)",
+          "desc": "Hoolka arooska ee qaaliga ah, adeeg cunto oo heer sare ah, qalabka codka iyo iftiinka oo dhammaystiran 300+ marti ah."
+        },
+        "photo-basic": {
+          "name": "Classic Photo Session",
+          "desc": "1 Sawirqaade iyo 1 duubayaal muqaal ah, oo duubaya xaflada diinta iyo casuumada."
+        },
+        "photo-premium": {
+          "name": "Royal Cinematic (Gold)",
+          "desc": "3 Kaamirooyin duubis ah, duubista hawada (drone), sawirada arooska ka hor (Pre-wedding)."
+        },
+        "beauty-basic": {
+          "name": "Qurxinta & Dharka Dhaqanka",
+          "desc": "Qurxinta wajiga iyo timaha ee aroosadda, kirada dharka hiddaha iyo dhaqanka."
+        },
+        "beauty-premium": {
+          "name": "Royal Styling & Designer Attire",
+          "desc": "Qurxinta VIP ee aroosadda iyo habeynta dharka designer arooska ee gaarka ah."
+        }
+      },
+      "introText": "Ka hel meel kasta oo arooskaaga khuseysa hal meel oo ku habboon.",
+      "verifiedVendorsSubtitle": "Hoolalka iyo adeegyada arooska ee ay Beteseb isku-halayn karto.",
+      "bookingsSubtitle": "La soco xaaladda ballamaha qorsheynta arooskaaga."
+    },
+    "payments": {
+      "upgradePlaySuccess": "Miseensumada Google Play si guul leh ayaa loo cusbooneysiiyay!",
+      "upgradeAppSuccess": "Miseensumada App Store si guul leh ayaa loo cusbooneysiiyay!",
+      "upgradeSimSuccess": "Miseensumada si guul leh ayaa loo cusbooneysiiyay (Tijaabo)!",
+      "purchaseFailed": "Kaffaltiga ma guulaysan: {error}",
+      "payNatively": "Hadda kaffal",
+      "payOnline": "Ku shub kaffaltiga toora internetka",
+      "payBank": "Kaffaltiga Bangiga / Manual",
+      "pausedNotice": "Digniin: Diiwaangelinta waa la hakiyay. Fadlan la xiriir caawiyayaasha.",
+      "paySafelyOnline": "Si badbaado leh ugu kaffal internetka",
+      "pricingPlanTitle": "Dooro Qorshaha",
+      "pricingPlanSubtitle": "Furan albaabka raadintaada",
+      "uploadSuccess": "Rasiidka kaffaltiga waa la diray. Markay ansaxdo ayaad noqon doontaa premium!",
+      "uploadFailedAlert": "Fadlan soo geli sawirka rasiidka kaffaltiga",
+      "paymentPending": "Kaffaladdu Waa Sugaysaa",
+      "pendingSub": "Waan helnay rasiidka kaffaladda. Kooxdayadu hadda ayay hubinaysaa.",
+      "statusWaiting": "XAALADDA: SUGIDA ANSAXINTA ADMIN-KA",
+      "onlineCheckoutDesc": "U kaffal si badbaado leh online adoo isticmaalaya {gateway}. Akoonkaagu wuxuu shaqaynayaa isla markaaba.",
+      "refundNotice": "Haddaanad ku qanacsanayn, waxaad codsan kartaa in laguu soo celiyo lacagtaada 3 maalmood gudahood.",
+      "plans": {
+        "1m": {
+          "name": "Qorshaha 1 Bilood",
+          "duration": "1 Bil",
+          "features": [
+            "Helitaanka is-waafajinta buuxda",
+            "Wadahadal aan xadidnayn",
+            "Talooyinka AI"
+          ]
+        },
+        "3m": {
+          "name": "3 Bilood (Premium)",
+          "duration": "3 Bilood",
+          "features": [
+            "Dhammaan sifooyinka asaasiga ah",
+            "Liiska mudnaanta leh",
+            "Tusaalayn khabiir ah"
+          ]
+        },
+        "12m": {
+          "name": "1 Sano (Family)",
+          "duration": "1 Sano",
+          "features": [
+            "Dhammaan sifooyinka premium",
+            "Ka qaybgalka xafladaha tooska ah",
+            "Is-waafajin aan xadidnayn"
+          ]
+        },
+        "lifetime": {
+          "name": "Helitaan Weligeed ah",
+          "duration": "Weligeed",
+          "features": [
+            "Xaaladda premium-ka weligeed ah",
+            "Caawinta VIP",
+            "Khibrad bilaash ah oo aan xayeysiis lahayn"
+          ]
+        }
+      }
+    },
+    "reports": {
+      "selectReason": "Dooro Sababta Cabashada",
+      "reasonAbuse": "Cayn ama Waxyeelo",
+      "reasonExplicit": "Muuqaal aan munaasib ahayn",
+      "reasonScam": "Xatooyo ama Khiyaano",
+      "reasonOther": "Sabab kale",
+      "detailsExplanation": "Sharaxaad Dheeraad ah",
+      "describeBehavior": "Fadlan sharax xaaladda dhacday...",
+      "submitReport": "Dir Cabashada",
+      "cancel": "Tirtir",
+      "compatibilityBreakdown": "Ilaalinta Is-waafajinta Abushakir",
+      "starSignDisclaimer": "*Xiddigaha Abushakir waa calaamad dhaqameed oo kaliya, guusha arooska ma dammaanad qaado.",
+      "zodiacPrompt": "• Iyadoo la raacayo xiddigaha Abushakir, ka wada hadla sida {zodiac1} iyo {zodiac2} u saameeyaan qoyskaaga berrito. •",
+      "match": "Is-waafajinta",
+      "privacyShieldInfo": "Nambarka telefoonka iyo iimeelka waa la qariyey badbaadadaada darteed. Fadlan isticmaal chatka badbaadada leh."
+    },
+    "matchDetail": {
+      "compatibility": "Is-waafajinta",
+      "profileCompletion": "Dhammaystirka Profile-ka",
+      "mediatorApprovalNote": "Fariinta Dhexdhexaadiyaha",
+      "compatibilityBreakdown": "Falanqaynta Abushakir",
+      "sharedHobbies": "Fedhaqyada Wadajirka ah",
+      "familyValues": "Qiyamka Qoyska",
+      "conflictStyle": "Xallinta Khilaafaadka",
+      "conversationStarters": "Mawduucyada Wada-hadalka",
+      "contactInfo": "Macluumaadka Xiriirka",
+      "privacyShieldEnabled": "Badbaadinta Gaashaanka waa Daaran yahay",
+      "reportUser": "U Cabso Akoonka",
+      "blockUser": "Xannib (Block)",
+      "reportSuccess": "Cabsashada si guul leh ayaa loo diiwangeliyey.",
+      "blockSuccess": "Akoonka si guul leh ayaa loo xannibay.",
+      "blockConfirm": "Ma hubtaa inaad xannibto akoonkan? Waxaa laga saari doonaa quudkaaga.",
+      "familyValuesPrompt": "Maadaama aad labadiinuba wadaagtaan qiyamka qoyska ee {value}, ka wada hadla dhaqamada qoyskaaga.",
+      "translate": "Turjum",
+      "match": "Kullan"
+    }
   },
   "Footer": {
     "tagline": "ቤተሰብ | Beteseb - Isku xirka Qoysaska Habesha ee Caalamka",

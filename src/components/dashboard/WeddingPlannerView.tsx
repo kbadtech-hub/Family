@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { 
   Heart, 
   Sparkles, 
@@ -92,6 +92,23 @@ const BEAUTY_PACKAGES: PlannerPackage[] = [
 
 export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'ETB' | 'USD' }) {
   const locale = useLocale();
+  const t = useTranslations('Dashboard.planner');
+
+  const getPkgName = (pkgId: string, defaultName: string) => {
+    try {
+      return t(`packages.${pkgId}.name`);
+    } catch (e) {
+      return defaultName;
+    }
+  };
+
+  const getPkgDesc = (pkgId: string, defaultDesc: string) => {
+    try {
+      return t(`packages.${pkgId}.desc`);
+    } catch (e) {
+      return defaultDesc;
+    }
+  };
   const [selectedHall, setSelectedHall] = useState<string>('hall-basic');
   const [selectedPhoto, setSelectedPhoto] = useState<string>('photo-basic');
   const [selectedBeauty, setSelectedBeauty] = useState<string>('beauty-basic');
@@ -192,7 +209,7 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
     e.preventDefault();
     if (!userId) return;
     if (!weddingDate) {
-      alert(locale === 'am' ? 'እባክዎ የታሰበውን የሰርግ ቀን ያስገቡ።' : 'Please select a wedding date.');
+      alert(t('selectDateAlert'));
       return;
     }
 
@@ -223,9 +240,7 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
       });
 
       if (error) throw error;
-      alert(locale === 'am' 
-        ? 'የሰርግ እቅድ ጥያቄዎ በተሳካ ሁኔታ ተልኳል! አማካሪዎቻችን በቅርቡ ያነጋግሩዎታል።' 
-        : 'Your wedding planning inquiry has been submitted! Our planners will contact you shortly.');
+      alert(t('successAlert'));
       
       setNotes('');
       setWeddingDate('');
@@ -248,24 +263,22 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
           <div className="flex-1 text-center md:text-left space-y-6">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full text-primary text-[10px] font-black uppercase tracking-[0.25em]">
               <Crown size={14} className="text-primary fill-primary/10" /> 
-              {locale === 'am' ? 'የሰርግ ዝግጅት እቅድ አውጪ' : 'Royal Wedding Planner'}
+              {t('title')}
             </div>
             <h2 className="text-4xl md:text-6xl font-black italic leading-tight tracking-[calc(-0.04em)]">
-              {locale === 'am' ? 'ውብ ህልምዎን \n እውን እናድርግ።' : 'Design Your \n Royal Tomorrow.'}
+              {t('subtitle')}
             </h2>
             <p className="text-white/60 text-base leading-relaxed max-w-md mx-auto md:mx-0">
-              {locale === 'am'
-                ? 'ምርጥ የሰርግ አዳራሾችን፣ የምግብ ዝግጅቶችን፣ አልባሳትን እና የፎቶ ባለሙያዎችን በአንድ ላይ ያቅዱ።'
-                : 'Curate your perfect wedding with verified premium halls, gourmet traditional catering, designer attire, and cinema experts.'}
+              {t('introText')}
             </p>
           </div>
           
           <div className="w-full md:w-auto grid grid-cols-2 gap-4">
              {[
-               { icon: UtensilsCrossed, label: locale === 'am' ? 'የምግብ ዝግጅት' : 'Gourmet Buffet' },
-               { icon: Camera, label: locale === 'am' ? 'ፎቶ እና ቪዲዮ' : 'Cinema & Photos' },
-               { icon: Crown, label: locale === 'am' ? 'ዲዛይነር ልብስ' : 'Royal Attire' },
-               { icon: Heart, label: locale === 'am' ? 'ውብ ትዝታ' : 'Perfect Memories' }
+               { icon: UtensilsCrossed, label: t('gourmetBuffet') },
+               { icon: Camera, label: t('cinemaPhotos') },
+               { icon: Crown, label: t('royalAttire') },
+               { icon: Heart, label: t('perfectMemories') }
              ].map((item, i) => (
                 <div key={i} className="p-6 bg-white/5 rounded-[2.5rem] border border-white/10 flex flex-col items-center gap-3 text-center">
                    <item.icon className="text-primary" size={24} />
@@ -287,7 +300,7 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
             </div>
             <div>
               <h3 className="font-black text-accent italic uppercase tracking-tighter text-lg">
-                {locale === 'am' ? 'አዳራሽ እና ምግብ' : 'Halls & Catering'}
+                {t('hallCatering')}
               </h3>
               <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Select Category Package</p>
             </div>
@@ -308,12 +321,12 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
                   onChange={() => setSelectedHall(pkg.id)}
                   className="absolute top-5 right-5 accent-primary" 
                 />
-                <h4 className="font-bold text-sm text-accent pr-6">{locale === 'am' ? pkg.nameAm : pkg.name}</h4>
+                <h4 className="font-bold text-sm text-accent pr-6">{getPkgName(pkg.id, pkg.name)}</h4>
                 <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wider">
                   {currency === 'USD' ? '$' : 'Br'} {currency === 'USD' ? pkg.priceUsd.toLocaleString() : pkg.priceEtb.toLocaleString()}
                 </p>
                 <p className="text-[10px] text-gray-500 font-medium mt-3 leading-relaxed">
-                  {locale === 'am' ? pkg.descriptionAm : pkg.description}
+                  {getPkgDesc(pkg.id, pkg.description)}
                 </p>
               </label>
             ))}
@@ -328,7 +341,7 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
             </div>
             <div>
               <h3 className="font-black text-accent italic uppercase tracking-tighter text-lg">
-                {locale === 'am' ? 'ፎቶ እና ቪዲዮ' : 'Photo & Cinema'}
+                {t('photoCinema')}
               </h3>
               <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Select Camera Package</p>
             </div>
@@ -349,12 +362,12 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
                   onChange={() => setSelectedPhoto(pkg.id)}
                   className="absolute top-5 right-5 accent-primary" 
                 />
-                <h4 className="font-bold text-sm text-accent pr-6">{locale === 'am' ? pkg.nameAm : pkg.name}</h4>
+                <h4 className="font-bold text-sm text-accent pr-6">{getPkgName(pkg.id, pkg.name)}</h4>
                 <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wider">
                   {currency === 'USD' ? '$' : 'Br'} {currency === 'USD' ? pkg.priceUsd.toLocaleString() : pkg.priceEtb.toLocaleString()}
                 </p>
                 <p className="text-[10px] text-gray-500 font-medium mt-3 leading-relaxed">
-                  {locale === 'am' ? pkg.descriptionAm : pkg.description}
+                  {getPkgDesc(pkg.id, pkg.description)}
                 </p>
               </label>
             ))}
@@ -369,7 +382,7 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
             </div>
             <div>
               <h3 className="font-black text-accent italic uppercase tracking-tighter text-lg">
-                {locale === 'am' ? 'ውበት እና አልባሳት' : 'Beauty & Attire'}
+                {t('beautyAttire')}
               </h3>
               <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Select Styling Package</p>
             </div>
@@ -390,12 +403,12 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
                   onChange={() => setSelectedBeauty(pkg.id)}
                   className="absolute top-5 right-5 accent-primary" 
                 />
-                <h4 className="font-bold text-sm text-accent pr-6">{locale === 'am' ? pkg.nameAm : pkg.name}</h4>
+                <h4 className="font-bold text-sm text-accent pr-6">{getPkgName(pkg.id, pkg.name)}</h4>
                 <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wider">
                   {currency === 'USD' ? '$' : 'Br'} {currency === 'USD' ? pkg.priceUsd.toLocaleString() : pkg.priceEtb.toLocaleString()}
                 </p>
                 <p className="text-[10px] text-gray-500 font-medium mt-3 leading-relaxed">
-                  {locale === 'am' ? pkg.descriptionAm : pkg.description}
+                  {getPkgDesc(pkg.id, pkg.description)}
                 </p>
               </label>
             ))}
@@ -410,119 +423,16 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
         {/* Dynamic Cost Estimator summary */}
         <div className="bg-[#FAF8F5] p-10 rounded-[3rem] border border-border/80 lg:col-span-1 space-y-6">
           <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-wider">
-            <Calculator size={14} /> {locale === 'am' ? 'የዋጋ ስሌት ማጠቃለያ' : 'Cost Estimation summary'}
+            <Calculator size={14} /> {t('costEstimation')}
           </div>
           
           <div className="space-y-3 border-b border-border pb-6 text-xs font-semibold text-gray-600">
             <div className="flex justify-between">
-              <span>{locale === 'am' ? 'አዳራሽ እና ምግብ' : 'Venue & Food'}</span>
+              <span>{t('venueFood')}</span>
               <span className="text-accent">{currency === 'USD' ? '$' : 'Br'} {hallPrice.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
-              <span>{locale === 'am' ? 'ፎቶ እና ቪዲዮ' : 'Photos & Video'}</span>
-              <span className="text-accent">{currency === 'USD' ? '$' : 'Br'} {photoPrice.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>{locale === 'am' ? 'ውበት እና አልባሳት' : 'Beauty & Clothes'}</span>
-              <span className="text-accent">{currency === 'USD' ? '$' : 'Br'} {beautyPrice.toLocaleString()}</span>
-            </div>
-          </div>
-          
-          <div className="flex justify-between items-center">
-            <span className="font-black text-xs text-gray-400 uppercase tracking-widest">{locale === 'am' ? 'ጠቅላላ ዋጋ (ግምት)' : 'Total Estimate'}</span>
-            <span className="text-2xl font-black text-primary">
-              {currency === 'USD' ? '$' : 'Br'} {totalPrice.toLocaleString()}
-            </span>
-          </div>
-        </div>
-
-        {/* Inquiry Form */}
-        <div className="bg-white p-10 md:p-12 rounded-[3rem] border border-muted lg:col-span-2 space-y-8">
-          <div>
-            <h3 className="text-2xl font-black text-accent italic tracking-tighter">{locale === 'am' ? 'የሰርግ አማካሪ ያግኙ' : 'Inquire / Book Consultation'}</h3>
-            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mt-1">Free consultation inquiry with our wedding designers</p>
-          </div>
-          
-          <form onSubmit={handleInquirySubmit} className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <label className="block">
-                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Proposed Date</span>
-                <input 
-                  type="date" 
-                  required
-                  value={weddingDate}
-                  onChange={(e) => setWeddingDate(e.target.value)}
-                  className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none focus:ring-1 focus:ring-primary/20"
-                />
-              </label>
-
-              <label className="block">
-                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Time Slot</span>
-                <select
-                  value={selectedSlot}
-                  onChange={(e) => setSelectedSlot(e.target.value)}
-                  className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none focus:ring-1 focus:ring-primary/20 text-accent font-semibold"
-                >
-                  <option value="10:00 AM">10:00 AM</option>
-                  <option value="11:30 AM">11:30 AM</option>
-                  <option value="02:00 PM">02:00 PM</option>
-                  <option value="03:30 PM">03:30 PM</option>
-                  <option value="05:00 PM">05:00 PM</option>
-                </select>
-              </label>
-
-              <label className="block">
-                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Guest Count</span>
-                <input 
-                  type="number" 
-                  min={50}
-                  max={2000}
-                  value={estimatedGuests}
-                  onChange={(e) => setEstimatedGuests(parseInt(e.target.value))}
-                  className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none focus:ring-1 focus:ring-primary/20"
-                />
-              </label>
-            </div>
-
-            <label className="block">
-              <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Special requests / custom notes</span>
-              <textarea 
-                rows={3}
-                placeholder={locale === 'am' ? 'እባክዎ የተለየ ፍላጎት ካለዎት እዚህ ይግለጹ...' : 'Write custom requirements here...'}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none focus:ring-1 focus:ring-primary/20 font-medium"
-              />
-            </label>
-
-            <button 
-              type="submit"
-              disabled={isSubmitting || !weddingDate}
-              className="w-full btn-primary py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] disabled:opacity-50 flex items-center justify-center gap-2 group"
-            >
-              {isSubmitting ? 'SENDING INQUIRY...' : (
-                <>
-                  {locale === 'am' ? 'ጥያቄ ላክ' : 'Send Planner Inquiry'} 
-                  <ArrowRight size={14} className="group-hover:translate-x-1.5 transition-transform" />
-                </>
-              )}
-            </button>
-          </form>
-        </div>
-
-      </div>
-
-      {/* Verified Vendors Grid Section (Step 4) */}
-      <div className="space-y-6">
-        <div>
-          <h3 className="text-xl font-black text-accent tracking-tighter uppercase italic flex items-center gap-2">
-            <Sparkles className="text-primary fill-primary/10" size={20} />
-            {locale === 'am' ? 'የተረጋገጡ የሰርግ አገልግሎት አቅራቢዎች' : 'Verified Wedding Vendors'}
-          </h3>
-          <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">
-            {locale === 'am' 
-              ? 'በቤተሰብ የተረጋገጡ ምርጥ ሰርግ አዳራሾች፥ ዲዛይነሮች እና ፎቶግራፍ አንሺዎች' 
-              : 'Beteseb-partnered luxury wedding services, venues, and cinema studios'}
+              <span>{t('verifiedVendorsSubtitle')}
           </p>
         </div>
 
@@ -550,19 +460,17 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
         <div>
           <h3 className="text-xl font-black text-accent tracking-tighter uppercase italic flex items-center gap-2">
             <Calendar className="text-primary fill-primary/10" size={20} />
-            {locale === 'am' ? 'የእርስዎ የቀጠሮ ጥያቄዎች' : 'Your Consultation Bookings'}
+            {t('bookings')}
           </h3>
           <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">
-            {locale === 'am' 
-              ? 'የሰርግ እቅድ አውጪ የምክር እና የሂሳብ ግምት ቀጠሮዎች ዝርዝር' 
-              : 'Track the status of your royal wedding planning consultations'}
+            {t('bookingsSubtitle')}
           </p>
         </div>
 
         <div className="bg-white rounded-[2.5rem] border border-muted p-8 shadow-sm">
           {bookings.length === 0 ? (
             <p className="text-center text-xs text-gray-400 font-bold uppercase tracking-wider py-6">
-              {locale === 'am' ? 'እስካሁን ምንም ቀጠሮ አልተያዘም።' : 'No planning consultations scheduled yet.'}
+              {t('noBookings')}
             </p>
           ) : (
             <div className="divide-y divide-muted/50">

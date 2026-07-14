@@ -127,9 +127,21 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
       setGuardian(data);
       // Queue SMS notification task for the guardian
       if (guardianPhone) {
-        const smsContent = profile?.preferred_language === 'am'
-          ? `ሰላም፥ ${profile?.full_name || 'የቤተሰብ እጩ'} እርስዎን የሚዜ/ወላጅ አስታራቂ አድርጎ መርጦዎታል። የገቡበት ኮድ፡ ${data.access_code}። በዚ ሊንክ ይግቡ፡ http://beteseb1.online/${profile?.preferred_language || 'en'}/guardian`
-          : `Hello, ${profile?.full_name || 'a Beteseb candidate'} has invited you to be their family mediator. Your access code is: ${data.access_code}. Login here: http://beteseb1.online/${profile?.preferred_language || 'en'}/guardian`;
+        let smsContent = '';
+        const lang = profile?.preferred_language || 'en';
+        if (lang === 'am') {
+          smsContent = `ሰላም፥ ${profile?.full_name || 'የቤተሰብ እጩ'} እርስዎን የሚዜ/ወላጅ አስታራቂ አድርጎ መርጦዎታል። የገቡበት ኮድ፡ ${data.access_code}። በዚ ሊንክ ይግቡ፡ http://beteseb1.online/am/guardian`;
+        } else if (lang === 'om') {
+          smsContent = `Akkam, ${profile?.full_name || 'kandidatii Beteseb'} akka mizeetti si afeereera. Koodiin kee: ${data.access_code}. Asitti seeni: http://beteseb1.online/om/guardian`;
+        } else if (lang === 'ti') {
+          smsContent = `ሰላም፥ ${profile?.full_name || 'እጩ ቤተሰብ'} ንዓኹም ከም ዓራቂ/ሚዜ መሪጹኹም ኣሎ። ኮድኩም፡ ${data.access_code} እዩ። ኣብዚ ይእተዉ፡ http://beteseb1.online/ti/guardian`;
+        } else if (lang === 'so') {
+          smsContent = `Haye, ${profile?.full_name || 'kandidaat Beteseb'} wuxuu kuu martiqaaday inaad noqoto dhexdhexaadiye. Koodhkaagu waa: ${data.access_code}. Halkan ka gal: http://beteseb1.online/so/guardian`;
+        } else if (lang === 'ar') {
+          smsContent = `مرحباً، لقد قام ${profile?.full_name || 'مرشح بيتسب'} بدعوتك لتكون مصلحاً عائلياً. رمز الوصول الخاص بك هو: ${data.access_code}. سجل الدخول هنا: http://beteseb1.online/ar/guardian`;
+        } else {
+          smsContent = `Hello, ${profile?.full_name || 'a Beteseb candidate'} has invited you to be their family mediator. Your access code is: ${data.access_code}. Login here: http://beteseb1.online/en/guardian`;
+        }
         await queueSMS(guardianPhone, smsContent).catch(() => {});
       }
       alert("Guardian connection code generated successfully!");
@@ -162,7 +174,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
         `Hello ${vouchName}, you have been invited to vouch for ${profile?.full_name || 'a Beteseb candidate'}. Vouch here: http://beteseb1.online/${profile?.preferred_language || 'en'}/vouch?id=${data.id}`
       ).catch(() => {});
 
-      alert(profile?.preferred_language === 'am' ? 'የምስክርነት ግብዣ ጥያቄ በተሳካ ሁኔታ ተልኳል!' : 'Character witness request sent successfully!');
+      alert(locale === 'am' ? 'የምስክርነት ግብዣ ጥያቄ በተሳካ ሁኔታ ተልኳል!' : 'Character witness request sent successfully!');
     } else {
       alert("Failed to send invite: " + (error?.message || "Unknown error"));
     }
@@ -429,21 +441,17 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                    className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary"
                  />
                  <span className="text-xs font-bold text-slate-600">
-                   {profile?.preferred_language === 'am' 
-                     ? 'የአቡሻህር ባህላዊ የኮከብ ምልክት ተኳኋኝነትን አሳይ (Enable Abushakir Star Matching)'
-                     : 'Enable Abushakir Star Sign Matching (Optional)'}
+                   {t('enableAbushakir')}
                  </span>
                </label>
                <p className="text-[10px] text-gray-400 font-semibold italic pl-8">
-                 {profile?.preferred_language === 'am'
-                   ? '*ሲበራ የኮከብ ምልክትዎን በኢትዮጵያ ዘመን አቆጣጠር መሰረት በማስላት ተጨማሪ ባህላዊ ተኳኋኝነትን ያሳያል።'
-                   : '*Allows supplementary cultural/heritage calculations based on the Ethiopian calendar.'}
+                 {t('abushakirHint')}
                </p>
              </div>
 
              <div className="space-y-4 pt-4 col-span-full border-t border-gray-100">
                 <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">
-                  {profile?.preferred_language === 'am' ? 'የደህንነት እና ሚስጥራዊነት ቅንጅቶች' : 'Privacy Settings'}
+                  {t('privacySettings')}
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                   <label className="flex items-center gap-3 cursor-pointer">
@@ -454,7 +462,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                       className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary"
                     />
                     <span className="text-xs font-bold text-slate-600">
-                      {profile?.preferred_language === 'am' ? 'እድሜዬ ለሌሎች ይታይ (Show my Age)' : 'Show my Age on matching card'}
+                      {t('showAge')}
                     </span>
                   </label>
 
@@ -466,7 +474,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                       className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary"
                     />
                     <span className="text-xs font-bold text-slate-600">
-                      {profile?.preferred_language === 'am' ? 'መኖሪያ ከተማዬ ለሌሎች ይታይ (Show my City)' : 'Show my City on matching card'}
+                      {t('showCity')}
                     </span>
                   </label>
 
@@ -478,7 +486,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                       className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary"
                     />
                     <span className="text-xs font-bold text-slate-600">
-                      {profile?.preferred_language === 'am' ? 'የጓደኝነት ጥያቄዎችን ፍቀድ (Allow Friend Requests)' : 'Allow others to send me Friend Requests'}
+                      {t('allowFriendRequests')}
                     </span>
                   </label>
                 </div>
@@ -569,10 +577,10 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
         <div className="space-y-1">
           <h3 className="text-lg md:text-xl font-black text-accent italic tracking-tighter flex items-center gap-2 justify-center md:justify-start">
              <ShieldCheck size={20} className="text-primary" /> 
-             {profile?.preferred_language === 'am' ? 'የሚዜ / የአስታራቂ ሲስተም (Mize System)' : 'Guardian / Mediator (Mize) System'}
+             {t('guardianSystem')}
           </h3>
           <p className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-widest">
-            {profile?.preferred_language === 'am' ? 'ባህላዊ እሴትን የጠበቀ የቤተሰብ እቅድ መከታተያ' : 'Culturally Safe Mediator Integration'}
+             {t('guardianSub')}
           </p>
         </div>
 
@@ -581,7 +589,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
              <div className="flex justify-between items-center flex-wrap gap-4">
                 <div>
                    <p className="text-xs font-bold text-accent">
-                      {profile?.preferred_language === 'am' ? 'የአስታራቂ ዝርዝር' : 'Linked Mediator'}
+                      {t('linkedMediator')}
                    </p>
                    <p className="text-sm font-medium text-gray-500 mt-1">{guardian.guardian_email || guardian.guardian_phone}</p>
                 </div>
@@ -593,23 +601,19 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
              <div className="p-5 bg-white rounded-2xl border border-primary/20 flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div>
                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                      {profile?.preferred_language === 'am' ? 'የሚዜ መግቢያ ኮድ' : 'Mediator Access Code'}
+                      {t('mediatorAccessCode')}
                    </p>
                    <p className="text-2xl font-black tracking-widest text-primary mt-1">{guardian.access_code}</p>
                 </div>
                 <p className="text-[10px] text-gray-400 font-bold max-w-xs leading-relaxed text-center sm:text-left">
-                   {profile?.preferred_language === 'am' 
-                     ? 'ይህንን ኮድ ለአስታራቂዎ (ለምሳሌ ለሚዜ ወይም ለወላጅዎ) ይስጡ። እቃውን እና ተኳኋኝነትዎን በደህንነት ለመከታተል ይጠቀሙበታል።' 
-                     : 'Provide this code to your mediator. They can use it to securely log in and overview your compatibility journey.'}
+                   {t('mediatorCodeHint')}
                 </p>
              </div>
           </div>
         ) : (
           <div className="space-y-6">
              <p className="text-xs text-gray-500 leading-relaxed font-bold">
-                {profile?.preferred_language === 'am'
-                  ? 'የኢትዮጵያን ባህል በጠበቀ መልኩ፥ ትዳርን በግልጽነት ለመምረጥ አስታራቂ (የሚዜ ወይም ወላጅ) ማገናኘት ይችላሉ። አስታራቂዎ በመተግበሪያው ላይ ተኳኋኝነትዎን እንዲመለከት ፍቃድ ይሰጡታል።'
-                  : 'In line with our cultural values, you can connect a mediator (such as a parent or mize) to overview your matches. They will receive secure access to guide you.'}
+                {t('mediatorInfo')}
              </p>
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <input 
@@ -632,7 +636,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                disabled={isLinking || (!guardianEmail && !guardianPhone)}
                className="w-full bg-primary text-white py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20 disabled:opacity-50"
              >
-                {isLinking ? 'GENERATING CODE...' : 'Generate Mediator Access Code (የሚዜ አገናኝ ኮድ ፍጠር)'}
+                 {isLinking ? t('generatingCode') : t('generateMediatorCode')}
              </button>
           </div>
         )}
@@ -641,24 +645,22 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
       <div className="bg-white rounded-[2rem] md:rounded-[3rem] p-8 md:p-10 border border-muted shadow-xl space-y-8">
         <div className="space-y-1">
           <h3 className="text-lg md:text-xl font-black text-accent italic tracking-tighter flex items-center gap-2 justify-center md:justify-start">
-             {profile?.preferred_language === 'am' ? 'የታማኝነት ምስክርነት (Character Reference)' : 'Character Vouching & References'}
+             {t('characterReferences')}
           </h3>
           <p className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-widest">
-            {profile?.preferred_language === 'am' ? 'ባህላዊ እና ማህበረሰባዊ እምነት ማረጋገጫ' : 'Invite Witnesses to Verify Intent'}
+             {t('inviteWitnesses')}
           </p>
         </div>
 
         <div className="space-y-6">
            <p className="text-xs text-slate-500 leading-relaxed font-semibold">
-              {profile?.preferred_language === 'am'
-                ? 'የሚያምኑትን ጓደኛ፣ የሃይማኖት አባት ወይም የቅርብ የስራ ባልደረባ በመጋበዝ ምስክርነት እንዲሰጡዎት ማድረግ ይችላሉ። ምስክርነቱ ሲረጋገጥ በመገለጫዎ ላይ የታማኝነት ባጅ ይታያል።'
-                : 'Build credit by inviting a trusted friend, spiritual leader, family elder, or colleague to vouch for your serious marriage intent.'}
+              {t('referencesInfo')}
            </p>
 
            {vouchRequests.length > 0 && (
              <div className="space-y-3">
                <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2">
-                 {profile?.preferred_language === 'am' ? 'የምስክርነቶች ሁኔታ' : 'References Status'}
+                 {t('referencesStatus')}
                </h4>
                <div className="grid grid-cols-1 gap-3">
                  {vouchRequests.map(vouch => (
@@ -683,7 +685,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
 
            <div className="border-t border-muted pt-6 space-y-4">
               <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">
-                {profile?.preferred_language === 'am' ? 'አዲስ ምስክር ጋብዝ' : 'Invite a New Witness'}
+                {t('inviteNewWitness')}
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                  <input 
@@ -726,7 +728,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                 disabled={isSendingVouchInvite || !vouchName || !vouchEmail}
                 className="w-full btn-primary py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] disabled:opacity-50"
               >
-                 {isSendingVouchInvite ? 'SENDING INVITATION...' : 'Send Vouch Invite (የምስክርነት ግብዣ ላክ)'}
+                 {isSendingVouchInvite ? t('sendingInvitation') : t('sendVouchInvite')}
               </button>
            </div>
         </div>
@@ -738,10 +740,10 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
           <div className="space-y-1">
             <h3 className="text-lg md:text-xl font-black text-accent italic tracking-tighter flex items-center gap-2">
                <Coins className="text-amber-500 animate-pulse" />
-               {profile?.preferred_language === 'am' ? 'የሳንቲም ኮሌጅ እና ሂሳብ' : 'Wallet & Coin Ledger'}
+               {t('walletCoinLedger')}
             </h3>
             <p className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-widest">
-              {profile?.preferred_language === 'am' ? 'የቀረው የሳንቲም መጠን እና የግብይቶች ታሪክ' : 'Coin balance and full transaction history'}
+              {t('coinBalanceHistory')}
             </p>
           </div>
           <div className="px-5 py-3 bg-amber-500/10 rounded-2xl border border-amber-500/20 text-center">
@@ -752,7 +754,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
 
         <div className="space-y-4">
            <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">
-             {profile?.preferred_language === 'am' ? 'የግብይት ታሪክ' : 'Transaction History'}
+             {t('transactionHistory')}
            </h4>
 
            {loadingTx ? (
@@ -761,9 +763,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
              </div>
            ) : transactions.length === 0 ? (
              <p className="text-xs text-slate-400 leading-relaxed font-semibold italic text-center py-4 bg-muted/20 rounded-2xl">
-               {profile?.preferred_language === 'am' 
-                 ? 'እስካሁን ምንም የሳንቲም ግብይት አልተደረገም' 
-                 : 'No transaction records found.'}
+               {t('noTransactions')}
              </p>
            ) : (
              <div className="max-h-60 overflow-y-auto space-y-3 pr-2">
@@ -791,33 +791,27 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
       <div className="bg-white rounded-[2rem] md:rounded-[3rem] p-8 md:p-10 border border-red-100 shadow-xl space-y-8">
         <div className="space-y-1">
           <h3 className="text-lg md:text-xl font-black text-red-600 italic tracking-tighter flex items-center gap-2 justify-center md:justify-start">
-             {profile?.preferred_language === 'am' ? 'አካውንት በዘላቂነት ማጥፊያ (Danger Zone)' : 'Account Lifecycle (Danger Zone)'}
+             {t('dangerZone')}
           </h3>
           <p className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-widest">
-            {profile?.preferred_language === 'am' ? 'የአካውንት መረጃዎችን ሙሉ በሙሉ ማጥፊያ' : 'Unconditional Account Deletion'}
+             {t('unconditionalDeletion')}
           </p>
         </div>
         
         <div className="space-y-6">
            <p className="text-xs text-slate-500 leading-relaxed font-semibold">
-              {profile?.preferred_language === 'am'
-                ? 'ማስጠንቀቂያ፦ አካውንቶን ማጥፋት የእርስዎን መገለጫ ፎቶዎች፣ ውይይቶች እና ሁሉንም መረጃዎች ከዳታቤዝ ውስጥ ሙሉ በሙሉ ያጠፋል። ይህ ድርጊት ወደ ኋላ መመለስ አይቻልም።'
-                : 'Warning: Deleting your account will completely and permanently expunge all associated user data, profile images, and chat logs from the database. This action is irreversible.'}
+              {t('deletionWarning')}
            </p>
            
            <button 
              onClick={async () => {
-               const confirmMsg = profile?.preferred_language === 'am'
-                 ? 'በእርግጥ አካውንትዎን በዘላቂነት ማጥፋት ይፈልጋሉ? ይህ ድርጊት ሊመለስ አይችልም!'
-                 : 'Are you absolutely sure you want to permanently delete your account? This will erase all your messages, profile details, and files. This action is irreversible.';
+               const confirmMsg = t('deleteConfirm');
                
                if (confirm(confirmMsg)) {
                  const { error } = await supabase.rpc('delete_own_user_account');
                  if (!error) {
                    await supabase.auth.signOut();
-                   alert(profile?.preferred_language === 'am' 
-                     ? 'አካውንትዎ በደህንነት ተሰርዟል።' 
-                     : 'Your account and all associated data have been permanently deleted.');
+                   alert(t('deleteSuccess'));
                    window.location.href = '/';
                  } else {
                    alert("Deletion failed: " + error.message);
@@ -826,7 +820,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
              }}
              className="w-full bg-red-600 hover:bg-red-700 text-white py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-red-500/20"
            >
-              {profile?.preferred_language === 'am' ? 'አካውንት በዘላቂነት ሰርዝ' : 'Permanently Delete My Account'}
+              {t('deleteAccountButton')}
            </button>
         </div>
       </div>

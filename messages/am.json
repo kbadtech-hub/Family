@@ -145,7 +145,186 @@
         "usernameTaken": "ይህ መለያ ስም አስቀድሞ ተይዟል። እባክዎ ሌላ ይምረጡ።",
         "updateSuccess": "መገለጫዎ በትክክል ተስተካክሏል!",
         "updateFailed": "ማስተካከል አልተሳካም"
+      },
+      "enableAbushakir": "የአቡሻህር ባህላዊ የኮከብ ምልክት ተኳኋኝነትን አሳይ (Enable Abushakir Star Matching)",
+      "abushakirHint": "*በኢትዮጵያ ዘመን አቆጣጠር መሠረት ተጨማሪ ባህላዊ/የቅርስ ተኳኋኝነት ስሌቶችን ይፈቅዳል።",
+      "privacySettings": "የደህንነት እና ሚስጥራዊነት ቅንጅቶች",
+      "showAge": "እድሜዬ በካርዱ ላይ ለሌሎች ይታይ",
+      "showCity": "መኖሪያ ከተማዬ በካርዱ ላይ ለሌሎች ይታይ",
+      "allowFriendRequests": "ሌሎች የጓደኝነት ጥያቄዎችን እንዲልኩልኝ ፍቀድ",
+      "guardianSystem": "የሚዜ / የአስታራቂ ሲስተም (Mize System)",
+      "guardianSub": "ባህላዊ እሴትን የጠበቀ የቤተሰብ እቅድ መከታተያ",
+      "linkedMediator": "የተገናኘው አስታራቂ",
+      "mediatorAccessCode": "የአስታራቂ መግቢያ ኮድ",
+      "mediatorCodeHint": "ይህንን ኮድ ለአስታራቂዎ (ለምሳሌ ለሚዜ ወይም ለወላጅዎ) ይስጡ። እቃውን እና ተኳኋኝነትዎን በደህንነት ለመከታተል ይጠቀሙበታል።",
+      "mediatorInfo": "የኢትዮጵያን ባህል በጠበቀ መልኩ፥ ትዳርን በግልጽነት ለመምረጥ አስታራቂ (የሚዜ ወይም ወላጅ) ማገናኘት ይችላሉ። አስታራቂዎ በመተግበሪያው ላይ ተኳኋኝነትዎን እንዲመለከት ፍቃድ ይሰጡታል።",
+      "generateMediatorCode": "የሚዜ አገናኝ ኮድ ፍጠር",
+      "characterReferences": "የታማኝነት ምስክርነት (Character Reference)",
+      "inviteWitnesses": "ባህላዊ እና ማህበረሰባዊ እምነት ማረጋገጫ",
+      "referencesInfo": "የሚያምኑትን ጓደኛ፣ የሃይማኖት አባት ወይም የቅርብ የስራ ባልደረባ በመጋበዝ ምስክርነት እንዲሰጡዎት ማድረግ ይችላሉ። ምስክርነቱ ሲረጋገጥ በመገለጫዎ ላይ የታማኝነት ባጅ ይታያል።",
+      "referencesStatus": "የምስክርነቶች ሁኔታ",
+      "inviteNewWitness": "አዲስ ምስክር ጋብዝ",
+      "sendVouchInvite": "የምስክርነት ግብዣ ላክ",
+      "walletCoinLedger": "የሳንቲም ኮሌጅ እና ሂሳብ",
+      "coinBalanceHistory": "የቀረው የሳንቲም መጠን እና የግብይቶች ታሪክ",
+      "transactionHistory": "የግብይት ታሪክ",
+      "noTransactions": "እስካሁን ምንም የሳንቲም ግብይት አልተደረገም",
+      "dangerZone": "አካውንት በዘላቂነት ማጥፊያ (Danger Zone)",
+      "unconditionalDeletion": "የአካውንት መረጃዎችን ሙሉ በሙሉ ማጥፊያ",
+      "deletionWarning": "ማስጠንቀቂያ፦ አካውንቶን ማጥፋት የእርስዎን መገለጫ ፎቶዎች፣ ውይይቶች እና ሁሉንም መረጃዎች ከዳታቤዝ ውስጥ ሙሉ በሙሉ ያጠፋል። ይህ ድርጊት ወደ ኋላ መመለስ አይቻልም።",
+      "deleteAccountButton": "አካውንት በዘላቂነት ሰርዝ",
+      "deleteConfirm": "በእርግጥ አካውንትዎን በዘላቂነት ማጥፋት ይፈልጋሉ? ይህ ድርጊት ሊመለስ አይችልም!",
+      "deleteSuccess": "አካውንትዎ በደህንነት ተሰርዟል።",
+      "generatingCode": "ኮድ በመፍጠር ላይ...",
+      "sendingInvitation": "ግብዣ በመላክ ላይ..."
+    },
+    "planner": {
+      "title": "የሰርግ እቅድ አውጪ",
+      "subtitle": "የነገውን የተባረከ ህይወትዎን ዛሬ ያቅዱ።",
+      "hallCatering": "አዳራሽ እና የምግብ ዝግጅት",
+      "photoCinema": "ፎቶ እና ቪዲዮ ቀረጻ",
+      "beautyAttire": "ውበት እና የሙሽራ ልብስ",
+      "costEstimation": "የወጪ ግምት ማጠቃለያ",
+      "venueFood": "ቦታ እና ምግብ",
+      "photosVideo": "ፎቶ እና ቪዲዮ",
+      "beautyClothes": "ውበት እና አልባሳት",
+      "totalEstimate": "አጠቃላይ ግምት",
+      "inquireBook": "ያማክሩ / ቀጠሮ ይያዙ",
+      "customRequirements": "ልዩ ፍላጎቶችዎን እዚህ ይጻፉ...",
+      "sendInquiry": "ጥያቄውን ይላኩ",
+      "verifiedVendors": "የተረጋገጡ የሰርግ አቅራቢዎች",
+      "bookings": "የተያዙ የምክክር ቀጠሮዎች",
+      "noBookings": "እስካሁን ምንም የሰርግ እቅድ ምክክር ቀጠሮ አልተያዘም።",
+      "gourmetBuffet": "ቡፌ",
+      "cinemaPhotos": "ሲኒማ እና ፎቶዎች",
+      "royalAttire": "የሙሽራ አልባሳት",
+      "perfectMemories": "ትውስታዎች",
+      "selectDateAlert": "እባክዎ የሰርግ ቀን ይምረጡ።",
+      "successAlert": "የሰርግ እቅድ ጥያቄዎ በተሳካ ሁኔታ ተልኳል!",
+      "sending": "በመላክ ላይ...",
+      "packages": {
+        "hall-basic": {
+          "name": "ባህላዊ የሰርግ አዳራሽ",
+          "desc": "ለ150 እንግዶች ባህላዊ የሀበሻ ጌጣጌጥ፣ ቡፌ እና ለስላሳ መጠጦችን ያካተተ አዳራሽ።"
+        },
+        "hall-premium": {
+          "name": "ሮያል ግራንድ አዳራሽ (ቅንጡ)",
+          "desc": "ምርጥ የጌጣጌጥ ዲዛይን፣ የድምፅና መብራት ዝግጅት፣ እና ምርጥ የምግብ አቅርቦት ለ300+ እንግዶች።"
+        },
+        "photo-basic": {
+          "name": "ክላሲክ የፎቶ ዝግጅት",
+          "desc": "1 ፎቶግራፍ አንሺ እና 1 ቪዲዮ ቀራጭ፣ የሃይማኖት ስነስርዓት እና የደግስ ሽፋን፣ በዲጂታል የሚላክ።"
+        },
+        "photo-premium": {
+          "name": "ሮያል ሲኒማቲክ (ወርቅ)",
+          "desc": "3 የፊልም ካሜራዎች፣ የድሮን ቀረጻ፣ 4K አጭር ፊልም፣ እና ከሰርግ በፊት የፎቶ ቀረጻ (Pre-wedding)።"
+        },
+        "beauty-basic": {
+          "name": "ባህላዊ ስታይሊንግ እና አልባሳት",
+          "desc": "ለሙሽሮች ሜካፕና የፀጉር ስታይል፣ ባህላዊ በእጅ የተሸመኑ የሀበሻ ልብሶች (በኪራይ)።"
+        },
+        "beauty-premium": {
+          "name": "ሮያል ስታይሊንግ እና የዲዛይነር ልብስ",
+          "desc": "የሙሽሪት እና ሚዜዎች ሙሉ ውበት ዝግጅት፣ እና ለሙሽሮች የሚሰጥ ልዩ የዲዛይነር ሰርግ ልብስ።"
+        }
+      },
+      "introText": "በኢትዮጵያ ምርጥ የሆኑ የሰርግ ዲዛይን፣ ቦታ፣ ውበት እና አልባሳትን በተሟላ ዋጋ ያግኙ",
+      "verifiedVendorsSubtitle": "በቤተሰብ የተረጋገጡ ምርጥ ሰርግ አዳራሾች፥ ዲዛይነሮች እና ፎቶግራፍ አንሺዎች",
+      "bookingsSubtitle": "የሰርግ እቅድ አውጪ የምክር እና የሂሳብ ግምት ቀጠሮዎች ዝርዝር"
+    },
+    "payments": {
+      "upgradePlaySuccess": "ፕሪሚየም በጎግል ፕሌይ በተሳካ ሁኔታ ተሻሽሏል!",
+      "upgradeAppSuccess": "ፕሪሚየም በአፕ ስቶር በተሳካ ሁኔታ ተሻሽሏል!",
+      "upgradeSimSuccess": "ፕሪሚየም በተሳካ ሁኔታ ተሻሽሏል (ሙከራ)!",
+      "purchaseFailed": "ክፍያው አልተሳካም: {error}",
+      "payNatively": "በቀጥታ አሁኑኑ ይክፈሉ",
+      "payOnline": "በኢንተርኔት ወዲያውኑ ይክፈሉ",
+      "payBank": "በባንክ ማስተላለፊያ / ማኑዋል",
+      "pausedNotice": "ማሳሰቢያ፦ የደንበኝነት ምዝገባዎች በአስተዳዳሪው ለጊዜው ተቋርጠዋል። እባክዎ ድጋፍ ሰጪዎችን ያግኙ።",
+      "paySafelyOnline": "በደህንነት በኦንላይን ይክፈሉ",
+      "pricingPlanTitle": "ዕቅድ ይምረጡ",
+      "pricingPlanSubtitle": "ለፍለጋዎ በር ይክፈቱ",
+      "uploadSuccess": "ደረሰኙ ለግምገማ ተልኳል። ሲጸድቅ ፕሪሚየም ይሆናሉ!",
+      "uploadFailedAlert": "እባክዎ የክፍያ ደረሰኝ ፎቶ ይጫኑ",
+      "paymentPending": "ሂሳብ በመጠባበቅ ላይ",
+      "pendingSub": "የክፍያ ማረጋገጫዎ ደርሶናል፤ አድሚኑ እስኪያጸድቀው ድረስ ጥቂት ደቂቃዎችን ይጠብቁ።",
+      "statusWaiting": "ሁኔታ፦ በአስተዳዳሪ ማረጋገጫ በመጠባበቅ ላይ",
+      "onlineCheckoutDesc": "የመረጡትን የፕሪሚየም ዕቅድ በ{gateway} በኩል ክፍያውን በቅጽበት ይፈጽሙ። መለያዎ ወዲያውኑ ይነቃል።",
+      "refundNotice": "ክፍያ በፈጸሙ በ3 ቀናት ውስጥ በማንኛውም ምክንያት ካልረኩ ሙሉ ክፍያዎን መመለስ ይችላሉ።",
+      "plans": {
+        "1m": {
+          "name": "የ1 ወር ዕቅድ",
+          "duration": "1 ወር",
+          "features": [
+            "ሙሉ የተኳኋኝነት መዳረሻ",
+            "ያልተገደበ ውይይት",
+            "በAI የተመረጡ ጥቆማዎች"
+          ]
+        },
+        "3m": {
+          "name": "የ3 ወር (Premium)",
+          "duration": "3 ወራት",
+          "features": [
+            "ሁሉንም መሰረታዊ ባህሪያት",
+            "ቀዳሚ ዝርዝር",
+            "የባለሙያ ድጋፍ"
+          ]
+        },
+        "12m": {
+          "name": "የ1 ዓመት (Family)",
+          "duration": "1 ዓመት",
+          "features": [
+            "ሁሉንም የፕሪሚየም ባህሪያት",
+            "በአካል ለሚደረጉ ዝግጅቶች መግቢያ",
+            "ያልተገደበ ድጋሚ መዛመድ"
+          ]
+        },
+        "lifetime": {
+          "name": "የዕድሜ ልክ (Lifetime)",
+          "duration": "የዕድሜ ልክ",
+          "features": [
+            "ቋሚ የፕሪሚየም ደረጃ",
+            "የቪአይፒ ድጋፍ",
+            "ምንም ማስታወቂያ የሌለው"
+          ]
+        }
       }
+    },
+    "reports": {
+      "selectReason": "የቅሬታ ምክንያትን ይምረጡ",
+      "reasonAbuse": "ስድብ ወይም ትንኮሳ",
+      "reasonExplicit": "ያልተገባ የፎቶ/ምስል ይዘት",
+      "reasonScam": "ማጭበርበር ወይም ማታለል",
+      "reasonOther": "ሌላ ምክንያት",
+      "detailsExplanation": "ዝርዝር ማብራሪያ",
+      "describeBehavior": "እባክዎ የተፈጠረውን ሁኔታ ይግለጹ...",
+      "submitReport": "ሪፖርት አድርግ",
+      "cancel": "ሰርዝ",
+      "compatibilityBreakdown": "የአቡሻኪር ተኳኋኝነት ዝርዝር",
+      "starSignDisclaimer": "*የአቡሻኪር የኮከብ ምልክት ባህላዊ አመላካች ብቻ ነው እንጂ የትዳር ስኬት ዋስትና አይሆንም።",
+      "zodiacPrompt": "• በአቡሻኪር የኮከብ ምልክት መሰረት፥ {zodiac1} እና {zodiac2} ለነገው ቤተሰባችሁ ያለውን ተጽዕኖ ተወያዩበት። •",
+      "match": "ተዛማጅ",
+      "privacyShieldInfo": "ስልክ ቁጥር እና ኢሜይል ለደህንነት ሲባል ተደብቀዋል። እባክዎ ጥበቃ የተደረገበትን የውስጥ ቻት፣ የድምጽ ወይም የቪዲዮ ጥሪን በመጠቀም ይነጋገሩ።"
+    },
+    "matchDetail": {
+      "compatibility": "ተኳኋኝነት",
+      "profileCompletion": "የመገለጫ ሙላት ደረጃ",
+      "mediatorApprovalNote": "የአስታራቂ/የሚዜ ማስታወሻ",
+      "compatibilityBreakdown": "የአቡሻኪር ተኳኋኝነት ዝርዝር",
+      "sharedHobbies": "የጋራ ፍላጎቶች",
+      "familyValues": "የቤተሰብ እሴቶች",
+      "conflictStyle": "አለመግባባት አፈታት ስታይል",
+      "conversationStarters": "የውይይት መጀመሪያ ሀሳቦች",
+      "contactInfo": "የመገናኛ መረጃ",
+      "privacyShieldEnabled": "የደህንነት ጋሻ በርቷል",
+      "reportUser": "ሪፖርት አድርግ",
+      "blockUser": "አግድ",
+      "reportSuccess": "ቅሬታዎ በተሳካ ሁኔታ ተመዝግቧል።",
+      "blockSuccess": "ተጠቃሚው በተሳካ ሁኔታ ታግዷል።",
+      "blockConfirm": "በእርግጥ ይህንን ተጠቃሚ ማገድ ይፈልጋሉ? ይህ ተጠቃሚ ከጓደኛ ዝርዝርዎ እና ከምርጫዎችዎ ውስጥ ወዲያውኑ ይወገዳል።",
+      "familyValuesPrompt": "ሁለታችሁም የ{value} እሴቶችን ስለምትደግፉ፥ በባህላዊ የቤተሰብ ግንባታ ውስጥ ዋና ዋና መሰረቶች የትኞቹ ናቸው የሚለውን ተወያዩ።",
+      "translate": "ተርጉም",
+      "match": "ተኳኋኝነት"
     }
   },
   "Community": {

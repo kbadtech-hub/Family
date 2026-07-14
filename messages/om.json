@@ -110,7 +110,188 @@
     "verifyNow": "Amma Mirkaneessaa",
     "matchingLocked": "Cufameera",
     "matchingLockedSub": "Wal-simtoota argachuuf mirkaneessuu xumuraa.",
-    "completeOnboarding": "Mirkaneessuu Xumuraa"
+    "completeOnboarding": "Mirkaneessuu Xumuraa",
+    "profile": {
+      "enableAbushakir": "Akkaataa urjii Abuushaakir dandeessisi (Optional)",
+      "abushakirHint": "*Akka lakkoofsa barahaa Itoophiyaatti herrega dabalataa hayyama.",
+      "privacySettings": "Sajata Dhuunfummaa",
+      "showAge": "Umrii kiyya kaardii irratti mul'isi",
+      "showCity": "Magaalaa kiyya kaardii irratti mul'isi",
+      "allowFriendRequests": "Warra biraatti ergaa gaaffii michummaa naaf ergan hayyami",
+      "guardianSystem": "Sirna Waliif/Mizee (Mediator System)",
+      "guardianSub": "Qindeessaa maatii sirna aadaa eeggate",
+      "linkedMediator": "Mizee walitti hidhame",
+      "mediatorAccessCode": "Koodii Mizee",
+      "mediatorCodeHint": "Koodii kana mizee ykn maatii keetiif kenni. Isaan nageenyaa fi wal-dorgommii kee hordofuuf itti fayyadamu.",
+      "mediatorInfo": "Aadaa keenya kabajuun, mizee ykn maatii kee walitti hidhuun filannoo kee hordofsisuu dandeessa.",
+      "generateMediatorCode": "Koodii Mizee Uumi",
+      "characterReferences": "Ragaa Amantii (Character Reference)",
+      "inviteWitnesses": "Mirkaneessa amantii hawaasaa",
+      "referencesInfo": "Michuu kee, abbaa amantii ykn maatii kee waamuun ragaa akka siif ta'an gochuu dandeessa. Ragaan yoo mirkanaa'e baajiin ni mul'ata.",
+      "referencesStatus": "Haala Ragaalee",
+      "inviteNewWitness": "Ragaa Haaraa Afeeri",
+      "sendVouchInvite": "Afeerraa Ragaa Ergi",
+      "walletCoinLedger": "Herrega Kooyinii fi Gurgurtaa",
+      "coinBalanceHistory": "Hamma kooyinii hafee fi seenaa gurgurtaa",
+      "transactionHistory": "Seenaa Gurgurtaa",
+      "noTransactions": "Hamma yoonaatti gurgurtaan kooyinii hin jiru",
+      "dangerZone": "Haquu Lakkoofsaa (Danger Zone)",
+      "unconditionalDeletion": "Odeeffannoo lakkoofsaa guutummaatti haquu",
+      "deletionWarning": "Akeekkachiisa: Lakkoofsa kee haquun odeeffannoo, suuraa fi haasawa kee guutummaatti ni haqa. Kun boodatti deebisamaa miti.",
+      "deleteAccountButton": "Lakkoofsa kiyya guutummaatti Haqi",
+      "deleteConfirm": "Dhuguma lakkoofsa kee haquu barbaaddaa? Kun boodatti hin deebi'u!",
+      "deleteSuccess": "Lakkoofsi kee nageenyaan haqameera.",
+      "generatingCode": "Koodii uumaa jira...",
+      "sendingInvitation": "Afeerraa ergaa jira..."
+    },
+    "planner": {
+      "title": "Qopheessaa Cidhaa (Wedding Planner)",
+      "subtitle": "Kalee kee borii har'a qopheessi.",
+      "hallCatering": "Galma fi Nyaata",
+      "photoCinema": "Suuraa fi Viidiyoo",
+      "beautyAttire": "Bareedina fi Uffata",
+      "costEstimation": "Gabaasa Gatii",
+      "venueFood": "Bakka fi Nyaata",
+      "photosVideo": "Suuraa fi Viidiyoo",
+      "beautyClothes": "Bareedina fi Uffata",
+      "totalEstimate": "Waliigala Gatii",
+      "inquireBook": "Mari'adhu / Guyyaa Qabadhu",
+      "customRequirements": "Barbaachisummaa dabalataa asitti barreessi...",
+      "sendInquiry": "Gaaffii Ergi",
+      "verifiedVendors": "Dhiyeessitoota Cidhaa Mirkanaa'an",
+      "bookings": "Guyyoota Qabaman",
+      "noBookings": "Hamma yoonaatti guyyaan qabame hin jiru.",
+      "gourmetBuffet": "Nyaata Bufee",
+      "cinemaPhotos": "Viidiyoo fi Suuraa",
+      "royalAttire": "Uffata Mootummaa",
+      "perfectMemories": "Yaadannoowwan",
+      "selectDateAlert": "Maaloo guyyaa cidhaa filadhu.",
+      "successAlert": "Gaaffiin cidhaa kee milkiin ergameera!",
+      "sending": "Ergaa jira...",
+      "packages": {
+        "hall-basic": {
+          "name": "Galma Cidhaa Aadaa",
+          "desc": "Qophii cidhaa aadaa Habashaa, bufeefi dhugaatii lallaafaa affeeraa 150f."
+        },
+        "hall-premium": {
+          "name": "Galma Mootummaa (Royal Ballroom)",
+          "desc": "Galma bareedaa, dhiyeessa nyaata addaa, meeshaalee sagaleefi ifaa ammayyaa affeeraa 300f."
+        },
+        "photo-basic": {
+          "name": "Yaadannoo Classic",
+          "desc": "Kaameraa 1 fi viidiyoo qopheessaa 1, kaardii qulqulluu fi dhiyeessa raajii cidhaa."
+        },
+        "photo-premium": {
+          "name": "Royal Cinematic (Gold)",
+          "desc": "Kaameraa 3, kaameraa qilleensaa (drone), fi suuraa cidhaan duraa (Pre-wedding)."
+        },
+        "beauty-basic": {
+          "name": "Bareedina fi Uffata Aadaa",
+          "desc": "Bareedina fuulaa fi rifeensaa, uffata aadaa Habashaa kan kireeffamu."
+        },
+        "beauty-premium": {
+          "name": "Royal Styling & Designer Wear",
+          "desc": "Bareedina VIP dabalate, uffata cidhaa designer kan dhuunfaaf kennamu."
+        }
+      },
+      "introText": "Meeshaalee, bakka, bareedina fi uffata cidhaa hundaa bakka tokkotti argadhu.",
+      "verifiedVendorsSubtitle": "Manni cidhaa kireeffamanii fi namoota suuraa kaasan kan Beteseb waliin hojjetan.",
+      "bookingsSubtitle": "Haala marii cidhaa keetii fi herrega kee hordofi."
+    },
+    "payments": {
+      "upgradePlaySuccess": "Miseensummaan Google Play kanaan fooyya'eera!",
+      "upgradeAppSuccess": "Miseensummaan App Store kanaan fooyya'eera!",
+      "upgradeSimSuccess": "Miseensummaan fooyya'eera (Yaalii)!",
+      "purchaseFailed": "Kaffaltiin hin milkoofne: {error}",
+      "payNatively": "Amma kaffali",
+      "payOnline": "Kuusi kaffaltii toora intarnetii",
+      "payBank": "Kaffaltii Baankii / Manual",
+      "pausedNotice": "Akeekkachiisa: Kaffaltiin yeroof dhaabbateera. Maaloo tajaajila qarshii qunnami.",
+      "paySafelyOnline": "Nageenyaan toora intarnetii irratti kaffali",
+      "pricingPlanTitle": "Karoora Filadhu",
+      "pricingPlanSubtitle": "Filannoo kee banadhu",
+      "uploadSuccess": "Ragaan kaffaltii ergameera. Yoo mirkanaa'e miseensa taatu!",
+      "uploadFailedAlert": "Maaloo suuraa ragaa kaffaltii ol-fe'i",
+      "paymentPending": "Kaffaltiin Eegamaa jira",
+      "pendingSub": "Ragaan kaffaltii kee nu ga'eera. Koreen keenya mirkaneessaa jira. Yoo xumurame siif banama.",
+      "statusWaiting": "HAALA: EEGGANNAA KOREE ADMII",
+      "onlineCheckoutDesc": "Kaffaltii kee sarara {gateway} irratti kaffali. Herregni kee battalatti banama.",
+      "refundNotice": "Kaffaltii raawwatanii guyyoota 3 keessatti yoo hin gammadin kaffaltii kee guutuu deebisuu dandeessa.",
+      "plans": {
+        "1m": {
+          "name": "Karoora Ji'a 1",
+          "duration": "Ji'a 1",
+          "features": [
+            "Gara seensa wal-dorgommii guutuu",
+            "Hasaa daangaa hin qabne",
+            "AI gorsa dabalataa"
+          ]
+        },
+        "3m": {
+          "name": "Ji'a 3 (Premium)",
+          "duration": "Ji'a 3",
+          "features": [
+            "Dandeettiiwwan bu'uraa hunda",
+            "Tarree dursa kennamu",
+            "Gorsa ogeessaa"
+          ]
+        },
+        "12m": {
+          "name": "Waggaa 1 (Family)",
+          "duration": "Waggaa 1",
+          "features": [
+            "Dandeettiiwwan premium hunda",
+            "Gara qophiilee qaamaan ta'an seenuu",
+            "Wal-dorgommii daangaa hin qabne"
+          ]
+        },
+        "lifetime": {
+          "name": "Akkasumaan (Lifetime)",
+          "duration": "Guutuu jireenyaa",
+          "features": [
+            "Miseensummaa premium dhaabbataa",
+            "Deeggarsa VIP",
+            "Qunnamtii beeksisa malee"
+          ]
+        }
+      }
+    },
+    "reports": {
+      "selectReason": "Sababa Koomii Filadhu",
+      "reasonAbuse": "Arraba ykn Miidhaa",
+      "reasonExplicit": "Qabiyyee saalqunnamtii",
+      "reasonScam": "Hanna ykn Gowwoomsuu",
+      "reasonOther": "Sababa biraa",
+      "detailsExplanation": "Ibsa Dabalataa",
+      "describeBehavior": "Maaloo haala uumame ibsi...",
+      "submitReport": "Koomii Ergi",
+      "cancel": "Haqi",
+      "compatibilityBreakdown": "Ibsa Wal-dorgommii Abuushaakir",
+      "starSignDisclaimer": "*Mallattoon urjii Abuushaakir ragaa aadaa qofa, milkii cidhaaf wabii miti.",
+      "zodiacPrompt": "• Urjii Abuushaakir irratti hundaa'uun, {zodiac1} fi {zodiac2} borii maatii keetiif dhiibbaa qabu irratti mari'adhaa. •",
+      "match": "Wal-dorgommii",
+      "privacyShieldInfo": "Lakkoofsi bilbilaa fi e-mailiin sababa nageenyaatiif dhokfameera. Maaloo keessoo chat, bilbila sagalee ykn viidiyoo fayyadamaa."
+    },
+    "matchDetail": {
+      "compatibility": "Waliigala",
+      "profileCompletion": "Guutummaa Profile",
+      "mediatorApprovalNote": "Yaada Mizee / Jaarsaa",
+      "compatibilityBreakdown": "Akkaataa Abuushaakir",
+      "sharedHobbies": "Fedhii Waloo",
+      "familyValues": "Qabeenya Maatii",
+      "conflictStyle": "Hiikkaa Wal-dhabdee",
+      "conversationStarters": "Marii Jalqabuuf",
+      "contactInfo": "Odeeffannoo Quunnamtii",
+      "privacyShieldEnabled": "Ilaalcha Eegumsa Cifameera",
+      "reportUser": "Koomii Ergi",
+      "blockUser": "Cufi (Block)",
+      "reportSuccess": "Koomiin kee milkiin ergameera.",
+      "blockSuccess": "Namni kun milkiin cufameera.",
+      "blockConfirm": "Miseensa kana cufuuf (block) mirkaneessitaa? Hamma tokkotti si jala balleeffamu.",
+      "familyValuesPrompt": "Lachanuu qabeenya maatii {value} waan deeggartaniif, wahee aadaa maatii irratti mari'adhaa.",
+      "translate": "Hiikki",
+      "match": "Wal-dorgommii"
+    }
   },
   "Footer": {
     "tagline": "ቤተሰብ | Beteseb - Wal-argisiisuu Maatii Habesha Addunyaa",

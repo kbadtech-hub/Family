@@ -33,6 +33,8 @@ interface MatchDetailProps {
 
 export default function MatchDetailView({ matchId, currentUserProfile, isPremium = false, onClose, onStartChat }: MatchDetailProps) {
   const [profile, setProfile] = useState<any>(null);
+  const t = useTranslations('Dashboard.matchDetail');
+  const tr = useTranslations('Dashboard.reports');
   const [photos, setPhotos] = useState<any[]>([]);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -219,7 +221,7 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
     });
     
     if (!error) {
-      alert(locale === 'am' ? 'ተጠቃሚው ሪፖርት ተደርጓል።' : 'User reported successfully.');
+      alert(t('reportSuccess'));
       setIsReportOpen(false);
       setReportDetails('');
     } else {
@@ -229,11 +231,7 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
   };
 
   const handleBlockUser = async () => {
-    const confirmBlock = confirm(
-      locale === 'am' 
-        ? 'በእርግጥ ይህንን ተጠቃሚ ማገድ ይፈልጋሉ? ይህ ተጠቃሚ ከጓደኛ ዝርዝርዎ እና ከምርጫዎችዎ ውስጥ ወዲያውኑ ይወገዳል።' 
-        : 'Are you sure you want to block this user? They will be removed from your match feed and chat list immediately.'
-    );
+    const confirmBlock = confirm(t('blockConfirm'));
     if (!confirmBlock) return;
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -246,7 +244,7 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
     });
 
     if (!error) {
-      alert(locale === 'am' ? 'ተጠቃሚው ታግዷል።' : 'User blocked successfully.');
+      alert(t('blockSuccess'));
       onClose(); // Close details view
       window.location.reload(); // Refresh candidates feed
     } else {
@@ -314,7 +312,7 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                {/* Compatibility & Trust Row */}
                <div className="flex flex-wrap gap-3">
                   <span className="px-4 py-2 bg-primary/20 text-primary border border-primary/30 text-[10px] font-black rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-sm">
-                     <Sparkles size={12} className="fill-primary animate-pulse" /> {matchPercent}% {locale === 'am' ? 'ተኳኋኝነት' : 'Compatibility'}
+                     <Sparkles size={12} className="fill-primary animate-pulse" /> {matchPercent}% {t('compatibility')}
                   </span>
                   <span className={`px-4 py-2 border text-[10px] font-black rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-sm ${badge.color}`}>
                      <span>{badge.emoji}</span> <span>{badge.label}</span>
@@ -327,7 +325,7 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                {/* Profile Completion Bar */}
                <div className="p-5 bg-muted/40 rounded-2xl border border-muted space-y-2.5">
                   <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-wider text-gray-400">
-                    <span>{locale === 'am' ? 'የመገለጫ ማጠናቀቂያ' : 'Profile Completion'}</span>
+                    <span>{t('profileCompletion')}</span>
                     <span className="text-primary">{candCompletionRate}%</span>
                   </div>
                   <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden shadow-inner border border-border">
@@ -344,9 +342,7 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                </div>
 
                <p className="text-[9px] text-gray-400 font-bold italic leading-relaxed">
-                  {locale === 'am' 
-                    ? '*የአቡሻህር ባህላዊ የኮከብ ምልክት ግንዛቤዎች ለተጨማሪ መረጃ ብቻ የሚያገለግሉ ሲሆን ለትዳር ስኬት ፍጹም ዋስትና አይደሉም።'
-                    : '*Abushakir star sign insights are supplementary cultural indicators only and do not guarantee relationship or marriage success.'}
+                  {tr('starSignDisclaimer')}
                </p>
            </div>
 
@@ -357,7 +353,7 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                  </div>
                  <div>
                     <h4 className="text-[10px] font-black uppercase tracking-[0.15em]">
-                       {locale === 'am' ? 'የሚዜ ምክርና ምርቃት' : 'Mediator Approval Note'}
+                       {t('mediatorApprovalNote')}
                     </h4>
                     <p className="text-xs font-bold mt-1 italic">
                        « {guardianEndorsement.note} »
@@ -393,7 +389,7 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
               <div className="space-y-6 bg-slate-50 p-6 rounded-[2.5rem] border border-slate-100">
                 <div className="flex items-center gap-2 text-accent font-black text-xs uppercase tracking-widest border-b border-slate-200 pb-2">
                   <Sparkles size={14} className="text-primary fill-primary/10" />
-                  {locale === 'am' ? 'የአቡሻህር ዝርዝር ተኳኋኝነት' : 'Abushakir Compatibility Breakdown'}
+                  {t('compatibilityBreakdown')}
                 </div>
 
                 <div className="space-y-4">
@@ -412,7 +408,7 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                       return (
                         <div className="text-xs space-y-1">
                           <p className="font-black text-accent uppercase tracking-wider">
-                            🎒 {locale === 'am' ? 'የጋራ መዝናኛዎች (Shared Hobbies)' : 'Shared Hobbies'}
+                            🎒 {t('sharedHobbies')}
                           </p>
                           <div className="flex flex-wrap gap-1.5 pt-1">
                             {shared.map((h: string, idx: number) => (
@@ -430,13 +426,13 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                   {/* Values Match */}
                   <div className="grid grid-cols-2 gap-3 text-xs">
                     <div className="bg-white p-3 rounded-xl border border-slate-100">
-                      <p className="font-bold text-[8px] text-gray-400 uppercase tracking-widest">{locale === 'am' ? 'የቤተሰብ እሴቶች' : 'Family Values'}</p>
+                      <p className="font-bold text-[8px] text-gray-400 uppercase tracking-widest">{t('familyValues')}</p>
                       <p className="font-black text-accent mt-0.5 uppercase tracking-wide truncate">
                         {profile?.family_values === currentUserProfile.family_values ? '🤝 Shared' : profile?.family_values || 'Traditional'}
                       </p>
                     </div>
                     <div className="bg-white p-3 rounded-xl border border-slate-100">
-                      <p className="font-bold text-[8px] text-gray-400 uppercase tracking-widest">{locale === 'am' ? 'የግጭት አፈታት' : 'Conflict Style'}</p>
+                      <p className="font-bold text-[8px] text-gray-400 uppercase tracking-widest">{t('conflictStyle')}</p>
                       <p className="font-black text-accent mt-0.5 uppercase tracking-wide truncate">
                         {profile?.conflict_resolution === currentUserProfile.conflict_resolution ? '🤝 Shared' : profile?.conflict_resolution || 'Discussion'}
                       </p>
@@ -447,19 +443,15 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                   <div className="space-y-2 pt-2 border-t border-slate-200/50">
                     <p className="font-black text-[9px] text-gray-400 uppercase tracking-widest flex items-center gap-1">
                       <Lightbulb size={12} className="text-yellow-600 fill-yellow-100" />
-                      {locale === 'am' ? 'የውይይት መጀመሪያ ሀሳቦች' : 'Conversation Starters'}
+                      {t('conversationStarters')}
                     </p>
                     <div className="space-y-1.5">
                       <p className="p-3 bg-white rounded-xl border border-slate-100 text-[10px] text-gray-600 leading-relaxed font-bold italic">
-                        {locale === 'am'
-                          ? `« በአቡሻህር ተኳኋኝነት መሰረት፥ የእናንተ የኮከብ ምልክት ${currentUserProfile.star_sign || 'Hamel'} እና ${profile?.star_sign || 'Sunbula'} እሴቶች ጋር ስለ ትዳር እና የረጅም ጊዜ ህይወት መነጋገር ትችላላችሁ። »`
-                          : `« Based on Abushakir zodiac, discuss how ${currentUserProfile.star_sign || 'Aries'} and ${profile?.star_sign || 'Virgo'} elements influence your long term family vision. »`}
+                        {t('zodiacPrompt', { zodiac1: currentUserProfile.star_sign || 'Aries', zodiac2: profile?.star_sign || 'Virgo' })}
                       </p>
                       {profile?.family_values === currentUserProfile.family_values && (
                         <p className="p-3 bg-white rounded-xl border border-slate-100 text-[10px] text-gray-600 leading-relaxed font-bold italic">
-                          {locale === 'am'
-                            ? `« ሁለታችሁም የ${profile?.family_values} እሴቶችን ስለምትደግፉ፥ በባህላዊ የቤተሰብ ግንባታ ውስጥ ዋና ዋና መሰረቶች የትኞቹ ናቸው የሚለውን ተወያዩ። »`
-                            : `« Since you both share ${profile?.family_values} family values, share your favorite cultural family traditions and how you want to preserve them. »`}
+                          {t('familyValuesPrompt', { value: profile?.family_values || '' })}
                         </p>
                       )}
                     </div>
@@ -471,16 +463,14 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
             
             <div className="space-y-4">
               <h3 className="text-sm font-black text-accent uppercase tracking-widest border-b border-muted pb-2">
-                 {locale === 'am' ? 'የግንኙነት መረጃ (Contact Info)' : 'Contact Info'}
+                 {t('contactInfo')}
               </h3>
               <div className="bg-primary/5 p-6 rounded-[2rem] border border-primary/10 space-y-2">
                  <p className="text-xs font-black text-primary uppercase tracking-widest flex items-center gap-2">
-                    <ShieldCheck size={14} /> {locale === 'am' ? "ደህንነቱ የተጠበቀ ግንኙነት" : "Privacy Shield Enabled"}
+                    <ShieldCheck size={14} /> t("privacyShieldEnabled")
                  </p>
                  <p className="text-[10px] text-gray-500 leading-relaxed font-bold">
-                    {locale === 'am'
-                      ? "ስልክ ቁጥር እና ኢሜይል ለደህንነት ሲባል ተደብቀዋል። እባክዎ ጥበቃ የተደረገበትን የውስጥ ቻት፣ የድምጽ ወይም የቪዲዮ ጥሪን በመጠቀም ይነጋገሩ።"
-                      : "Direct phone numbers and emails are permanently hidden for privacy. Please use the secure built-in chat, audio call, or video call features."}
+                    {tr('privacyShieldInfo')}
                  </p>
               </div>
             </div>
@@ -556,13 +546,13 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                     onClick={() => setIsReportOpen(!isReportOpen)}
                     className="flex-1 bg-amber-50 hover:bg-amber-100 text-amber-700 py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] border border-amber-200 transition-all flex items-center justify-center gap-2"
                   >
-                    ⚠️ {locale === 'am' ? 'ሪፖርት አድርግ (Report)' : 'Report User'}
+                    ⚠️ {t('reportUser')}
                   </button>
                   <button
                     onClick={handleBlockUser}
                     className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] border border-red-200 transition-all flex items-center justify-center gap-2"
                   >
-                    🚫 {locale === 'am' ? 'አግድ (Block)' : 'Block User'}
+                    🚫 {t('blockUser')}
                   </button>
                 </div>
 
@@ -570,24 +560,24 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                 {isReportOpen && (
                   <div className="p-6 bg-amber-50/50 border border-amber-200 rounded-3xl space-y-4 animate-in slide-in-from-top-2">
                     <div className="space-y-1">
-                      <p className="text-xs font-bold text-accent uppercase tracking-wider">{locale === 'am' ? 'ሪፖርት የማድረጊያ ምክንያት' : 'Select Reason for Report'}</p>
+                      <p className="text-xs font-bold text-accent uppercase tracking-wider">{tr('selectReason')}</p>
                       <select 
                         value={reportReason} 
                         onChange={(e) => setReportReason(e.target.value as any)}
                         className="w-full p-3 bg-white border border-amber-200 rounded-xl font-bold text-xs"
                       >
-                        <option value="abuse">{locale === 'am' ? 'ማስፈራራት ወይም ስድብ (Abuse / Harassment)' : 'Abuse or Harassment'}</option>
-                        <option value="explicit content">{locale === 'am' ? 'ያልተገባ ምስል ወይም ፅሁፍ (Explicit Content)' : 'Explicit Content'}</option>
-                        <option value="scam">{locale === 'am' ? 'ማጭበርበር (Scam / Fraud)' : 'Scam or Fraud'}</option>
-                        <option value="other">{locale === 'am' ? 'ሌላ ምክንያት (Other Reason)' : 'Other Reason'}</option>
+                        <option value="abuse">tr('reasonAbuse')</option>
+                        <option value="explicit content">tr('reasonExplicit')</option>
+                        <option value="scam">tr('reasonScam')</option>
+                        <option value="other">tr('reasonOther')</option>
                       </select>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-bold text-accent uppercase tracking-wider">{locale === 'am' ? 'ተጨማሪ ማብራሪያ' : 'Details / Explanation'}</p>
+                      <p className="text-xs font-bold text-accent uppercase tracking-wider">{tr('detailsExplanation')}</p>
                       <textarea
                         value={reportDetails}
                         onChange={(e) => setReportDetails(e.target.value)}
-                        placeholder={locale === 'am' ? 'ስለ ሁኔታው በዝርዝር ይፃፉ...' : 'Please describe the behavior...'}
+                        placeholder={tr('describeBehavior')}
                         className="w-full bg-white border border-amber-200 rounded-xl p-3 text-xs min-h-[80px] resize-none"
                       />
                     </div>
@@ -597,13 +587,13 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                         disabled={isProcessing}
                         className="flex-1 bg-accent text-white py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-md"
                       >
-                        {isProcessing ? 'Submitting...' : (locale === 'am' ? 'ሪፖርት ላክ' : 'Submit Report')}
+                        {isProcessing ? 'Submitting...' : tr('submitReport')}
                       </button>
                       <button
                         onClick={() => setIsReportOpen(false)}
                         className="px-4 bg-white border border-border text-gray-500 rounded-xl font-bold text-[10px] uppercase tracking-widest"
                       >
-                        {locale === 'am' ? 'ሰርዝ' : 'Cancel'}
+                        {tr('cancel')}
                       </button>
                     </div>
                   </div>
