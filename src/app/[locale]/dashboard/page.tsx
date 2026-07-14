@@ -104,6 +104,16 @@ function DashboardContent() {
   const [isGuardianLinked, setIsGuardianLinked] = useState(false);
   const [unlockedProfileIds, setUnlockedProfileIds] = useState<Set<string>>(new Set());
   const [showPaywallTarget, setShowPaywallTarget] = useState<any>(null);
+  const [showVerificationBlockModal, setShowVerificationBlockModal] = useState(false);
+
+  const handleTabClick = (tabId: string) => {
+    const coreTabs = ['chat', 'community', 'workshops', 'wedding', 'gifts'];
+    if (coreTabs.includes(tabId) && verificationStatus !== 'verified') {
+      setShowVerificationBlockModal(true);
+      return;
+    }
+    setActiveTab(tabId);
+  };
   const [dislikedIds, setDislikedIds] = useState<Set<string>>(new Set());
   const [activeGiftCandidate, setActiveGiftCandidate] = useState<any>(null);
   const [activeRequestNotification, setActiveRequestNotification] = useState<any>(null);
@@ -797,7 +807,7 @@ function DashboardContent() {
         
         // Transition to chat with this user
         localStorage.setItem('beteseb_active_chat_user_id', candidateId);
-        setActiveTab('chat');
+        handleTabClick('chat');
       } else {
         alert(error.message);
       }
@@ -924,7 +934,7 @@ function DashboardContent() {
       
       // Automatically open chat with the sender!
       localStorage.setItem('beteseb_active_chat_user_id', senderId);
-      setActiveTab('chat');
+      handleTabClick('chat');
     } else {
       alert(error.message);
     }
@@ -968,7 +978,7 @@ function DashboardContent() {
           ].map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => handleTabClick(item.id)}
               className={`flex-1 md:flex-none flex items-center gap-4 p-4 rounded-[1.5rem] transition-all duration-300 relative ${activeTab === item.id ? 'bg-primary text-white shadow-lg' : 'text-white/40 hover:bg-white/5'
                 }`}
             >
@@ -1004,7 +1014,7 @@ function DashboardContent() {
         ].map((item) => (
           <button
             key={item.id}
-            onClick={() => setActiveTab(item.id)}
+            onClick={() => handleTabClick(item.id)}
             aria-label={item.label}
             className={`p-3 rounded-2xl transition-all duration-300 relative ${activeTab === item.id ? 'bg-primary text-white scale-110 shadow-lg' : 'text-white/40'}`}
           >
@@ -1090,7 +1100,7 @@ function DashboardContent() {
                       <button
                         key={item.id}
                         onClick={() => {
-                          setActiveTab(item.id);
+                          handleTabClick(item.id);
                           setIsProfileDropdownOpen(false);
                         }}
                         className={`w-full px-5 py-3 text-left text-xs font-bold hover:bg-[#F8F4F1] transition-all flex items-center gap-3 ${activeTab === item.id ? 'text-primary bg-[#F8F4F1]' : 'text-gray-600'}`}
@@ -1343,7 +1353,7 @@ function DashboardContent() {
             onClose={() => setSelectedMatchId(null)} 
             onStartChat={() => {
               setSelectedMatchId(null);
-              setActiveTab('chat');
+              handleTabClick('chat');
             }}
           />
         )}

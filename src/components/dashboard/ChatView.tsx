@@ -81,6 +81,13 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
   const [reportReason, setReportReason] = useState<'abuse' | 'explicit content' | 'scam' | 'other'>('abuse');
   const [reportDetails, setReportDetails] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isRecordingVoice, setIsRecordingVoice] = useState(false);
+  const [voiceCountdown, setVoiceCountdown] = useState(0);
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const voiceRecorderRef = useRef<MediaRecorder | null>(null);
+  const voiceChunksRef = useRef<Blob[]>([]);
+  const voiceTimerRef = useRef<any>(null);
+  const imageUploadRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const tf = useTranslations('Friendship');
 
@@ -866,12 +873,111 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
     setIsProcessing(false);
   };
 
+
+  // Voice Note Recording
+  const getVoiceLimit = () => {
+    const limits = getTierLimits(userTier);
+    return limits.maxVoiceNoteSeconds ?? 7;
+  };
+
+  const startVoiceRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const maxSeconds = getVoiceLimit();
+      setVoiceCountdown(maxSeconds);
+      setIsRecordingVoice(true);
+      voiceChunksRef.current = [];
+
+      const recorder = new MediaRecorder(stream);
+      voiceRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) voiceChunksRef.current.push(e.data);
+      };
+
+      recorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop());
+        setIsRecordingVoice(false);
+        setVoiceCountdown(0);
+
+        const blob = new Blob(voiceChunksRef.current, { type: 'audio/webm' });
+        if (blob.size === 0 || !currentUser || !selectedMatch) return;
+
+        const fileName = `voice-${currentUser.id}-${Date.now()}.webm`;
+        const { error } = await supabase.storage.from('chats').upload(fileName, blob);
+        if (error) { console.error("Voice upload error:", error); return; }
+
+        const { data: { publicUrl } } = supabase.storage.from('chats').getPublicUrl(fileName);
+        await supabase.from('messages').insert({
+          sender_id: currentUser.id,
+          receiver_id: selectedMatch.id,
+          content: `[VOICE_NOTE]${publicUrl}[/VOICE_NOTE]`,
+          is_read: false
+        });
+      };
+
+      recorder.start();
+
+      let remaining = maxSeconds;
+      voiceTimerRef.current = setInterval(() => {
+        remaining -= 1;
+        setVoiceCountdown(remaining);
+        if (remaining <= 0) {
+          clearInterval(voiceTimerRef.current);
+          recorder.stop();
+        }
+      }, 1000);
+    } catch (err) {
+      console.error("Voice recording error:", err);
+    }
+  };
+
+  const stopVoiceRecording = () => {
+    if (voiceTimerRef.current) clearInterval(voiceTimerRef.current);
+    if (voiceRecorderRef.current && voiceRecorderRef.current.state !== 'inactive') {
+      voiceRecorderRef.current.stop();
+    }
+  };
+
+  const handleImageUpload = async (file: File) => {
+    if (!currentUser || !selectedMatch) return;
+    setShowMediaPicker(false);
+    try {
+      // Compress image using canvas
+      const img = new window.Image();
+      img.src = URL.createObjectURL(file);
+      await new Promise(res => img.onload = res);
+      const canvas = document.createElement('canvas');
+      const maxDim = 1080;
+      const ratio = Math.min(maxDim / img.width, maxDim / img.height, 1);
+      canvas.width = img.width * ratio;
+      canvas.height = img.height * ratio;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      const blob = await new Promise<Blob>((res) => canvas.toBlob((b) => res(b!), 'image/jpeg', 0.82));
+      const fileName = `chat-img-${currentUser.id}-${Date.now()}.jpg`;
+      const { error } = await supabase.storage.from('chats').upload(fileName, blob);
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage.from('chats').getPublicUrl(fileName);
+      await supabase.from('messages').insert({
+        sender_id: currentUser.id,
+        receiver_id: selectedMatch.id,
+        content: `[IMAGE]${publicUrl}[/IMAGE]`,
+        is_read: false
+      });
+    } catch (err: any) {
+      console.error("Image upload error:", err);
+    }
+  };
+
   if (loading) return <div className="flex-1 flex items-center justify-center">{t('loading')}</div>;
 
   return (
-    <div className="flex flex-col md:flex-row h-auto md:h-[calc(100vh-200px)] bg-white rounded-[2.5rem] overflow-hidden border border-muted shadow-2xl">
+    <div className="flex flex-col md:flex-row bg-white rounded-none md:rounded-[2.5rem] overflow-hidden border-0 md:border border-muted shadow-2xl md:h-[calc(100vh-200px)]" style={{touchAction:'manipulation'}}>
       {/* Sidebar - Matches */}
-      <aside className="w-full md:w-80 border-b md:border-b-0 md:border-r border-muted flex flex-col h-[40vh] md:h-full">
+      <aside className={`w-full md:w-80 border-b md:border-b-0 md:border-r border-muted flex flex-col md:h-full ${selectedMatch ? 'hidden md:flex' : 'flex h-[calc(100dvh-140px)] md:h-full'}`}>
         <div className="p-6 border-b border-muted">
           <h2 className="text-xl font-bold text-accent mb-4 tracking-tighter uppercase">{t('title')}</h2>
           <div className="relative">
@@ -992,7 +1098,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                   <p className="text-[10px] text-green-500 font-bold uppercase tracking-widest">{t('activeNow')}</p>
                 </div>
               </div>
-               <div className="flex items-center gap-4 text-gray-400">
+               <div className="flex items-center gap-1 md:gap-4 text-gray-400 flex-nowrap">
                 <button 
                   onClick={handleOpenWaliRoom}
                   aria-label="Wali Meeting Room" 
@@ -1000,7 +1106,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                   title="Wali Room (የቤተሰብ/የሚዜ መድረክ)"
                 >
                   <Users size={16} />
-                  <span>Wali Room</span>
+                  <span className="hidden md:inline">Wali Room</span>
                 </button>
                 <button 
                   onClick={() => setShowGiftModal(true)}
@@ -1233,7 +1339,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
               ))}
             </div>
 
-            <form onSubmit={handleSendMessage} className="p-6 bg-white border-t border-muted space-y-4">
+            <form onSubmit={handleSendMessage} className="p-3 md:p-6 bg-white border-t border-muted space-y-3 md:space-y-4">
               {safeSpaceActive ? (
                 <div className="flex flex-col gap-2 w-full p-4 bg-primary/5 border border-primary/20 rounded-3xl">
                   <p className="text-[9px] font-black text-primary uppercase tracking-widest px-2">

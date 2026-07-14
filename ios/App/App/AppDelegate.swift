@@ -7,11 +7,64 @@ import FirebaseMessaging
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
+    private var screenShieldView: UIView?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         FirebaseApp.configure()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(screenCapturedChanged), name: UIScreen.capturedDidChangeNotification, object: nil)
+        detectScreenCapture()
+        
         return true
+    }
+
+    @objc func screenCapturedChanged() {
+        detectScreenCapture()
+    }
+
+    private func detectScreenCapture() {
+        DispatchQueue.main.async {
+            let isCaptured = UIScreen.main.isCaptured
+            if isCaptured {
+                self.showScreenShield()
+            } else {
+                self.hideScreenShield()
+            }
+        }
+    }
+
+    private func showScreenShield() {
+        if screenShieldView == nil, let window = self.window {
+            let shield = UIView(frame: window.bounds)
+            shield.backgroundColor = .black
+            
+            let label = UILabel()
+            label.text = "Screen Recording Protected\nይህ ማያ ገፅ የተጠበቀ ነው"
+            label.textColor = .white
+            label.font = UIFont.boldSystemFont(ofSize: 18)
+            label.textAlignment = .center
+            label.numberOfLines = 0
+            label.translatesAutoresizingMaskIntoConstraints = false
+            
+            shield.addSubview(label)
+            NSLayoutConstraint.activate([
+                label.centerXAnchor.constraint(equalTo: shield.centerXAnchor),
+                label.centerYAnchor.constraint(equalTo: shield.centerYAnchor),
+                label.leadingAnchor.constraint(equalTo: shield.leadingAnchor, constant: 20),
+                label.trailingAnchor.constraint(equalTo: shield.trailingAnchor, constant: -20)
+            ])
+            
+            window.addSubview(shield)
+            self.screenShieldView = shield
+        }
+    }
+
+    private func hideScreenShield() {
+        if let shield = screenShieldView {
+            shield.removeFromSuperview()
+            screenShieldView = nil
+        }
     }
 
     func applicationWillResignActive(_ application: UIApplication) {

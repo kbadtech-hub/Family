@@ -116,6 +116,7 @@ function OnboardingContent() {
   const [showMismatchModal, setShowMismatchModal] = useState(false);
   const [formData, setFormData] = useState({
     full_name: '',
+    avatar_url: '',
     birth_date: '',
     // birth_time removed — Blueprint v4.0: birth time must never be collected
     location: '',
@@ -364,6 +365,7 @@ function OnboardingContent() {
             setFormData(prev => ({
               ...prev,
               full_name: data.full_name || '',
+              avatar_url: data.avatar_url || '',
               birth_date: data.birth_date || '',
               gender: data.gender || '',
               location: data.location?.country || data.location || '',
@@ -426,9 +428,9 @@ function OnboardingContent() {
   const validateStep = (currentStep: number) => {
     setErrorMsg('');
     switch (currentStep) {
-      case 1: // Basic Profile
-        if (!formData.full_name) return t('errors.fullNameRequired');
-        if (!formData.birth_date) return t('errors.birthDateRequired');
+      case 1: // Basic Profile (Quick Setup)
+        if (!formData.full_name) return locale === 'am' ? 'እባክዎ የእርስዎን ሙሉ ስም ያስገቡ።' : 'Please enter your full name.';
+        if (!formData.birth_date) return locale === 'am' ? 'እባክዎ ትክክለኛ የልደት ቀን ያስገቡ።' : 'Please select your birth date.';
         
         // Calculate Age
         const birthDate = new Date(formData.birth_date);
@@ -444,25 +446,8 @@ function OnboardingContent() {
             : 'You must be at least 18 years old to use this platform.';
         }
 
-        if (!formData.gender) return t('errors.genderRequired');
-        const activeCountry = selectedCountry === 'Others' ? customCountry : selectedCountry;
-        const activeRegion = selectedRegion === 'Others' ? customRegion : selectedRegion;
-        const activeCity = selectedCity === 'Others' ? customCity : selectedCity;
-
-        if (!activeCountry || !activeRegion || !activeCity) {
-          return t('errors.locationRequired');
-        }
-        
-        // Location Integrity Check
-        if (prefLocation === 'Local' && activeCountry !== 'Ethiopia') {
-          return t('errors.locationMismatch');
-        }
-        if (prefLocation === 'Diaspora' && activeCountry === 'Ethiopia') {
-          return t('errors.locationMismatch');
-        }
-
-        if (!formData.religion) return t('errors.religionRequired');
-        if (!formData.marital_status) return t('errors.maritalRequired');
+        if (!formData.gender) return t('errors.genderRequired') || 'Gender is required';
+        if (!formData.avatar_url) return locale === 'am' ? 'እባክዎ የመገለጫ ፎቶ ይጫኑ።' : 'Please upload a profile picture.';
         break;
       case 2: // Career & Psychology
         if (!formData.job) return t('errors.jobRequired');
@@ -506,6 +491,27 @@ function OnboardingContent() {
     setIsSubmitting(true);
     try {
       if (userId) {
+        if (step === 1) {
+          const { error: updateError } = await supabase.from('profiles').update({ 
+            full_name: formData.full_name,
+            birth_date: formData.birth_date,
+            gender: formData.gender,
+            avatar_url: formData.avatar_url,
+            star_sign: formData.star_sign,
+            onboarding_completed: true,
+            onboarding_step: 1
+          }).eq('id', userId);
+
+          if (updateError) {
+            console.error("Step Update Error:", updateError);
+            setErrorMsg(locale === 'am' ? `መረጃውን መመዝገብ አልተቻለም። (Error: ${updateError.message})` : `Failed to save data. (Error: ${updateError.message})`);
+            return;
+          }
+          
+          router.push('/dashboard');
+          return;
+        }
+
         const locationJson = { 
           country: selectedCountry === 'Others' ? customCountry : selectedCountry, 
           region: selectedRegion === 'Others' ? customRegion : selectedRegion,
@@ -596,218 +602,129 @@ function OnboardingContent() {
     switch(step) {
       case 1:
         return (
-          <div className="space-y-6 animate-in slide-in-from-right duration-300">
-            <h2 className="text-3xl font-bold text-accent italic">{t('demographics')}</h2>
+          <div className="space-y-8 animate-in slide-in-from-right duration-300">
+            <div className="text-center space-y-2">
+              <h2 className="text-3xl font-black text-accent italic uppercase tracking-tighter leading-none">
+                {locale === 'am' ? 'የመገለጫ ፈጣን ማዋቀር' : 'Quick Profile Setup'}
+              </h2>
+              <p className="text-gray-500 font-medium italic text-xs max-w-sm mx-auto">
+                {locale === 'am' 
+                  ? 'እባክዎ መለያዎን ለመፍጠር የሚከተሉትን መሰረታዊ መረጃዎች ያሟሉ' 
+                  : 'Please complete the details below to initialize your account.'}
+              </p>
+            </div>
             
-            <div className="space-y-4">
-              {(!formData.full_name || !formData.birth_date) && (
-                <div className="space-y-4 p-6 bg-slate-50 rounded-3xl border border-slate-100">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-primary">
-                    {locale === 'am' ? 'እባክዎ የእርስዎን ሙሉ ስም እና የልደት ቀን ያስገቡ' : 'Please complete your name and birth date'}
-                  </p>
-                  
-                  {!formData.full_name && (
-                    <label className="block">
-                      <span className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">{t('fields.fullName')}</span>
-                      <input 
-                         type="text" 
-                         value={formData.full_name}
-                         aria-label={t('fields.fullName')}
-                         onChange={(e) => updateField('full_name', e.target.value)}
-                         className="mt-1 block w-full rounded-xl border-gray-200 shadow-sm focus:border-primary focus:ring-primary p-3 bg-white text-sm font-medium" 
-                         placeholder={t('fields.fullNamePlaceholder')}
-                      />
-                    </label>
-                  )}
-
-                  {!formData.birth_date && (
-                    <div className="space-y-2">
-                      <label className="block">
-                        <span className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">{locale === 'am' ? 'የልደት ቀን' : 'Birth Date'}</span>
-                      </label>
-                      <div className="flex gap-2 p-1 bg-muted rounded-2xl w-fit">
-                        <button type="button" onClick={() => updateField('calendar_type', 'gregorian')} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${formData.calendar_type === 'gregorian' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'}`}>{t('calendar.gregorian')}</button>
-                        <button type="button" onClick={() => updateField('calendar_type', 'ethiopian')} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${formData.calendar_type === 'ethiopian' ? 'bg-white text-primary shadow-sm' : 'text-gray-400'}`}>{t('calendar.ethiopian')}</button>
-                      </div>
-                      {formData.calendar_type === 'ethiopian' ? (
-                        <div className="grid grid-cols-3 gap-2">
-                           <select value={formData.eth_birth_day} aria-label={t('calendar.day')} onChange={(e) => updateField('eth_birth_day', e.target.value)} className="p-3 bg-white border border-gray-100 rounded-xl font-bold text-xs">
-                             <option value="">{t('calendar.day') || 'Day'}</option>
-                             {Array.from({ length: formData.eth_birth_month === '13' ? 6 : 30 }, (_, i) => i + 1).map(day => (
-                               <option key={day} value={day}>{day}</option>
-                             ))}
-                           </select>
-                           <select value={formData.eth_birth_month} aria-label={t('calendar.month')} onChange={(e) => updateField('eth_birth_month', e.target.value)} className="p-3 bg-white border border-gray-100 rounded-xl font-bold text-xs">
-                             <option value="">{t('calendar.month') || 'Month'}</option>
-                             {['Meskerem', 'Tikemt', 'Hidar', 'Tahsas', 'Tir', 'Yekatit', 'Megabit', 'Miazia', 'Genbot', 'Sene', 'Hamle', 'Nehase', 'Pagume'].map((m, i) => <option key={m} value={i + 1}>{t_const(`Months.${m}`)}</option>)}
-                           </select>
-                           <select value={formData.eth_birth_year} aria-label={t('calendar.year')} onChange={(e) => updateField('eth_birth_year', e.target.value)} className="p-3 bg-white border border-gray-100 rounded-xl font-bold text-xs">
-                             <option value="">{t('calendar.year') || 'Year'}</option>
-                             {Array.from({ length: 70 }, (_, i) => 2018 - 18 - i).map(year => (
-                               <option key={year} value={year}>{year}</option>
-                             ))}
-                           </select>
-                        </div>
-                      ) : (
-                        <input type="date" value={formData.birth_date} aria-label={t('fields.birthDate')} onChange={(e) => updateField('birth_date', e.target.value)} className="w-full rounded-xl border-gray-200 p-3 bg-white text-sm font-medium" />
-                      )}
-                    </div>
-                  )}
+            <div className="bg-white p-8 md:p-10 rounded-[3rem] border border-primary/10 shadow-2xl space-y-6">
+              
+              {/* Profile Picture Uploader */}
+              <div className="space-y-3">
+                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
+                  {locale === 'am' ? 'የመገለጫ ፎቶ' : 'Profile Picture'}
+                </label>
+                <div className="flex items-center gap-6">
+                  <div className="w-24 h-24 bg-muted border-2 border-primary/20 rounded-[2rem] overflow-hidden relative flex items-center justify-center shadow-inner">
+                    {formData.avatar_url ? (
+                      <img src={formData.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <Camera size={32} className="text-gray-300" />
+                    )}
+                  </div>
+                  <label className="cursor-pointer bg-primary/10 hover:bg-primary/20 text-primary px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all">
+                    {locale === 'am' ? 'ፎቶ ይጫኑ' : 'Upload Photo'}
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file || !userId) return;
+                        setIsSubmitting(true);
+                        try {
+                          const fileExt = file.name.split('.').pop();
+                          const fileName = `avatar-${userId}-${Date.now()}.${fileExt}`;
+                          const { error } = await supabase.storage.from('user_photos').upload(fileName, file);
+                          if (error) throw error;
+                          const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(fileName);
+                          updateField('avatar_url', publicUrl);
+                        } catch (err) {
+                          alert("Upload failed: " + (err instanceof Error ? err.message : String(err)));
+                        } finally {
+                          setIsSubmitting(false);
+                        }
+                      }}
+                    />
+                  </label>
                 </div>
-              )}
+              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <select value={formData.gender} aria-label={t('fields.gender')} onChange={(e) => updateField('gender', e.target.value)} className="p-3 bg-muted rounded-xl font-bold text-xs">
+              {/* Legal Name Input */}
+              <div className="space-y-2">
+                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
+                  {locale === 'am' ? 'ሙሉ ስም (Display Name)' : 'Legal Name / Display Name'}
+                </label>
+                <input 
+                  type="text" 
+                  value={formData.full_name}
+                  onChange={(e) => updateField('full_name', e.target.value)}
+                  className="w-full rounded-2xl border-gray-200 shadow-sm focus:border-primary focus:ring-primary p-4 bg-muted/30 text-sm font-semibold" 
+                  placeholder={locale === 'am' ? 'ለምሳሌ፡ ዮናስ አበበ' : 'e.g. Dawit Kebede'}
+                />
+              </div>
+
+              {/* Gender Input */}
+              <div className="space-y-2">
+                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
+                  {t('fields.gender')}
+                </label>
+                <select 
+                  value={formData.gender} 
+                  onChange={(e) => updateField('gender', e.target.value)} 
+                  className="w-full p-4 bg-muted/30 border border-gray-200 rounded-2xl font-bold text-xs"
+                >
                   <option value="">{t('fields.gender')}</option>
                   {GENDERS.map(g => <option key={g} value={g}>{t_const(`Genders.${g}`)}</option>)}
                 </select>
-
-                <select value={formData.religion} aria-label={t('fields.religion')} onChange={(e) => updateField('religion', e.target.value)} className="p-3 bg-muted rounded-xl font-bold text-xs">
-                  <option value="">{t('fields.religion')}</option>
-                  {RELIGIONS.map(r => <option key={r} value={r}>{t_const(`Religions.${r}`)}</option>)}
-                </select>
-
-                <select value={formData.marital_status} aria-label={t('fields.maritalStatus')} onChange={(e) => updateField('marital_status', e.target.value)} className="p-3 bg-muted rounded-xl font-bold text-xs">
-                  <option value="">{t('fields.maritalStatus')}</option>
-                  {(formData.gender === 'Female' ? MARITAL_STATUS_FEMALE : MARITAL_STATUS_MALE).map(s => <option key={s} value={s}>{t_const(`Marital.${s}`)}</option>)}
-                </select>
-
-                <select value={formData.future_children} aria-label={locale === 'am' ? 'ወደፊት ልጆች' : 'Future Children Plan'} onChange={(e) => updateField('future_children', e.target.value)} className="p-3 bg-muted rounded-xl font-bold text-xs">
-                  <option value="">{locale === 'am' ? 'ወደፊት ልጆች' : 'Future Children'}</option>
-                  {FUTURE_CHILDREN_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`FutureChildren.${o}`)}</option>)}
-                </select>
-
-                {/* Cascading Location Picker */}
-                <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-6 border border-gray-100 rounded-3xl shadow-sm">
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider">Country / ሀገር</label>
-                    <select
-                      value={selectedCountry}
-                      onChange={(e) => {
-                        setSelectedCountry(e.target.value);
-                        setSelectedRegion('');
-                        setSelectedCity('');
-                        updateField('location', e.target.value);
-                      }}
-                      className="w-full p-3 bg-muted rounded-xl font-bold text-xs"
-                    >
-                      <option value="">Select Country</option>
-                      {[...COUNTRIES]
-                        .sort((a, b) => {
-                          const nameA = locale === 'am' ? a.nameAm : a.name;
-                          const nameB = locale === 'am' ? b.nameAm : b.name;
-                          return nameA.localeCompare(nameB, locale);
-                        })
-                        .map(c => (
-                          <option key={c.iso} value={c.name}>
-                            {locale === 'am' ? c.nameAm : c.name}
-                          </option>
-                        ))
-                      }
-                      <option value="Others">Others / ሌላ</option>
-                    </select>
-                    {selectedCountry === 'Others' && (
-                      <input
-                        type="text"
-                        placeholder="Specify country..."
-                        value={customCountry}
-                        onChange={(e) => setCustomCountry(e.target.value)}
-                        className="w-full p-3 mt-2 bg-muted border border-muted rounded-xl text-xs font-semibold"
-                      />
-                    )}
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider">Region / ክልል</label>
-                    <select
-                      value={selectedRegion}
-                      disabled={!selectedCountry}
-                      onChange={(e) => {
-                        setSelectedRegion(e.target.value);
-                        setSelectedCity('');
-                      }}
-                      className="w-full p-3 bg-muted rounded-xl font-bold text-xs disabled:opacity-50"
-                    >
-                      <option value="">Select Region</option>
-                      {selectedCountry && selectedCountry !== 'Others' && 
-                        Object.keys(locationData[selectedCountry] || {}).map(region => (
-                          <option key={region} value={region}>{region}</option>
-                        ))
-                      }
-                      {selectedCountry && <option value="Others">Others / ሌላ</option>}
-                    </select>
-                    {selectedRegion === 'Others' && (
-                      <input
-                        type="text"
-                        placeholder="Specify region..."
-                        value={customRegion}
-                        onChange={(e) => setCustomRegion(e.target.value)}
-                        className="w-full p-3 mt-2 bg-muted border border-muted rounded-xl text-xs font-semibold"
-                      />
-                    )}
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider">City / ከተማ</label>
-                    <select
-                      value={selectedCity}
-                      disabled={!selectedRegion}
-                      onChange={(e) => setSelectedCity(e.target.value)}
-                      className="w-full p-3 bg-muted rounded-xl font-bold text-xs disabled:opacity-50"
-                    >
-                      <option value="">Select City</option>
-                      {selectedCountry && selectedRegion && selectedRegion !== 'Others' && 
-                        (locationData[selectedCountry]?.[selectedRegion] || []).map(city => (
-                          <option key={city} value={city}>{city}</option>
-                        ))
-                      }
-                      {selectedRegion && <option value="Others">Others / ሌላ</option>}
-                    </select>
-                    {selectedCity === 'Others' && (
-                      <input
-                        type="text"
-                        placeholder="Specify city..."
-                        value={customCity}
-                        onChange={(e) => setCustomCity(e.target.value)}
-                        className="w-full p-3 mt-2 bg-muted border border-muted rounded-xl text-xs font-semibold"
-                      />
-                    )}
-                  </div>
-                </div>
-
-                {/* Conditional Children Selector workflow */}
-                <div className="col-span-1 md:col-span-2 p-6 bg-white border border-gray-100 rounded-3xl space-y-4 shadow-sm">
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={hasChildren}
-                      onChange={(e) => setHasChildren(e.target.checked)}
-                      className="w-5 h-5 rounded-lg border-gray-300 text-primary focus:ring-primary/20"
-                    />
-                    <span className="text-xs font-bold text-accent">
-                      {locale === 'am' ? 'ልጆች አሉኝ' : 'I have children'}
-                    </span>
-                  </label>
-
-                  {hasChildren && (
-                    <div className="space-y-2 animate-in slide-in-from-top-4 duration-300">
-                      <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider">
-                        {locale === 'am' ? 'የልጆች ብዛት' : 'Number of Children'}
-                      </label>
-                      <select
-                        value={childrenCount}
-                        onChange={(e) => setChildrenCount(e.target.value)}
-                        className="w-full p-3 bg-muted rounded-xl font-bold text-xs"
-                      >
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="More than 3">More than 3 / ከ 3 በላይ</option>
-                      </select>
-                    </div>
-                  )}
-                </div>
               </div>
+
+              {/* Date of Birth Input with Calendar Toggle */}
+              <div className="space-y-3">
+                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
+                  {locale === 'am' ? 'የልደት ቀን' : 'Birth Date'}
+                </label>
+                <div className="flex gap-2 p-1.5 bg-[#F1F5F9] rounded-2xl w-fit border border-gray-150 shadow-sm">
+                  <button type="button" onClick={() => updateField('calendar_type', 'gregorian')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.calendar_type === 'gregorian' ? 'bg-white text-primary shadow-md' : 'text-gray-400'}`}>{t('calendar.gregorian')}</button>
+                  <button type="button" onClick={() => updateField('calendar_type', 'ethiopian')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.calendar_type === 'ethiopian' ? 'bg-white text-primary shadow-md' : 'text-gray-400'}`}>{t('calendar.ethiopian')}</button>
+                </div>
+                
+                {formData.calendar_type === 'ethiopian' ? (
+                  <div className="grid grid-cols-3 gap-3">
+                     <select value={formData.eth_birth_day} aria-label={t('calendar.day')} onChange={(e) => updateField('eth_birth_day', e.target.value)} className="p-4 bg-muted/30 border border-gray-150 rounded-2xl font-bold text-xs">
+                       <option value="">{t('calendar.day') || 'Day'}</option>
+                       {Array.from({ length: formData.eth_birth_month === '13' ? 6 : 30 }, (_, i) => i + 1).map(day => (
+                         <option key={day} value={day}>{day}</option>
+                       ))}
+                     </select>
+                     <select value={formData.eth_birth_month} aria-label={t('calendar.month')} onChange={(e) => updateField('eth_birth_month', e.target.value)} className="p-4 bg-muted/30 border border-gray-150 rounded-2xl font-bold text-xs">
+                       <option value="">{t('calendar.month') || 'Month'}</option>
+                       {['Meskerem', 'Tikemt', 'Hidar', 'Tahsas', 'Tir', 'Yekatit', 'Megabit', 'Miazia', 'Genbot', 'Sene', 'Hamle', 'Nehase', 'Pagume'].map((m, i) => <option key={m} value={i + 1}>{t_const(`Months.${m}`)}</option>)}
+                     </select>
+                     <select value={formData.eth_birth_year} aria-label={t('calendar.year')} onChange={(e) => updateField('eth_birth_year', e.target.value)} className="p-4 bg-muted/30 border border-gray-150 rounded-2xl font-bold text-xs">
+                       <option value="">{t('calendar.year') || 'Year'}</option>
+                       {Array.from({ length: 70 }, (_, i) => 2018 - 18 - i).map(year => (
+                         <option key={year} value={year}>{year}</option>
+                       ))}
+                     </select>
+                  </div>
+                ) : (
+                  <input 
+                    type="date" 
+                    value={formData.birth_date} 
+                    onChange={(e) => updateField('birth_date', e.target.value)} 
+                    className="w-full rounded-2xl border-gray-200 p-4 bg-muted/30 text-sm font-semibold" 
+                  />
+                )}
+              </div>
+
             </div>
           </div>
         );

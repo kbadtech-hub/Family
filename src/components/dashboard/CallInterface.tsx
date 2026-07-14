@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { PhoneOff, Mic, MicOff, Video, VideoOff, PhoneCall, Heart, ShieldCheck, Loader2 } from 'lucide-react';
+import { PhoneOff, Mic, MicOff, Video, VideoOff, PhoneCall, Heart, ShieldCheck, Loader2, Phone, Users, AlertTriangle, ShieldAlert, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { getIceServers } from '@/lib/turn';
 import { getUserTier, getTierLimits } from '@/lib/tiers';
@@ -43,11 +43,105 @@ export default function CallInterface({
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const channelRef = useRef<any>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
+  const ringAudioRef = useRef<AudioContext | null>(null);
 
-  // Sync ref
+  // Sync callDuration to ref
   useEffect(() => {
     callDurationRef.current = callDuration;
   }, [callDuration]);
+
+  // Web Audio Ringing Tones and Vibration simulation
+  useEffect(() => {
+    let ringInterval: any;
+    let vibInterval: any;
+
+    const startRingingSound = () => {
+      try {
+        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        ringAudioRef.current = ctx;
+        
+        const playTone = () => {
+          if (!ringAudioRef.current || ringAudioRef.current.state === 'closed') return;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, ctx.currentTime);
+          
+          gain.gain.setValueAtTime(0, ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.05);
+          gain.gain.setValueAtTime(0.3, ctx.currentTime + 0.5);
+          gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.6);
+          
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.8);
+        };
+        
+        playTone();
+        ringInterval = setInterval(playTone, 2000);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    const startIncomingRingtone = () => {
+      try {
+        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        ringAudioRef.current = ctx;
+        
+        const playIncomingTone = () => {
+          if (!ringAudioRef.current || ringAudioRef.current.state === 'closed') return;
+          const osc1 = ctx.createOscillator();
+          const osc2 = ctx.createOscillator();
+          const gain = ctx.createGain();
+          
+          osc1.frequency.setValueAtTime(480, ctx.currentTime);
+          osc2.frequency.setValueAtTime(440, ctx.currentTime);
+          
+          gain.gain.setValueAtTime(0, ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 0.1);
+          gain.gain.setValueAtTime(0.4, ctx.currentTime + 1.2);
+          gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.5);
+          
+          osc1.connect(gain);
+          osc2.connect(gain);
+          gain.connect(ctx.destination);
+          
+          osc1.start();
+          osc2.start();
+          osc1.stop(ctx.currentTime + 1.5);
+          osc2.stop(ctx.currentTime + 1.5);
+        };
+        
+        playIncomingTone();
+        ringInterval = setInterval(playIncomingTone, 3000);
+        
+        if (navigator.vibrate) {
+          navigator.vibrate([1000, 1000, 1000]);
+          vibInterval = setInterval(() => {
+            navigator.vibrate([1000, 1000, 1000]);
+          }, 3000);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    if (callState === 'ringing') {
+      startRingingSound();
+    } else if (callState === 'incoming') {
+      startIncomingRingtone();
+    }
+
+    return () => {
+      if (ringInterval) clearInterval(ringInterval);
+      if (vibInterval) clearInterval(vibInterval);
+      if (ringAudioRef.current) {
+        ringAudioRef.current.close().catch(() => {});
+      }
+    };
+  }, [callState]);
 
   // 1. Fetch Auth User and Profile limits on Mount
   useEffect(() => {
@@ -117,7 +211,7 @@ export default function CallInterface({
            if ((callerLimits?.calls_duration_seconds || 0) >= allowed) {
               alert(
                 navigator.language.startsWith('am')
-                  ? 'የዕለታዊ የጥሪ ጊዜ ገደብዎ አልቋል። እባክዎ መለያዎን ያሳድጉ!' 
+                  ? 'Ã¡â€¹Â¨Ã¡â€¹â€¢Ã¡Ë†Ë†Ã¡â€°Â³Ã¡â€¹Å  Ã¡â€¹Â¨Ã¡Å’Â¥Ã¡Ë†Âª Ã¡Å’Å Ã¡â€¹Å“ Ã¡Å’Ë†Ã¡â€¹Â°Ã¡â€°Â¥Ã¡â€¹Å½ Ã¡Å Â Ã¡Ë†ÂÃ¡â€°â€¹Ã¡Ë†ÂÃ¡ÂÂ¢ Ã¡Å Â¥Ã¡â€°Â£Ã¡Å Â­Ã¡â€¹Å½ Ã¡Ë†ËœÃ¡Ë†Ë†Ã¡â€¹Â«Ã¡â€¹Å½Ã¡Å â€¢ Ã¡â€¹Â«Ã¡Ë†Â³Ã¡â€¹ÂµÃ¡Å’â€°!' 
                   : 'Your daily call duration limit has been reached. Please upgrade to premium!'
               );
               setCallState('ended');
@@ -175,6 +269,7 @@ export default function CallInterface({
         pc.onconnectionstatechange = () => {
           if (pc.connectionState === 'connected') {
             setCallState('connected');
+            callConnectedRef.current = true;
           } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
             handleEndCall();
           }
@@ -183,10 +278,19 @@ export default function CallInterface({
         // Subscribe to Signaling Channel
         channel
           .on('broadcast', { event: 'signal' }, async (payload: any) => {
-            const { sender, offer, answer, candidate } = payload.payload;
+            const { sender, offer, answer, candidate, busy, reject, end } = payload.payload;
             if (sender === currentUser.id) return; // Skip own signals
 
-            if (offer) {
+            if (busy) {
+              setIsBusy(true);
+              setCallState('ended');
+              setTimeout(onEndCall, 3000);
+              return;
+            } else if (reject || end) {
+              setCallState('ended');
+              setTimeout(onEndCall, 1000);
+              return;
+            } else if (offer) {
               await pc.setRemoteDescription(new RTCSessionDescription(offer));
               const localAnswer = await pc.createAnswer();
               await pc.setLocalDescription(localAnswer);
@@ -314,7 +418,31 @@ export default function CallInterface({
     }
   };
 
+  const logMissedCall = async () => {
+    if (!currentUser || isIncoming || callConnectedRef.current) return;
+    const content = isVideo ? '[MISSED_VIDEO_CALL]' : '[MISSED_AUDIO_CALL]';
+    await supabase.from('messages').insert({
+      sender_id: currentUser.id,
+      receiver_id: matchProfile.id,
+      content: content,
+      is_read: false
+    });
+  };
+
+  const handleDeclineWithText = async (text: string) => {
+    if (currentUser) {
+      await supabase.from('messages').insert({
+        sender_id: currentUser.id,
+        receiver_id: matchProfile.id,
+        content: text,
+        is_read: false
+      });
+    }
+    handleRejectCall();
+  };
+
   const handleRejectCall = () => {
+    logMissedCall();
     if (channelRef.current && currentUser) {
       channelRef.current.send({
         type: 'broadcast',
@@ -328,6 +456,7 @@ export default function CallInterface({
   };
 
   const handleEndCall = () => {
+    logMissedCall();
     if (channelRef.current && currentUser) {
       channelRef.current.send({
         type: 'broadcast',
@@ -399,7 +528,7 @@ export default function CallInterface({
             if (todayUsed >= allowed) {
               alert(
                 navigator.language.startsWith('am')
-                  ? 'የዕለታዊ የጥሪ ጊዜ ገደብዎ አልቋል። እባክዎ መለያዎን ያሳድጉ!' 
+                  ? 'Ã¡â€¹Â¨Ã¡â€¹â€¢Ã¡Ë†Ë†Ã¡â€°Â³Ã¡â€¹Å  Ã¡â€¹Â¨Ã¡Å’Â¥Ã¡Ë†Âª Ã¡Å’Å Ã¡â€¹Å“ Ã¡Å’Ë†Ã¡â€¹Â°Ã¡â€°Â¥Ã¡â€¹Å½ Ã¡Å Â Ã¡Ë†ÂÃ¡â€°â€¹Ã¡Ë†ÂÃ¡ÂÂ¢ Ã¡Å Â¥Ã¡â€°Â£Ã¡Å Â­Ã¡â€¹Å½ Ã¡Ë†ËœÃ¡Ë†Ë†Ã¡â€¹Â«Ã¡â€¹Å½Ã¡Å â€¢ Ã¡â€¹Â«Ã¡Ë†Â³Ã¡â€¹ÂµÃ¡Å’â€°!' 
                   : 'Your daily call duration limit has been reached. Please upgrade to premium!'
               );
               handleEndCall();
@@ -412,6 +541,73 @@ export default function CallInterface({
     }
     return () => clearInterval(timer);
   }, [callState, currentUserProfile, hasVouched, callerLimits]);
+
+  // On-Device AI Content Moderation frame analyzer loop
+  useEffect(() => {
+    if (callState !== 'connected' || !isVideo || aiViolationActive) return;
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    const runModerationCheck = async () => {
+      const videoEl = remoteVideoRef.current;
+      if (!videoEl || !ctx || videoEl.readyState < 2) return;
+
+      canvas.width = 120;
+      canvas.height = 160;
+      ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imgData.data;
+      
+      let skinPixels = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i+1];
+        const b = data[i+2];
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        // Standard skin tone rules
+        if (r > 95 && g > 40 && b > 20 && (max - min) > 15 && Math.abs(r - g) > 15 && r > g && r > b) {
+          skinPixels++;
+        }
+      }
+      
+      const skinRatio = skinPixels / (canvas.width * canvas.height);
+      
+      // If skin ratio exceeds 50%, trigger attire/nudity violation
+      if (skinRatio > 0.50) {
+        setAiViolationActive(true);
+        
+        const amMsg = "Ã¡Å Â¥Ã¡â€°Â£Ã¡Å Â­Ã¡â€¹Å½ Ã¡â€°Â°Ã¡Å’Ë†Ã¡â€°Â¢Ã¡â€¹ÂÃ¡Å â€¢ Ã¡Å Â Ã¡Ë†Ë†Ã¡â€°Â£Ã¡â€°Â Ã¡Ë†Âµ Ã¡â€¹Â­Ã¡Ë†ÂÃ¡â€°Â Ã¡Ë†Â±Ã¡ÂÂ¢ Ã¡â€¹Â¨Ã¡Ë†ËœÃ¡â€°Â°Ã¡Å’ÂÃ¡â€°Â Ã¡Ë†ÂªÃ¡â€¹Â«Ã¡â€¹ÂÃ¡Å â€¢ Ã¡Ë†ËœÃ¡Ë†ËœÃ¡Ë†ÂªÃ¡â€¹Â«Ã¡â€¹Å½Ã¡â€°Â½ Ã¡Ë†ËœÃ¡Å’Â£Ã¡Ë†Âµ Ã¡Ë†ËœÃ¡Ë†Ë†Ã¡â€¹Â«Ã¡â€¹Å½ Ã¡Å Â¥Ã¡Å â€¢Ã¡â€¹Â³Ã¡â€¹Â­Ã¡â€¹ËœÃ¡Å’â€¹ Ã¡â€¹Â«Ã¡â€¹Â°Ã¡Ë†Â­Ã¡Å’â€¹Ã¡Ë†ÂÃ¡ÂÂ¢";
+        const enMsg = "Please dress appropriately. Violating Beteseb policies may result in account termination.";
+        setAiViolationMessage(navigator.language.startsWith('am') ? amMsg : enMsg);
+        
+        // Disable local video tracks instantly to blackout stream
+        if (localStreamRef.current) {
+          localStreamRef.current.getVideoTracks().forEach(t => t.enabled = false);
+        }
+        setIsVideoOff(true);
+
+        // Save report log to Supabase
+        if (currentUser) {
+          await supabase.from('reports').insert({
+            reporter_id: matchProfile.id,
+            reported_id: currentUser.id,
+            reason: 'explicit content',
+            details: `AI Content Moderation flagged excessive skin exposure (${(skinRatio*100).toFixed(1)}%) during video call.`
+          });
+        }
+
+        // Send hangup signal and terminate call after 4 seconds
+        setTimeout(() => {
+          handleEndCall();
+        }, 4000);
+      }
+    };
+
+    const interval = setInterval(runModerationCheck, 5000);
+    return () => clearInterval(interval);
+  }, [callState, isVideo, aiViolationActive, currentUser]);
 
   const toggleMute = () => {
     if (localStream) {
@@ -558,7 +754,7 @@ export default function CallInterface({
               onClick={handleEndAndReport}
               className="px-5 py-5 bg-red-600 hover:bg-red-700 text-white rounded-3xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-xl shadow-red-500/20 hover:scale-105 active:scale-95 transition-all"
             >
-              ⚠️ End & Report
+              Ã¢Å¡Â Ã¯Â¸Â End & Report
             </button>
 
             {/* Toggle Video */}
