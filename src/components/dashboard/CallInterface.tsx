@@ -37,6 +37,9 @@ export default function CallInterface({
   
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const [isBusy, setIsBusy] = useState(false);
+  const [aiViolationActive, setAiViolationActive] = useState(false);
+  const [aiViolationMessage, setAiViolationMessage] = useState('');
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -44,6 +47,7 @@ export default function CallInterface({
   const channelRef = useRef<any>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
   const ringAudioRef = useRef<AudioContext | null>(null);
+  const callConnectedRef = useRef(false);
 
   // Sync callDuration to ref
   useEffect(() => {
