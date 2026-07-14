@@ -35,7 +35,11 @@ import {
   Loader2,
   Gift,
   Lock,
-  Coins
+  Coins,
+  ChevronLeft,
+  Plus,
+  ArrowLeft,
+  Plane
 } from 'lucide-react';
 import Image from 'next/image';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -89,6 +93,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
   const voiceTimerRef = useRef<any>(null);
   const imageUploadRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const activeCallMatchRef = useRef<any>(null);
   const tf = useTranslations('Friendship');
 
   // Gamification & Tier Restrictions States (Phase 4.5)
@@ -153,6 +158,63 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
       supabase.removeChannel(channel);
     };
   }, [activeWaliRoomId, showWaliModal]);
+
+  // Call reference syncing and global incoming call listener
+  useEffect(() => {
+    activeCallMatchRef.current = activeCallMatch;
+  }, [activeCallMatch]);
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const callChannel = supabase.channel(`user_calls_${currentUser.id}`);
+
+    const playBeepBeep = () => {
+      try {
+        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.frequency.setValueAtTime(400, ctx.currentTime);
+        gain.gain.setValueAtTime(0, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.05);
+        gain.gain.setValueAtTime(0.15, ctx.currentTime + 0.2);
+        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.25);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.3);
+      } catch (e) {}
+    };
+
+    callChannel
+      .on('broadcast', { event: 'incoming_call' }, (payload) => {
+        const { callerProfile, isVideo, roomId } = payload.payload;
+        
+        if (activeCallMatchRef.current) {
+          playBeepBeep();
+          const peerRoomId = roomId;
+          const peerRoomChannel = supabase.channel(peerRoomId);
+          peerRoomChannel.subscribe((status) => {
+            if (status === 'SUBSCRIBED') {
+              peerRoomChannel.send({
+                type: 'broadcast',
+                event: 'signal',
+                payload: { sender: currentUser.id, busy: true }
+              });
+            }
+          });
+          return;
+        }
+
+        setIsCallVideo(isVideo);
+        setActiveCallMatch(callerProfile);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(callChannel);
+    };
+  }, [currentUser]);
 
   useEffect(() => {
     const init = async () => {
@@ -304,6 +366,13 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
         .order('created_at', { ascending: true });
       
       if (data) setMessages(data);
+
+      // Mark unread messages from the other user as read
+      await supabase.from('messages')
+        .update({ is_read: true })
+        .eq('sender_id', selectedMatch.id)
+        .eq('receiver_id', currentUser.id)
+        .eq('is_read', false);
     };
 
     fetchMessages();
@@ -323,6 +392,8 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
           const msg = payload.new as Message;
           if (msg.sender_id === selectedMatch.id) {
             setMessages((prev) => [...prev, msg]);
+            // Auto-mark as read since we're already in this chat room
+            supabase.from('messages').update({ is_read: true }).eq('id', msg.id);
             
             // Auto-refresh coin balance if it contains coin symbol
             if (msg.content.includes('🪙')) {
@@ -340,8 +411,23 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
       )
       .subscribe();
 
+    // Also subscribe to READ status updates
+    const updateChannel = supabase
+      .channel(`realtime:messages:updates:${currentUser.id}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'messages',
+        filter: `sender_id=eq.${currentUser.id}`,
+      }, (payload) => {
+        const updatedMsg = payload.new as Message;
+        setMessages(prev => prev.map(m => m.id === updatedMsg.id ? { ...m, is_read: updatedMsg.is_read } : m));
+      })
+      .subscribe();
+
     return () => {
       supabase.removeChannel(channel);
+      supabase.removeChannel(updateChannel);
     };
   }, [selectedMatch, currentUser]);
 
@@ -1085,17 +1171,43 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
           ) : (
           <>
             {/* Header */}
-            <header className="p-6 bg-white border-b border-muted flex items-center justify-between shadow-sm">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-secondary border border-primary overflow-hidden">
-                  <Image src={selectedMatch.avatar_url || 'https://images.unsplash.com/photo-1531123897727-8f129e16fd3c?auto=format&fit=crop&q=80&w=200'} alt="" width={40} height={40} className="w-full h-full object-cover" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-accent flex items-center gap-1">
-                    {selectedMatch.full_name}
-                    {selectedMatch.is_verified && <CheckCircle2 size={14} className="text-primary fill-primary/10" />}
-                  </h3>
-                  <p className="text-[10px] text-green-500 font-bold uppercase tracking-widest">{t('activeNow')}</p>
+            <header className="p-3 md:p-6 bg-white border-b border-muted flex items-center justify-between shadow-sm sticky top-0 z-30">
+              <div className="flex items-center gap-2 md:gap-3">
+                {/* WhatsApp-style Back Arrow (visible on mobile, triggers back navigation) */}
+                <button 
+                  type="button"
+                  onClick={() => setSelectedMatch(null)}
+                  className="md:hidden p-1 text-gray-500 hover:text-primary transition-colors focus:outline-none"
+                  aria-label="Back"
+                >
+                  <ChevronLeft size={28} className="text-accent" strokeWidth={2.5} />
+                </button>
+                
+                {/* Profile Pic + Name Area (clickable on mobile to trigger back navigation) */}
+                <div 
+                  onClick={() => {
+                    if (window.innerWidth < 768) {
+                      setSelectedMatch(null);
+                    }
+                  }}
+                  className="flex items-center gap-2 md:gap-3 cursor-pointer md:cursor-default"
+                >
+                  <div className="w-10 h-10 rounded-full bg-secondary border border-primary overflow-hidden relative flex-shrink-0">
+                    <Image 
+                      src={selectedMatch.avatar_url || 'https://images.unsplash.com/photo-1531123897727-8f129e16fd3c?auto=format&fit=crop&q=80&w=200'} 
+                      alt={selectedMatch.full_name} 
+                      width={40} 
+                      height={40} 
+                      className="w-full h-full object-cover" 
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-bold text-accent flex items-center gap-1 text-sm md:text-base truncate">
+                      {selectedMatch.full_name}
+                      {selectedMatch.is_verified && <CheckCircle2 size={14} className="text-primary fill-primary/10" />}
+                    </h3>
+                    <p className="text-[10px] text-green-500 font-bold uppercase tracking-widest">{t('activeNow')}</p>
+                  </div>
                 </div>
               </div>
                <div className="flex items-center gap-1 md:gap-4 text-gray-400 flex-nowrap">
@@ -1313,26 +1425,53 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                   className={`flex ${msg.sender_id === currentUser?.id ? 'justify-end' : 'justify-start'}`}
                 >
                   <div className={`max-w-[70%] group relative ${msg.sender_id === currentUser?.id ? 'items-end' : 'items-start'}`}>
-                    <div className={`
-                      px-6 py-4 rounded-[2rem] text-sm leading-relaxed shadow-sm
-                      ${msg.sender_id === currentUser?.id 
-                        ? 'bg-accent text-white rounded-tr-none' 
-                        : 'bg-white text-gray-600 rounded-tl-none border border-muted'
-                      }
-                    `}>
-                      {msg.translations?.[locale] || msg.content}
-                      
-                      {/* Translation Toggle */}
-                      <button 
-                        onClick={() => handleTranslate(msg.id, locale)}
-                        className={`absolute -bottom-6 ${msg.sender_id === currentUser?.id ? 'right-0' : 'left-0'} p-2 text-[8px] font-black uppercase tracking-widest flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all hover:text-primary`}
-                      >
-                        <Languages size={10} /> {msg.translations?.[locale] ? t('original') : t('translate', { lang: locale })}
-                      </button>
-                    </div>
+                    {/* Missed Call System Messages */}
+                    {(msg.content === '[MISSED_AUDIO_CALL]' || msg.content === '[MISSED_VIDEO_CALL]') ? (
+                      <div className="px-5 py-3 rounded-2xl bg-orange-50 border border-orange-100 flex items-center gap-3 text-xs font-bold text-orange-600">
+                        {msg.content === '[MISSED_VIDEO_CALL]' ? '📹' : '📞'}
+                        <span>
+                          {msg.sender_id === currentUser?.id
+                            ? (locale === 'am' ? 'ጥሪዎ ሳይቀበሉ ቀርቷል' : 'No Answer')
+                            : (locale === 'am' ? 'ያልተቀበሉ ጥሪ' : 'Missed Call')}
+                        </span>
+                        <span className="ml-auto text-orange-300 font-normal">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                    ) : msg.content.startsWith('[VOICE_NOTE]') ? (
+                      <div className={`px-4 py-3 rounded-[2rem] shadow-sm ${msg.sender_id === currentUser?.id ? 'bg-accent text-white rounded-tr-none' : 'bg-white text-gray-600 rounded-tl-none border border-muted'}`}>
+                        <audio controls src={msg.content.replace('[VOICE_NOTE]', '').replace('[/VOICE_NOTE]', '')} className="h-8 w-44 max-w-full" />
+                      </div>
+                    ) : msg.content.startsWith('[IMAGE]') ? (
+                      <div className="rounded-[2rem] overflow-hidden shadow-sm max-w-[220px]">
+                        <img src={msg.content.replace('[IMAGE]', '').replace('[/IMAGE]', '')} alt="Shared image" className="w-full h-auto object-cover rounded-[2rem]" />
+                      </div>
+                    ) : (
+                      <div className={`
+                        px-6 py-4 rounded-[2rem] text-sm leading-relaxed shadow-sm
+                        ${msg.sender_id === currentUser?.id 
+                          ? 'bg-accent text-white rounded-tr-none' 
+                          : 'bg-white text-gray-600 rounded-tl-none border border-muted'
+                        }
+                      `}>
+                        {msg.translations?.[locale] || msg.content}
+                        
+                        {/* Translation Toggle */}
+                        <button 
+                          onClick={() => handleTranslate(msg.id, locale)}
+                          className={`absolute -bottom-6 ${msg.sender_id === currentUser?.id ? 'right-0' : 'left-0'} p-2 text-[8px] font-black uppercase tracking-widest flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all hover:text-primary`}
+                        >
+                          <Languages size={10} /> {msg.translations?.[locale] ? t('original') : t('translate', { lang: locale })}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Delivery status */}
                     <div className={`flex items-center gap-2 mt-2 px-2 text-[10px] ${msg.sender_id === currentUser?.id ? 'justify-end text-gray-400' : 'justify-start text-gray-400'}`}>
                       {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      {msg.sender_id === currentUser?.id && <CheckCheck size={14} className="text-primary" />}
+                      {msg.sender_id === currentUser?.id && (
+                        msg.is_read
+                          ? <CheckCheck size={14} className="text-primary" /> // Read - brand orange
+                          : <CheckCheck size={14} className="text-gray-300" /> // Delivered - gray
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1388,22 +1527,78 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                    </button>
                 </div>
               )}
-              <div className="flex items-center gap-4 bg-muted/30 rounded-[2rem] p-2 pl-6 focus-within:ring-2 focus-within:ring-primary/20 transition-all border border-muted">
-                <input 
-                  type="text" 
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder={t('typePlaceholder')} 
-                  className="flex-1 bg-transparent border-none focus:outline-none text-sm text-accent py-3"
-                />
-                <button 
-                  type="submit"
-                  disabled={!newMessage.trim()}
-                  aria-label="Send message"
-                  className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center hover:scale-105 transition-transform disabled:opacity-50 disabled:hover:scale-100 shadow-lg shadow-primary/20"
-                >
-                  <Send size={20} className="ml-1" />
-                </button>
+              <div className="flex items-center gap-3">
+                {/* Plus / Media Attachment button */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowMediaPicker(!showMediaPicker)}
+                    className="w-11 h-11 rounded-full bg-muted/60 border border-gray-100 text-gray-400 hover:text-primary hover:bg-primary/10 flex items-center justify-center transition-all"
+                    aria-label="Attach media"
+                  >
+                    <Plus size={20} />
+                  </button>
+                  {showMediaPicker && (
+                    <div className="absolute bottom-14 left-0 bg-white rounded-3xl border border-muted shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 z-50">
+                      <label className="flex items-center gap-3 px-5 py-4 text-xs font-bold text-accent hover:bg-muted/30 cursor-pointer border-b border-muted">
+                        📷 {locale === 'am' ? 'ፎቶ / ቪዲዮ' : 'Photo / Video'}
+                        <input
+                          type="file"
+                          accept="image/*,video/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleImageUpload(file);
+                          }}
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setShowMediaPicker(false)}
+                        className="w-full px-5 py-3 text-xs font-black uppercase text-red-400 hover:bg-red-50 transition-all"
+                      >
+                        {locale === 'am' ? 'ሰርዝ' : 'Cancel'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Text Input */}
+                <div className="flex-1 flex items-center gap-2 bg-muted/30 rounded-[2rem] px-5 py-1.5 focus-within:ring-2 focus-within:ring-primary/20 transition-all border border-muted">
+                  <input
+                    type="text"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder={t('typePlaceholder')}
+                    className="flex-1 bg-transparent border-none focus:outline-none text-sm text-accent py-2.5"
+                  />
+                </div>
+
+                {/* Send or Mic button */}
+                {newMessage.trim() ? (
+                  <button
+                    type="submit"
+                    aria-label="Send message"
+                    className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20"
+                  >
+                    <Plane size={18} className="rotate-45" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    aria-label={isRecordingVoice ? 'Stop voice note' : 'Record voice note'}
+                    onPointerDown={startVoiceRecording}
+                    onPointerUp={stopVoiceRecording}
+                    onPointerLeave={stopVoiceRecording}
+                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-lg relative ${isRecordingVoice ? 'bg-red-500 shadow-red-300 scale-110 animate-pulse' : 'bg-primary shadow-primary/20 hover:scale-105 active:scale-95'}`}
+                  >
+                    {isRecordingVoice ? (
+                      <span className="text-white text-[11px] font-black">{voiceCountdown}s</span>
+                    ) : (
+                      <Mic size={20} className="text-white" />
+                    )}
+                  </button>
+                )}
               </div>
             </form>
           </>
@@ -1438,6 +1633,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
           onEndCall={() => setActiveCallMatch(null)} 
           isVideo={isCallVideo}
           isPremium={isPremium}
+          isIncoming={activeCallMatch.id !== currentUser?.id}
         />
       )}
       {showGiftModal && selectedMatch && (
@@ -1696,6 +1892,29 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                   setShowConsentModal(false);
                   setIsCallVideo(pendingCallVideo);
                   setActiveCallMatch(selectedMatch);
+                  if (currentUser && selectedMatch) {
+                    const roomId = [currentUser.id, selectedMatch.id].sort().join('_');
+                    const targetChan = supabase.channel(`user_calls_${selectedMatch.id}`);
+                    targetChan.subscribe((status) => {
+                      if (status === 'SUBSCRIBED') {
+                        targetChan.send({
+                          type: 'broadcast',
+                          event: 'incoming_call',
+                          payload: {
+                            callerProfile: {
+                              id: currentUser.id,
+                              full_name: userProfile?.full_name || 'Beteseb Member',
+                              avatar_url: userProfile?.avatar_url || '',
+                              image: userProfile?.avatar_url || '',
+                              is_verified: userProfile?.is_verified || false
+                            },
+                            isVideo: pendingCallVideo,
+                            roomId: roomId
+                          }
+                        });
+                      }
+                    });
+                  }
                 }}
                 className="w-full bg-primary text-white py-4 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-primary/20 hover:scale-102 active:scale-98 transition-all"
               >
