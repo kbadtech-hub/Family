@@ -439,6 +439,7 @@ const RecursiveComments = ({
   translateCommentContent: (commentId: string, content: string) => void,
   locale: string
 }) => {
+  const tMatch = useTranslations('Dashboard.matchDetail');
   return (
     <div className={`space-y-4 ${level > 0 ? 'ml-8 border-l-2 border-primary/10 pl-4' : ''} text-left`}>
       {comments.map(comment => (
