@@ -343,9 +343,9 @@ function CommunityContent() {
                <div className="mt-10 p-6 bg-secondary/10 rounded-3xl border border-secondary/20">
                   <div className="flex items-center gap-2 text-secondary mb-2">
                      <Sparkles size={18} />
-                     <span className="font-black text-xs uppercase tracking-widest">AI Topic of Day</span>
+                     <span className="font-black text-xs uppercase tracking-widest">{locale === 'am' ? 'የዕለቱ የAI መወያያ አርዕስት' : locale === 'ti' ? 'ናይ መዓልቲ ናይ AI መመያየጢ ኣርእስቲ' : locale === 'om' ? "Mata Duree AI Har'aa" : locale === 'so' ? 'Mowduuca AI ee Maalinta' : locale === 'ar' ? 'موضوع الذكاء الاصطناعي لليوم' : 'AI Topic of the Day'}</span>
                   </div>
-                  <p className="text-sm font-bold text-accent italic">&quot;{aiTopic || "How can traditional Abushakir logic solve modern dating burnout?"}&quot;</p>
+                  <p className="text-sm font-bold text-accent italic">&quot;{aiTopic || (locale === 'am' ? 'ባህላዊው የአቡሻኪር የቀን አቆጣጠር ዘመናዊ የፍቅር ግንኙነት ድካምን እንዴት ሊፈታ ይችላል?' : locale === 'ti' ? 'ባህላዊ ኣቡሻኪር ሎጂክ ንዘመናዊ ናይ ፍቕሪ ርክብ ድካም ከመይ ገይሩ ክፈትሕ ይኽእል?' : locale === 'om' ? "Haalli dorgommii Abushakir dhiphina hariiroo ammayyaa akkamitti furuu danda'a?" : locale === 'so' ? 'Sidee macquulnimada dhaqanka Abushakir u xallin kartaa daalka shukaansiga casriga ah?' : locale === 'ar' ? 'كيف يمكن لمنطق أبوشاكر التقليدي حل إرهاق المواعدة الحديثة؟' : 'How can traditional Abushakir logic solve modern dating burnout?')}&quot;</p>
                </div>
             </div>
          </aside>
@@ -540,14 +540,14 @@ function CommunityContent() {
                <div className="absolute top-0 left-0 w-2 h-full bg-secondary group-hover:w-4 transition-all" />
                <div className="flex items-center gap-3 mb-6">
                   <BarChart2 className="text-secondary" />
-                  <h4 className="text-lg font-black text-accent italic">Family Poll</h4>
+                  <h4 className="text-lg font-black text-accent italic">{locale === 'am' ? 'የቤተሰብ የህዝብ አስተያየት' : locale === 'ti' ? 'ናይ ስድራቤት ህዝባዊ ርእይቶ' : locale === 'om' ? 'Filannoo Maatii' : locale === 'so' ? 'Cod-bixinta Qoyska' : locale === 'ar' ? 'استطلاع الأسرة' : 'Family Poll'}</h4>
                </div>
-               <p className="font-bold text-accent mb-6 leading-relaxed">&quot;What is the most important trait for a long-distance relationship?&quot;</p>
+               <p className="font-bold text-accent mb-6 leading-relaxed">{locale === 'am' ? 'ለረጅም ርቀት የፍቅር ግንኙነት በጣም አስፈላጊው ባህሪ ምንድነው?' : locale === 'ti' ? 'ንነዊሕ ርሕቀት ዘለዎ ናይ ፍቕሪ ርክብ ዝበለጸ ኣገዳሲ ባህሪ እንታይ እዩ?' : locale === 'om' ? "Hariiroo fageenyaa keessatti amalli baay'ee barbaachisaa ta'e maali?" : locale === 'so' ? 'Waa maxay astaanta ugu muhiimsan ee xiriirka fogaanta ah?' : locale === 'ar' ? 'ما هي أهم ميزة لعلاقة حب عن بعد؟' : 'What is the most important trait for a long-distance relationship?'}</p>
                <div className="space-y-3">
                   {[
-                     { label: "Daily Video Chat", percent: 45 },
-                     { label: "Trust & Transparency", percent: 82 },
-                     { label: "Future Plan", percent: 34 }
+                     { label: locale === 'am' ? 'የዕለታዊ የቪዲዮ ወሬ' : locale === 'ti' ? 'መዓልታዊ ናይ ቪዲዮ ዕላል' : locale === 'om' ? 'Viidiyoo Chatii Guyyuu' : locale === 'so' ? 'Wada hadalka Muuqaalka ee Maalinlaha' : locale === 'ar' ? 'محادثة فيديو يومية' : 'Daily Video Chat', percent: 45 },
+                     { label: locale === 'am' ? 'እምነት እና ግልጽነት' : locale === 'ti' ? 'እምነትን ግልጽነትን' : locale === 'om' ? 'Amanamummaa fi Gabaasamummaa' : locale === 'so' ? 'Aaminaad iyo Furfurnaan' : locale === 'ar' ? 'الثقة والشفافية' : 'Trust & Transparency', percent: 82 },
+                     { label: locale === 'am' ? 'የወደፊት እቅድ' : locale === 'ti' ? 'ናይ መጻኢ ውጥን' : locale === 'om' ? 'Karoora Gara Fulduuraa' : locale === 'so' ? 'Qorshaha Mustaqbalka' : locale === 'ar' ? 'خطة المستقبل' : 'Future Plan', percent: 34 }
                   ].map((opt, i) => (
                      <button key={i} className="w-full p-4 rounded-2xl border border-gray-100 hover:border-secondary transition-all text-left relative overflow-hidden group/opt">
                         <div className="relative z-10 flex justify-between items-center font-bold text-sm">
@@ -564,9 +564,9 @@ function CommunityContent() {
             </div>
 
             <div className="bg-card p-8 rounded-[3rem] shadow-2xl border border-white/5">
-               <h4 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6">Trending Tags</h4>
+               <h4 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6">{locale === 'am' ? 'በብዛት የተጎበኙ መለያዎች' : locale === 'ti' ? 'ብብዝሒ ዝተረኣዩ መለለዪታት' : locale === 'om' ? "Mirkannoo Babal'atan" : locale === 'so' ? 'Mawduucyada ugu caansan' : locale === 'ar' ? 'الوسوم الشائعة' : 'Trending Tags'}</h4>
                <div className="flex flex-wrap gap-2">
-                  {['#Abushakir', '#SuccessStories', '#HabeshaWeddings', '#FamilyValues', '#EthiopianHeritage'].map(tag => (
+                  {(locale === 'am' ? ['#አቡሻኪር', '#የስኬትታሪኮች', '#የሐበሻሰርግ', '#የቤተሰብእሴቶች', '#የኢትዮጵያቅርስ'] : locale === 'ti' ? ['#አቡሻኪር', '#ታሪኽዓወት', '#መርዓሓበሻ', '#ክብርታትስድራቤት', '#ቅርስኢትዮጵያ'] : locale === 'om' ? ['#Abushaakir', '#SeenaaMilkaa\'inaa', '#CidhaHabeshaa', '#DuudhaaleeMaatii', '#DhaalaItoophiyaa'] : locale === 'so' ? ['#Abushakir', '#SheekooyinkaGuusha', '#AroosyadaHabesha', '#QiimahaQoyska', '#HiddahaItoobiya'] : locale === 'ar' ? ['#أبوشاكر', '#قصص_نجاح', '#أعراس_الحبشة', '#القيم_الأسرية', '#التراث_الأثيوبي'] : ['#Abushakir', '#SuccessStories', '#HabeshaWeddings', '#FamilyValues', '#EthiopianHeritage']).map(tag => (
                      <span key={tag} className="text-[10px] font-black bg-white/5 hover:bg-primary hover:text-white px-4 py-2 rounded-full cursor-pointer transition-all border border-white/5">{tag}</span>
                   ))}
                </div>

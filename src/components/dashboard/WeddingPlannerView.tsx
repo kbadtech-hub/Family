@@ -135,11 +135,46 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
         setVendors(vendorData);
       } else {
         setVendors([
-          { id: 'v1', name: 'Sheraton Addis Grand Ballroom', category: 'Venue', rating: 4.9, location: 'Addis Ababa', contact: '+251115171717' },
-          { id: 'v2', name: 'Skyline Hotel Event Hall', category: 'Venue', rating: 4.8, location: 'Addis Ababa', contact: '+251116676000' },
-          { id: 'v3', name: 'Simien Studio Cinema', category: 'Photography', rating: 4.9, location: 'Addis Ababa & Gondar', contact: '+251911223344' },
-          { id: 'v4', name: 'Habesha Bridal Decor & Flowers', category: 'Decor', rating: 4.7, location: 'Addis Ababa', contact: '+251922334455' },
-          { id: 'v5', name: 'Lucy Traditional Bridal Salon', category: 'Styling', rating: 4.8, location: 'Addis Ababa', contact: '+251933445566' }
+          { 
+            id: 'v1', 
+            name: locale === 'am' ? 'ሸራተን አዲስ ግራንድ አዳራሽ' : locale === 'ti' ? 'ሸራተን አዲስ ግራንድ ኣዳራሽ' : locale === 'om' ? 'Sheeraatoni Addis Grand Ballroom' : 'Sheraton Addis Grand Ballroom', 
+            category: locale === 'am' ? 'ሰርግ አዳራሽ' : locale === 'ti' ? 'ኣዳራሽ መርዓ' : locale === 'om' ? 'Bakka Cidhaa' : 'Venue', 
+            rating: 4.9, 
+            location: locale === 'am' ? 'አዲስ አበባ' : locale === 'ti' ? 'ኣዲስ ኣበባ' : locale === 'om' ? 'Finfinnee' : 'Addis Ababa', 
+            contact: '+251115171717' 
+          },
+          { 
+            id: 'v2', 
+            name: locale === 'am' ? 'ስካይላይን ሆቴል አዳራሽ' : locale === 'ti' ? 'ስካይላይን ሆቴል ኣዳራሽ' : locale === 'om' ? 'Skyline Hotel Event Hall' : 'Skyline Hotel Event Hall', 
+            category: locale === 'am' ? 'ሰርግ አዳራሽ' : locale === 'ti' ? 'ኣዳራሽ መርዓ' : locale === 'om' ? 'Bakka Cidhaa' : 'Venue', 
+            rating: 4.8, 
+            location: locale === 'am' ? 'አዲስ አበባ' : locale === 'ti' ? 'ኣዲስ ኣበባ' : locale === 'om' ? 'Finfinnee' : 'Addis Ababa', 
+            contact: '+251116676000' 
+          },
+          { 
+            id: 'v3', 
+            name: locale === 'am' ? 'ሰሜን ስቱዲዮ ሲኒማ' : locale === 'ti' ? 'ሰሜን ስቱዲዮ ሲኒማ' : locale === 'om' ? 'Simien Studio Cinema' : 'Simien Studio Cinema', 
+            category: locale === 'am' ? 'ፎቶግራፊ' : locale === 'ti' ? 'ፎቶግራፊ' : locale === 'om' ? 'Fakki kaasuu' : 'Photography', 
+            rating: 4.9, 
+            location: locale === 'am' ? 'አዲስ አበባ እና ጎንደር' : locale === 'ti' ? 'ኣዲስ ኣበባን ጎንደርን' : locale === 'om' ? 'Finfinnee & Gondar' : 'Addis Ababa & Gondar', 
+            contact: '+251911223344' 
+          },
+          { 
+            id: 'v4', 
+            name: locale === 'am' ? 'የሀበሻ ሙሽራ ዲኮር እና አበቦች' : locale === 'ti' ? 'ናይ ሓበሻ መርዓ ዲኮርን ዕምባባታትን' : locale === 'om' ? 'Habesha Bridal Decor & Flowers' : 'Habesha Bridal Decor & Flowers', 
+            category: locale === 'am' ? 'ጌጣጌጥ' : locale === 'ti' ? 'ጌጣጌጥ' : locale === 'om' ? 'Faaya' : 'Decor', 
+            rating: 4.7, 
+            location: locale === 'am' ? 'አዲስ አበባ' : locale === 'ti' ? 'ኣዲስ ኣበባ' : locale === 'om' ? 'Finfinnee' : 'Addis Ababa', 
+            contact: '+251922334455' 
+          },
+          { 
+            id: 'v5', 
+            name: locale === 'am' ? 'ሉሲ ባህላዊ የሙሽራ ሳሎን' : locale === 'ti' ? 'ሉሲ ባህላዊ ናይ መርዓ ሳሎን' : locale === 'om' ? 'Lucy Traditional Bridal Salon' : 'Lucy Traditional Bridal Salon', 
+            category: locale === 'am' ? 'ውበት ዝግጅት' : locale === 'ti' ? 'ውበት ዝግጅት' : locale === 'om' ? 'Bareedina' : 'Styling', 
+            rating: 4.8, 
+            location: locale === 'am' ? 'አዲስ አበባ' : locale === 'ti' ? 'ኣዲስ ኣበባ' : locale === 'om' ? 'Finfinnee' : 'Addis Ababa', 
+            contact: '+251933445566' 
+          }
         ]);
       }
 
@@ -453,13 +488,13 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
         <div className="bg-white p-10 md:p-12 rounded-[3rem] border border-muted lg:col-span-2 space-y-8">
           <div>
             <h3 className="text-2xl font-black text-accent italic tracking-tighter">{t('inquireBook')}</h3>
-            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mt-1">Free consultation inquiry with our wedding designers</p>
+            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mt-1">{locale === 'am' ? 'ከየሰርግ ዲዛይነሮቻችን ጋር ነፃ የምክክር መጠይቅ' : locale === 'ti' ? 'ምስ ዲዛይነራት መርዓና ነጻ ናይ ምኽሪ ሕቶ' : locale === 'om' ? 'Mariidha bilisaa dizaayinaroota cidhaa keenya wajjin' : locale === 'so' ? 'Weydiinta la-tashiga bilaashka ah ee naqshadeeyayaasha arooskayaga' : locale === 'ar' ? 'طلب استشارة مجانية مع مصممي حفلات الزفاف لدينا' : 'Free consultation inquiry with our wedding designers'}</p>
           </div>
           
           <form onSubmit={handleInquirySubmit} className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <label className="block">
-                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Proposed Date</span>
+                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">{locale === 'am' ? 'የታቀደው ቀን' : locale === 'ti' ? 'እታ መዓልቲ መርዓ' : locale === 'om' ? 'Guyyaa Yaadame' : locale === 'so' ? 'Taariikhda la soo jeediyay' : locale === 'ar' ? 'التاريخ المقترح' : 'Proposed Date'}</span>
                 <input 
                   type="date" 
                   required
@@ -470,7 +505,7 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
               </label>
 
               <label className="block">
-                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Time Slot</span>
+                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">{locale === 'am' ? 'የሰዓት ክፍተት' : locale === 'ti' ? 'ናይ ሰዓት ገደብ' : locale === 'om' ? 'Yeroo Filatame' : locale === 'so' ? 'Waqtiga la doortay' : locale === 'ar' ? 'فترة الوقت' : 'Time Slot'}</span>
                 <select
                   value={selectedSlot}
                   onChange={(e) => setSelectedSlot(e.target.value)}
@@ -485,7 +520,7 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
               </label>
 
               <label className="block">
-                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Guest Count</span>
+                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">{locale === 'am' ? 'የእንግዳ ብዛት' : locale === 'ti' ? 'ብዝሒ ጋሹ' : locale === 'om' ? "Baay'ina Keessummootaa" : locale === 'so' ? 'Tirada Martida' : locale === 'ar' ? 'عدد الضيوف' : 'Guest Count'}</span>
                 <input 
                   type="number" 
                   min={50}
@@ -498,7 +533,7 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
             </div>
 
             <label className="block">
-              <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Special requests / custom notes</span>
+              <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">{locale === 'am' ? 'ልዩ ፍላጎቶች / ተጨማሪ ማስታወሻዎች' : locale === 'ti' ? 'ፍሉይ ሕቶታት / ተወሳኺ መዘኻኸሪታት' : locale === 'om' ? 'Gaaffiilee addaa / ibsa dabalataa' : locale === 'so' ? 'Codsiyada gaarka ah / qoraalada gaarka ah' : locale === 'ar' ? 'طلبات خاصة / ملاحظات مخصصة' : 'Special requests / custom notes'}</span>
               <textarea 
                 rows={3}
                 placeholder={t('customRequirements')}
@@ -513,7 +548,7 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
               disabled={isSubmitting || !weddingDate}
               className="w-full btn-primary py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] disabled:opacity-50 flex items-center justify-center gap-2 group"
             >
-              {isSubmitting ? 'SENDING INQUIRY...' : (
+              {isSubmitting ? (locale === 'am' ? 'ጥያቄውን በመላክ ላይ...' : locale === 'ti' ? 'ሕቶኡ ኣብ ምልኣኽ ኣሎ...' : 'SENDING INQUIRY...') : (
                 <>
                   {t('sendInquiry')} 
                   <ArrowRight size={14} className="group-hover:translate-x-1.5 transition-transform" />

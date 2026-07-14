@@ -19,6 +19,208 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { getUserTier, calculateCompletionRate } from '@/lib/tiers';
+import { COUNTRIES } from '@/lib/countries';
+
+const locationData: Record<string, Record<string, string[]>> = {
+  'Ethiopia': {
+    'Harar': ['Harar'],
+    'Addis Ababa': ['Addis Ababa'],
+    'Oromia': ['Adama', 'Jimma', 'Bishoftu'],
+    'Amhara': ['Bahir Dar', 'Gondar', 'Dessie'],
+    'Tigray': ['Mekelle', 'Adigrat', 'Axum'],
+    'Sidama': ['Hawassa', 'Yirgalem'],
+    'South Ethiopia': ['Arba Minch', 'Dila'],
+    'Others': []
+  },
+  'USA': {
+    'Minnesota': ['Minneapolis', 'St. Paul', 'Rochester'],
+    'Texas': ['Houston', 'Dallas', 'Austin'],
+    'Virginia': ['Fairfax', 'Richmond', 'Alexandria'],
+    'California': ['Los Angeles', 'San Jose', 'San Diego'],
+    'Washington': ['Seattle', 'Spokane'],
+    'Georgia': ['Atlanta', 'Decatur'],
+    'Colorado': ['Denver', 'Aurora'],
+    'Others': []
+  },
+  'Canada': {
+    'Ontario': ['Toronto', 'Ottawa', 'Mississauga', 'London'],
+    'British Columbia': ['Vancouver', 'Victoria', 'Burnaby'],
+    'Alberta': ['Calgary', 'Edmonton'],
+    'Quebec': ['Montreal', 'Quebec City'],
+    'Others': []
+  },
+  'United Kingdom': {
+    'England': ['London', 'Birmingham', 'Manchester', 'Leeds'],
+    'Scotland': ['Edinburgh', 'Glasgow'],
+    'Others': []
+  },
+  'Germany': {
+    'Hesse': ['Frankfurt', 'Wiesbaden'],
+    'Bavaria': ['Munich', 'Nuremberg'],
+    'Berlin': ['Berlin'],
+    'North Rhine-Westphalia': ['Cologne', 'Düsseldorf'],
+    'Others': []
+  },
+  'Saudi Arabia': {
+    'Riyadh Region': ['Riyadh'],
+    'Makkah Region': ['Jeddah', 'Mecca'],
+    'Eastern Province': ['Dammam', 'Khobar'],
+    'Others': []
+  },
+  'UAE': {
+    'Dubai': ['Dubai'],
+    'Abu Dhabi': ['Abu Dhabi', 'Al Ain'],
+    'Sharjah': ['Sharjah'],
+    'Others': []
+  },
+  'Sweden': {
+    'Stockholm County': ['Stockholm', 'Solna'],
+    'Västra Götaland': ['Gothenburg'],
+    'Skåne': ['Malmö'],
+    'Others': []
+  },
+  'Australia': {
+    'Victoria': ['Melbourne', 'Geelong'],
+    'New South Wales': ['Sydney', 'Newcastle'],
+    'Queensland': ['Brisbane'],
+    'Others': []
+  }
+};
+
+const getTranslation = (key: string, lang: string): string => {
+  const dictionary: Record<string, Record<string, string>> = {
+    am: {
+      'Ethiopia': 'ኢትዮጵያ',
+      'USA': 'አሜሪካ (USA)',
+      'Canada': 'ካናዳ',
+      'United Kingdom': 'ዩናይትድ ኪንግደም (UK)',
+      'Australia': 'አውስትራሊያ',
+      'Anywhere': 'የትም ቦታ',
+      'Others': 'ሌላ',
+      
+      'Harar': 'ሐረር',
+      'Addis Ababa': 'አዲስ አበባ',
+      'Oromia': 'ኦሮሚያ',
+      'Amhara': 'አማራ',
+      'Tigray': 'ትግራይ',
+      'Sidama': 'ሲዳማ',
+      'South Ethiopia': 'ደቡብ ኢትዮጵያ',
+      'Minnesota': 'Minnesota (ሚኒሶታ)',
+      'Texas': 'Texas (ቴክሳስ)',
+      'Virginia': 'Virginia (ቨርጂኒያ)',
+      'California': 'California (ካሊፎርኒያ)',
+      'Washington': 'Washington (ዋሽንግተን)',
+      'Georgia': 'Georgia (ጆርጂያ)',
+      'Colorado': 'Colorado (ኮሎራዶ)',
+      'Ontario': 'Ontario (ኦንታሪዮ)',
+      'British Columbia': 'British Columbia (ብሪቲሽ ኮሎምቢያ)',
+      'Alberta': 'Alberta (አልበርታ)',
+      'Quebec': 'Quebec (ኩቤክ)',
+      'England': 'England (እንግሊዝ)',
+      'Scotland': 'Scotland (ስኮትላንድ)',
+      'New South Wales': 'New South Wales (ኒው ሳውዝ ዌልስ)',
+      'Queensland': 'Queensland (ኩዊንስላንድ)',
+
+      'Adama': 'አዳማ',
+      'Jimma': 'ጅማ',
+      'Bishoftu': 'ቢሾፍቱ',
+      'Bahir Dar': 'ባህር ዳር',
+      'Gondar': 'ጎንደር',
+      'Dessie': 'ደሴ',
+      'Mekelle': 'መቀሌ',
+      'Adigrat': 'ዓዲግራት',
+      'Axum': 'አክሱም',
+      'Hawassa': 'ሀዋሳ',
+      'Yirgalem': 'ይርጋለም',
+      'Arba Minch': 'አርባ ምንጭ',
+      'Dila': 'ዲላ',
+      'Minneapolis': 'Minneapolis (ሚኒያፖሊስ)',
+      'St. Paul': 'St. Paul (ሴንት ፖል)',
+      'Rochester': 'Rochester (ሮቼስተር)',
+      'Houston': 'Houston (ሂውስተን)',
+      'Dallas': 'Dallas (ዳላስ)',
+      'Austin': 'Austin (ኦስቲን)',
+      'Fairfax': 'Fairfax (ፌርፋክስ)',
+      'Richmond': 'Richmond (ሪችመንድ)',
+      'Alexandria': 'Alexandria (አሌክሳንድሪያ)',
+      'Los Angeles': 'Los Angeles (ሎስ አንጀለስ)',
+      'San Jose': 'San Jose (ሳን ሆዜ)',
+      'San Diego': 'San Diego (ሳን ዲዬጎ)',
+      'Seattle': 'Seattle (ሲያትል)',
+      'Spokane': 'Spokane (ስፖካን)',
+      'Atlanta': 'Atlanta (አትላንታ)',
+      'Decatur': 'Decatur (ዲኬተር)',
+      'Denver': 'Denver (ዴንቨር)',
+      'Aurora': 'Aurora (ኦሮራ)',
+      'Toronto': 'Toronto (ቶሮንቶ)',
+      'Ottawa': 'Ottawa (ኦታዋ)',
+      'Mississauga': 'Mississauga (ሚሲሳጋ)',
+      'London': 'London (ለንደን)',
+      'Vancouver': 'Vancouver (ቫንኩቨር)',
+      'Victoria': 'Victoria (ቪክቶሪያ)',
+      'Burnaby': 'Burnaby (በርናቢ)',
+      'Calgary': 'Calgary (ካልጋሪ)',
+      'Edmonton': 'Edmonton (ኤድመንተን)',
+      'Montreal': 'Montreal (ሞንትሪያል)',
+      'Quebec City': 'Quebec City (ኩቤክ ሲቲ)',
+      'Birmingham': 'Birmingham (በርሚንግሃም)',
+      'Manchester': 'Manchester (ማንቸስተር)',
+      'Leeds': 'Leeds (ሊድስ)',
+      'Glasgow': 'Glasgow (ግላስጎው)',
+      'Edinburgh': 'Edinburgh (ኤዲንብራ)',
+      'Melbourne': 'Melbourne (ሜልበርን)',
+      'Geelong': 'Geelong (ጂሎንግ)',
+      'Sydney': 'Sydney (ሲድኒ)',
+      'Newcastle': 'Newcastle (ኒውካስል)',
+      'Brisbane': 'Brisbane (ብሪስቤን)'
+    },
+    ti: {
+      'Ethiopia': 'ኢትዮጵያ',
+      'USA': 'አሜሪካ (USA)',
+      'Canada': 'ካናዳ',
+      'United Kingdom': 'ዓባይ ብሪታንያ (UK)',
+      'Australia': 'አውስትራሊያ',
+      'Anywhere': 'ኣብ ዝኾነ ቦታ',
+      'Others': 'ካልእ',
+      
+      'Harar': 'ሃረር',
+      'Addis Ababa': 'አዲስ ኣበባ',
+      'Oromia': 'ኦሮሚያ',
+      'Amhara': 'ኣምሓራ',
+      'Tigray': 'ትግራይ',
+      'Sidama': 'ሲማዳ',
+      'South Ethiopia': 'ደቡብ ኢትዮጵያ',
+      
+      'Mekelle': 'መቐለ',
+      'Adigrat': 'ዓዲግራት',
+      'Axum': 'ኣኽሱም'
+    },
+    om: {
+      'Ethiopia': 'Itoophiyaa',
+      'USA': 'USA',
+      'Canada': 'Kanaadaa',
+      'United Kingdom': 'UK',
+      'Australia': 'Awustiraaliyaa',
+      'Anywhere': 'Bakka kamiyyuu',
+      'Others': 'Kan biraa',
+      
+      'Harar': 'Harar',
+      'Addis Ababa': 'Finfinnee',
+      'Oromia': 'Oromiyaa',
+      'Amhara': 'Amaaraa',
+      'Tigray': 'Tigraay',
+      'Sidama': 'Sidaamaa',
+      'South Ethiopia': 'Kibba Itoophiyaa',
+      
+      'Adama': 'Adaamaa',
+      'Jimma': 'Jimmaa',
+      'Bishoftu': 'Bishooftuu',
+      'Hawassa': 'Hawaasaa'
+    }
+  };
+
+  return dictionary[lang]?.[key] || key;
+};
 
 export default function ProfileView({ profile, onUpdate }: { profile: any, onUpdate: () => void }) {
   const t = useTranslations('Dashboard.profile');
@@ -43,6 +245,13 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const [selectedCountry, setSelectedCountry] = useState(profile?.location?.country || (typeof profile?.location === 'string' ? profile.location : ''));
+  const [selectedRegion, setSelectedRegion] = useState(profile?.location?.region || '');
+  const [selectedCity, setSelectedCity] = useState(profile?.location?.city || '');
+  const [customCountry, setCustomCountry] = useState('');
+  const [customRegion, setCustomRegion] = useState('');
+  const [customCity, setCustomCity] = useState('');
 
   // Guardian System Addon State
   const [guardian, setGuardian] = useState<any>(null);
@@ -291,9 +500,18 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
        }
     }
 
+    const locationJson = { 
+      country: selectedCountry === 'Others' ? customCountry : selectedCountry, 
+      region: selectedRegion === 'Others' ? customRegion : selectedRegion,
+      city: selectedCity === 'Others' ? customCity : selectedCity 
+    };
+
     let { error } = await supabase
       .from('profiles')
-      .update(formData)
+      .update({
+        ...formData,
+        location: locationJson
+      })
       .eq('id', profile.id);
 
     if (error) {
@@ -304,7 +522,10 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
 
       const { error: retryError } = await supabase
         .from('profiles')
-        .update(fallbackFormData)
+        .update({
+          ...fallbackFormData,
+          location: locationJson
+        })
         .eq('id', profile.id);
       
       error = retryError;
@@ -446,6 +667,114 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                     <option key={lang.id} value={lang.id}>{lang.label}</option>
                   ))}
                </select>
+            </div>
+
+            {/* Location Cascading Picker */}
+            <div className="space-y-4 col-span-full bg-muted/20 p-6 rounded-2xl border border-muted mt-2 animate-in slide-in-from-top-4 duration-300">
+               <span className="block text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">
+                 {locale === 'am' ? 'የመኖሪያ አድራሻ (Location)' : locale === 'ti' ? 'ናይ መበቆል ኣድራሻ (Location)' : locale === 'om' ? 'Bakka Jireenyaa (Location)' : 'Location Details'}
+               </span>
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                 <div className="space-y-1">
+                   <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                     {locale === 'am' ? 'ሀገር' : locale === 'ti' ? 'ሃገር' : locale === 'om' ? 'Biyya' : 'Country'}
+                   </label>
+                   <select
+                     value={selectedCountry}
+                     onChange={(e) => {
+                       setSelectedCountry(e.target.value);
+                       setSelectedRegion('');
+                       setSelectedCity('');
+                     }}
+                     className="w-full p-4 bg-white border border-muted rounded-xl font-bold text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                   >
+                     <option value="">{locale === 'am' ? 'ሀገር ይምረጡ' : locale === 'ti' ? 'ሃገር ይምረጡ' : locale === 'om' ? 'Biyya Filadhu' : 'Select Country'}</option>
+                     {[...COUNTRIES]
+                       .sort((a, b) => {
+                         const nameA = locale === 'am' ? a.nameAm : a.name;
+                         const nameB = locale === 'am' ? b.nameAm : b.name;
+                         return nameA.localeCompare(nameB, locale);
+                       })
+                       .map(c => (
+                         <option key={c.iso} value={c.name}>
+                           {locale === 'am' ? c.nameAm : c.name}
+                         </option>
+                       ))
+                     }
+                     <option value="Others">{locale === 'am' ? 'ሌላ' : locale === 'ti' ? 'ካልእ' : locale === 'om' ? 'Kan biraa' : 'Others'}</option>
+                   </select>
+                   {selectedCountry === 'Others' && (
+                     <input
+                       type="text"
+                       placeholder={locale === 'am' ? 'እባክዎ ሀገር ይጥቀሱ...' : 'Specify country...'}
+                       value={customCountry}
+                       onChange={(e) => setCustomCountry(e.target.value)}
+                       className="w-full p-3 mt-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-primary focus:outline-none"
+                     />
+                   )}
+                 </div>
+
+                 <div className="space-y-1">
+                   <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                     {locale === 'am' ? 'ክልል/ግዛት' : locale === 'ti' ? 'ክፍለ ሃገር' : locale === 'om' ? 'Naannoo' : 'Region'}
+                   </label>
+                   <select
+                     value={selectedRegion}
+                     disabled={!selectedCountry}
+                     onChange={(e) => {
+                       setSelectedRegion(e.target.value);
+                       setSelectedCity('');
+                     }}
+                     className="w-full p-4 bg-white border border-muted rounded-xl font-bold text-xs disabled:opacity-50 focus:ring-1 focus:ring-primary focus:outline-none"
+                   >
+                     <option value="">{locale === 'am' ? 'ክልል/ግዛት ይምረጡ' : locale === 'ti' ? 'ክፍለ ሃገር ይምረጡ' : locale === 'om' ? 'Naannoo Filadhu' : 'Select Region'}</option>
+                     {selectedCountry && selectedCountry !== 'Others' && 
+                       Object.keys(locationData[selectedCountry] || {}).map(region => (
+                         <option key={region} value={region}>{getTranslation(region, locale)}</option>
+                       ))
+                     }
+                     {selectedCountry && <option value="Others">{locale === 'am' ? 'ሌላ' : locale === 'ti' ? 'ካልእ' : locale === 'om' ? 'Kan biraa' : 'Others'}</option>}
+                   </select>
+                   {selectedRegion === 'Others' && (
+                     <input
+                       type="text"
+                       placeholder={locale === 'am' ? 'እባክዎ ክልል ይጥቀሱ...' : 'Specify region...'}
+                       value={customRegion}
+                       onChange={(e) => setCustomRegion(e.target.value)}
+                       className="w-full p-3 mt-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-primary focus:outline-none"
+                     />
+                   )}
+                 </div>
+
+                 <div className="space-y-1">
+                   <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                     {locale === 'am' ? 'ከተማ' : locale === 'ti' ? 'ከተማ' : locale === 'om' ? 'Magaalaa' : 'City'}
+                   </label>
+                   <select
+                     value={selectedCity}
+                     disabled={!selectedRegion}
+                     onChange={(e) => setSelectedCity(e.target.value)}
+                     className="w-full p-4 bg-white border border-muted rounded-xl font-bold text-xs disabled:opacity-50 focus:ring-1 focus:ring-primary focus:outline-none"
+                   >
+                     <option value="">{locale === 'am' ? 'ከተማ ይምረጡ' : locale === 'ti' ? 'ከተማ ይምረጡ' : locale === 'om' ? 'Magaalaa Filadhu' : 'Select City'}</option>
+                     {selectedCountry && selectedRegion && selectedRegion !== 'Others' && 
+                       (locationData[selectedCountry]?.[selectedRegion] || []).map(city => (
+                         <option key={city} value={city}>{getTranslation(city, locale)}</option>
+                       ))
+                     }
+                     {selectedRegion && <option value="Others">{locale === 'am' ? 'ሌላ' : locale === 'ti' ? 'ካልእ' : locale === 'om' ? 'Kan biraa' : 'Others'}</option>}
+                   </select>
+                   {selectedCity === 'Others' && (
+                     <input
+                       type="text"
+                       placeholder={locale === 'am' ? 'እባክዎ ከተማ ይጥቀሱ...' : 'Specify city...'}
+                       value={customCity}
+                       onChange={(e) => setCustomCity(e.target.value)}
+                       className="w-full p-3 mt-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-primary focus:outline-none"
+                     />
+                   )}
+                 </div>
+               </div>
             </div>
 
             <div className="space-y-4 pt-2 col-span-full">
