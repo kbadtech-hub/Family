@@ -1029,7 +1029,7 @@ function DashboardContent() {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 p-6 md:p-16 overflow-y-auto">
+      <main className={`flex-1 overflow-y-auto ${activeTab === 'chat' ? 'p-0 md:p-16' : 'p-6 md:p-16'}`}>
         <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-6 w-full border-b border-border pb-6">
           <div className="flex items-center justify-between w-full">
             {/* Company Logo in Header */}
@@ -1287,7 +1287,7 @@ function DashboardContent() {
 
         {/* Tab Components */}
         {activeTab === 'chat' && (
-           <div className="mt-10 h-[calc(100vh-200px)]">
+           <div className="w-full h-[calc(100dvh-64px)] md:mt-10 md:h-[calc(100vh-200px)]">
               <SubscriptionGate allowVerifiedView={false}>
                  <ChatView isPremium={isPremium} />
               </SubscriptionGate>

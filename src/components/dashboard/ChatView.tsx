@@ -975,9 +975,9 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
   if (loading) return <div className="flex-1 flex items-center justify-center">{t('loading')}</div>;
 
   return (
-    <div className="flex flex-col md:flex-row bg-white rounded-none md:rounded-[2.5rem] overflow-hidden border-0 md:border border-muted shadow-2xl md:h-[calc(100vh-200px)]" style={{touchAction:'manipulation'}}>
+    <div className="flex flex-col md:flex-row w-full bg-white rounded-none md:rounded-[2.5rem] overflow-hidden border-0 md:border md:border-muted md:shadow-2xl h-[calc(100dvh-64px)] md:h-[calc(100vh-200px)]" style={{touchAction:'manipulation'}}>
       {/* Sidebar - Matches */}
-      <aside className={`w-full md:w-80 border-b md:border-b-0 md:border-r border-muted flex flex-col md:h-full ${selectedMatch ? 'hidden md:flex' : 'flex h-[calc(100dvh-140px)] md:h-full'}`}>
+      <aside className={`w-full md:w-80 border-b md:border-b-0 md:border-r border-muted flex flex-col md:h-full ${selectedMatch ? 'hidden md:flex' : 'flex h-full md:h-full'}`}>
         <div className="p-6 border-b border-muted">
           <h2 className="text-xl font-bold text-accent mb-4 tracking-tighter uppercase">{t('title')}</h2>
           <div className="relative">
@@ -1062,7 +1062,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
       </aside>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col bg-[#FDFBF9]">
+      <div className={`flex-1 flex flex-col bg-[#FDFBF9] min-h-0 ${selectedMatch ? 'flex' : 'hidden md:flex'}`}>
         {selectedMatch ? (
           (!isPremium && !isFriend) ? (
             <div className="flex-1 flex flex-col items-center justify-center p-12 text-center space-y-6 bg-white/50 backdrop-blur-sm">
@@ -1297,7 +1297,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
             {/* Messages */}
             <div 
               ref={scrollRef}
-              className="flex-1 overflow-y-auto p-10 space-y-6 scroll-smooth"
+              className="flex-1 overflow-y-auto min-h-0 p-4 md:p-10 space-y-6 scroll-smooth"
             >
               <div className="flex flex-col items-center mb-8">
                  <div className="p-4 bg-primary/5 rounded-3xl border border-primary/10 text-center max-w-xs">
