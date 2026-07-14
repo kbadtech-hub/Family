@@ -432,7 +432,108 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
               <span className="text-accent">{currency === 'USD' ? '$' : 'Br'} {hallPrice.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
-              <span>{t('verifiedVendorsSubtitle')}
+              <span>{t('photosVideo')}</span>
+              <span className="text-accent">{currency === 'USD' ? '$' : 'Br'} {photoPrice.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>{t('beautyClothes')}</span>
+              <span className="text-accent">{currency === 'USD' ? '$' : 'Br'} {beautyPrice.toLocaleString()}</span>
+            </div>
+          </div>
+          
+          <div className="flex justify-between items-center">
+            <span className="font-black text-xs text-gray-400 uppercase tracking-widest">{t('totalEstimate')}</span>
+            <span className="text-2xl font-black text-primary">
+              {currency === 'USD' ? '$' : 'Br'} {totalPrice.toLocaleString()}
+            </span>
+          </div>
+        </div>
+
+        {/* Inquiry Form */}
+        <div className="bg-white p-10 md:p-12 rounded-[3rem] border border-muted lg:col-span-2 space-y-8">
+          <div>
+            <h3 className="text-2xl font-black text-accent italic tracking-tighter">{t('inquireBook')}</h3>
+            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mt-1">Free consultation inquiry with our wedding designers</p>
+          </div>
+          
+          <form onSubmit={handleInquirySubmit} className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <label className="block">
+                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Proposed Date</span>
+                <input 
+                  type="date" 
+                  required
+                  value={weddingDate}
+                  onChange={(e) => setWeddingDate(e.target.value)}
+                  className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none focus:ring-1 focus:ring-primary/20"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Time Slot</span>
+                <select
+                  value={selectedSlot}
+                  onChange={(e) => setSelectedSlot(e.target.value)}
+                  className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none focus:ring-1 focus:ring-primary/20 text-accent font-semibold"
+                >
+                  <option value="10:00 AM">10:00 AM</option>
+                  <option value="11:30 AM">11:30 AM</option>
+                  <option value="02:00 PM">02:00 PM</option>
+                  <option value="03:30 PM">03:30 PM</option>
+                  <option value="05:00 PM">05:00 PM</option>
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Guest Count</span>
+                <input 
+                  type="number" 
+                  min={50}
+                  max={2000}
+                  value={estimatedGuests}
+                  onChange={(e) => setEstimatedGuests(parseInt(e.target.value))}
+                  className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none focus:ring-1 focus:ring-primary/20"
+                />
+              </label>
+            </div>
+
+            <label className="block">
+              <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Special requests / custom notes</span>
+              <textarea 
+                rows={3}
+                placeholder={t('customRequirements')}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none focus:ring-1 focus:ring-primary/20 font-medium"
+              />
+            </label>
+
+            <button 
+              type="submit"
+              disabled={isSubmitting || !weddingDate}
+              className="w-full btn-primary py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] disabled:opacity-50 flex items-center justify-center gap-2 group"
+            >
+              {isSubmitting ? 'SENDING INQUIRY...' : (
+                <>
+                  {t('sendInquiry')} 
+                  <ArrowRight size={14} className="group-hover:translate-x-1.5 transition-transform" />
+                </>
+              )}
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+      {/* Verified Vendors Grid Section (Step 4) */}
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-xl font-black text-accent tracking-tighter uppercase italic flex items-center gap-2">
+            <Sparkles className="text-primary fill-primary/10" size={20} />
+            {t('verifiedVendors')}
+          </h3>
+          <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">
+            {t('verifiedVendorsSubtitle')}
           </p>
         </div>
 

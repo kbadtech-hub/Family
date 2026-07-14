@@ -33,7 +33,7 @@ interface MatchDetailProps {
 
 export default function MatchDetailView({ matchId, currentUserProfile, isPremium = false, onClose, onStartChat }: MatchDetailProps) {
   const [profile, setProfile] = useState<any>(null);
-  const t = useTranslations('Dashboard.matchDetail');
+  const tMatch = useTranslations('Dashboard.matchDetail');
   const tr = useTranslations('Dashboard.reports');
   const [photos, setPhotos] = useState<any[]>([]);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
@@ -221,7 +221,7 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
     });
     
     if (!error) {
-      alert(t('reportSuccess'));
+      alert(tMatch('reportSuccess'));
       setIsReportOpen(false);
       setReportDetails('');
     } else {
@@ -231,7 +231,7 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
   };
 
   const handleBlockUser = async () => {
-    const confirmBlock = confirm(t('blockConfirm'));
+    const confirmBlock = confirm(tMatch('blockConfirm'));
     if (!confirmBlock) return;
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -244,7 +244,7 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
     });
 
     if (!error) {
-      alert(t('blockSuccess'));
+      alert(tMatch('blockSuccess'));
       onClose(); // Close details view
       window.location.reload(); // Refresh candidates feed
     } else {
@@ -312,7 +312,7 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                {/* Compatibility & Trust Row */}
                <div className="flex flex-wrap gap-3">
                   <span className="px-4 py-2 bg-primary/20 text-primary border border-primary/30 text-[10px] font-black rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-sm">
-                     <Sparkles size={12} className="fill-primary animate-pulse" /> {matchPercent}% {t('compatibility')}
+                     <Sparkles size={12} className="fill-primary animate-pulse" /> {matchPercent}% {tMatch('compatibility')}
                   </span>
                   <span className={`px-4 py-2 border text-[10px] font-black rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-sm ${badge.color}`}>
                      <span>{badge.emoji}</span> <span>{badge.label}</span>
@@ -325,7 +325,7 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                {/* Profile Completion Bar */}
                <div className="p-5 bg-muted/40 rounded-2xl border border-muted space-y-2.5">
                   <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-wider text-gray-400">
-                    <span>{t('profileCompletion')}</span>
+                    <span>{tMatch('profileCompletion')}</span>
                     <span className="text-primary">{candCompletionRate}%</span>
                   </div>
                   <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden shadow-inner border border-border">
@@ -353,7 +353,7 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                  </div>
                  <div>
                     <h4 className="text-[10px] font-black uppercase tracking-[0.15em]">
-                       {t('mediatorApprovalNote')}
+                       {tMatch('mediatorApprovalNote')}
                     </h4>
                     <p className="text-xs font-bold mt-1 italic">
                        « {guardianEndorsement.note} »
@@ -389,7 +389,7 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
               <div className="space-y-6 bg-slate-50 p-6 rounded-[2.5rem] border border-slate-100">
                 <div className="flex items-center gap-2 text-accent font-black text-xs uppercase tracking-widest border-b border-slate-200 pb-2">
                   <Sparkles size={14} className="text-primary fill-primary/10" />
-                  {t('compatibilityBreakdown')}
+                  {tMatch('compatibilityBreakdown')}
                 </div>
 
                 <div className="space-y-4">
@@ -408,7 +408,7 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                       return (
                         <div className="text-xs space-y-1">
                           <p className="font-black text-accent uppercase tracking-wider">
-                            🎒 {t('sharedHobbies')}
+                            🎒 {tMatch('sharedHobbies')}
                           </p>
                           <div className="flex flex-wrap gap-1.5 pt-1">
                             {shared.map((h: string, idx: number) => (
@@ -426,13 +426,13 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                   {/* Values Match */}
                   <div className="grid grid-cols-2 gap-3 text-xs">
                     <div className="bg-white p-3 rounded-xl border border-slate-100">
-                      <p className="font-bold text-[8px] text-gray-400 uppercase tracking-widest">{t('familyValues')}</p>
+                      <p className="font-bold text-[8px] text-gray-400 uppercase tracking-widest">{tMatch('familyValues')}</p>
                       <p className="font-black text-accent mt-0.5 uppercase tracking-wide truncate">
                         {profile?.family_values === currentUserProfile.family_values ? '🤝 Shared' : profile?.family_values || 'Traditional'}
                       </p>
                     </div>
                     <div className="bg-white p-3 rounded-xl border border-slate-100">
-                      <p className="font-bold text-[8px] text-gray-400 uppercase tracking-widest">{t('conflictStyle')}</p>
+                      <p className="font-bold text-[8px] text-gray-400 uppercase tracking-widest">{tMatch('conflictStyle')}</p>
                       <p className="font-black text-accent mt-0.5 uppercase tracking-wide truncate">
                         {profile?.conflict_resolution === currentUserProfile.conflict_resolution ? '🤝 Shared' : profile?.conflict_resolution || 'Discussion'}
                       </p>
@@ -443,15 +443,15 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                   <div className="space-y-2 pt-2 border-t border-slate-200/50">
                     <p className="font-black text-[9px] text-gray-400 uppercase tracking-widest flex items-center gap-1">
                       <Lightbulb size={12} className="text-yellow-600 fill-yellow-100" />
-                      {t('conversationStarters')}
+                      {tMatch('conversationStarters')}
                     </p>
                     <div className="space-y-1.5">
                       <p className="p-3 bg-white rounded-xl border border-slate-100 text-[10px] text-gray-600 leading-relaxed font-bold italic">
-                        {t('zodiacPrompt', { zodiac1: currentUserProfile.star_sign || 'Aries', zodiac2: profile?.star_sign || 'Virgo' })}
+                        {tMatch('zodiacPrompt', { zodiac1: currentUserProfile.star_sign || 'Aries', zodiac2: profile?.star_sign || 'Virgo' })}
                       </p>
                       {profile?.family_values === currentUserProfile.family_values && (
                         <p className="p-3 bg-white rounded-xl border border-slate-100 text-[10px] text-gray-600 leading-relaxed font-bold italic">
-                          {t('familyValuesPrompt', { value: profile?.family_values || '' })}
+                          {tMatch('familyValuesPrompt', { value: profile?.family_values || '' })}
                         </p>
                       )}
                     </div>
@@ -463,11 +463,11 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
             
             <div className="space-y-4">
               <h3 className="text-sm font-black text-accent uppercase tracking-widest border-b border-muted pb-2">
-                 {t('contactInfo')}
+                 {tMatch('contactInfo')}
               </h3>
               <div className="bg-primary/5 p-6 rounded-[2rem] border border-primary/10 space-y-2">
                  <p className="text-xs font-black text-primary uppercase tracking-widest flex items-center gap-2">
-                    <ShieldCheck size={14} /> t("privacyShieldEnabled")
+                    <ShieldCheck size={14} /> tMatch("privacyShieldEnabled")
                  </p>
                  <p className="text-[10px] text-gray-500 leading-relaxed font-bold">
                     {tr('privacyShieldInfo')}
@@ -546,13 +546,13 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                     onClick={() => setIsReportOpen(!isReportOpen)}
                     className="flex-1 bg-amber-50 hover:bg-amber-100 text-amber-700 py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] border border-amber-200 transition-all flex items-center justify-center gap-2"
                   >
-                    ⚠️ {t('reportUser')}
+                    ⚠️ {tMatch('reportUser')}
                   </button>
                   <button
                     onClick={handleBlockUser}
                     className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] border border-red-200 transition-all flex items-center justify-center gap-2"
                   >
-                    🚫 {t('blockUser')}
+                    🚫 {tMatch('blockUser')}
                   </button>
                 </div>
 
