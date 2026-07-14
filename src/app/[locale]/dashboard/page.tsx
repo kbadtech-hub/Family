@@ -96,6 +96,7 @@ function DashboardContent() {
   // Trial model removed (Blueprint v4.0) â€” using freemium tier-based limits
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
+  const [unreadChatsCount, setUnreadChatsCount] = useState(0);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [friendshipStatuses, setFriendshipStatuses] = useState<Record<string, string>>({});
   const [matchingView, setMatchingView] = useState<'grid' | 'swipe'>('grid');
@@ -111,6 +112,10 @@ function DashboardContent() {
     if (coreTabs.includes(tabId) && verificationStatus !== 'verified') {
       setShowVerificationBlockModal(true);
       return;
+    }
+    // Clear unread chat badge when user opens the chat tab
+    if (tabId === 'chat') {
+      setUnreadChatsCount(0);
     }
     setActiveTab(tabId);
   };
@@ -520,6 +525,14 @@ function DashboardContent() {
       
       setPendingRequestsCount(count || 0);
 
+      // Fetch Unread Messages and Missed Calls Count
+      const { count: unreadCount } = await supabase.from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('receiver_id', user.id)
+        .eq('is_read', false);
+
+      setUnreadChatsCount(unreadCount || 0);
+
       // 7. Fetch Friend Suggestions (Strict Gender Separation)
       let suggestionsQuery = supabase
         .from('profiles')
@@ -567,6 +580,36 @@ function DashboardContent() {
       setFeedLoading(false);
     };
     fetchData();
+  }, []);
+
+  // Real-time messages listener to dynamically update the unread chat badge count
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+
+      const updateUnreadCount = async () => {
+        const { count } = await supabase.from('messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('receiver_id', user.id)
+          .eq('is_read', false);
+        setUnreadChatsCount(count || 0);
+      };
+
+      const channel = supabase
+        .channel(`messages_unread_badge_${user.id}`)
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'messages'
+        }, () => {
+          updateUnreadCount();
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    });
   }, []);
 
 
@@ -984,9 +1027,9 @@ function DashboardContent() {
             >
               <item.icon size={22} />
               <span className="hidden md:block font-bold text-[10px] uppercase tracking-widest">{item.label}</span>
-              {item.id === 'chat' && pendingRequestsCount > 0 && (
+              {item.id === 'chat' && (pendingRequestsCount > 0 || unreadChatsCount > 0) && (
                 <span className="absolute top-2 right-2 md:relative md:top-0 md:right-0 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-lg border-2 border-[#0F172A] md:border-none animate-pulse">
-                  {pendingRequestsCount}
+                  {pendingRequestsCount + unreadChatsCount}
                 </span>
               )}
             </button>
@@ -1019,9 +1062,9 @@ function DashboardContent() {
             className={`p-3 rounded-2xl transition-all duration-300 relative ${activeTab === item.id ? 'bg-primary text-white scale-110 shadow-lg' : 'text-white/40'}`}
           >
             <item.icon size={22} />
-            {item.id === 'chat' && pendingRequestsCount > 0 && (
+            {item.id === 'chat' && (pendingRequestsCount > 0 || unreadChatsCount > 0) && (
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-[#0F172A] animate-pulse">
-                {pendingRequestsCount}
+                {pendingRequestsCount + unreadChatsCount}
               </span>
             )}
           </button>

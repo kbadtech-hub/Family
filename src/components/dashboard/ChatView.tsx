@@ -63,6 +63,9 @@ interface Profile {
   avatar_url: string;
   star_sign: string;
   is_verified: boolean;
+  enable_last_seen?: boolean;
+  enable_read_receipts?: boolean;
+  last_online?: string;
 }
 
 export default function ChatView({ isPremium = false }: { isPremium?: boolean }) {
@@ -1064,6 +1067,52 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
     }
   };
 
+  // Heartbeat to update last_online status in database
+  useEffect(() => {
+    if (!currentUser) return;
+    const updateLastOnline = async () => {
+      await supabase
+        .from('profiles')
+        .update({ last_online: new Date().toISOString() })
+        .eq('id', currentUser.id);
+    };
+    updateLastOnline();
+    const interval = setInterval(updateLastOnline, 60000);
+    return () => clearInterval(interval);
+  }, [currentUser]);
+
+  const getLastSeenText = (match: Profile) => {
+    if (match.enable_last_seen === false) return null;
+    if (!match.last_online) return null;
+
+    try {
+      const lastOnlineDate = new Date(match.last_online);
+      const diffMs = new Date().getTime() - lastOnlineDate.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+
+      if (diffMins < 3) {
+        return locale === 'am' ? 'በመስመር ላይ (Active Now)' : 'Active now';
+      }
+
+      // Format last online time
+      const timeStr = lastOnlineDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const isToday = new Date().toDateString() === lastOnlineDate.toDateString();
+
+      if (isToday) {
+        return locale === 'am'
+          ? `የመጨረሻ እይታ ዛሬ በ ${timeStr}`
+          : `Last seen today at ${timeStr}`;
+      } else {
+        const dateStr = lastOnlineDate.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        return locale === 'am'
+          ? `የመጨረሻ እይታ በ ${dateStr} በ ${timeStr}`
+          : `Last seen on ${dateStr} at ${timeStr}`;
+      }
+    } catch (e) {
+      return null;
+    }
+  };
+
   if (loading) return <div className="flex-1 flex items-center justify-center">{t('loading')}</div>;
 
   return (
@@ -1212,7 +1261,11 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                       {selectedMatch.full_name}
                       {selectedMatch.is_verified && <CheckCircle2 size={14} className="text-primary fill-primary/10" />}
                     </h3>
-                    <p className="text-[10px] text-green-500 font-bold uppercase tracking-widest">{t('activeNow')}</p>
+                    {getLastSeenText(selectedMatch) ? (
+                      <p className="text-[10px] text-green-500 font-bold tracking-wide">{getLastSeenText(selectedMatch)}</p>
+                    ) : (
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{t('activeNow')}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1433,14 +1486,24 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                   <div className={`max-w-[70%] group relative ${msg.sender_id === currentUser?.id ? 'items-end' : 'items-start'}`}>
                     {/* Missed Call System Messages */}
                     {(msg.content === '[MISSED_AUDIO_CALL]' || msg.content === '[MISSED_VIDEO_CALL]') ? (
-                      <div className="px-5 py-3 rounded-2xl bg-orange-50 border border-orange-100 flex items-center gap-3 text-xs font-bold text-orange-600">
-                        {msg.content === '[MISSED_VIDEO_CALL]' ? '📹' : '📞'}
+                      <div className={`px-5 py-3 rounded-[1.5rem] flex items-center gap-3 text-xs font-bold ${
+                        msg.sender_id === currentUser?.id 
+                          ? 'bg-slate-100/50 border border-slate-200 text-slate-500' 
+                          : 'bg-red-50/70 border border-red-100/80 text-red-500 shadow-sm'
+                      }`}>
+                        {msg.content === '[MISSED_VIDEO_CALL]' ? (
+                          <VideoOff size={16} className={msg.sender_id === currentUser?.id ? 'text-slate-400' : 'text-red-500'} />
+                        ) : (
+                          <PhoneOff size={16} className={msg.sender_id === currentUser?.id ? 'text-slate-400' : 'text-red-500'} />
+                        )}
                         <span>
                           {msg.sender_id === currentUser?.id
-                            ? (locale === 'am' ? 'ጥሪዎ ሳይቀበሉ ቀርቷል' : 'No Answer')
-                            : (locale === 'am' ? 'ያልተቀበሉ ጥሪ' : 'Missed Call')}
+                            ? (locale === 'am' ? 'የማይመለስ ጥሪ (Outgoing Call - No Answer)' : 'Outgoing Call - No Answer')
+                            : (locale === 'am' ? 'ያልተቀበሉ ጥሪ (Missed Call)' : 'Missed Call')}
                         </span>
-                        <span className="ml-auto text-orange-300 font-normal">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        <span className="ml-auto text-[10px] font-normal opacity-70">
+                          {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
                       </div>
                     ) : msg.content.startsWith('[VOICE_NOTE]') ? (
                       <div className={`px-4 py-3 rounded-[2rem] shadow-sm ${msg.sender_id === currentUser?.id ? 'bg-accent text-white rounded-tr-none' : 'bg-white text-gray-600 rounded-tl-none border border-muted'}`}>
@@ -1474,7 +1537,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                     <div className={`flex items-center gap-2 mt-2 px-2 text-[10px] ${msg.sender_id === currentUser?.id ? 'justify-end text-gray-400' : 'justify-start text-gray-400'}`}>
                       {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       {msg.sender_id === currentUser?.id && (
-                        msg.is_read
+                        msg.is_read && (userProfile?.enable_read_receipts !== false) && (selectedMatch?.enable_read_receipts !== false)
                           ? <CheckCheck size={14} className="text-primary" /> // Read - brand orange
                           : <CheckCheck size={14} className="text-gray-300" /> // Delivered - gray
                       )}

@@ -37,7 +37,9 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
     enable_abushakir: profile?.enable_abushakir !== false,
     show_age: profile?.show_age !== false,
     show_city: profile?.show_city !== false,
-    allow_friend_requests: profile?.allow_friend_requests !== false
+    allow_friend_requests: profile?.allow_friend_requests !== false,
+    enable_read_receipts: profile?.enable_read_receipts !== false,
+    enable_last_seen: profile?.enable_last_seen !== false
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -289,10 +291,24 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
        }
     }
 
-    const { error } = await supabase
+    let { error } = await supabase
       .from('profiles')
       .update(formData)
       .eq('id', profile.id);
+
+    if (error) {
+      console.warn("Failed to update profile with privacy toggles, retrying without them:", error);
+      const fallbackFormData = { ...formData };
+      delete (fallbackFormData as any).enable_read_receipts;
+      delete (fallbackFormData as any).enable_last_seen;
+
+      const { error: retryError } = await supabase
+        .from('profiles')
+        .update(fallbackFormData)
+        .eq('id', profile.id);
+      
+      error = retryError;
+    }
 
     if (!error) {
       onUpdate();
@@ -487,6 +503,30 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                     />
                     <span className="text-xs font-bold text-slate-600">
                       {t('allowFriendRequests')}
+                    </span>
+                  </label>
+
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input 
+                      type="checkbox"
+                      checked={formData.enable_last_seen}
+                      onChange={(e) => setFormData({...formData, enable_last_seen: e.target.checked})}
+                      className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary"
+                    />
+                    <span className="text-xs font-bold text-slate-600">
+                      {locale === 'am' ? 'ባለፉት የመስመር ላይ ሁኔታ አሳይ (Show Last Seen Status)' : 'Show Last Seen Status'}
+                    </span>
+                  </label>
+
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input 
+                      type="checkbox"
+                      checked={formData.enable_read_receipts}
+                      onChange={(e) => setFormData({...formData, enable_read_receipts: e.target.checked})}
+                      className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary"
+                    />
+                    <span className="text-xs font-bold text-slate-600">
+                      {locale === 'am' ? 'የመልዕክት ንባብ ምልክቶች (Enable Read Receipts)' : 'Enable Read Receipts'}
                     </span>
                   </label>
                 </div>
