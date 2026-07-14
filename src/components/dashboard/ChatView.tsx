@@ -88,6 +88,10 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
   const [isRecordingVoice, setIsRecordingVoice] = useState(false);
   const [voiceCountdown, setVoiceCountdown] = useState(0);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
+  // Explicit call direction state:
+  // true  = we RECEIVED this call (show Incoming Accept/Decline UI)
+  // false = we INITIATED this call (show Outgoing "Calling..." UI)
+  const [isIncomingCall, setIsIncomingCall] = useState(false);
   const voiceRecorderRef = useRef<MediaRecorder | null>(null);
   const voiceChunksRef = useRef<Blob[]>([]);
   const voiceTimerRef = useRef<any>(null);
@@ -206,6 +210,8 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
           return;
         }
 
+        // We are the RECIPIENT — show incoming call UI
+        setIsIncomingCall(true);
         setIsCallVideo(isVideo);
         setActiveCallMatch(callerProfile);
       })
@@ -1630,10 +1636,14 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
       {activeCallMatch && (
         <CallInterface 
           matchProfile={activeCallMatch} 
-          onEndCall={() => setActiveCallMatch(null)} 
+          onEndCall={() => {
+            setActiveCallMatch(null);
+            // Reset call direction so next call starts clean
+            setIsIncomingCall(false);
+          }} 
           isVideo={isCallVideo}
           isPremium={isPremium}
-          isIncoming={activeCallMatch.id !== currentUser?.id}
+          isIncoming={isIncomingCall}
         />
       )}
       {showGiftModal && selectedMatch && (
@@ -1891,9 +1901,12 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                 onClick={() => {
                   setShowConsentModal(false);
                   setIsCallVideo(pendingCallVideo);
+                  // We are the CALLER — always show Outgoing call UI
+                  setIsIncomingCall(false);
                   setActiveCallMatch(selectedMatch);
                   if (currentUser && selectedMatch) {
                     const roomId = [currentUser.id, selectedMatch.id].sort().join('_');
+                    // Broadcast ONLY to the recipient's personal channel
                     const targetChan = supabase.channel(`user_calls_${selectedMatch.id}`);
                     targetChan.subscribe((status) => {
                       if (status === 'SUBSCRIBED') {
