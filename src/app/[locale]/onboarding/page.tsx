@@ -386,6 +386,28 @@ function OnboardingContent() {
               partner_intent: data.partner_intent || '',
               verification_status: data.verification_status || 'unverified'
             }));
+
+            // Pre-fill location selectors
+            if (data.location) {
+              const loc = typeof data.location === 'object' ? data.location : null;
+              if (loc) {
+                if (loc.country) setSelectedCountry(loc.country);
+                if (loc.region) setSelectedRegion(loc.region);
+                if (loc.city) setSelectedCity(loc.city);
+              } else if (typeof data.location === 'string') {
+                setSelectedCountry(data.location);
+              }
+            }
+
+            // Pre-fill children status
+            if (data.has_children) {
+              const hasKids = data.has_children.startsWith('Yes');
+              setHasChildren(hasKids);
+              if (hasKids) {
+                const count = data.has_children.split(', ')[1] || '1';
+                setChildrenCount(count);
+              }
+            }
           }
         });
       } else {
@@ -448,6 +470,15 @@ function OnboardingContent() {
 
         if (!formData.gender) return t('errors.genderRequired') || 'Gender is required';
         if (!formData.avatar_url) return locale === 'am' ? 'እባክዎ የመገለጫ ፎቶ ይጫኑ።' : 'Please upload a profile picture.';
+        if (!formData.religion) return t('errors.religionRequired') || 'Religion is required';
+        if (!formData.marital_status) return t('errors.maritalRequired') || 'Marital status is required';
+        
+        const activeCountry = selectedCountry === 'Others' ? customCountry : selectedCountry;
+        const activeRegion = selectedRegion === 'Others' ? customRegion : selectedRegion;
+        const activeCity = selectedCity === 'Others' ? customCity : selectedCity;
+        if (!activeCountry || !activeRegion || !activeCity) {
+          return t('errors.locationRequired') || 'Location is required';
+        }
         break;
       case 2: // Career & Psychology
         if (!formData.job) return t('errors.jobRequired');
@@ -491,57 +522,57 @@ function OnboardingContent() {
     setIsSubmitting(true);
     try {
       if (userId) {
+        let updateData: any = {};
         if (step === 1) {
-          const { error: updateError } = await supabase.from('profiles').update({ 
+          const locationJson = { 
+            country: selectedCountry === 'Others' ? customCountry : selectedCountry, 
+            region: selectedRegion === 'Others' ? customRegion : selectedRegion,
+            city: selectedCity === 'Others' ? customCity : selectedCity 
+          };
+          updateData = {
             full_name: formData.full_name,
             birth_date: formData.birth_date,
             gender: formData.gender,
             avatar_url: formData.avatar_url,
             star_sign: formData.star_sign,
-            onboarding_completed: true,
-            onboarding_step: 1
-          }).eq('id', userId);
-
-          if (updateError) {
-            console.error("Step Update Error:", updateError);
-            setErrorMsg(locale === 'am' ? `መረጃውን መመዝገብ አልተቻለም። (Error: ${updateError.message})` : `Failed to save data. (Error: ${updateError.message})`);
-            return;
-          }
-          
-          router.push('/dashboard');
-          return;
+            location: locationJson,
+            religion: formData.religion,
+            marital_status: formData.marital_status,
+            has_children: hasChildren ? `Yes, ${childrenCount}` : 'No',
+            future_children: formData.future_children,
+            onboarding_step: 2
+          };
+        } else if (step === 2) {
+          updateData = {
+            job_title: formData.job,
+            finance_habit: formData.finance_habit,
+            family_values: formData.family_value,
+            conflict_resolution: formData.conflict_resolution,
+            spouse_requirements: formData.spouse_requirements,
+            onboarding_step: 3
+          };
+        } else if (step === 3) {
+          updateData = {
+            partner_location: formData.partner_countries.map(c => c === 'Others' ? customPartnerCountry : c),
+            partner_age_min: formData.partner_age_min,
+            partner_age_max: formData.partner_age_max,
+            partner_religion: showCustomPartnerReligion ? customPartnerReligion : formData.partner_religion,
+            partner_intent: showCustomPartnerIntent ? customPartnerIntent : formData.partner_intent,
+            partner_children_pref: formData.partner_children_pref,
+            onboarding_step: 6
+          };
+        } else if (step === 6) {
+          updateData = {
+            gallery_urls: formData.gallery_photos,
+            onboarding_step: 7
+          };
+        } else if (step === 4 || step === 5) {
+          updateData = {
+            onboarding_step: step + 1
+          };
         }
 
-        const locationJson = { 
-          country: selectedCountry === 'Others' ? customCountry : selectedCountry, 
-          region: selectedRegion === 'Others' ? customRegion : selectedRegion,
-          city: selectedCity === 'Others' ? customCity : selectedCity 
-        };
-
-        const { error: updateError } = await supabase.from('profiles').update({ 
-          full_name: formData.full_name,
-          birth_date: formData.birth_date,
-          gender: formData.gender,
-          location: locationJson,
-          religion: formData.religion,
-          marital_status: formData.marital_status,
-          has_children: hasChildren ? `Yes, ${childrenCount}` : 'No',
-          future_children: formData.future_children,
-          education: formData.education,
-          job_title: formData.job,
-          finance_habit: formData.finance_habit,
-          family_values: formData.family_value,
-          conflict_resolution: formData.conflict_resolution,
-          spouse_requirements: formData.spouse_requirements,
-          gallery_urls: formData.gallery_photos,
-          star_sign: formData.star_sign,
-          partner_location: formData.partner_countries.map(c => c === 'Others' ? customPartnerCountry : c),
-          partner_age_min: formData.partner_age_min,
-          partner_age_max: formData.partner_age_max,
-          partner_religion: showCustomPartnerReligion ? customPartnerReligion : formData.partner_religion,
-          partner_intent: showCustomPartnerIntent ? customPartnerIntent : formData.partner_intent,
-          partner_children_pref: formData.partner_children_pref
-        }).eq('id', userId);
+        const { error: updateError } = await supabase.from('profiles').update(updateData).eq('id', userId);
 
         if (updateError) {
           console.error("Step Update Error:", updateError);
@@ -549,6 +580,7 @@ function OnboardingContent() {
           return;
         }
       }
+      
       if (step === 3) {
         setStep(6);
       } else if (step === 5) {
@@ -722,6 +754,187 @@ function OnboardingContent() {
                     onChange={(e) => updateField('birth_date', e.target.value)} 
                     className="w-full rounded-2xl border-gray-200 p-4 bg-muted/30 text-sm font-semibold" 
                   />
+                )}
+              </div>
+
+              {/* Religion Input */}
+              <div className="space-y-2">
+                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
+                  {t('fields.religion')}
+                </label>
+                <select 
+                  value={formData.religion} 
+                  onChange={(e) => updateField('religion', e.target.value)} 
+                  className="w-full p-4 bg-muted/30 border border-gray-200 rounded-2xl font-bold text-xs"
+                >
+                  <option value="">{t('fields.religion')}</option>
+                  {RELIGIONS.map(r => <option key={r} value={r}>{t_const(`Religions.${r}`)}</option>)}
+                </select>
+              </div>
+
+              {/* Marital Status Input */}
+              <div className="space-y-2">
+                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
+                  {t('fields.maritalStatus')}
+                </label>
+                <select 
+                  value={formData.marital_status} 
+                  onChange={(e) => updateField('marital_status', e.target.value)} 
+                  className="w-full p-4 bg-muted/30 border border-gray-200 rounded-2xl font-bold text-xs"
+                >
+                  <option value="">{t('fields.maritalStatus')}</option>
+                  {(formData.gender === 'Female' ? MARITAL_STATUS_FEMALE : MARITAL_STATUS_MALE).map(s => <option key={s} value={s}>{t_const(`Marital.${s}`)}</option>)}
+                </select>
+              </div>
+
+              {/* Future Children Input */}
+              <div className="space-y-2">
+                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
+                  {locale === 'am' ? 'የልጅ እቅድ' : 'Future Children'}
+                </label>
+                <select 
+                  value={formData.future_children} 
+                  onChange={(e) => updateField('future_children', e.target.value)} 
+                  className="w-full p-4 bg-muted/30 border border-gray-200 rounded-2xl font-bold text-xs"
+                >
+                  <option value="">{locale === 'am' ? 'የልጅ እቅድ' : 'Future Children'}</option>
+                  {FUTURE_CHILDREN_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`FutureChildren.${o}`)}</option>)}
+                </select>
+              </div>
+
+              {/* Location Cascading Picker */}
+              <div className="space-y-4 bg-[#F8F9FA]/50 p-6 rounded-[2rem] border border-gray-150">
+                <span className="block text-xs font-black text-slate-600 uppercase tracking-widest mb-2 ml-1">
+                  {locale === 'am' ? 'የመኖሪያ አድራሻ (Location)' : 'Location Details'}
+                </span>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider ml-1">Country / ሀገር</label>
+                    <select
+                      value={selectedCountry}
+                      onChange={(e) => {
+                        setSelectedCountry(e.target.value);
+                        setSelectedRegion('');
+                        setSelectedCity('');
+                        updateField('location', e.target.value);
+                      }}
+                      className="w-full p-3.5 bg-white border border-gray-200 rounded-xl font-bold text-xs"
+                    >
+                      <option value="">Select Country</option>
+                      {[...COUNTRIES]
+                        .sort((a, b) => {
+                          const nameA = locale === 'am' ? a.nameAm : a.name;
+                          const nameB = locale === 'am' ? b.nameAm : b.name;
+                          return nameA.localeCompare(nameB, locale);
+                        })
+                        .map(c => (
+                          <option key={c.iso} value={c.name}>
+                            {locale === 'am' ? c.nameAm : c.name}
+                          </option>
+                        ))
+                      }
+                      <option value="Others">Others / ሌላ</option>
+                    </select>
+                    {selectedCountry === 'Others' && (
+                      <input
+                        type="text"
+                        placeholder="Specify country..."
+                        value={customCountry}
+                        onChange={(e) => setCustomCountry(e.target.value)}
+                        className="w-full p-3 mt-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-primary focus:outline-none"
+                      />
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider ml-1">Region / ክልል</label>
+                    <select
+                      value={selectedRegion}
+                      disabled={!selectedCountry}
+                      onChange={(e) => {
+                        setSelectedRegion(e.target.value);
+                        setSelectedCity('');
+                      }}
+                      className="w-full p-3.5 bg-white border border-gray-200 rounded-xl font-bold text-xs disabled:opacity-50"
+                    >
+                      <option value="">Select Region</option>
+                      {selectedCountry && selectedCountry !== 'Others' && 
+                        Object.keys(locationData[selectedCountry] || {}).map(region => (
+                          <option key={region} value={region}>{region}</option>
+                        ))
+                      }
+                      {selectedCountry && <option value="Others">Others / ሌላ</option>}
+                    </select>
+                    {selectedRegion === 'Others' && (
+                      <input
+                        type="text"
+                        placeholder="Specify region..."
+                        value={customRegion}
+                        onChange={(e) => setCustomRegion(e.target.value)}
+                        className="w-full p-3 mt-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-primary focus:outline-none"
+                      />
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider ml-1">City / ከተማ</label>
+                    <select
+                      value={selectedCity}
+                      disabled={!selectedRegion}
+                      onChange={(e) => setSelectedCity(e.target.value)}
+                      className="w-full p-3.5 bg-white border border-gray-200 rounded-xl font-bold text-xs disabled:opacity-50"
+                    >
+                      <option value="">Select City</option>
+                      {selectedCountry && selectedRegion && selectedRegion !== 'Others' && 
+                        (locationData[selectedCountry]?.[selectedRegion] || []).map(city => (
+                          <option key={city} value={city}>{city}</option>
+                        ))
+                      }
+                      {selectedRegion && <option value="Others">Others / ሌላ</option>}
+                    </select>
+                    {selectedCity === 'Others' && (
+                      <input
+                        type="text"
+                        placeholder="Specify city..."
+                        value={customCity}
+                        onChange={(e) => setCustomCity(e.target.value)}
+                        className="w-full p-3 mt-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-primary focus:outline-none"
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Conditional Children Selector workflow */}
+              <div className="p-6 bg-[#F8F9FA]/50 border border-gray-150 rounded-[2rem] space-y-4">
+                <label className="flex items-center gap-3 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={hasChildren}
+                    onChange={(e) => setHasChildren(e.target.checked)}
+                    className="w-5 h-5 rounded-lg border-gray-300 text-primary focus:ring-primary/20"
+                  />
+                  <span className="text-xs font-bold text-accent">
+                    {locale === 'am' ? 'ልጆች አሉኝ' : 'I have children'}
+                  </span>
+                </label>
+
+                {hasChildren && (
+                  <div className="space-y-2 animate-in slide-in-from-top-4 duration-300">
+                    <label className="text-[9px] font-black uppercase text-slate-500 tracking-wider ml-1">
+                      {locale === 'am' ? 'የልጆች ብዛት' : 'Number of Children'}
+                    </label>
+                    <select
+                      value={childrenCount}
+                      onChange={(e) => setChildrenCount(e.target.value)}
+                      className="w-full p-4 bg-white border border-gray-200 rounded-2xl font-bold text-xs"
+                    >
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="More than 3">More than 3 / ከ 3 በላይ</option>
+                    </select>
+                  </div>
                 )}
               </div>
 
