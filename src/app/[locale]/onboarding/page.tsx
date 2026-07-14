@@ -102,6 +102,141 @@ const locationData: Record<string, Record<string, string[]>> = {
   }
 };
 
+const getTranslation = (key: string, lang: string): string => {
+  const dictionary: Record<string, Record<string, string>> = {
+    am: {
+      'Ethiopia': 'ኢትዮጵያ',
+      'USA': 'አሜሪካ (USA)',
+      'Canada': 'ካናዳ',
+      'United Kingdom': 'ዩናይትድ ኪንግደም (UK)',
+      'Australia': 'አውስትራሊያ',
+      'Anywhere': 'የትም ቦታ',
+      'Others': 'ሌላ',
+      
+      'Harar': 'ሐረር',
+      'Addis Ababa': 'አዲስ አበባ',
+      'Oromia': 'ኦሮሚያ',
+      'Amhara': 'አማራ',
+      'Tigray': 'ትግራይ',
+      'Sidama': 'ሲዳማ',
+      'South Ethiopia': 'ደቡብ ኢትዮጵያ',
+      'Minnesota': 'Minnesota (ሚኒሶታ)',
+      'Texas': 'Texas (ቴክሳስ)',
+      'Virginia': 'Virginia (ቨርጂኒያ)',
+      'California': 'California (ካሊፎርኒያ)',
+      'Washington': 'Washington (ዋሽንግተን)',
+      'Georgia': 'Georgia (ጆርጂያ)',
+      'Colorado': 'Colorado (ኮሎራዶ)',
+      'Ontario': 'Ontario (ኦንታሪዮ)',
+      'British Columbia': 'British Columbia (ብሪቲሽ ኮሎምቢያ)',
+      'Alberta': 'Alberta (አልበርታ)',
+      'Quebec': 'Quebec (ኩቤክ)',
+      'England': 'England (እንግሊዝ)',
+      'Scotland': 'Scotland (ስኮትላንድ)',
+      'New South Wales': 'New South Wales (ኒው ሳውዝ ዌልስ)',
+      'Queensland': 'Queensland (ኩዊንስላንድ)',
+
+      'Adama': 'አዳማ',
+      'Jimma': 'ጅማ',
+      'Bishoftu': 'ቢሾፍቱ',
+      'Bahir Dar': 'ባህር ዳር',
+      'Gondar': 'ጎንደር',
+      'Dessie': 'ደሴ',
+      'Mekelle': 'መቀሌ',
+      'Adigrat': 'ዓዲግራት',
+      'Axum': 'አክሱም',
+      'Hawassa': 'ሀዋሳ',
+      'Yirgalem': 'ይርጋለም',
+      'Arba Minch': 'አርባ ምንጭ',
+      'Dila': 'ዲላ',
+      'Minneapolis': 'Minneapolis (ሚኒያፖሊስ)',
+      'St. Paul': 'St. Paul (ሴንት ፖል)',
+      'Rochester': 'Rochester (ሮቼስተር)',
+      'Houston': 'Houston (ሂውስተን)',
+      'Dallas': 'Dallas (ዳላስ)',
+      'Austin': 'Austin (ኦስቲን)',
+      'Fairfax': 'Fairfax (ፌርፋክስ)',
+      'Richmond': 'Richmond (ሪችመንድ)',
+      'Alexandria': 'Alexandria (አሌክሳንድሪያ)',
+      'Los Angeles': 'Los Angeles (ሎስ አንጀለስ)',
+      'San Jose': 'San Jose (ሳን ሆዜ)',
+      'San Diego': 'San Diego (ሳን ዲዬጎ)',
+      'Seattle': 'Seattle (ሲያትል)',
+      'Spokane': 'Spokane (ስፖካን)',
+      'Atlanta': 'Atlanta (አትላንታ)',
+      'Decatur': 'Decatur (ዲኬተር)',
+      'Denver': 'Denver (ዴንቨር)',
+      'Aurora': 'Aurora (ኦሮራ)',
+      'Toronto': 'Toronto (ቶሮንቶ)',
+      'Ottawa': 'Ottawa (ኦታዋ)',
+      'Mississauga': 'Mississauga (ሚሲሳጋ)',
+      'London': 'London (ለንደን)',
+      'Vancouver': 'Vancouver (ቫንኩቨር)',
+      'Victoria': 'Victoria (ቪክቶሪያ)',
+      'Burnaby': 'Burnaby (በርናቢ)',
+      'Calgary': 'Calgary (ካልጋሪ)',
+      'Edmonton': 'Edmonton (ኤድመንተን)',
+      'Montreal': 'Montreal (ሞንትሪያል)',
+      'Quebec City': 'Quebec City (ኩቤክ ሲቲ)',
+      'Birmingham': 'Birmingham (በርሚንግሃም)',
+      'Manchester': 'Manchester (ማንቸስተር)',
+      'Leeds': 'Leeds (ሊድስ)',
+      'Glasgow': 'Glasgow (ግላስጎው)',
+      'Edinburgh': 'Edinburgh (ኤዲንብራ)',
+      'Melbourne': 'Melbourne (ሜልበርን)',
+      'Geelong': 'Geelong (ጂሎንግ)',
+      'Sydney': 'Sydney (ሲድኒ)',
+      'Newcastle': 'Newcastle (ኒውካስል)',
+      'Brisbane': 'Brisbane (ብሪስቤን)'
+    },
+    ti: {
+      'Ethiopia': 'ኢትዮጵያ',
+      'USA': 'አሜሪካ (USA)',
+      'Canada': 'ካናዳ',
+      'United Kingdom': 'ዓባይ ብሪታንያ (UK)',
+      'Australia': 'አውስትራሊያ',
+      'Anywhere': 'ኣብ ዝኾነ ቦታ',
+      'Others': 'ካልእ',
+      
+      'Harar': 'ሃረር',
+      'Addis Ababa': 'አዲስ ኣበባ',
+      'Oromia': 'ኦሮሚያ',
+      'Amhara': 'ኣምሓራ',
+      'Tigray': 'ትግራይ',
+      'Sidama': 'ሲማዳ',
+      'South Ethiopia': 'ደቡብ ኢትዮጵያ',
+      
+      'Mekelle': 'መቐለ',
+      'Adigrat': 'ዓዲግራት',
+      'Axum': 'ኣኽሱም'
+    },
+    om: {
+      'Ethiopia': 'Itoophiyaa',
+      'USA': 'USA',
+      'Canada': 'Kanaadaa',
+      'United Kingdom': 'UK',
+      'Australia': 'Awustiraaliyaa',
+      'Anywhere': 'Bakka kamiyyuu',
+      'Others': 'Kan biraa',
+      
+      'Harar': 'Harar',
+      'Addis Ababa': 'Finfinnee',
+      'Oromia': 'Oromiyaa',
+      'Amhara': 'Amaaraa',
+      'Tigray': 'Tigraay',
+      'Sidama': 'Sidaamaa',
+      'South Ethiopia': 'Kibba Itoophiyaa',
+      
+      'Adama': 'Adaamaa',
+      'Jimma': 'Jimmaa',
+      'Bishoftu': 'Bishooftuu',
+      'Hawassa': 'Hawaasaa'
+    }
+  };
+
+  return dictionary[lang]?.[key] || key;
+};
+
 function OnboardingContent() {
   const t = useTranslations('Onboarding');
   const t_const = useTranslations('Constants');
@@ -805,11 +940,13 @@ function OnboardingContent() {
               {/* Location Cascading Picker */}
               <div className="space-y-4 bg-[#F8F9FA]/50 p-6 rounded-[2rem] border border-gray-150">
                 <span className="block text-xs font-black text-slate-600 uppercase tracking-widest mb-2 ml-1">
-                  {locale === 'am' ? 'የመኖሪያ አድራሻ (Location)' : 'Location Details'}
+                  {locale === 'am' ? 'የመኖሪያ አድራሻ (Location)' : locale === 'ti' ? 'ናይ መበቆል ኣድራሻ (Location)' : locale === 'om' ? 'Bakka Jireenyaa (Location)' : 'Location Details'}
                 </span>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider ml-1">Country / ሀገር</label>
+                    <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                      {locale === 'am' ? 'ሀገር' : locale === 'ti' ? 'ሃገር' : locale === 'om' ? 'Biyya' : 'Country'}
+                    </label>
                     <select
                       value={selectedCountry}
                       onChange={(e) => {
@@ -820,7 +957,7 @@ function OnboardingContent() {
                       }}
                       className="w-full p-3.5 bg-white border border-gray-200 rounded-xl font-bold text-xs"
                     >
-                      <option value="">Select Country</option>
+                      <option value="">{locale === 'am' ? 'ሀገር ይምረጡ' : locale === 'ti' ? 'ሃገር ይምረጡ' : locale === 'om' ? 'Biyya Filadhu' : 'Select Country'}</option>
                       {[...COUNTRIES]
                         .sort((a, b) => {
                           const nameA = locale === 'am' ? a.nameAm : a.name;
@@ -833,12 +970,12 @@ function OnboardingContent() {
                           </option>
                         ))
                       }
-                      <option value="Others">Others / ሌላ</option>
+                      <option value="Others">{locale === 'am' ? 'ሌላ' : locale === 'ti' ? 'ካልእ' : locale === 'om' ? 'Kan biraa' : 'Others'}</option>
                     </select>
                     {selectedCountry === 'Others' && (
                       <input
                         type="text"
-                        placeholder="Specify country..."
+                        placeholder={locale === 'am' ? 'እባክዎ ሀገር ይጥቀሱ...' : 'Specify country...'}
                         value={customCountry}
                         onChange={(e) => setCustomCountry(e.target.value)}
                         className="w-full p-3 mt-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-primary focus:outline-none"
@@ -847,7 +984,9 @@ function OnboardingContent() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider ml-1">Region / ክልል</label>
+                    <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                      {locale === 'am' ? 'ክልል/ግዛት' : locale === 'ti' ? 'ክፍለ ሃገር' : locale === 'om' ? 'Naannoo' : 'Region'}
+                    </label>
                     <select
                       value={selectedRegion}
                       disabled={!selectedCountry}
@@ -857,18 +996,18 @@ function OnboardingContent() {
                       }}
                       className="w-full p-3.5 bg-white border border-gray-200 rounded-xl font-bold text-xs disabled:opacity-50"
                     >
-                      <option value="">Select Region</option>
+                      <option value="">{locale === 'am' ? 'ክልል/ግዛት ይምረጡ' : locale === 'ti' ? 'ክፍለ ሃገር ይምረጡ' : locale === 'om' ? 'Naannoo Filadhu' : 'Select Region'}</option>
                       {selectedCountry && selectedCountry !== 'Others' && 
                         Object.keys(locationData[selectedCountry] || {}).map(region => (
-                          <option key={region} value={region}>{region}</option>
+                          <option key={region} value={region}>{getTranslation(region, locale)}</option>
                         ))
                       }
-                      {selectedCountry && <option value="Others">Others / ሌላ</option>}
+                      {selectedCountry && <option value="Others">{locale === 'am' ? 'ሌላ' : locale === 'ti' ? 'ካልእ' : locale === 'om' ? 'Kan biraa' : 'Others'}</option>}
                     </select>
                     {selectedRegion === 'Others' && (
                       <input
                         type="text"
-                        placeholder="Specify region..."
+                        placeholder={locale === 'am' ? 'እባክዎ ክልል ይጥቀሱ...' : 'Specify region...'}
                         value={customRegion}
                         onChange={(e) => setCustomRegion(e.target.value)}
                         className="w-full p-3 mt-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-primary focus:outline-none"
@@ -877,25 +1016,27 @@ function OnboardingContent() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider ml-1">City / ከተማ</label>
+                    <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider ml-1">
+                      {locale === 'am' ? 'ከተማ' : locale === 'ti' ? 'ከተማ' : locale === 'om' ? 'Magaalaa' : 'City'}
+                    </label>
                     <select
                       value={selectedCity}
                       disabled={!selectedRegion}
                       onChange={(e) => setSelectedCity(e.target.value)}
                       className="w-full p-3.5 bg-white border border-gray-200 rounded-xl font-bold text-xs disabled:opacity-50"
                     >
-                      <option value="">Select City</option>
+                      <option value="">{locale === 'am' ? 'ከተማ ይምረጡ' : locale === 'ti' ? 'ከተማ ይምረጡ' : locale === 'om' ? 'Magaalaa Filadhu' : 'Select City'}</option>
                       {selectedCountry && selectedRegion && selectedRegion !== 'Others' && 
                         (locationData[selectedCountry]?.[selectedRegion] || []).map(city => (
-                          <option key={city} value={city}>{city}</option>
+                          <option key={city} value={city}>{getTranslation(city, locale)}</option>
                         ))
                       }
-                      {selectedRegion && <option value="Others">Others / ሌላ</option>}
+                      {selectedRegion && <option value="Others">{locale === 'am' ? 'ሌላ' : locale === 'ti' ? 'ካልእ' : locale === 'om' ? 'Kan biraa' : 'Others'}</option>}
                     </select>
                     {selectedCity === 'Others' && (
                       <input
                         type="text"
-                        placeholder="Specify city..."
+                        placeholder={locale === 'am' ? 'እባክዎ ከተማ ይጥቀሱ...' : 'Specify city...'}
                         value={customCity}
                         onChange={(e) => setCustomCity(e.target.value)}
                         className="w-full p-3 mt-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-primary focus:outline-none"
@@ -1170,7 +1311,7 @@ function OnboardingContent() {
                 }}
                 className="w-full mt-6 bg-slate-100 hover:bg-slate-200 text-gray-600 py-4 rounded-[1.5rem] font-bold text-xs uppercase tracking-widest transition-all"
              >
-                {locale === 'am' ? 'ይህን ደረጃ ዝለል (Skip Step)' : 'Skip ID Verification'}
+                {locale === 'am' ? 'ይህን ደረጃ ዝለል (Skip Step)' : locale === 'ti' ? 'እዚ ደረጃ እዚ ሕለፎ (Skip Step)' : locale === 'om' ? 'Tarkaanfii kana utaali (Skip Step)' : 'Skip ID Verification'}
              </button>
            </div>
          );
@@ -1181,10 +1322,16 @@ function OnboardingContent() {
               <div className="w-20 h-20 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mx-auto">
                  <User size={40} className="text-primary" />
               </div>
-              <h2 className="text-3xl font-black text-accent italic">{locale === 'am' ? 'የቪዲዮ ሰልፊ ማረጋገጫ (Selfie Video)' : 'Selfie Video Verification'}</h2>
+              <h2 className="text-3xl font-black text-accent italic">
+                {locale === 'am' ? 'የቪዲዮ ሰልፊ ማረጋገጫ' : locale === 'ti' ? 'ናይ ቪድዮ ሰልፊ ምርግጋጽ' : locale === 'om' ? 'Mirkaneessa Viidiyoo Selfie' : 'Selfie Video Verification'}
+              </h2>
               <p className="text-gray-500 max-w-sm mx-auto text-xs font-medium leading-relaxed">
                 {locale === 'am' 
                   ? 'ካሜራዎ መለያዎን ለማረጋገጥ በጥብቅ ያስፈልጋል። እባክዎ ካሜራውን በመክፈት የ3 ሰከንድ ቀጥታ ቪዲዮ ይቅረጹ ወይም አጭር የሰልፊ ቪዲዮ ይጫኑ። የተመዘገበው ቪዲዮ ከላኩት መታወቂያ ጋር የሚስማማ መሆኑን ለማረጋገጥ ብቻ ያገለግላል።' 
+                  : locale === 'ti'
+                  ? 'ካሜራኹም መለያኹም ንምርግጋጽ ብጥብቂ የድሊ እዩ። በጃኹም ካሜራ ብምኽፋት ናይ 3 ሰከንድ ቪድዮ ሰልፊ ይቕረጹ ወይ ናይ ሰልፊ ቪድዮ ይጽዓኑ።'
+                  : locale === 'om'
+                  ? 'Koontaa kee mirkaneessuuf kaameraan kee baay\'ee barbaachisaadha. Maaloo kaameraa banuun viidiyoo selfii sekondii 3 waraabi ykn viidiyoo selfii gabaabaa fe\'i.'
                   : 'Your camera is strictly required to capture your profile verification image and record identity verification media. Please record a 3-second live selfie video or upload a video file. Your camera is used solely to verify profile authenticity.'}
               </p>
             </div>
@@ -1202,14 +1349,16 @@ function OnboardingContent() {
                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
                     <Camera size={32} className="text-primary group-hover:scale-110 transition-all" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                      {locale === 'am' ? 'ላይቭ ካሜራ ዝግጁ ነው' : 'Live Camera Off'}
+                      {locale === 'am' ? 'ላይቭ ካሜራ ዝግጁ ነው' : locale === 'ti' ? 'ናይ ቀጥታ ካሜራ ጠፊኡ' : locale === 'om' ? 'Kaameraan dhaameera' : 'Live Camera Off'}
                     </span>
                  </div>
                )}
 
                {isRecording && (
                  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white z-10">
-                    <p className="text-lg font-black tracking-widest animate-pulse uppercase">{locale === 'am' ? 'እየተቀረጸ ነው' : 'Recording'}</p>
+                    <p className="text-lg font-black tracking-widest animate-pulse uppercase">
+                      {locale === 'am' ? 'እየተቀረጸ ነው' : locale === 'ti' ? 'እየተቐረጸ እዩ' : locale === 'om' ? 'Waraabamaa jira' : 'Recording'}
+                    </p>
                     <p className="text-5xl font-black mt-2 text-primary">{countdown}s</p>
                  </div>
                )}
@@ -1223,7 +1372,7 @@ function OnboardingContent() {
                   onClick={startCamera}
                   className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
                 >
-                  {locale === 'am' ? 'ካሜራ ክፈት' : 'Open Live Camera'}
+                  {locale === 'am' ? 'ካሜራ ክፈት' : locale === 'ti' ? 'ካሜራ ክፈት' : locale === 'om' ? 'Kaameraa Bani' : 'Open Live Camera'}
                 </button>
               )}
 
@@ -1233,7 +1382,7 @@ function OnboardingContent() {
                   onClick={recordVideo}
                   className="bg-red-500 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-red-500/20 hover:scale-105 active:scale-95 transition-all animate-pulse"
                 >
-                  {locale === 'am' ? 'መቅረጽ ጀምር (3 ሰከንድ)' : 'Record (3s)'}
+                  {locale === 'am' ? 'መቅረጽ ጀምር (3 ሰከንድ)' : locale === 'ti' ? 'ምቕራጽ ጀምር (3 ሰከንድ)' : locale === 'om' ? 'Waraabuu jalqabi (Sec 3)' : 'Record (3s)'}
                 </button>
               )}
 
@@ -1248,11 +1397,9 @@ function OnboardingContent() {
                   }}
                   className="bg-accent text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
                 >
-                  {locale === 'am' ? 'እንደገና ቅረጽ' : 'Retake Video'}
+                  {locale === 'am' ? 'እንደገና ቅረጽ' : locale === 'ti' ? 'ከም ብሓዱሽ ቅረጽ' : locale === 'om' ? 'Deebisi waraabi' : 'Retake Video'}
                 </button>
               )}
-
-              
             </div>
 
             {(isVerifying || formData.verification_status === 'verified' || errorMsg) && (
@@ -1270,14 +1417,14 @@ function OnboardingContent() {
                  ) : formData.verification_status === 'verified' ? (
                     <div className="flex flex-col items-center gap-3">
                         <div className="flex items-center gap-2 bg-green-500 text-white px-6 py-2 rounded-full font-black uppercase tracking-widest text-[10px] shadow-lg shadow-green-200 animate-bounce">
-                           <CheckCircle2 size={16} /> {locale === 'am' ? 'Account Verified (ተረጋግጧል)' : 'Account Verified'}
+                           <CheckCircle2 size={16} /> {locale === 'am' ? 'መለያዎ ተረጋግጧል' : locale === 'ti' ? 'መለያኹም ተረጋጊጹ' : locale === 'om' ? 'Koontaan kee mirkanaa\'eera' : 'Account Verified'}
                         </div>
                         <p className="text-[10px] text-green-600 font-bold">{t('idVerification.idCaptured')}</p>
                      </div>
                  ) : errorMsg ? (
                     <div className="flex flex-col items-center gap-3">
                         <div className="flex items-center gap-2 bg-red-500 text-white px-6 py-2 rounded-full font-black uppercase tracking-widest text-[10px] shadow-lg shadow-red-200">
-                           <AlertCircle size={16} /> {locale === 'am' ? 'Verification Failed' : 'Verification Failed'}
+                           <AlertCircle size={16} /> {locale === 'am' ? 'ማረጋገጫው አልተሳካም' : locale === 'ti' ? 'ምርግጋጽ ኣይተዓወተን' : locale === 'om' ? 'Mirkaneessi hin milkoofne' : 'Verification Failed'}
                         </div>
                         <p className="text-[10px] text-red-600 font-medium px-4">{errorMsg}</p>
                         <button 
@@ -1285,7 +1432,7 @@ function OnboardingContent() {
                            onClick={() => setStep(1)} 
                            className="text-[10px] font-black text-primary uppercase tracking-widest underline mt-1 hover:text-primary/80 transition-colors"
                          >
-                           {locale === 'am' ? 'ስም ወይም የልደት ቀን ለማስተካከል ወደ ደረጃ 1 ይመለሱ' : 'Return to Step 1 to correct profile details'}
+                            {locale === 'am' ? 'ስም ወይም የልደት ቀን ለማስተካከል ወደ ደረጃ 1 ይመለሱ' : locale === 'ti' ? 'ስም ወይስ እለት ልደት ንምስትኽኻል ናብ ደረጃ 1 ተመለሱ' : locale === 'om' ? 'Maqaa ykn guyyaa dhalootaa sirreessuuf gara tarkaanfii 1ffaatti deebi\'i' : 'Return to Step 1 to correct profile details'}
                          </button>
                     </div>
                  ) : null}
@@ -1297,7 +1444,7 @@ function OnboardingContent() {
                onClick={() => router.push('/dashboard')}
                className="w-full mt-6 bg-slate-100 hover:bg-slate-200 text-gray-600 py-4 rounded-[1.5rem] font-bold text-xs uppercase tracking-widest transition-all"
              >
-               {locale === 'am' ? 'ወደ Dashboard ይመለሱ (Back to Dashboard)' : 'Back to Dashboard'}
+                {locale === 'am' ? 'ወደ ዳሽቦርድ ይመለሱ' : locale === 'ti' ? 'ናብ ዳሽቦርድ ተመለሱ' : locale === 'om' ? 'Gara Daashboordiitti deebi\'i' : 'Back to Dashboard'}
              </button>
            </div>
          );
