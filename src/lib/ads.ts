@@ -52,7 +52,7 @@ export async function initializeAdMob() {
         requestTrackingAuthorization: true,
       } as any),
       testingDevices: [], // Add developer device IDs here if needed
-      initializeForTesting: true, // Set true to load test ads during development
+      initializeForTesting: false, // PRODUCTION: must be false for Google Play compliance
     });
     console.log('[AdMob] Native AdMob SDK initialized.');
   } catch (e) {
