@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { calculateStarSign } from '@/lib/abushakir';
 import { simulateIdentityVerification } from '@/lib/verification';
+import { moderateImage } from '@/lib/moderation';
 import { 
   RELIGIONS, 
   GENDERS, 
@@ -1507,19 +1508,14 @@ function OnboardingContent() {
                           
                           // Run AI Image Moderation Check
                           try {
-                            const modResponse = await fetch(`/${locale}/api/ai/moderate`, {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ imageUrl: publicUrl })
-                            });
-                            const moderationResult = await modResponse.json();
-                            if (moderationResult.approved) {
-                              urls.push(publicUrl);
-                            } else {
-                              setErrorMsg(locale === 'am' 
-                                ? `ምስሉ ውድቅ ተደርጓል፡ ${moderationResult.reason || 'የካርቱን፣ ተፈጥሮ ወይም የታዋቂ ሰዎች ምስሎች አይፈቀዱም።'}`
-                                : `Image rejected: ${moderationResult.reason || 'Cartoons, landscapes, or celebrity photos are not allowed.'}`);
-                            }
+                          const moderationResult = await moderateImage(publicUrl);
+                          if (moderationResult.approved) {
+                            urls.push(publicUrl);
+                          } else {
+                            setErrorMsg(locale === 'am' 
+                              ? `ምስሉ ውድቅ ተደርጓል፡ ${moderationResult.reason || 'የካርቱን፣ ተፈጥሮ ወይም የታዋቂ ሰዎች ምስሎች አይፈቀዱም።'}`
+                              : `Image rejected: ${moderationResult.reason || 'Cartoons, landscapes, or celebrity photos are not allowed.'}`);
+                          }
                           } catch (modErr) {
                             console.error("Image moderation call failed:", modErr);
                             urls.push(publicUrl); // Fallback to allow if API fails

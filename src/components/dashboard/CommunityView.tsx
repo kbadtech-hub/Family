@@ -5,6 +5,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
 import BetesebCoinIcon from '@/components/BetesebCoinIcon';
+import { moderateText } from '@/lib/moderation';
 import { 
   Send,
   User,
@@ -290,21 +291,11 @@ export default function CommunityView({
     setCoinPostConfirm(false);
     
     // AI Moderation API Call
-    try {
-      const response = await fetch(`/${locale}/api/ai/moderate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newPostContent.trim() })
-      });
-      const safety = await response.json();
-      
-      if (!safety.approved) {
-        alert(`${t('unsafeContent')}: ${safety.reason}`);
-        setIsSubmitting(false);
-        return;
-      }
-    } catch (e) {
-      console.error("AI Moderation failed, using fallback", e);
+    const safety = await moderateText(newPostContent);
+    if (!safety.approved) {
+      alert(`${t('unsafeContent')}: ${safety.reason}`);
+      setIsSubmitting(false);
+      return;
     }
 
     const { data: { user } } = await supabase.auth.getUser();

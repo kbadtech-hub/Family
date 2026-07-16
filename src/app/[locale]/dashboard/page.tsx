@@ -46,9 +46,11 @@ import DashboardCard from '@/components/dashboard/DashboardCard';
 import LockOverlay from '@/components/dashboard/LockOverlay';
 import GiftModal from '@/components/dashboard/GiftModal';
 import AcademyView from '@/components/dashboard/AcademyView';
+import WorkshopsView from '@/components/dashboard/WorkshopsView';
 import SubscriptionGate from '@/components/SubscriptionGate';
 import { getUserTier, calculateCompletionRate } from '@/lib/tiers';
 import { unregisterPushNotifications } from '@/lib/push-notifications';
+import { moderateText } from '@/lib/moderation';
 
 function DashboardContent() {
   const t = useTranslations('Dashboard');
@@ -650,21 +652,11 @@ function DashboardContent() {
     setIsSubmitting(true);
     setCoinPostConfirm(false);
     
-    try {
-      const response = await fetch(`/${locale}/api/ai/moderate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newPostContent.trim() })
-      });
-      const safety = await response.json();
-      
-      if (!safety.approved) {
-        alert(`${tc('unsafeContent')}: ${safety.reason}`);
-        setIsSubmitting(false);
-        return;
-      }
-    } catch (e) {
-      console.error("AI Moderation failed, using fallback", e);
+    const safety = await moderateText(newPostContent);
+    if (!safety.approved) {
+      alert(`${tc('unsafeContent')}: ${safety.reason}`);
+      setIsSubmitting(false);
+      return;
     }
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -1338,9 +1330,12 @@ function DashboardContent() {
         )}
 
         {activeTab === 'workshops' && (
-           <div className="mt-10">
+           <div className="mt-10 space-y-16">
               <SubscriptionGate allowVerifiedView={true}>
                  <AcademyView isPremium={isPremium} userCoins={profile?.coins || 0} />
+              </SubscriptionGate>
+              <SubscriptionGate allowVerifiedView={true}>
+                 <WorkshopsView currency={profile?.currency_locked || 'ETB'} />
               </SubscriptionGate>
            </div>
         )}

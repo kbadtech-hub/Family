@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
@@ -375,7 +375,7 @@ export default function CallInterface({
         }
 
         const pc = peerConnectionRef.current || new RTCPeerConnection({
-          iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+          iceServers: getIceServers()
         });
         peerConnectionRef.current = pc;
 

@@ -46,6 +46,7 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 import CallInterface from '@/components/dashboard/CallInterface';
 import GiftModal from '@/components/dashboard/GiftModal';
 import { getUserTier, getTierLimits } from '@/lib/tiers';
+import { moderateText } from '@/lib/moderation';
 
 interface Message {
   id: string;
@@ -775,23 +776,13 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
        return;
     }
 
-    // 2. Content Shield - AI Moderation Call
-    try {
-      const response = await fetch(`/${locale}/api/ai/moderate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: messageContent })
-      });
-      const safety = await response.json();
-      
-      if (!safety.approved) {
-        alert(locale === 'am' 
-          ? `ይህ መልእክት የቤተሰብን ስነ-ምግባር ስለሚጥስ አልተላከም፦ ${safety.reason}` 
-          : `Message blocked due to family values violation: ${safety.reason}`);
-        return;
-      }
-    } catch (err) {
-      console.error("AI Moderation failed in chat, bypassing to fallback", err);
+    // 2. Content Shield - AI Moderation (centralized utility)
+    const safety = await moderateText(messageContent);
+    if (!safety.approved) {
+      alert(locale === 'am'
+        ? `ይህ መልእክት የቤተሰብን ስነ-ምግባር ስለሚጥስ አልተላከም፦ ${safety.reason}`
+        : `Message blocked due to family values violation: ${safety.reason}`);
+      return;
     }
 
     const msgData = {
