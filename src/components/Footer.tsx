@@ -67,26 +67,26 @@ export default function Footer() {
           <p className="text-white/40 max-w-sm leading-relaxed text-sm">
             {t('description')}
           </p>
-          {/* Hardcoded Social Media Icons */}
+          {/* Dynamic Social Media Icons from Settings */}
           <div className="flex flex-wrap gap-3">
-             <a href="https://www.facebook.com/betesebhub" target="_blank" rel="noopener noreferrer" className="p-3 bg-white/5 rounded-2xl hover:bg-primary transition-all group" title="Facebook">
+             <a href={socialLinks.facebook || "https://www.facebook.com/betesebhub"} target="_blank" rel="noopener noreferrer" className="p-3 bg-white/5 rounded-2xl hover:bg-primary transition-all group" title="Facebook">
                <Facebook size={18} className="text-gray-400 group-hover:text-white" />
              </a>
-             <a href="https://www.youtube.com/@betesebhub" target="_blank" rel="noopener noreferrer" className="p-3 bg-white/5 rounded-2xl hover:bg-primary transition-all group" title="YouTube">
+             <a href={socialLinks.youtube || "https://www.youtube.com/@betesebhub"} target="_blank" rel="noopener noreferrer" className="p-3 bg-white/5 rounded-2xl hover:bg-primary transition-all group" title="YouTube">
                <Youtube size={18} className="text-gray-400 group-hover:text-white" />
              </a>
-             <a href="https://t.me/betesebhub" target="_blank" rel="noopener noreferrer" className="p-3 bg-white/5 rounded-2xl hover:bg-primary transition-all group" title="Telegram">
+             <a href={socialLinks.telegram || "https://t.me/betesebhub"} target="_blank" rel="noopener noreferrer" className="p-3 bg-white/5 rounded-2xl hover:bg-primary transition-all group" title="Telegram">
                <Send size={18} className="text-gray-400 group-hover:text-white" />
              </a>
-             <a href="https://wa.me/447347663254" target="_blank" rel="noopener noreferrer" className="p-3 bg-white/5 rounded-2xl hover:bg-primary transition-all group" title="WhatsApp">
+             <a href={socialLinks.whatsapp || "https://wa.me/447347663254"} target="_blank" rel="noopener noreferrer" className="p-3 bg-white/5 rounded-2xl hover:bg-primary transition-all group" title="WhatsApp">
                <MessageCircle size={18} className="text-gray-400 group-hover:text-white" />
              </a>
-             <a href="https://www.tiktok.com/@betesebhub" target="_blank" rel="noopener noreferrer" className="p-3 bg-white/5 rounded-2xl hover:bg-primary transition-all group" title="TikTok">
+             <a href={socialLinks.tiktok || "https://www.tiktok.com/@betesebhub"} target="_blank" rel="noopener noreferrer" className="p-3 bg-white/5 rounded-2xl hover:bg-primary transition-all group" title="TikTok">
                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 group-hover:text-white">
                  <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
                </svg>
              </a>
-             <a href="https://www.linkedin.com/company/betesebhub" target="_blank" rel="noopener noreferrer" className="p-3 bg-white/5 rounded-2xl hover:bg-primary transition-all group" title="LinkedIn">
+             <a href={socialLinks.linkedin || "https://www.linkedin.com/company/betesebhub"} target="_blank" rel="noopener noreferrer" className="p-3 bg-white/5 rounded-2xl hover:bg-primary transition-all group" title="LinkedIn">
                <Linkedin size={18} className="text-gray-400 group-hover:text-white" />
              </a>
           </div>

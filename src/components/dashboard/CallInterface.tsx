@@ -552,7 +552,7 @@ export default function CallInterface({
 
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    
+
     const runModerationCheck = async () => {
       const videoEl = remoteVideoRef.current;
       if (!videoEl || !ctx || videoEl.readyState < 2) return;
@@ -562,47 +562,49 @@ export default function CallInterface({
       ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
       const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const data = imgData.data;
-      
+
       let skinPixels = 0;
       for (let i = 0; i < data.length; i += 4) {
         const r = data[i];
-        const g = data[i+1];
-        const b = data[i+2];
+        const g = data[i + 1];
+        const b = data[i + 2];
         const max = Math.max(r, g, b);
         const min = Math.min(r, g, b);
-        // Standard skin tone rules
+        // Standard skin tone heuristic
         if (r > 95 && g > 40 && b > 20 && (max - min) > 15 && Math.abs(r - g) > 15 && r > g && r > b) {
           skinPixels++;
         }
       }
-      
+
       const skinRatio = skinPixels / (canvas.width * canvas.height);
-      
+
       // If skin ratio exceeds 50%, trigger attire/nudity violation
       if (skinRatio > 0.50) {
         setAiViolationActive(true);
-        
-        const amMsg = "Ã¡Å Â¥Ã¡â€°Â£Ã¡Å Â­Ã¡â€¹Å½ Ã¡â€°Â°Ã¡Å’Ë†Ã¡â€°Â¢Ã¡â€¹ÂÃ¡Å â€¢ Ã¡Å Â Ã¡Ë†Ë†Ã¡â€°Â£Ã¡â€°Â Ã¡Ë†Âµ Ã¡â€¹Â­Ã¡Ë†ÂÃ¡â€°Â Ã¡Ë†Â±Ã¡ÂÂ¢ Ã¡â€¹Â¨Ã¡Ë†ËœÃ¡â€°Â°Ã¡Å’ÂÃ¡â€°Â Ã¡Ë†ÂªÃ¡â€¹Â«Ã¡â€¹ÂÃ¡Å â€¢ Ã¡Ë†ËœÃ¡Ë†ËœÃ¡Ë†ÂªÃ¡â€¹Â«Ã¡â€¹Å½Ã¡â€°Â½ Ã¡Ë†ËœÃ¡Å’Â£Ã¡Ë†Âµ Ã¡Ë†ËœÃ¡Ë†Ë†Ã¡â€¹Â«Ã¡â€¹Å½ Ã¡Å Â¥Ã¡Å â€¢Ã¡â€¹Â³Ã¡â€¹Â­Ã¡â€¹ËœÃ¡Å’â€¹ Ã¡â€¹Â«Ã¡â€¹Â°Ã¡Ë†Â­Ã¡Å’â€¹Ã¡Ë†ÂÃ¡ÂÂ¢";
-        const enMsg = "Please dress appropriately. Violating Beteseb policies may result in account termination.";
+
+        const amMsg = 'እባክዎ ተገቢ ልብስ ይልበሱ። የቤተሰብ ፖሊሲዎችን መጣስ መለያዎ እንዲዘጋ ሊያደርግ ይችላል።';
+        const enMsg = 'Please dress appropriately. Violating Beteseb policies may result in account termination.';
         setAiViolationMessage(navigator.language.startsWith('am') ? amMsg : enMsg);
-        
-        // Disable local video tracks instantly to blackout stream
+
+        // Disable local video tracks instantly
         if (localStreamRef.current) {
-          localStreamRef.current.getVideoTracks().forEach(t => t.enabled = false);
+          localStreamRef.current.getVideoTracks().forEach(t => (t.enabled = false));
         }
         setIsVideoOff(true);
 
-        // Save report log to Supabase
+        // Log to call_violations table
         if (currentUser) {
-          await supabase.from('reports').insert({
-            reporter_id: matchProfile.id,
-            reported_id: currentUser.id,
-            reason: 'explicit content',
-            details: `AI Content Moderation flagged excessive skin exposure (${(skinRatio*100).toFixed(1)}%) during video call.`
+          await supabase.from('call_violations').insert({
+            caller_id: currentUser.id,
+            callee_id: matchProfile.id,
+            violation_type: 'excessive_skin_exposure',
+            details: `AI Content Moderation flagged excessive skin exposure (${(skinRatio * 100).toFixed(1)}%) during video call.`,
+            severity: 'high',
+            auto_action: 'call_terminated'
           });
         }
 
-        // Send hangup signal and terminate call after 4 seconds
+        // Auto-terminate call after 4 seconds
         setTimeout(() => {
           handleEndCall();
         }, 4000);
@@ -612,6 +614,8 @@ export default function CallInterface({
     const interval = setInterval(runModerationCheck, 5000);
     return () => clearInterval(interval);
   }, [callState, isVideo, aiViolationActive, currentUser]);
+
+
 
   const toggleMute = () => {
     if (localStream) {

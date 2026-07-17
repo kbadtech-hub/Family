@@ -62,6 +62,8 @@ export default function WorkshopsView({ currency }: { currency: 'ETB' | 'USD' })
   const [isMobileApp, setIsMobileApp] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'coins' | 'chapa' | 'stripe'>('coins');
 
+  const [dbLessons, setDbLessons] = useState<any[]>([]);
+
   useEffect(() => {
     const getSession = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -79,6 +81,12 @@ export default function WorkshopsView({ currency }: { currency: 'ETB' | 'USD' })
       setIsMobileApp(isCordova || isCapacitor || isReactNative || isPlatformMobileParam || isAndroidApp);
     };
     checkPlatform();
+
+    const fetchLessons = async () => {
+      const { data } = await supabase.from('lessons').select('*').order('created_at', { ascending: false });
+      if (data) setDbLessons(data);
+    };
+    fetchLessons();
   }, []);
 
   const handleCreateBooking = async (e: React.FormEvent) => {
@@ -198,33 +206,68 @@ export default function WorkshopsView({ currency }: { currency: 'ETB' | 'USD' })
       <section>
          <h3 className="text-3xl font-black text-accent mb-8 uppercase italic tracking-tighter">Upcoming Classes</h3>
          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {UPCOMING_WORKSHOPS.map((workshop) => (
-               <div key={workshop.id} className="bg-white p-10 rounded-[3rem] border border-muted shadow-sm hover:shadow-xl transition-all group hover:-translate-y-1">
-                  <div className="flex justify-between items-start mb-6">
-                     <div className="p-4 bg-primary/5 rounded-2xl">
-                        <Calendar size={32} className="text-primary" />
+            {dbLessons.length > 0 ? (
+               dbLessons.map((lesson) => {
+                  const instructor = lesson.category === 'Relationship' ? 'Ato Abebe & W/ro Selam' : lesson.category === 'Finance' ? 'Dr. Girma Bekele' : 'Senior Family Advisor';
+                  const price_etb = lesson.is_premium_only ? 1500 : 0;
+                  const price_usd = lesson.is_premium_only ? 50 : 0;
+                  return (
+                     <div key={lesson.id} className="bg-white p-10 rounded-[3rem] border border-muted shadow-sm hover:shadow-xl transition-all group hover:-translate-y-1">
+                        <div className="flex justify-between items-start mb-6">
+                           <div className="p-4 bg-primary/5 rounded-2xl">
+                              <Calendar size={32} className="text-primary" />
+                           </div>
+                           <div className="text-right">
+                              <p className="text-[10px] text-primary font-black uppercase tracking-widest mb-1">Tuition Fees</p>
+                              <p className="text-2xl font-black text-accent">{currency === 'USD' ? '$' : 'Br'} {currency === 'USD' ? price_usd : price_etb}</p>
+                           </div>
+                        </div>
+                        
+                        <h4 className="text-2xl font-bold text-accent mb-2 group-hover:text-primary transition-colors">{lesson.title}</h4>
+                        <p className="text-gray-500 text-sm mb-6 uppercase font-bold tracking-widest flex items-center gap-2">
+                           <Users size={16} className="text-primary" /> {instructor}
+                        </p>
+                        
+                        <div className="flex items-center gap-6 mb-8 py-4 border-y border-muted text-gray-400 text-xs font-medium">
+                           <div className="flex items-center gap-2"><Calendar size={16} /> Weekly Session</div>
+                           <div className="flex items-center gap-2"><Clock size={16} /> 2:00 PM EAT</div>
+                        </div>
+                        
+                        <button className="w-full btn-primary py-4 rounded-[1.5rem] flex items-center justify-center gap-3 text-xs tracking-widest group/btn">
+                           <CreditCard size={18} /> {lesson.is_premium_only ? 'ENROLL NOW' : 'ACCESS FOR FREE'} <ArrowRight size={18} className="group-hover/btn:translate-x-2 transition-transform" />
+                        </button>
                      </div>
-                     <div className="text-right">
-                        <p className="text-[10px] text-primary font-black uppercase tracking-widest mb-1">Tuition Fees</p>
-                        <p className="text-2xl font-black text-accent">{currency === 'USD' ? '$' : 'Br'} {currency === 'USD' ? workshop.price_usd : workshop.price_etb}</p>
+                  );
+               })
+            ) : (
+               UPCOMING_WORKSHOPS.map((workshop) => (
+                  <div key={workshop.id} className="bg-white p-10 rounded-[3rem] border border-muted shadow-sm hover:shadow-xl transition-all group hover:-translate-y-1">
+                     <div className="flex justify-between items-start mb-6">
+                        <div className="p-4 bg-primary/5 rounded-2xl">
+                           <Calendar size={32} className="text-primary" />
+                        </div>
+                        <div className="text-right">
+                           <p className="text-[10px] text-primary font-black uppercase tracking-widest mb-1">Tuition Fees</p>
+                           <p className="text-2xl font-black text-accent">{currency === 'USD' ? '$' : 'Br'} {currency === 'USD' ? workshop.price_usd : workshop.price_etb}</p>
+                        </div>
                      </div>
+                     
+                     <h4 className="text-2xl font-bold text-accent mb-2 group-hover:text-primary transition-colors">{workshop.title}</h4>
+                     <p className="text-gray-500 text-sm mb-6 uppercase font-bold tracking-widest flex items-center gap-2">
+                        <Users size={16} className="text-primary" /> {workshop.instructor}
+                     </p>
+                     
+                     <div className="flex items-center gap-6 mb-8 py-4 border-y border-muted text-gray-400 text-xs font-medium">
+                        <div className="flex items-center gap-2"><Calendar size={16} /> {workshop.date}</div>
+                        <div className="flex items-center gap-2"><Clock size={16} /> {workshop.time}</div>
+                     </div>
+                     
+                     <button className="w-full btn-primary py-4 rounded-[1.5rem] flex items-center justify-center gap-3 text-xs tracking-widest group/btn">
+                        <CreditCard size={18} /> ENROLL NOW <ArrowRight size={18} className="group-hover/btn:translate-x-2 transition-transform" />
+                     </button>
                   </div>
-                  
-                  <h4 className="text-2xl font-bold text-accent mb-2 group-hover:text-primary transition-colors">{workshop.title}</h4>
-                  <p className="text-gray-500 text-sm mb-6 uppercase font-bold tracking-widest flex items-center gap-2">
-                     <Users size={16} className="text-primary" /> {workshop.instructor}
-                  </p>
-                  
-                  <div className="flex items-center gap-6 mb-8 py-4 border-y border-muted text-gray-400 text-xs font-medium">
-                     <div className="flex items-center gap-2"><Calendar size={16} /> {workshop.date}</div>
-                     <div className="flex items-center gap-2"><Clock size={16} /> {workshop.time}</div>
-                  </div>
-                  
-                  <button className="w-full btn-primary py-4 rounded-[1.5rem] flex items-center justify-center gap-3 text-xs tracking-widest group/btn">
-                     <CreditCard size={18} /> ENROLL NOW <ArrowRight size={18} className="group-hover/btn:translate-x-2 transition-transform" />
-                  </button>
-               </div>
-            ))}
+               ))
+            )}
          </div>
       </section>
 

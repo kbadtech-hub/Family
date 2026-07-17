@@ -15,11 +15,14 @@ import {
   ShieldCheck,
   Star,
   Sparkles,
-  Coins
+  Coins,
+  Lock,
+  LockOpen
 } from 'lucide-react';
 import Image from 'next/image';
 import { getUserTier, calculateCompletionRate } from '@/lib/tiers';
 import { COUNTRIES } from '@/lib/countries';
+import { isAppLockEnabled, setAppLockEnabled, clearStoredPin } from '@/components/AppLockGate';
 
 const locationData: Record<string, Record<string, string[]>> = {
   'Ethiopia': {
@@ -221,6 +224,39 @@ const getTranslation = (key: string, lang: string): string => {
 
   return dictionary[lang]?.[key] || key;
 };
+
+// ── Inline sub-component: App Lock toggle (local-only, no server call) ──
+function AppLockToggle({ locale }: { locale: string }) {
+  const [enabled, setEnabled] = useState(false);
+
+  useEffect(() => {
+    setEnabled(isAppLockEnabled());
+  }, []);
+
+  const handleToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const next = e.target.checked;
+    setAppLockEnabled(next);
+    if (!next) clearStoredPin(); // wipe stored PIN when disabling
+    setEnabled(next);
+  };
+
+  return (
+    <label className="flex items-center gap-3 cursor-pointer">
+      <input
+        type="checkbox"
+        checked={enabled}
+        onChange={handleToggle}
+        className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary"
+      />
+      <span className="flex items-center gap-2 text-xs font-bold text-slate-600">
+        {enabled ? <Lock size={14} className="text-primary" /> : <LockOpen size={14} className="text-gray-400" />}
+        {locale === 'am'
+          ? 'አፕ ቆልፍ ያብሩ (Enable App Lock)'
+          : 'Enable App Lock (Biometric / PIN)'}
+      </span>
+    </label>
+  );
+}
 
 export default function ProfileView({ profile, onUpdate }: { profile: any, onUpdate: () => void }) {
   const t = useTranslations('Dashboard.profile');
@@ -859,7 +895,23 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                     </span>
                   </label>
                 </div>
-             </div>
+              </div>
+
+              {/* App Lock — strictly optional, stored locally on device */}
+              <div className="space-y-4 pt-4 col-span-full border-t border-gray-100">
+                <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                  <Lock size={14} className="text-primary" />
+                  {locale === 'am' ? 'የአፕ መቆለፊያ (App Lock)' : 'App Lock'}
+                </h4>
+                <div className="p-5 bg-muted/30 rounded-2xl border border-muted space-y-3">
+                  <AppLockToggle locale={locale} />
+                  <p className="text-[10px] text-gray-400 font-semibold italic leading-relaxed pl-8">
+                    {locale === 'am'
+                      ? 'ይህ አማራጭ ሙሉ ለሙሉ በምርጫ ነው። ሲቃናዱ ቢዮሜትሪክ ወይም PIN ይጠቀሙ።'
+                      : 'Strictly optional. When enabled, biometric or PIN is required on startup.'}
+                  </p>
+                </div>
+              </div>
          </div>
       </div>
 

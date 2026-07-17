@@ -311,6 +311,62 @@ function DashboardContent() {
     }
   }, [searchParams]);
 
+  // ── Chapa Return Handler ─────────────────────────────────────────────────────
+  // When Chapa redirects the user back after payment, it appends ?tx_ref=xxx to
+  // the callback_url. This effect detects that and calls our verify endpoint to
+  // confirm payment and upgrade the profile automatically.
+  useEffect(() => {
+    const txRef = searchParams.get('tx_ref');
+    if (!txRef) return;
+
+    const verifyChapa = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const response = await fetch('/api/payments/chapa/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tx_ref: txRef, userId: user.id }),
+        });
+
+        const result = await response.json();
+
+        if (result.status === 'success') {
+          console.log('[Dashboard] Chapa payment verified ✅:', result.message);
+          // Refresh profile to reflect new premium_until
+          const { data: updatedProfile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+          if (updatedProfile) {
+            const isPremium =
+              (updatedProfile.premium_until && new Date(updatedProfile.premium_until) > new Date()) ||
+              ['admin', 'super_admin', 'expert'].includes(updatedProfile.role);
+            setProfile(prev => prev ? { ...prev, ...updatedProfile, is_premium: isPremium } : null);
+            setPaymentStatus('approved');
+          }
+          // Navigate to payments tab so the user sees their new status
+          setActiveTab('payments');
+        } else {
+          console.warn('[Dashboard] Chapa verify returned:', result.message);
+        }
+      } catch (err) {
+        console.error('[Dashboard] Chapa auto-verify error:', err);
+      } finally {
+        // Clean tx_ref from URL to prevent re-triggering on page refresh
+        const url = new URL(window.location.href);
+        url.searchParams.delete('tx_ref');
+        window.history.replaceState({}, '', url.toString());
+      }
+    };
+
+    verifyChapa();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+
   // Profile dropdown click outside handler
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

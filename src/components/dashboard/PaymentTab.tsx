@@ -171,7 +171,7 @@ export default function PaymentTab() {
       user_id: userId,
       amount: plan?.price,
       currency: currency,
-      plan_type: plan?.period,
+      plan_type: plan?.id,
       receipt_url: proofUrl,
       status: 'pending'
     });
@@ -320,7 +320,7 @@ export default function PaymentTab() {
             first_name: firstName,
             last_name: lastName,
             tx_ref: txRef,
-            callback_url: window.location.origin + `/api/payments/chapa/webhook`
+            callback_url: window.location.origin + `/${locale}/dashboard?tab=payments&tx_ref=${txRef}`
           })
         });
 
@@ -406,7 +406,7 @@ export default function PaymentTab() {
       </div>
 
       {selectedPlan && (
-        isMobileNative ? (
+        (isMobileNative && currency !== 'ETB') ? (
           <div className="max-w-md mx-auto bg-white p-10 rounded-[3rem] border border-primary/10 shadow-2xl text-center space-y-8 animate-in slide-in-from-bottom-8 duration-500">
              <div className="w-20 h-20 bg-primary/10 rounded-[2rem] flex items-center justify-center mx-auto text-primary">
                 <CreditCard size={36} />

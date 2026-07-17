@@ -623,7 +623,7 @@ export default function AdminPortal() {
        let days = 30;
        if (planType === '3m') days = 90;
        if (planType === '6m') days = 180;
-       if (planType === '12m') days = 365;
+       if (planType === '12m' || planType === '1y') days = 365;
        if (planType === 'lifetime') days = 36500; // ~100 years
 
        const premiumUntil = new Date();

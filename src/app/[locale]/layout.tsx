@@ -13,6 +13,7 @@ import SubscriptionObserver from "@/components/SubscriptionObserver";
 import AnimatedSplashScreen from "@/components/AnimatedSplashScreen";
 import ZoomBlocker from "@/components/ZoomBlocker";
 import PrivacyBlurOverlay from "@/components/PrivacyBlurOverlay";
+import AppLockGate from "@/components/AppLockGate";
 import FirebaseProvider from "@/components/FirebaseProvider";
 
 const poppins = Poppins({
@@ -75,6 +76,7 @@ export default async function LocaleLayout({
           <FirebaseProvider>
           <AuthProvider>
             <UIProvider>
+              <AppLockGate>
               <ConditionalLayout>
                 {children}
                 <Chatbot />
@@ -83,6 +85,7 @@ export default async function LocaleLayout({
                 <ZoomBlocker />
                 <PrivacyBlurOverlay />
               </ConditionalLayout>
+              </AppLockGate>
             </UIProvider>
           </AuthProvider>
           </FirebaseProvider>
