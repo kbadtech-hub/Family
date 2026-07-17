@@ -615,6 +615,98 @@ export default function CallInterface({
     return () => clearInterval(interval);
   }, [callState, isVideo, aiViolationActive, currentUser]);
 
+  // On-Device Speech Recognition Moderation
+  useEffect(() => {
+    if (callState !== 'connected' || aiViolationActive) return;
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      console.warn("Speech Recognition API not supported in this browser.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    
+    // Attempt to recognize appropriate locale language
+    recognition.lang = navigator.language.startsWith('am') ? 'am-ET' : 'en-US';
+
+    const offensiveKeywords = [
+      // English
+      'abuse', 'bitch', 'idiot', 'asshole', 'bastard', 'fuck', 'stupid', 'porn', 'naked',
+      // Amharic
+      'ደደብ', 'ጅል', 'ውሻ', 'አህያ', 'ሌባ', 'አልባሌ', 'ወራዳ', 'ስድ',
+      // Oromo
+      'gowwaa', 'saree', 'hantuuta', 'hattuu'
+    ];
+
+    recognition.onresult = async (event: any) => {
+      const lastIndex = event.results.length - 1;
+      const transcript = event.results[lastIndex][0].transcript.toLowerCase();
+      console.log("Audio Speech Monitor transcript:", transcript);
+
+      const foundKeyword = offensiveKeywords.find(word => transcript.includes(word));
+      if (foundKeyword) {
+        setAiViolationActive(true);
+
+        const amMsg = `የማይገባ የንግግር አጠቃቀም ታይቷል። የቤተሰብ መመሪያዎችን መጣስ መለያዎ እንዲዘጋ ያደርጋል። (Offensive language detected: "${foundKeyword}")`;
+        const enMsg = `Inappropriate language detected. Violating Beteseb policies may result in account termination. (Offensive language detected: "${foundKeyword}")`;
+        setAiViolationMessage(navigator.language.startsWith('am') ? amMsg : enMsg);
+
+        // Blackout audio tracks
+        if (localStreamRef.current) {
+          localStreamRef.current.getAudioTracks().forEach(t => (t.enabled = false));
+        }
+        setIsMuted(true);
+
+        // Log violation to call_violations table
+        if (currentUser) {
+          await supabase.from('call_violations').insert({
+            caller_id: currentUser.id,
+            callee_id: matchProfile.id,
+            violation_type: 'offensive_language',
+            details: `AI Audio Moderation flagged offensive language: "${foundKeyword}" in transcript "${transcript}"`,
+            severity: 'medium',
+            auto_action: 'call_terminated'
+          });
+        }
+
+        // Auto-terminate call after 4 seconds
+        setTimeout(() => {
+          handleEndCall();
+        }, 4000);
+      }
+    };
+
+    recognition.onerror = (e: any) => {
+      console.warn("Speech recognition error:", e);
+    };
+
+    recognition.onend = () => {
+      // Auto restart if call is still active
+      if (callState === 'connected' && !aiViolationActive) {
+        try {
+          recognition.start();
+        } catch (_) {}
+      }
+    };
+
+    try {
+      recognition.start();
+    } catch (e) {
+      console.error("Speech recognition start failed:", e);
+    }
+
+    return () => {
+      try {
+        recognition.stop();
+      } catch (_) {}
+    };
+  }, [callState, aiViolationActive, currentUser]);
+
+
+
 
 
   const toggleMute = () => {
@@ -680,9 +772,27 @@ export default function CallInterface({
             />
           )}
 
-          {callState === 'connected' && isVideoOff && (
+          {callState === 'connected' && isVideoOff && !aiViolationActive && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-10">
               <VideoOff size={48} className="text-white/40" />
+            </div>
+          )}
+
+          {/* AI Violation Alert Overlay — covers both video & audio violations */}
+          {aiViolationActive && (
+            <div className="absolute inset-0 bg-red-900/95 z-30 flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-300 backdrop-blur-md">
+              <div className="w-16 h-16 bg-red-500/20 border border-red-500/40 rounded-2xl flex items-center justify-center mb-4">
+                <ShieldAlert size={36} className="text-red-400 animate-pulse" />
+              </div>
+              <p className="text-sm font-black uppercase tracking-[0.2em] text-red-200 mb-3">
+                ⚠️ Policy Violation Detected
+              </p>
+              <p className="text-xs font-bold text-red-100/90 leading-relaxed max-w-xs mb-4">
+                {aiViolationMessage}
+              </p>
+              <div className="px-4 py-2 bg-red-500/20 border border-red-500/30 rounded-full text-[10px] font-black uppercase tracking-widest text-red-300">
+                Call terminating in 4 seconds...
+              </div>
             </div>
           )}
 
