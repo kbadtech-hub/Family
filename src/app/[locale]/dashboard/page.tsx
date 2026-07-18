@@ -112,6 +112,7 @@ function DashboardContent() {
   const [unlockedProfileIds, setUnlockedProfileIds] = useState<Set<string>>(new Set());
   const [showPaywallTarget, setShowPaywallTarget] = useState<any>(null);
   const [showVerificationBlockModal, setShowVerificationBlockModal] = useState(false);
+  const [showBenefitsModal, setShowBenefitsModal] = useState<null | 'premium' | 'vip'>(null);
 
   const handleTabClick = (tabId: string) => {
     const coreTabs = ['chat', 'community', 'workshops', 'wedding', 'gifts'];
@@ -1385,27 +1386,106 @@ function DashboardContent() {
                   ))
               )}
 
-              {/* Premium CTA card at absolute bottom of feed */}
+              {/* ── Premium & VIP Hero Cards ───────────────────────────── */}
               {!isPremium && (
-                <div className="w-full max-w-md mx-auto bg-gradient-to-br from-primary via-orange-400 to-amber-400 rounded-[3rem] p-10 text-white text-center space-y-5 shadow-2xl shadow-primary/30 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-white/5 pointer-events-none" />
-                  <div className="w-16 h-16 bg-white/20 rounded-3xl flex items-center justify-center mx-auto">
-                    <Sparkles size={32} className="fill-white" />
-                  </div>
-                  <div className="space-y-2 relative">
-                    <h3 className="text-2xl font-black italic tracking-tight">
-                      {t('premium.unlock')}
-                    </h3>
-                    <p className="text-white/80 text-xs font-bold max-w-xs mx-auto leading-relaxed">
-                      {getPremiumSub(locale)}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setActiveTab('payments')}
-                    className="w-full bg-white text-primary py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+                <div className="w-full space-y-4">
+
+                  {/* ── PREMIUM CARD ── */}
+                  <div
+                    onClick={() => setShowBenefitsModal('premium')}
+                    className="w-full cursor-pointer group relative overflow-hidden rounded-[2.5rem] p-8 text-white shadow-2xl shadow-primary/25 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] select-none"
+                    style={{ background: 'linear-gradient(135deg, #C2410C 0%, #EA580C 40%, #FB923C 100%)' }}
                   >
-                    {t('premium.unlock')} →
-                  </button>
+                    {/* decorative circles */}
+                    <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
+                    <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-white/5 rounded-full" />
+
+                    <div className="relative flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
+                          <Sparkles size={26} className="text-white fill-white/50" />
+                        </div>
+                        <div>
+                          <div className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60 mb-0.5">
+                            {locale === 'am' ? 'ቤተሰብ አባልነት' : 'Beteseb Membership'}
+                          </div>
+                          <h3 className="text-xl font-black italic tracking-tighter leading-tight">
+                            {locale === 'am' ? 'ፕሪሚየም' : 'Premium'}
+                          </h3>
+                          <p className="text-white/70 text-[10px] font-bold leading-snug mt-0.5 max-w-[200px]">
+                            {locale === 'am' ? 'ያልተገደበ ግጥሚያ፣ ቀጥታ ቻት፣ ሙሉ ፕሮፋይሎች' : 'Unlimited matches, direct chat, full profiles'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="shrink-0 flex flex-col items-end gap-2">
+                        <div className="bg-white/20 border border-white/30 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full">
+                          {locale === 'am' ? 'ዝርዝር ይመልከቱ' : 'View Details'}
+                        </div>
+                        <div className="text-white/90 font-black text-right">
+                          <span className="text-xl">{locale === 'am' ? 'ብር 700' : '$7.99'}</span>
+                          <span className="text-[9px] text-white/60 block font-bold">{locale === 'am' ? 'ከወር' : '/month'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* mini feature chips */}
+                    <div className="relative mt-5 flex flex-wrap gap-2">
+                      {(locale === 'am'
+                        ? ['✓ ያልተገደበ ዕጩዎች', '✓ ቀጥታ ቻት', '✓ ሙሉ ዝርዝሮች', '✓ ቅድሚያ ድጋፍ']
+                        : ['✓ Unlimited Feed', '✓ Direct Chat', '✓ Full Bios', '✓ Priority Support']
+                      ).map(f => (
+                        <span key={f} className="bg-white/15 border border-white/20 text-white text-[9px] font-black px-2.5 py-1 rounded-full">{f}</span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* ── VIP CARD ── */}
+                  <div
+                    onClick={() => setShowBenefitsModal('vip')}
+                    className="w-full cursor-pointer group relative overflow-hidden rounded-[2.5rem] p-8 text-white shadow-2xl shadow-amber-500/30 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] select-none"
+                    style={{ background: 'linear-gradient(135deg, #92400E 0%, #B45309 40%, #D97706 70%, #F59E0B 100%)' }}
+                  >
+                    <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
+                    <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-yellow-300/10 rounded-full" />
+
+                    <div className="relative flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
+                          <Crown size={26} className="text-yellow-200 fill-yellow-200/30" />
+                        </div>
+                        <div>
+                          <div className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-200/70 mb-0.5">
+                            {locale === 'am' ? 'ልዩ አባልነት' : 'Elite Membership'}
+                          </div>
+                          <h3 className="text-xl font-black italic tracking-tighter leading-tight flex items-center gap-1.5">
+                            {locale === 'am' ? 'ቪ.አይ.ፒ' : 'VIP Status'} <span className="text-base">👑</span>
+                          </h3>
+                          <p className="text-white/70 text-[10px] font-bold leading-snug mt-0.5 max-w-[200px]">
+                            {locale === 'am' ? 'የወርቅ ባጅ፣ Ghost Mode፣ ሙሉ ፕሪሚየም ጥቅሞች' : 'Crown badge, ghost mode, all premium perks'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="shrink-0 flex flex-col items-end gap-2">
+                        <div className="bg-yellow-300/20 border border-yellow-300/40 text-yellow-100 text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full">
+                          {locale === 'am' ? 'ዝርዝር ይመልከቱ' : 'View Details'}
+                        </div>
+                        <div className="text-white/90 font-black text-right">
+                          <span className="text-xl">{locale === 'am' ? 'ብር 1500' : '$12.99'}</span>
+                          <span className="text-[9px] text-white/60 block font-bold">{locale === 'am' ? 'ከወር' : '/month'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="relative mt-5 flex flex-wrap gap-2">
+                      {(locale === 'am'
+                        ? ['👑 የወርቅ አክሊል', '🔒 Ghost Mode', '👁 Incognito', '✓ ሁሉም ፕሪሚየም']
+                        : ['👑 Crown Badge', '🔒 Ghost Mode', '👁 Incognito', '✓ All Premium']
+                      ).map(f => (
+                        <span key={f} className="bg-white/15 border border-yellow-300/20 text-yellow-100 text-[9px] font-black px-2.5 py-1 rounded-full">{f}</span>
+                      ))}
+                    </div>
+                  </div>
+
                 </div>
               )}
             </div>
@@ -1543,6 +1623,139 @@ function DashboardContent() {
           </div>
         )}
       </main>
+
+      {/* ── Benefits Popup Modal ───────────────────────────────────────────────── */}
+      {showBenefitsModal && (
+        <div
+          className="fixed inset-0 bg-black/70 backdrop-blur-md z-[600] flex items-end sm:items-center justify-center p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowBenefitsModal(null); }}
+        >
+          <div className="relative w-full max-w-lg animate-in slide-in-from-bottom-6 sm:zoom-in-95 duration-300">
+
+            {/* Card shell */}
+            <div className={`rounded-[3rem] overflow-hidden shadow-2xl ${
+              showBenefitsModal === 'vip'
+                ? 'bg-gradient-to-b from-[#92400E] to-[#1C0A00]'
+                : 'bg-gradient-to-b from-[#9A3412] to-[#1C0700]'
+            }`}>
+
+              {/* ── Header ── */}
+              <div className="relative p-8 pb-4">
+                <button
+                  onClick={() => setShowBenefitsModal(null)}
+                  className="absolute top-5 right-5 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white flex items-center justify-center transition-all"
+                >
+                  <X size={16} />
+                </button>
+
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-16 h-16 rounded-2xl bg-white/15 flex items-center justify-center shadow-inner">
+                    {showBenefitsModal === 'vip'
+                      ? <Crown size={32} className="text-yellow-300 fill-yellow-300/30" />
+                      : <Sparkles size={32} className="text-white fill-white/30" />}
+                  </div>
+                  <div>
+                    <div className="text-[9px] font-black uppercase tracking-[0.2em] text-white/50">
+                      {locale === 'am' ? 'ቤተሰብ አባልነት' : 'Beteseb Membership'}
+                    </div>
+                    <h2 className="text-2xl font-black italic tracking-tighter text-white">
+                      {showBenefitsModal === 'vip'
+                        ? (locale === 'am' ? 'ቪ.አይ.ፒ አባልነት 👑' : 'VIP Status 👑')
+                        : (locale === 'am' ? 'ፕሪሚየም አባልነት' : 'Premium Membership')}
+                    </h2>
+                    <div className="flex items-baseline gap-1 mt-0.5">
+                      <span className="text-white font-black text-lg">
+                        {showBenefitsModal === 'vip'
+                          ? (locale === 'am' ? 'ብር 1,500' : '$12.99')
+                          : (locale === 'am' ? 'ብር 700' : '$7.99')}
+                      </span>
+                      <span className="text-white/50 text-[9px] font-bold">{locale === 'am' ? '/ ወር' : '/ month'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-white/60 text-[11px] font-medium leading-relaxed">
+                  {showBenefitsModal === 'vip'
+                    ? (locale === 'am'
+                        ? 'ሙሉ ግላዊነት ቁጥጥር፣ የወርቅ አክሊል ሁኔታ እና ልዩ ፊቸሮች ያሉት ልዩ አባልነት።'
+                        : 'An elite membership with full privacy control, golden crown status, and exclusive incognito features.')
+                    : (locale === 'am'
+                        ? 'ያልተገደቡ ዕጩዎችን፣ ቀጥታ ቻት እና ሙሉ የፕሮፋይል ዝርዝሮችን በማግኘት የትዳር አጋርዎን ያፋጥኑ።'
+                        : 'Accelerate your match journey with unlimited candidates, direct messaging, and full profile details.')}
+                </p>
+              </div>
+
+              {/* ── Benefits List ── */}
+              <div className="px-8 pb-6 space-y-3">
+                <div className="h-px bg-white/10 mb-4" />
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">
+                  {locale === 'am' ? 'ዋና ዋና ጥቅሞች' : 'Key Benefits'}
+                </p>
+
+                {(showBenefitsModal === 'premium' ? [
+                  { icon: '♾️', title: locale === 'am' ? 'ያልተገደበ ዕጩ ምግብ' : 'Unlimited Matching Feed', sub: locale === 'am' ? 'የዕለቱን ገደብ ያለፉ ሁሉንም መገለጫዎች ያስሱ።' : 'Bypass daily card limits and explore all profiles freely.' },
+                  { icon: '💬', title: locale === 'am' ? 'ቀጥታ የጽሑፍ ቻት' : 'Direct Private Chat', sub: locale === 'am' ? 'ከዕጩዎቻቸው ጋር ያለ ጊዜ ወሰን ቀጥታ ቻት ጀምሩ።' : 'Start instant conversations with matches — no wait limits.' },
+                  { icon: '📋', title: locale === 'am' ? 'ሙሉ የፕሮፋይል ዝርዝሮች' : 'Full Profile Bios & Details', sub: locale === 'am' ? 'የተደበቁ መረጃዎችን፣ ባዮ እና ምርጫዎችን ይክፈቱ።' : 'Reveal blurred traits, full bios, and personal preferences.' },
+                  { icon: '🎓', title: locale === 'am' ? 'የባለሙያ ክፍሎች' : 'Expert Academy Classes', sub: locale === 'am' ? 'ሁሉንም ወርክሾፖች እና ሴሚናሮች ያለ ኮይን ይድረሱ።' : 'Access all workshops and seminars without spending coins.' },
+                  { icon: '⚡', title: locale === 'am' ? 'ቅድሚያ የደንበኛ ድጋፍ' : 'Priority Customer Support', sub: locale === 'am' ? 'ቅሬታዎ ቀዳሚ ትኩረት ያገኛል።' : 'Your support tickets are handled with top priority.' }
+                ] : [
+                  { icon: '👑', title: locale === 'am' ? 'የወርቅ አክሊል ባጅ' : 'Golden Crown Badge', sub: locale === 'am' ? 'በሁሉም ቦታ መገለጫዎ ላይ ሚያምር ዘውድ ይጨምሩ።' : 'Stand out with an elegant crown on your avatar across the platform.' },
+                  { icon: '👻', title: locale === 'am' ? 'Ghost Mode — ሙሉ ድብቅ' : 'Ghost Mode — Full Incognito', sub: locale === 'am' ? 'ፎቶዎን ሙሉ በሙሉ ብዥ ያድርጉ እና ስምዎን ይደብቁ።' : 'Completely blur your avatar and hide your full name from others.' },
+                  { icon: '🔕', title: locale === 'am' ? 'Online ሁኔታን ደብቁ' : 'Hide Online Status', sub: locale === 'am' ? 'ንቁ መሆንዎ፣ ታይቷል ምልክት እና ጽሑፍ ሁኔታን ደብቁ።' : 'Conceal your active status, typing state, and read receipts.' },
+                  { icon: '🔍', title: locale === 'am' ? 'ማን እንዳያችሁ ይቆጣጠሩ' : 'Control Who Views You', sub: locale === 'am' ? 'የፕሮፋይልዎን ታይነት ሙሉ በሙሉ ያስተዳድሩ።' : 'Manage profile visibility and who can discover you.' },
+                  { icon: '💎', title: locale === 'am' ? 'ሁሉም ፕሪሚየም ጥቅሞች' : 'All Premium Benefits Included', sub: locale === 'am' ? 'ያልተገደበ ዕጩ፣ ቀጥታ ቻት እና ሁሉም ፕሪሚየም ፊቸሮች።' : 'Enjoy the complete Premium feature set plus exclusive VIP perks.' }
+                ]).map((b, i) => (
+                  <div key={i} className="flex items-start gap-3 bg-white/5 border border-white/10 rounded-2xl px-4 py-3">
+                    <span className="text-lg shrink-0 mt-0.5">{b.icon}</span>
+                    <div>
+                      <p className="text-[11px] font-black text-white uppercase tracking-wide">{b.title}</p>
+                      <p className="text-[10px] text-white/50 font-medium leading-snug mt-0.5">{b.sub}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* ── Action Buttons ── */}
+              <div className="px-8 pb-8 space-y-3">
+                <button
+                  onClick={() => {
+                    setShowBenefitsModal(null);
+                    setDefaultPaymentTab(showBenefitsModal);
+                    setActiveTab('payments');
+                  }}
+                  className={`w-full py-5 rounded-2xl font-black uppercase tracking-[0.18em] text-sm shadow-2xl flex items-center justify-center gap-2 transition-all active:scale-95 ${
+                    showBenefitsModal === 'vip'
+                      ? 'bg-amber-400 text-amber-900 shadow-amber-400/30 hover:bg-amber-300'
+                      : 'bg-white text-primary shadow-white/20 hover:bg-orange-50'
+                  }`}
+                >
+                  {showBenefitsModal === 'vip' ? <Crown size={16} className="fill-amber-900/30" /> : <Sparkles size={16} />}
+                  {showBenefitsModal === 'vip'
+                    ? (locale === 'am' ? 'ወደ ቪ.አይ.ፒ አሳድግ →' : 'Upgrade to VIP →')
+                    : (locale === 'am' ? 'ወደ ፕሪሚየም አሳድግ →' : 'Upgrade to Premium →')}
+                </button>
+                {showBenefitsModal === 'premium' && (
+                  <button
+                    onClick={() => setShowBenefitsModal('vip')}
+                    className="w-full py-3.5 rounded-2xl font-black uppercase tracking-widest text-[10px] border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-all"
+                  >
+                    {locale === 'am' ? '👑 ቪ.አይ.ፒ ጥቅሞችን ይመልከቱ' : '👑 View VIP Benefits Instead'}
+                  </button>
+                )}
+                {showBenefitsModal === 'vip' && (
+                  <button
+                    onClick={() => setShowBenefitsModal('premium')}
+                    className="w-full py-3.5 rounded-2xl font-black uppercase tracking-widest text-[10px] border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-all"
+                  >
+                    {locale === 'am' ? '⚡ ፕሪሚየም ጥቅሞችን ይመልከቱ' : '⚡ View Premium Benefits Instead'}
+                  </button>
+                )}
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Full-Screen Payments Overlay (triggered from LockOverlay or legacy code) ── */}
       {showPayment && profile && (
