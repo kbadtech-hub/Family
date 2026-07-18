@@ -1403,27 +1403,31 @@ function DashboardContent() {
                     <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
                     <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-white/5 rounded-full" />
 
-                    <div className="relative flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
-                          <Sparkles size={22} className="text-white fill-white/50" />
-                        </div>
-                        <div>
-                          <div className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60 mb-0.5">
-                            {locale === 'am' ? 'ቤተሰብ አባልነት' : 'Beteseb Membership'}
-                          </div>
-                          <h3 className="text-lg font-black italic tracking-tighter leading-none">
-                            {locale === 'am' ? 'ፕሪሚየም' : 'Premium'}
-                          </h3>
-                        </div>
-                      </div>
-                      
-                      <div className="shrink-0 flex items-center gap-4">
-                        <div className="text-white/90 font-black text-right">
-                          <span className="text-lg">{locale === 'am' ? 'ብር 700' : '$7.99'}</span>
+                    <div className="relative flex flex-col gap-5 w-full">
+                      {/* Top Row: Title spanning edge-to-edge with Price */}
+                      <div className="flex justify-between items-center w-full border-b border-white/15 pb-4">
+                        <span className="text-sm font-black uppercase tracking-wider text-white">
+                          {locale === 'am' ? 'የፕሪሚየም አባልነት' : 'Premium Membership'}
+                        </span>
+                        <div className="text-white/95 font-black text-right">
+                          <span className="text-lg leading-none">{locale === 'am' ? 'ብር 700' : '$7.99'}</span>
                           <span className="text-[9px] text-white/60 block font-bold leading-none mt-0.5">{locale === 'am' ? 'ከወር' : '/month'}</span>
                         </div>
-                        <div className="bg-white text-primary text-[10px] font-black uppercase tracking-wider px-5 py-3.5 rounded-2xl shadow-md group-hover:bg-orange-50 transition-colors">
+                      </div>
+
+                      {/* Middle Row: Icon & Descriptive Tag */}
+                      <div className="flex items-center justify-start gap-4">
+                        <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
+                          <Sparkles size={20} className="text-white fill-white/50" />
+                        </div>
+                        <span className="text-[10px] text-white/80 font-bold italic leading-relaxed">
+                          {locale === 'am' ? 'ያልተገደበ ዕጩዎች፣ የቀጥታ ቻት እና ሙሉ ፕሮፋይሎችን ይክፈቱ።' : 'Unlock unlimited matches, private chat & full bios.'}
+                        </span>
+                      </div>
+
+                      {/* Bottom Row: Centered Upgrade Button */}
+                      <div className="flex justify-center w-full mt-1">
+                        <div className="w-full text-center bg-white text-primary text-xs font-black uppercase tracking-[0.15em] py-4.5 rounded-2xl shadow-lg group-hover:bg-orange-50 transition-colors">
                           {locale === 'am' ? 'ወደ ፕሪሚየም ያሳድጉ' : 'Upgrade to Premium'}
                         </div>
                       </div>
@@ -1439,27 +1443,31 @@ function DashboardContent() {
                     <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
                     <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-yellow-300/10 rounded-full" />
 
-                    <div className="relative flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
-                          <Crown size={22} className="text-yellow-200 fill-yellow-200/30" />
-                        </div>
-                        <div>
-                          <div className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-200/70 mb-0.5">
-                            {locale === 'am' ? 'ልዩ አባልነት' : 'Elite Membership'}
-                          </div>
-                          <h3 className="text-lg font-black italic tracking-tighter leading-none flex items-center gap-1">
-                            {locale === 'am' ? 'ቪ.አይ.ፒ' : 'VIP Status'} <span className="text-sm">👑</span>
-                          </h3>
-                        </div>
-                      </div>
-                      
-                      <div className="shrink-0 flex items-center gap-4">
-                        <div className="text-white/90 font-black text-right">
-                          <span className="text-lg">{locale === 'am' ? 'ብር 1500' : '$12.99'}</span>
+                    <div className="relative flex flex-col gap-5 w-full">
+                      {/* Top Row: Title spanning edge-to-edge with Price */}
+                      <div className="flex justify-between items-center w-full border-b border-white/15 pb-4">
+                        <span className="text-sm font-black uppercase tracking-wider text-yellow-200 flex items-center gap-1.5">
+                          {locale === 'am' ? 'የቪ.አይ.ፒ ልዩ አባልነት' : 'VIP Elite Membership'} 👑
+                        </span>
+                        <div className="text-white/95 font-black text-right">
+                          <span className="text-lg leading-none">{locale === 'am' ? 'ብር 1500' : '$12.99'}</span>
                           <span className="text-[9px] text-white/60 block font-bold leading-none mt-0.5">{locale === 'am' ? 'ከወር' : '/month'}</span>
                         </div>
-                        <div className="bg-amber-400 text-amber-950 text-[10px] font-black uppercase tracking-wider px-5 py-3.5 rounded-2xl shadow-md group-hover:bg-amber-300 transition-colors">
+                      </div>
+
+                      {/* Middle Row: Icon & Descriptive Tag */}
+                      <div className="flex items-center justify-start gap-4">
+                        <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
+                          <Crown size={20} className="text-yellow-200 fill-yellow-200/30" />
+                        </div>
+                        <span className="text-[10px] text-white/80 font-bold italic leading-relaxed">
+                          {locale === 'am' ? 'የወርቅ አክሊል ባጅ፣ Ghost Mode፣ እና የተሟላ ፕሪሚየም ጥቅሞች።' : 'Crown badge, ghost mode, incognito & all premium benefits.'}
+                        </span>
+                      </div>
+
+                      {/* Bottom Row: Centered Upgrade Button */}
+                      <div className="flex justify-center w-full mt-1">
+                        <div className="w-full text-center bg-amber-400 text-amber-950 text-xs font-black uppercase tracking-[0.15em] py-4.5 rounded-2xl shadow-lg group-hover:bg-amber-300 transition-colors">
                           {locale === 'am' ? 'ወደ ቪ አይ ፒ ያሳድጉ' : 'Upgrade to VIP'}
                         </div>
                       </div>
