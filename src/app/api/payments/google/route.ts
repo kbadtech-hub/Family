@@ -119,36 +119,101 @@ export async function POST(req: Request) {
     const expiresAt = new Date(parseInt(expiryTimeMs));
 
     // 4. Record transaction in database
-    await supabase.from('payments').insert({
-      user_id: userId,
-      plan_type: planType,
-      amount: getPlanPriceUSD(planType),
-      currency: 'USD',
-      status: 'approved',
-      receipt_url: `Google Play Token ID: ${purchaseToken}`
-    });
+    const isCoins = planType.startsWith('coins_');
+    const isVip = planType.startsWith('vip_');
 
-    // 5. Upgrade user's premium validity in profiles table
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .update({
-        premium_until: expiresAt.toISOString()
-      })
-      .eq('id', userId);
+    if (isCoins) {
+      const amountCoins = parseInt(planType.split('_')[1]) || 50;
 
-    if (profileError) {
-      console.error('Failed to update premium profile status from Google validation:', profileError);
-      return NextResponse.json(
-        { status: 'error', message: 'Failed to update premium profile status' },
-        { status: 500 }
-      );
+      await supabase.from('payments').insert({
+        user_id: userId,
+        plan_type: planType,
+        amount: amountCoins === 50 ? 5 : amountCoins === 100 ? 10 : amountCoins === 500 ? 40 : 70,
+        currency: 'USD',
+        status: 'approved',
+        receipt_url: `Google Play Token ID: ${purchaseToken}`
+      });
+
+      const { data: wallet } = await supabase.from('user_wallets').select('coin_balance').eq('id', userId).maybeSingle();
+      const currentBalance = Number(wallet?.coin_balance || 0);
+
+      await supabase.from('user_wallets').upsert({
+        id: userId,
+        coin_balance: currentBalance + amountCoins,
+        updated_at: new Date().toISOString()
+      });
+
+      await supabase.from('coin_transactions').insert({
+        user_id: userId,
+        amount: amountCoins,
+        type: 'purchase',
+        note: `Google Play IAP Coin Purchase: ${planType}`
+      });
+
+      return NextResponse.json({
+        status: 'success',
+        message: `Google purchase token verified and credited ${amountCoins} coins successfully.`,
+        coinBalance: currentBalance + amountCoins,
+        type: 'coins'
+      });
+    } else if (isVip) {
+      await supabase.from('payments').insert({
+        user_id: userId,
+        plan_type: planType,
+        amount: getPlanPriceUSD(planType),
+        currency: 'USD',
+        status: 'approved',
+        receipt_url: `Google Play Token ID: ${purchaseToken}`
+      });
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          is_vip_member: true,
+          vip_expires_at: expiresAt.toISOString()
+        })
+        .eq('id', userId);
+
+      if (profileError) {
+        console.error('Failed to update VIP profile status from Google validation:', profileError);
+        return NextResponse.json({ status: 'error', message: 'Failed to update VIP profile status' }, { status: 500 });
+      }
+
+      return NextResponse.json({
+        status: 'success',
+        message: 'Google purchase token validated and VIP account upgraded successfully',
+        vipExpiresAt: expiresAt.toISOString(),
+        type: 'vip'
+      });
+    } else {
+      await supabase.from('payments').insert({
+        user_id: userId,
+        plan_type: planType,
+        amount: getPlanPriceUSD(planType),
+        currency: 'USD',
+        status: 'approved',
+        receipt_url: `Google Play Token ID: ${purchaseToken}`
+      });
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          premium_until: expiresAt.toISOString()
+        })
+        .eq('id', userId);
+
+      if (profileError) {
+        console.error('Failed to update premium profile status from Google validation:', profileError);
+        return NextResponse.json({ status: 'error', message: 'Failed to update premium profile status' }, { status: 500 });
+      }
+
+      return NextResponse.json({
+        status: 'success',
+        message: 'Google purchase token validated and account upgraded successfully',
+        premiumUntil: expiresAt.toISOString(),
+        type: 'premium'
+      });
     }
-
-    return NextResponse.json({
-      status: 'success',
-      message: 'Google purchase token validated and account upgraded successfully',
-      premiumUntil: expiresAt.toISOString()
-    });
 
   } catch (error: any) {
     console.error('Google Play Billing Verification API Error:', error);

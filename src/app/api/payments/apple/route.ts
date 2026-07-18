@@ -167,6 +167,8 @@ export async function POST(req: Request) {
       });
     }
 
+    const isVipProduct = planType.startsWith('vip_');
+
     // 3. Determine premium expiration date
     let expiresAt: Date;
     if (latestInfo.expires_date_ms) {
@@ -174,12 +176,55 @@ export async function POST(req: Request) {
     } else {
       // Fallback if expires_date_ms is missing (e.g., non-consumable lifetime plan)
       let days = 30;
-      if (planType === '3m') days = 90;
-      if (planType === '12m') days = 365;
-      if (planType === 'lifetime') days = 36500; // ~100 years
+      const cleanPlan = planType.replace('vip_', '');
+      if (cleanPlan === '3m') days = 90;
+      if (cleanPlan === '12m') days = 365;
+      if (cleanPlan === 'lifetime') days = 36500; // ~100 years
       
       expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + days);
+    }
+
+    if (isVipProduct) {
+      // 4. Record transaction in database
+      const { error: paymentError } = await supabase
+        .from('payments')
+        .insert({
+          user_id: userId,
+          plan_type: planType,
+          amount: getPlanPriceUSD(planType),
+          currency: 'USD',
+          status: 'approved',
+          receipt_url: `Apple Transaction ID: ${latestInfo.original_transaction_id}`
+        });
+
+      if (paymentError) {
+        console.error('Failed to log Apple payment transaction in DB:', paymentError);
+      }
+
+      // 5. Upgrade user's VIP validity in profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          is_vip_member: true,
+          vip_expires_at: expiresAt.toISOString()
+        })
+        .eq('id', userId);
+
+      if (profileError) {
+        console.error('Failed to update VIP profile status:', profileError);
+        return NextResponse.json(
+          { status: 'error', message: 'Failed to update VIP profile status' },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        status: 'success',
+        message: 'Receipt validated and VIP account upgraded successfully',
+        vipExpiresAt: expiresAt.toISOString(),
+        type: 'vip'
+      });
     }
 
     // 4. Record transaction in database
@@ -217,7 +262,8 @@ export async function POST(req: Request) {
     return NextResponse.json({
       status: 'success',
       message: 'Receipt validated and account upgraded successfully',
-      premiumUntil: expiresAt.toISOString()
+      premiumUntil: expiresAt.toISOString(),
+      type: 'premium'
     });
 
   } catch (error: any) {

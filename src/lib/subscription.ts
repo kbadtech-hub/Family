@@ -46,8 +46,8 @@ export async function getUserSubscriptionInfo(userId: string): Promise<Subscript
     status = 'premium';
     daysRemaining = Math.ceil((premiumUntil.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   } else if (premiumUntil) {
-    // Premium expired — check 3-day grace period
-    const gracePeriodEnd = new Date(premiumUntil.getTime() + (3 * 24 * 60 * 60 * 1000));
+    // Premium expired — check 5-day grace period
+    const gracePeriodEnd = new Date(premiumUntil.getTime() + (5 * 24 * 60 * 60 * 1000));
     if (now < gracePeriodEnd) {
       status = 'expired';
       daysRemaining = Math.ceil((gracePeriodEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));

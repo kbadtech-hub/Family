@@ -2,6 +2,16 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import crypto from 'crypto';
 
+/** Maps premium plan type strings to their duration in days */
+const PLAN_DAYS: Record<string, number> = {
+  '1m': 30,
+  '3m': 90,
+  '6m': 180,
+  '12m': 365,
+  '1y': 365,
+  'lifetime': 36500,
+};
+
 /**
  * BETESEB — Chapa Webhook Handler
  * Verifies the HMAC-SHA256 signature from Chapa before processing.
@@ -65,24 +75,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ status: 'success', message: 'Already processed' });
     }
 
-    // ── 4. Calculate premium duration ─────────────────────────────────────────
-    const PLAN_DAYS: Record<string, number> = {
-      '1m': 30,
-      '3m': 90,
-      '6m': 180,
-      '1y': 365,
-      '12m': 365,
-      'lifetime': 36500,
-    };
-    const days = PLAN_DAYS[planType] ?? 30;
+    const isCoins = planType.startsWith('coins_');
+    const isVip = planType.startsWith('vip_');
 
-    const premiumUntil = new Date();
-    premiumUntil.setDate(premiumUntil.getDate() + days);
+    if (isCoins) {
+      const amountCoins = parseInt(planType.split('_')[1]) || 50;
 
-    // ── 5. Record payment ──────────────────────────────────────────────────────
-    const { error: paymentError } = await supabase
-      .from('payments')
-      .insert({
+      await supabase.from('payments').insert({
         user_id: userId,
         plan_type: planType,
         amount: parseFloat(String(amount || 0)),
@@ -91,24 +90,86 @@ export async function POST(req: Request) {
         receipt_url: `Chapa TX: ${tx_ref}`,
       });
 
-    if (paymentError) {
-      console.error('[Chapa Webhook] Failed to insert payment record:', paymentError);
+      const { data: wallet } = await supabase.from('user_wallets').select('coin_balance').eq('id', userId).maybeSingle();
+      const currentBalance = Number(wallet?.coin_balance || 0);
+
+      await supabase.from('user_wallets').upsert({
+        id: userId,
+        coin_balance: currentBalance + amountCoins,
+        updated_at: new Date().toISOString()
+      });
+
+      await supabase.from('coin_transactions').insert({
+        user_id: userId,
+        amount: amountCoins,
+        type: 'purchase',
+        note: `Chapa Coin Purchase (Webhook): ${planType}`
+      });
+
+      console.log(`[Chapa Webhook] ✅ User ${userId} credited with ${amountCoins} coins via Chapa.`);
+      return NextResponse.json({ status: 'success', message: 'Payment recorded and coins credited successfully' });
+    } else if (isVip) {
+      let days = 30;
+      const cleanPlan = planType.replace('vip_', '');
+      if (cleanPlan === '3m') days = 90;
+      if (cleanPlan === '6m') days = 180;
+      if (cleanPlan === '12m' || cleanPlan === '1y') days = 365;
+      if (cleanPlan === 'lifetime') days = 36500;
+
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + days);
+
+      await supabase.from('payments').insert({
+        user_id: userId,
+        plan_type: planType,
+        amount: parseFloat(String(amount || 0)),
+        currency: 'ETB',
+        status: 'approved',
+        receipt_url: `Chapa TX: ${tx_ref}`,
+      });
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          is_vip_member: true,
+          vip_expires_at: expiresAt.toISOString(),
+        })
+        .eq('id', userId);
+
+      if (profileError) {
+        console.error('[Chapa Webhook] Failed to update user VIP profile status:', profileError);
+        return NextResponse.json({ status: 'error', message: 'Profile update failed' }, { status: 500 });
+      }
+
+      console.log(`[Chapa Webhook] ✅ User ${userId} upgraded to VIP for ${days} days via Chapa.`);
+      return NextResponse.json({ status: 'success', message: 'Payment recorded and VIP status upgraded' });
+    } else {
+      const days = PLAN_DAYS[planType] ?? 30;
+      const premiumUntil = new Date();
+      premiumUntil.setDate(premiumUntil.getDate() + days);
+
+      await supabase.from('payments').insert({
+        user_id: userId,
+        plan_type: planType,
+        amount: parseFloat(String(amount || 0)),
+        currency: 'ETB',
+        status: 'approved',
+        receipt_url: `Chapa TX: ${tx_ref}`,
+      });
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ premium_until: premiumUntil.toISOString() })
+        .eq('id', userId);
+
+      if (profileError) {
+        console.error('[Chapa Webhook] Failed to update user profile:', profileError);
+        return NextResponse.json({ status: 'error', message: 'Profile update failed' }, { status: 500 });
+      }
+
+      console.log(`[Chapa Webhook] ✅ User ${userId} upgraded to Diamond for ${days} days via Chapa (plan: ${planType}).`);
+      return NextResponse.json({ status: 'success', message: 'Payment recorded and profile upgraded' });
     }
-
-    // ── 6. Upgrade user profile ────────────────────────────────────────────────
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .update({ premium_until: premiumUntil.toISOString() })
-      .eq('id', userId);
-
-    if (profileError) {
-      console.error('[Chapa Webhook] Failed to update user profile:', profileError);
-      return NextResponse.json({ status: 'error', message: 'Profile update failed' }, { status: 500 });
-    }
-
-    console.log(`[Chapa Webhook] ✅ User ${userId} upgraded to Diamond for ${days} days via Chapa (plan: ${planType}).`);
-    return NextResponse.json({ status: 'success', message: 'Payment recorded and profile upgraded' });
-
   } catch (error: any) {
     console.error('[Chapa Webhook] Unhandled error:', error);
     return NextResponse.json({ status: 'failed', message: error.message }, { status: 500 });

@@ -44,7 +44,7 @@ export default function PremiumGate({ isPremium, children }: PremiumGateProps) {
 
       <div className="pt-4 flex flex-col items-center gap-4">
         <button 
-          onClick={() => router.push('/dashboard?tab=payment')}
+          onClick={() => router.push('/dashboard?tab=payments')}
           className="btn-primary w-full max-w-xs py-5 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all font-black uppercase tracking-widest text-xs"
         >
           {locale === 'am' ? 'ፕሪሚየም ይሁኑ' : 'Upgrade to Premium'} <ArrowRight size={18} />

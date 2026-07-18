@@ -66,28 +66,99 @@ export async function POST(req: Request) {
         );
       }
 
-      const days = PLAN_DAYS[planType] ?? 30;
-      const premiumUntil = new Date();
-      premiumUntil.setDate(premiumUntil.getDate() + days);
+      const isCoins = planType.startsWith('coins_');
+      const isVip = planType.startsWith('vip_');
 
-      await supabase.from('payments').insert({
-        user_id: userId,
-        plan_type: planType,
-        amount: 0,
-        currency: 'ETB',
-        status: 'approved',
-        receipt_url: `Chapa TX: ${tx_ref}`,
-      });
+      if (isCoins) {
+        const amountCoins = parseInt(planType.split('_')[1]) || 50;
 
-      await supabase.from('profiles').update({
-        premium_until: premiumUntil.toISOString(),
-      }).eq('id', userId);
+        await supabase.from('payments').insert({
+          user_id: userId,
+          plan_type: planType,
+          amount: 0,
+          currency: 'ETB',
+          status: 'approved',
+          receipt_url: `Chapa TX (Simulated): ${tx_ref}`,
+        });
 
-      return NextResponse.json({
-        status: 'success',
-        message: 'Demo: Payment verified and profile upgraded',
-        premiumUntil: premiumUntil.toISOString(),
-      });
+        const { data: wallet } = await supabase.from('user_wallets').select('coin_balance').eq('id', userId).maybeSingle();
+        const currentBalance = Number(wallet?.coin_balance || 0);
+
+        await supabase.from('user_wallets').upsert({
+          id: userId,
+          coin_balance: currentBalance + amountCoins,
+          updated_at: new Date().toISOString()
+        });
+
+        await supabase.from('coin_transactions').insert({
+          user_id: userId,
+          amount: amountCoins,
+          type: 'purchase',
+          note: `Chapa Coin Purchase (Simulated): ${planType}`
+        });
+
+        return NextResponse.json({
+          status: 'success',
+          message: `Demo: Coin purchase verified and credited ${amountCoins} coins successfully.`,
+          coinBalance: currentBalance + amountCoins,
+          type: 'coins',
+        });
+      } else if (isVip) {
+        let days = 30;
+        const cleanPlan = planType.replace('vip_', '');
+        if (cleanPlan === '3m') days = 90;
+        if (cleanPlan === '6m') days = 180;
+        if (cleanPlan === '12m' || cleanPlan === '1y') days = 365;
+        if (cleanPlan === 'lifetime') days = 36500;
+
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + days);
+
+        await supabase.from('payments').insert({
+          user_id: userId,
+          plan_type: planType,
+          amount: 0,
+          currency: 'ETB',
+          status: 'approved',
+          receipt_url: `Chapa TX (Simulated): ${tx_ref}`,
+        });
+
+        await supabase.from('profiles').update({
+          is_vip_member: true,
+          vip_expires_at: expiresAt.toISOString(),
+        }).eq('id', userId);
+
+        return NextResponse.json({
+          status: 'success',
+          message: 'Demo: VIP purchase verified and profile upgraded',
+          vipExpiresAt: expiresAt.toISOString(),
+          type: 'vip',
+        });
+      } else {
+        const days = PLAN_DAYS[planType] ?? 30;
+        const premiumUntil = new Date();
+        premiumUntil.setDate(premiumUntil.getDate() + days);
+
+        await supabase.from('payments').insert({
+          user_id: userId,
+          plan_type: planType,
+          amount: 0,
+          currency: 'ETB',
+          status: 'approved',
+          receipt_url: `Chapa TX (Simulated): ${tx_ref}`,
+        });
+
+        await supabase.from('profiles').update({
+          premium_until: premiumUntil.toISOString(),
+        }).eq('id', userId);
+
+        return NextResponse.json({
+          status: 'success',
+          message: 'Demo: Payment verified and profile upgraded',
+          premiumUntil: premiumUntil.toISOString(),
+          type: 'premium',
+        });
+      }
     }
 
     // Real Chapa verification
@@ -141,51 +212,112 @@ export async function POST(req: Request) {
       );
     }
 
-    // ── 4. Calculate premium duration ──────────────────────────────────────────
-    const days = PLAN_DAYS[planType] ?? 30;
-    const premiumUntil = new Date();
-    premiumUntil.setDate(premiumUntil.getDate() + days);
+    const isCoins = planType.startsWith('coins_');
+    const isVip = planType.startsWith('vip_');
 
-    // ── 5. Record payment in DB ────────────────────────────────────────────────
-    const { error: paymentError } = await supabase.from('payments').insert({
-      user_id: userId,
-      plan_type: planType,
-      amount: parseFloat(String(txData?.amount || 0)),
-      currency: txData?.currency || 'ETB',
-      status: 'approved',
-      receipt_url: `Chapa TX: ${tx_ref}`,
-    });
+    if (isCoins) {
+      const amountCoins = parseInt(planType.split('_')[1]) || 50;
 
-    if (paymentError) {
-      console.error('[Chapa Verify] Failed to insert payment record:', paymentError);
-      // Don't fail — still try to upgrade the profile
+      await supabase.from('payments').insert({
+        user_id: userId,
+        plan_type: planType,
+        amount: parseFloat(String(txData?.amount || 0)),
+        currency: txData?.currency || 'ETB',
+        status: 'approved',
+        receipt_url: `Chapa TX: ${tx_ref}`,
+      });
+
+      const { data: wallet } = await supabase.from('user_wallets').select('coin_balance').eq('id', userId).maybeSingle();
+      const currentBalance = Number(wallet?.coin_balance || 0);
+
+      await supabase.from('user_wallets').upsert({
+        id: userId,
+        coin_balance: currentBalance + amountCoins,
+        updated_at: new Date().toISOString()
+      });
+
+      await supabase.from('coin_transactions').insert({
+        user_id: userId,
+        amount: amountCoins,
+        type: 'purchase',
+        note: `Chapa Coin Purchase: ${planType}`
+      });
+
+      return NextResponse.json({
+        status: 'success',
+        message: `Chapa purchase verified and credited ${amountCoins} coins successfully.`,
+        coinBalance: currentBalance + amountCoins,
+        type: 'coins',
+      });
+    } else if (isVip) {
+      let days = 30;
+      const cleanPlan = planType.replace('vip_', '');
+      if (cleanPlan === '3m') days = 90;
+      if (cleanPlan === '6m') days = 180;
+      if (cleanPlan === '12m' || cleanPlan === '1y') days = 365;
+      if (cleanPlan === 'lifetime') days = 36500;
+
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + days);
+
+      await supabase.from('payments').insert({
+        user_id: userId,
+        plan_type: planType,
+        amount: parseFloat(String(txData?.amount || 0)),
+        currency: txData?.currency || 'ETB',
+        status: 'approved',
+        receipt_url: `Chapa TX: ${tx_ref}`,
+      });
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          is_vip_member: true,
+          vip_expires_at: expiresAt.toISOString(),
+        })
+        .eq('id', userId);
+
+      if (profileError) {
+        return NextResponse.json({ status: 'error', message: 'Failed to update user VIP profile status' }, { status: 500 });
+      }
+
+      return NextResponse.json({
+        status: 'success',
+        message: 'Chapa VIP purchase verified and profile upgraded',
+        vipExpiresAt: expiresAt.toISOString(),
+        type: 'vip',
+      });
+    } else {
+      const days = PLAN_DAYS[planType] ?? 30;
+      const premiumUntil = new Date();
+      premiumUntil.setDate(premiumUntil.getDate() + days);
+
+      await supabase.from('payments').insert({
+        user_id: userId,
+        plan_type: planType,
+        amount: parseFloat(String(txData?.amount || 0)),
+        currency: txData?.currency || 'ETB',
+        status: 'approved',
+        receipt_url: `Chapa TX: ${tx_ref}`,
+      });
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ premium_until: premiumUntil.toISOString() })
+        .eq('id', userId);
+
+      if (profileError) {
+        return NextResponse.json({ status: 'error', message: 'Failed to update user premium profile status' }, { status: 500 });
+      }
+
+      return NextResponse.json({
+        status: 'success',
+        message: 'Payment verified and profile upgraded successfully',
+        premiumUntil: premiumUntil.toISOString(),
+        planType,
+        type: 'premium',
+      });
     }
-
-    // ── 6. Upgrade user profile ────────────────────────────────────────────────
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .update({ premium_until: premiumUntil.toISOString() })
-      .eq('id', userId);
-
-    if (profileError) {
-      console.error('[Chapa Verify] Failed to update user profile:', profileError);
-      return NextResponse.json(
-        { status: 'error', message: 'Payment verified but profile upgrade failed' },
-        { status: 500 }
-      );
-    }
-
-    console.log(
-      `[Chapa Verify] ✅ User ${userId} upgraded for ${days} days via Chapa (plan: ${planType}, tx_ref: ${tx_ref}).`
-    );
-
-    return NextResponse.json({
-      status: 'success',
-      message: 'Payment verified and profile upgraded successfully',
-      premiumUntil: premiumUntil.toISOString(),
-      planType,
-    });
-
   } catch (error: any) {
     console.error('[Chapa Verify] Unhandled error:', error);
     return NextResponse.json({ status: 'failed', message: error.message }, { status: 500 });

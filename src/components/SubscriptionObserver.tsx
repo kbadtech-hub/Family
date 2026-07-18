@@ -28,7 +28,7 @@ export default function SubscriptionObserver() {
 
       // FORCE LOCK LOGIC: Redirect to payment if locked and not on dashboard
       if (info?.status === 'locked' && !pathname.includes('dashboard')) {
-         router.push('/dashboard?tab=payment');
+         router.push('/dashboard?tab=payments');
       }
 
       // Mock Email Notification logic (Run once per session)
@@ -36,7 +36,7 @@ export default function SubscriptionObserver() {
          const lastNotified = localStorage.getItem('last_sub_notify');
          const today = new Date().toDateString();
          if (lastNotified !== today) {
-            console.log(`[SIMULATED EMAIL SENT] To: user@example.com - Subject: Your Beteseb Subscription has expired! Please renew at https://beteseb1.online/dashboard?tab=payment`);
+            console.log(`[SIMULATED EMAIL SENT] To: user@example.com - Subject: Your Beteseb Subscription has expired! Please renew at https://beteseb1.online/dashboard?tab=payments`);
             localStorage.setItem('last_sub_notify', today);
          }
       }
@@ -63,7 +63,7 @@ export default function SubscriptionObserver() {
               </p>
            </div>
            <button 
-             onClick={() => router.push('/dashboard?tab=payment')}
+             onClick={() => router.push('/dashboard?tab=payments')}
              className="w-full bg-primary text-white py-5 rounded-2xl font-black uppercase tracking-widest text-sm shadow-2xl shadow-primary/40 hover:scale-105 transition-all flex items-center justify-center gap-3"
            >
              <CreditCard size={20} /> {locale === 'am' ? 'ክፍያ ፈጽም' : 'Renew Subscription'} <ArrowRight size={20} />
@@ -97,11 +97,11 @@ export default function SubscriptionObserver() {
                </div>
                <p className="text-xs text-gray-600 font-medium leading-relaxed italic">
                  {locale === 'am' 
-                   ? 'የሰብስክሪፕሽን ጊዜዎ አብቅቷል፤ እባክዎ ሁሉንም አገልግሎቶች ለማግኘት ክፍያዎን ያሳድጉ።' 
-                   : 'Your subscription has expired. You are in a 3-day grace period. Please renew to keep access.'}
+                   ? 'የሰብስክሪፕሽን ጊዜዎ አብቅቷል፤ በ5 ቀናት የገደብ ጊዜ ውስጥ ነዎት። እባክዎ ሁሉንም አገልግሎቶች ለማግኘት ክፍያዎን ያሳድጉ።' 
+                   : 'Your subscription has expired. You are in a 5-day grace period. Please renew to keep access.'}
                </p>
                <button 
-                 onClick={() => router.push('/dashboard?tab=payment')}
+                 onClick={() => router.push('/dashboard?tab=payments')}
                  className="flex items-center gap-2 text-primary font-black uppercase tracking-widest text-[10px] hover:gap-3 transition-all"
                >
                  Renew Now <ArrowRight size={14} />

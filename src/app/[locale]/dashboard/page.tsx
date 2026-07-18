@@ -30,12 +30,14 @@ import {
   Image as ImageIcon,
   X,
   BarChart2,
-  User
+  User,
+  Crown
 } from 'lucide-react';
 import CommunityView from '@/components/dashboard/CommunityView';
 import PostCard from '@/components/dashboard/PostCard';
 
 import PaymentTab from '@/components/dashboard/PaymentTab';
+import SubscriptionPlansPage from '@/components/dashboard/SubscriptionPlansPage';
 import ChatView from '@/components/dashboard/ChatView';
 import ProfileView from '@/components/dashboard/ProfileView';
 import GiftsView from '@/components/dashboard/GiftsView';
@@ -67,6 +69,7 @@ function DashboardContent() {
 
   interface Profile {
     id: string;
+    email?: string | null;
     full_name: string | null;
     avatar_url: string | null;
     trial_ends_at: string | null;
@@ -92,6 +95,7 @@ function DashboardContent() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
   const [showPayment, setShowPayment] = useState(false);
+  const [defaultPaymentTab, setDefaultPaymentTab] = useState<'premium' | 'vip'>('premium');
   const [profile, setProfile] = useState<Profile | null>(null);
   const [verificationStatus, setVerificationStatus] = useState<string>('loading');
   const [warningMessage, setWarningMessage] = useState<string | null>(null);
@@ -305,9 +309,12 @@ function DashboardContent() {
 
   useEffect(() => {
     const tabParam = searchParams.get('tab');
-    if (tabParam === 'payment') {
-       setShowPayment(true);
-       setActiveTab('dashboard');
+    const planParam = searchParams.get('plan') as 'premium' | 'vip' | null;
+    if (tabParam === 'payments' || tabParam === 'payment') {
+      setActiveTab('payments');
+      if (planParam === 'vip') setDefaultPaymentTab('vip');
+      else setDefaultPaymentTab('premium');
+      setShowPayment(false); // clear any stale modal flag
     }
   }, [searchParams]);
 
@@ -334,21 +341,49 @@ function DashboardContent() {
 
         if (result.status === 'success') {
           console.log('[Dashboard] Chapa payment verified ✅:', result.message);
-          // Refresh profile to reflect new premium_until
-          const { data: updatedProfile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
-          if (updatedProfile) {
-            const isPremium =
-              (updatedProfile.premium_until && new Date(updatedProfile.premium_until) > new Date()) ||
-              ['admin', 'super_admin', 'expert'].includes(updatedProfile.role);
-            setProfile(prev => prev ? { ...prev, ...updatedProfile, is_premium: isPremium } : null);
-            setPaymentStatus('approved');
+
+          if (result.type === 'coins') {
+            // For coin purchases: update the local coin balance immediately
+            if (result.coinBalance !== undefined) {
+              setProfile(prev => prev ? { ...prev, coins: result.coinBalance } : null);
+            }
+            alert(`✅ ክፍያ ተቀብሏል! ${result.coinBalance} ሳንቲሞች ወደ ቦርሳዎ ተጨምረዋል።\n✅ Payment received! Your wallet has been credited with ${result.coinBalance} coins.`);
+          } else if (result.type === 'vip') {
+            // For VIP: refresh profile and mark VIP active
+            const { data: updatedProfile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', user.id)
+              .single();
+            if (updatedProfile) {
+              const vipActive = updatedProfile.is_vip_member &&
+                (!updatedProfile.vip_expires_at || new Date(updatedProfile.vip_expires_at) > new Date());
+              const premiumNow =
+                vipActive ||
+                (updatedProfile.premium_until && new Date(updatedProfile.premium_until) > new Date()) ||
+                ['admin', 'super_admin', 'expert'].includes(updatedProfile.role);
+              setProfile(prev => prev ? { ...prev, ...updatedProfile, is_premium: premiumNow } : null);
+              setPaymentStatus('approved');
+            }
+            alert(`👑 ቪአይፒ አባልነት ተፈቅዷል! እስከ ${new Date(result.vipExpiresAt).toLocaleDateString()} ድረስ ይቆያል።\n👑 VIP membership activated! Valid until ${new Date(result.vipExpiresAt).toLocaleDateString()}.`);
+            setActiveTab('profile');
+          } else {
+            // Standard premium subscription
+            const { data: updatedProfile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', user.id)
+              .single();
+            if (updatedProfile) {
+              const isPremiumNow =
+                (updatedProfile.premium_until && new Date(updatedProfile.premium_until) > new Date()) ||
+                ['admin', 'super_admin', 'expert'].includes(updatedProfile.role);
+              setProfile(prev => prev ? { ...prev, ...updatedProfile, is_premium: isPremiumNow } : null);
+              setPaymentStatus('approved');
+            }
+            // Navigate to payments tab so the user sees their new status
+            setActiveTab('payments');
           }
-          // Navigate to payments tab so the user sees their new status
-          setActiveTab('payments');
         } else {
           console.warn('[Dashboard] Chapa verify returned:', result.message);
         }
@@ -410,7 +445,7 @@ function DashboardContent() {
         const { data: walletData } = await supabase.from('user_wallets').select('coin_balance').eq('id', user.id).single();
         const coins = walletData ? Number(walletData.coin_balance) : 0;
         
-        const mergedProfile = { ...(profileData as Profile), coins };
+        const mergedProfile = { ...(profileData as Profile), coins, email: user.email || null };
         setProfile(mergedProfile);
         OfflineCache.cacheData(`profile_${user.id}`, mergedProfile);
 
@@ -671,8 +706,11 @@ function DashboardContent() {
   }, []);
 
 
-  const isPremium = ((profile as any)?.premium_until && new Date((profile as any).premium_until) > new Date()) || 
-                    paymentStatus === 'approved' || 
+  const isVipActive = (profile as any)?.is_vip_member &&
+    (!(profile as any)?.vip_expires_at || new Date((profile as any).vip_expires_at) > new Date());
+  const isPremium = isVipActive ||
+                    ((profile as any)?.premium_until && new Date((profile as any).premium_until) > new Date()) ||
+                    paymentStatus === 'approved' ||
                     ['admin', 'super_admin', 'expert'].includes((profile as any)?.role);
   const isAdmin = ['admin', 'super_admin'].includes((profile as any)?.role);
 
@@ -1363,7 +1401,7 @@ function DashboardContent() {
                     </p>
                   </div>
                   <button
-                    onClick={() => setShowPayment(true)}
+                    onClick={() => setActiveTab('payments')}
                     className="w-full bg-white text-primary py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
                   >
                     {t('premium.unlock')} →
@@ -1375,6 +1413,29 @@ function DashboardContent() {
         )}
 
 
+
+        {/* ── Payments Tab ─────────────────────────────────────────────────── */}
+        {activeTab === 'payments' && profile && (
+          <div className="mt-10 pb-20">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-xl font-black uppercase tracking-tighter text-[#0F172A] flex items-center gap-2">
+                <Crown size={20} className="text-amber-500 fill-amber-100" />
+                {locale === 'am' ? 'ፕሪሚየም እና ቪአይፒ አባልነት' : 'Premium & VIP Membership'}
+              </h2>
+              <button
+                onClick={() => setActiveTab('dashboard')}
+                className="text-gray-400 hover:text-gray-600 text-[10px] font-black uppercase tracking-widest flex items-center gap-1 transition-colors"
+              >
+                <X size={14} /> {locale === 'am' ? 'ዝጋ' : 'Close'}
+              </button>
+            </div>
+            <SubscriptionPlansPage
+              profile={profile}
+              defaultTab={defaultPaymentTab}
+              onPaymentStarted={() => setActiveTab('dashboard')}
+            />
+          </div>
+        )}
 
         {/* Tab Components */}
         {activeTab === 'chat' && (
@@ -1482,6 +1543,26 @@ function DashboardContent() {
           </div>
         )}
       </main>
+
+      {/* ── Full-Screen Payments Overlay (triggered from LockOverlay or legacy code) ── */}
+      {showPayment && profile && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[500] flex items-start justify-center overflow-y-auto py-10 px-4">
+          <div className="relative bg-[#FDFBF9] rounded-[3rem] w-full max-w-5xl shadow-2xl p-8 md:p-14 animate-in zoom-in-95 duration-300">
+            <button
+              onClick={() => setShowPayment(false)}
+              className="absolute top-6 right-6 w-10 h-10 rounded-full bg-gray-100 hover:bg-red-100 text-gray-400 hover:text-red-500 flex items-center justify-center transition-all z-10"
+              aria-label="Close"
+            >
+              <X size={18} />
+            </button>
+            <SubscriptionPlansPage
+              profile={profile}
+              defaultTab={defaultPaymentTab}
+              onPaymentStarted={() => setShowPayment(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

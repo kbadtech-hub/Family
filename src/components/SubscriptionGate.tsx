@@ -51,7 +51,7 @@ export default function SubscriptionGate({ children, allowVerifiedView = false }
           Your account has been locked. Please contact support or renew your subscription to continue.
         </p>
         <button 
-          onClick={() => router.push('/dashboard?tab=payment')}
+          onClick={() => router.push('/dashboard?tab=payments')}
           className="btn-primary w-full py-4 rounded-xl font-bold uppercase tracking-widest text-xs"
         >
           {locale === 'am' ? 'ክፍያ ፈጽም' : 'Renew Now'}
