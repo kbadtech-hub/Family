@@ -28,7 +28,9 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
       {!isInternalPage && (
         <>
           <TopHeader />
-          <Header />
+          <React.Suspense fallback={<div className="h-20 bg-[#FDFBF9]/50" />}>
+            <Header />
+          </React.Suspense>
         </>
       )}
       <main className="flex-1">
