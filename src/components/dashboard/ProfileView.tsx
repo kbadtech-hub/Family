@@ -277,7 +277,12 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
     show_city: profile?.show_city !== false,
     allow_friend_requests: profile?.allow_friend_requests !== false,
     enable_read_receipts: profile?.enable_read_receipts !== false,
-    enable_last_seen: profile?.enable_last_seen !== false
+    enable_last_seen: profile?.enable_last_seen !== false,
+    is_vip_member: profile?.is_vip_member || false,
+    is_ghost_mode_active: profile?.is_ghost_mode_active || false,
+    hide_online_status: profile?.hide_online_status || false,
+    hide_read_receipts: profile?.hide_read_receipts || false,
+    strict_incognito: profile?.strict_incognito || false
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -830,7 +835,74 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                </p>
              </div>
 
-             <div className="space-y-4 pt-4 col-span-full border-t border-gray-100">
+             {formData.is_vip_member && (
+               <div className="space-y-4 pt-6 col-span-full border-t-2 border-dashed border-amber-300 bg-amber-50/15 p-6 rounded-[2rem] border border-amber-200/50 mt-4">
+                 <div className="flex items-center gap-2">
+                   <span className="text-lg">👑</span>
+                   <h4 className="text-sm font-black text-amber-800 uppercase tracking-widest bg-clip-text bg-gradient-to-r from-amber-600 to-yellow-600">
+                     VIP Privacy & Control Dashboard
+                   </h4>
+                 </div>
+                 <p className="text-[10px] text-amber-700 font-bold uppercase tracking-wider">
+                   Exclusive Control Panel for active Beteseb VIP members
+                 </p>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                   <label className="flex items-center gap-3 cursor-pointer">
+                     <input 
+                       type="checkbox"
+                       checked={formData.is_ghost_mode_active}
+                       onChange={(e) => setFormData({...formData, is_ghost_mode_active: e.target.checked})}
+                       className="w-5 h-5 rounded-lg border-amber-400 text-amber-500 focus:ring-amber-500/20 accent-amber-500"
+                     />
+                     <div className="flex flex-col">
+                       <span className="text-xs font-bold text-slate-700">Activate Ghost Mode</span>
+                       <span className="text-[9px] text-slate-400 font-medium">Blurs your photo (blurRadius=25) and hides full name in feeds</span>
+                     </div>
+                   </label>
+
+                   <label className="flex items-center gap-3 cursor-pointer">
+                     <input 
+                       type="checkbox"
+                       checked={formData.hide_online_status}
+                       onChange={(e) => setFormData({...formData, hide_online_status: e.target.checked})}
+                       className="w-5 h-5 rounded-lg border-amber-400 text-amber-500 focus:ring-amber-500/20 accent-amber-500"
+                     />
+                     <div className="flex flex-col">
+                       <span className="text-xs font-bold text-slate-700">Hide Online Status</span>
+                       <span className="text-[9px] text-slate-400 font-medium">Conceals active indicators and Last Seen information</span>
+                     </div>
+                   </label>
+
+                   <label className="flex items-center gap-3 cursor-pointer">
+                     <input 
+                       type="checkbox"
+                       checked={formData.hide_read_receipts}
+                       onChange={(e) => setFormData({...formData, hide_read_receipts: e.target.checked})}
+                       className="w-5 h-5 rounded-lg border-amber-400 text-amber-500 focus:ring-amber-500/20 accent-amber-500"
+                     />
+                     <div className="flex flex-col">
+                       <span className="text-xs font-bold text-slate-700">Hide Read Receipts</span>
+                       <span className="text-[9px] text-slate-400 font-medium">Prevents typing indicators and read status triggers</span>
+                     </div>
+                   </label>
+
+                   <label className="flex items-center gap-3 cursor-pointer">
+                     <input 
+                       type="checkbox"
+                       checked={formData.strict_incognito}
+                       onChange={(e) => setFormData({...formData, strict_incognito: e.target.checked})}
+                       className="w-5 h-5 rounded-lg border-amber-400 text-amber-500 focus:ring-amber-500/20 accent-amber-500"
+                     />
+                     <div className="flex flex-col">
+                       <span className="text-xs font-bold text-slate-700">Strict Incognito</span>
+                       <span className="text-[9px] text-slate-400 font-medium">Removes your profile from recommendation discovery pools</span>
+                     </div>
+                   </label>
+                 </div>
+               </div>
+             )}
+
+              <div className="space-y-4 pt-4 col-span-full border-t border-gray-100">
                 <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">
                   {t('privacySettings')}
                 </h4>

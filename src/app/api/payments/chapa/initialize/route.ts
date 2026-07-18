@@ -5,6 +5,7 @@ export async function POST(req: Request) {
     const { amount, email, first_name, last_name, tx_ref, callback_url } = await req.json();
 
     const chapaSecretKey = process.env.CHAPA_SECRET_KEY;
+    const chapaSubAccountId = process.env.CHAPA_SUBACCOUNT_ID;
 
     if (!chapaSecretKey) {
       console.warn("CHAPA_SECRET_KEY is not defined. Returning demo checkout URL.");
@@ -31,6 +32,7 @@ export async function POST(req: Request) {
         last_name,
         tx_ref,
         callback_url,
+        ...(chapaSubAccountId ? { subaccount_id: chapaSubAccountId } : {}),
         customization: {
           title: "Beteseb Matchmaking Premium",
           description: "Payment for Beteseb Matchmaking Premium Plan"

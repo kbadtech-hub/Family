@@ -689,18 +689,21 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
     const messageContent = newMessage.trim();
 
     // Tiers & Daily Action Limits (Beteseb v3.6)
+    const isVipActive = userProfile?.is_vip_member && 
+      (!userProfile?.vip_expires_at || new Date(userProfile.vip_expires_at) > new Date());
+
     const userTier = getUserTier(userProfile, hasVouchedRecords);
     const limits = getTierLimits(userTier);
     let currentSentCount = 0;
 
-    if (userTier === 'bronze') {
+    if (userTier === 'bronze' && !isVipActive) {
       alert(locale === 'am'
         ? "ያልተረጋገጠ (Bronze Tier) አባላት መልእክት መላክ አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!"
         : "Unverified (Bronze Tier) members are blocked from sending text or audio messages. Please complete verification first!");
       return;
     }
 
-    if (limits.maxTexts !== Infinity) {
+    if (limits.maxTexts !== Infinity && !isVipActive) {
       const { data: limitsData } = await supabase
         .from('daily_limits')
         .select('*')
@@ -798,7 +801,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
       setNewMessage('');
       
       // Increment messages_sent in daily_limits (optimized to reuse already fetched counter)
-      if (limits.maxTexts !== Infinity) {
+      if (limits.maxTexts !== Infinity && !isVipActive) {
         await supabase
           .from('daily_limits')
           .update({ 
@@ -962,6 +965,9 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
 
   // Voice Note Recording
   const getVoiceLimit = () => {
+    const isVipActive = userProfile?.is_vip_member && 
+      (!userProfile?.vip_expires_at || new Date(userProfile.vip_expires_at) > new Date());
+    if (isVipActive) return 60; // Max allowed (equivalent to Diamond or higher)
     const limits = getTierLimits(userTier);
     return limits.maxVoiceNoteSeconds ?? 7;
   };
