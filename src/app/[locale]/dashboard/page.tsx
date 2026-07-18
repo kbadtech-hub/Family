@@ -256,7 +256,10 @@ function DashboardContent() {
   };
 
   const handleLanguageChange = (newLocale: string) => {
-    router.replace(pathname, { locale: newLocale });
+    const params = new URLSearchParams(searchParams?.toString() || '');
+    const queryString = params.toString();
+    const targetPath = queryString ? `${pathname}?${queryString}` : pathname;
+    router.replace(targetPath, { locale: newLocale });
     setIsLangOpen(false);
   };
 

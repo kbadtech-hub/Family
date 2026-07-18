@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useTranslations, useLocale } from 'next-intl';
 import { queueSMS } from '@/lib/sms';
 import { useRouter, usePathname } from '@/i18n/routing';
+import { useSearchParams } from 'next/navigation';
 import { 
   User, 
   Camera, 
@@ -263,6 +264,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [photos, setPhotos] = useState<string[]>(profile?.gallery_urls || []);
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -583,7 +585,10 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
 
   const handleLanguageChange = (newLocale: string) => {
     setFormData({...formData, preferred_language: newLocale});
-    router.replace(pathname, { locale: newLocale });
+    const params = new URLSearchParams(searchParams?.toString() || '');
+    const queryString = params.toString();
+    const targetPath = queryString ? `${pathname}?${queryString}` : pathname;
+    router.replace(targetPath, { locale: newLocale });
   };
 
   const languages = [

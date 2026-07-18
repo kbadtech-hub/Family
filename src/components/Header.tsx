@@ -7,11 +7,12 @@ import { Link, useRouter, usePathname } from '@/i18n/routing';
 import { Menu, X, Globe, ChevronDown, Heart } from 'lucide-react';
 import { useUI } from '@/context/UIContext';
 import { supabase } from '@/lib/supabase';
+import { useSearchParams } from 'next/navigation';
 
 interface SystemSettings {
   social_links?: Record<string, string>;
-  cms_content?: Record<string, string>;
   contact_info?: Record<string, string>;
+  cms_content?: Record<string, string>;
 }
 
 export default function Header() {
@@ -19,6 +20,7 @@ export default function Header() {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -47,7 +49,10 @@ export default function Header() {
   ];
 
   const handleLanguageChange = (newLocale: string) => {
-    router.replace(pathname, { locale: newLocale });
+    const params = new URLSearchParams(searchParams?.toString() || '');
+    const queryString = params.toString();
+    const targetPath = queryString ? `${pathname}?${queryString}` : pathname;
+    router.replace(targetPath, { locale: newLocale });
     setIsLangOpen(false);
   };
 

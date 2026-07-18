@@ -99,6 +99,74 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
       return;
     }
 
+    // Check if running inside native shell (Capacitor)
+    if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.()) {
+      try {
+        const { NativePurchases, PURCHASE_TYPE } = await import('@capgo/native-purchases');
+        const productId = `com.beteseb.app.${selectedDuration}`;
+        
+        // Trigger native purchases billing sheet
+        const transaction = await NativePurchases.purchaseProduct({
+          productIdentifier: productId,
+          productType: selectedDuration.endsWith('lifetime') ? PURCHASE_TYPE.INAPP : PURCHASE_TYPE.SUBS,
+          quantity: 1
+        });
+
+        if (!transaction || !transaction.transactionId) {
+          throw new Error("No transaction ID returned from native purchase.");
+        }
+
+        const isAndroid = (window as any).Capacitor.getPlatform() === 'android';
+        
+        if (isAndroid) {
+          // Verify with Google Play Developer backend API
+          const verifyResponse = await fetch('/api/payments/google', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              purchaseToken: transaction.transactionId,
+              productId: productId,
+              userId: profile.id,
+              planType: selectedDuration
+            })
+          });
+
+          const verifyData = await verifyResponse.json();
+          if (verifyData.status === 'success') {
+            alert(locale === 'am' ? 'የፕሌይ ስቶር ክፍያ በተሳካ ሁኔታ ተጠናቋል!' : 'Upgrade via Play Store completed successfully!');
+            window.location.reload();
+          } else {
+            throw new Error(verifyData.message || 'Google Play validation failed on server.');
+          }
+        } else {
+          // Verify with Apple App Store backend API
+          const verifyResponse = await fetch('/api/payments/apple', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              receiptData: transaction.transactionId,
+              userId: profile.id,
+              planType: selectedDuration
+            })
+          });
+
+          const verifyData = await verifyResponse.json();
+          if (verifyData.status === 'success') {
+            alert(locale === 'am' ? 'የአፕል ስቶር ክፍያ በተሳካ ሁኔታ ተጠናቋል!' : 'Upgrade via App Store completed successfully!');
+            window.location.reload();
+          } else {
+            throw new Error(verifyData.message || 'Apple receipt validation failed on server.');
+          }
+        }
+      } catch (err: any) {
+        console.error("Native Purchase error details:", err);
+        alert(locale === 'am' ? `ክፍያው አልተሳካም፦ ${err.message}` : `Purchase failed: ${err.message}`);
+      } finally {
+        setIsProcessing(false);
+      }
+      return;
+    }
+
     try {
       const email = profile?.email || 'user@example.com';
       const nameParts = (profile?.full_name || 'Beteseb User').split(' ');
