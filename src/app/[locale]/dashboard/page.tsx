@@ -1402,40 +1402,28 @@ function DashboardContent() {
 
                     <div className="relative flex items-center justify-between gap-4">
                       <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
-                          <Sparkles size={26} className="text-white fill-white/50" />
+                        <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
+                          <Sparkles size={22} className="text-white fill-white/50" />
                         </div>
                         <div>
                           <div className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60 mb-0.5">
                             {locale === 'am' ? 'ቤተሰብ አባልነት' : 'Beteseb Membership'}
                           </div>
-                          <h3 className="text-xl font-black italic tracking-tighter leading-tight">
+                          <h3 className="text-lg font-black italic tracking-tighter leading-none">
                             {locale === 'am' ? 'ፕሪሚየም' : 'Premium'}
                           </h3>
-                          <p className="text-white/70 text-[10px] font-bold leading-snug mt-0.5 max-w-[200px]">
-                            {locale === 'am' ? 'ያልተገደበ ግጥሚያ፣ ቀጥታ ቻት፣ ሙሉ ፕሮፋይሎች' : 'Unlimited matches, direct chat, full profiles'}
-                          </p>
                         </div>
                       </div>
-                      <div className="shrink-0 flex flex-col items-end gap-2">
-                        <div className="bg-white/20 border border-white/30 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full">
-                          {locale === 'am' ? 'ዝርዝር ይመልከቱ' : 'View Details'}
-                        </div>
+                      
+                      <div className="shrink-0 flex items-center gap-4">
                         <div className="text-white/90 font-black text-right">
-                          <span className="text-xl">{locale === 'am' ? 'ብር 700' : '$7.99'}</span>
-                          <span className="text-[9px] text-white/60 block font-bold">{locale === 'am' ? 'ከወር' : '/month'}</span>
+                          <span className="text-lg">{locale === 'am' ? 'ብር 700' : '$7.99'}</span>
+                          <span className="text-[9px] text-white/60 block font-bold leading-none mt-0.5">{locale === 'am' ? 'ከወር' : '/month'}</span>
+                        </div>
+                        <div className="bg-white text-primary text-[10px] font-black uppercase tracking-wider px-5 py-3.5 rounded-2xl shadow-md group-hover:bg-orange-50 transition-colors">
+                          {locale === 'am' ? 'ወደ ፕሪሚየም ያሳድጉ' : 'Upgrade to Premium'}
                         </div>
                       </div>
-                    </div>
-
-                    {/* mini feature chips */}
-                    <div className="relative mt-5 flex flex-wrap gap-2">
-                      {(locale === 'am'
-                        ? ['✓ ያልተገደበ ዕጩዎች', '✓ ቀጥታ ቻት', '✓ ሙሉ ዝርዝሮች', '✓ ቅድሚያ ድጋፍ']
-                        : ['✓ Unlimited Feed', '✓ Direct Chat', '✓ Full Bios', '✓ Priority Support']
-                      ).map(f => (
-                        <span key={f} className="bg-white/15 border border-white/20 text-white text-[9px] font-black px-2.5 py-1 rounded-full">{f}</span>
-                      ))}
                     </div>
                   </div>
 
@@ -1450,39 +1438,28 @@ function DashboardContent() {
 
                     <div className="relative flex items-center justify-between gap-4">
                       <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
-                          <Crown size={26} className="text-yellow-200 fill-yellow-200/30" />
+                        <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
+                          <Crown size={22} className="text-yellow-200 fill-yellow-200/30" />
                         </div>
                         <div>
                           <div className="text-[9px] font-black uppercase tracking-[0.2em] text-yellow-200/70 mb-0.5">
                             {locale === 'am' ? 'ልዩ አባልነት' : 'Elite Membership'}
                           </div>
-                          <h3 className="text-xl font-black italic tracking-tighter leading-tight flex items-center gap-1.5">
-                            {locale === 'am' ? 'ቪ.አይ.ፒ' : 'VIP Status'} <span className="text-base">👑</span>
+                          <h3 className="text-lg font-black italic tracking-tighter leading-none flex items-center gap-1">
+                            {locale === 'am' ? 'ቪ.አይ.ፒ' : 'VIP Status'} <span className="text-sm">👑</span>
                           </h3>
-                          <p className="text-white/70 text-[10px] font-bold leading-snug mt-0.5 max-w-[200px]">
-                            {locale === 'am' ? 'የወርቅ ባጅ፣ Ghost Mode፣ ሙሉ ፕሪሚየም ጥቅሞች' : 'Crown badge, ghost mode, all premium perks'}
-                          </p>
                         </div>
                       </div>
-                      <div className="shrink-0 flex flex-col items-end gap-2">
-                        <div className="bg-yellow-300/20 border border-yellow-300/40 text-yellow-100 text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full">
-                          {locale === 'am' ? 'ዝርዝር ይመልከቱ' : 'View Details'}
-                        </div>
+                      
+                      <div className="shrink-0 flex items-center gap-4">
                         <div className="text-white/90 font-black text-right">
-                          <span className="text-xl">{locale === 'am' ? 'ብር 1500' : '$12.99'}</span>
-                          <span className="text-[9px] text-white/60 block font-bold">{locale === 'am' ? 'ከወር' : '/month'}</span>
+                          <span className="text-lg">{locale === 'am' ? 'ብር 1500' : '$12.99'}</span>
+                          <span className="text-[9px] text-white/60 block font-bold leading-none mt-0.5">{locale === 'am' ? 'ከወር' : '/month'}</span>
+                        </div>
+                        <div className="bg-amber-400 text-amber-950 text-[10px] font-black uppercase tracking-wider px-5 py-3.5 rounded-2xl shadow-md group-hover:bg-amber-300 transition-colors">
+                          {locale === 'am' ? 'ወደ ቪ አይ ፒ ያሳድጉ' : 'Upgrade to VIP'}
                         </div>
                       </div>
-                    </div>
-
-                    <div className="relative mt-5 flex flex-wrap gap-2">
-                      {(locale === 'am'
-                        ? ['👑 የወርቅ አክሊል', '🔒 Ghost Mode', '👁 Incognito', '✓ ሁሉም ፕሪሚየም']
-                        : ['👑 Crown Badge', '🔒 Ghost Mode', '👁 Incognito', '✓ All Premium']
-                      ).map(f => (
-                        <span key={f} className="bg-white/15 border border-yellow-300/20 text-yellow-100 text-[9px] font-black px-2.5 py-1 rounded-full">{f}</span>
-                      ))}
                     </div>
                   </div>
 
@@ -1571,8 +1548,8 @@ function DashboardContent() {
                    supabase.from('profiles').select('*').eq('id', user.id).single()
                      .then(({ data }) => {
                        if (data) {
-                         setProfile(data as Profile);
-                         OfflineCache.cacheData(`profile_${user.id}`, data);
+                          setProfile(data as Profile);
+                          OfflineCache.cacheData(`profile_${user.id}`, data);
                        }
                      });
                  }
@@ -1630,17 +1607,17 @@ function DashboardContent() {
           className="fixed inset-0 bg-black/70 backdrop-blur-md z-[600] flex items-end sm:items-center justify-center p-4"
           onClick={(e) => { if (e.target === e.currentTarget) setShowBenefitsModal(null); }}
         >
-          <div className="relative w-full max-w-lg animate-in slide-in-from-bottom-6 sm:zoom-in-95 duration-300">
+          <div className="relative w-full max-w-lg max-h-[90vh] flex flex-col animate-in slide-in-from-bottom-6 sm:zoom-in-95 duration-300">
 
             {/* Card shell */}
-            <div className={`rounded-[3rem] overflow-hidden shadow-2xl ${
+            <div className={`rounded-[3rem] overflow-hidden shadow-2xl flex flex-col max-h-[90vh] ${
               showBenefitsModal === 'vip'
                 ? 'bg-gradient-to-b from-[#92400E] to-[#1C0A00]'
                 : 'bg-gradient-to-b from-[#9A3412] to-[#1C0700]'
             }`}>
 
               {/* ── Header ── */}
-              <div className="relative p-8 pb-4">
+              <div className="relative p-8 pb-4 shrink-0">
                 <button
                   onClick={() => setShowBenefitsModal(null)}
                   className="absolute top-5 right-5 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white flex items-center justify-center transition-all"
@@ -1685,8 +1662,8 @@ function DashboardContent() {
                 </p>
               </div>
 
-              {/* ── Benefits List ── */}
-              <div className="px-8 pb-6 space-y-3">
+              {/* ── Benefits List (Scrollable) ── */}
+              <div className="px-8 pb-6 space-y-3 overflow-y-auto flex-1 max-h-[40vh] scrollbar-thin scrollbar-thumb-white/20">
                 <div className="h-px bg-white/10 mb-4" />
                 <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40">
                   {locale === 'am' ? 'ዋና ዋና ጥቅሞች' : 'Key Benefits'}
@@ -1716,7 +1693,7 @@ function DashboardContent() {
               </div>
 
               {/* ── Action Buttons ── */}
-              <div className="px-8 pb-8 space-y-3">
+              <div className="px-8 pb-8 space-y-3 shrink-0 pt-4">
                 <button
                   onClick={() => {
                     setShowBenefitsModal(null);

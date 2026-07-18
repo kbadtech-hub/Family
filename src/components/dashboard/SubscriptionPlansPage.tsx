@@ -357,12 +357,7 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
         ))}
       </div>
 
-      {/* ── SECURITY FOOTER WARNING ───────────────────────────────────────── */}
-      <div className="max-w-md mx-auto text-center p-6 bg-red-500/5 rounded-3xl border border-red-500/10 text-red-600 font-bold uppercase tracking-widest text-[9px] leading-relaxed">
-        {isAm
-          ? 'ማሳሰቢያ፦ ይህ አገልግሎት በኢትዮጵያ ውስጥ ላሉ ተጠቃሚዎች በብር (ETB) ብቻ የሚታይ ሲሆን፣ ከኢትዮጵያ ውጭ ላሉ ተጠቃሚዎች ደግሞ በዶላር (USD) ብቻ ይታያል።'
-          : 'Security Policy: Local Birr pricing is strictly restricted to domestic connections. Overseas connections run in USD exclusively.'}
-      </div>
+
 
     </div>
   );
