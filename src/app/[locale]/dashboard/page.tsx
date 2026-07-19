@@ -31,7 +31,8 @@ import {
   X,
   BarChart2,
   User,
-  Crown
+  Crown,
+  Loader2
 } from 'lucide-react';
 import CommunityView from '@/components/dashboard/CommunityView';
 import PostCard from '@/components/dashboard/PostCard';
