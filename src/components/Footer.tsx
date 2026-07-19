@@ -6,6 +6,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Mail, Phone, MapPin, Linkedin, Youtube, Send, Globe, MessageCircle, Facebook } from 'lucide-react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
+import AppStoreBadges from '@/components/AppStoreBadges';
 
 interface SocialLinks {
   facebook?: string;
@@ -30,6 +31,8 @@ interface SystemSettings {
   social_links?: SocialLinks;
   cms_content?: CmsContent;
   contact_info?: CmsContent;
+  play_store_url?: string;
+  app_store_url?: string;
 }
 
 export default function Footer() {
@@ -138,7 +141,22 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 text-center text-white/10 text-xs tracking-[0.5em] uppercase font-black">
+      {/* ── App Download Badges ── */}
+      <div className="max-w-7xl mx-auto mt-16 pt-10 border-t border-white/5">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          <p className="text-white/30 text-xs font-bold uppercase tracking-[0.3em]">
+            Download the App
+          </p>
+          <AppStoreBadges
+            playStoreUrl={settings?.play_store_url || (settings?.social_links as any)?.play_store_url}
+            appStoreUrl={settings?.app_store_url || (settings?.social_links as any)?.app_store_url}
+            layout="row"
+            theme="dark"
+          />
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto mt-8 pt-8 border-t border-white/5 text-center text-white/10 text-xs tracking-[0.5em] uppercase font-black">
         {t('copyright')}
       </div>
       <div className="text-center text-white/30 text-[10px] mt-2 font-bold uppercase tracking-widest">

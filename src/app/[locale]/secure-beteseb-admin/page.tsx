@@ -304,6 +304,8 @@ export default function AdminPortal() {
       unit_android: string;
       unit_ios: string;
     };
+    play_store_url: string;
+    app_store_url: string;
     [key: string]: string | BankDetail[] | PricingPlan | Record<string, boolean> | any[] | { enabled: boolean; test_mode: boolean; unit_android: string; unit_ios: string; } | undefined;
   }
 
@@ -326,6 +328,8 @@ export default function AdminPortal() {
     twitter: '',
     banks_etb: [],
     banks_usd: [],
+    play_store_url: '',
+    app_store_url: '',
     pricing_usd: {
       "1m": 0, "3m": 0, "6m": 0, "12m": 0, "class": 0, "lifetime": 0, "discount": 0 },
     pricing_etb: {
@@ -398,6 +402,8 @@ export default function AdminPortal() {
             instagram: data.social_links?.instagram || '',
             linkedin: data.social_links?.linkedin || '',
             twitter: data.social_links?.twitter || '',
+            play_store_url: (data as any).play_store_url || data.social_links?.play_store_url || '',
+            app_store_url: (data as any).app_store_url || data.social_links?.app_store_url || '',
             banks_etb: data.bank_details?.etb || [],
             banks_usd: data.bank_details?.usd || [],
             pricing_usd: data.pricing_usd || { "1m": 50, "3m": 120, "6m": 200, "12m": 350, "class": 25, "lifetime": 999, "discount": 0 },
@@ -560,45 +566,69 @@ export default function AdminPortal() {
   const handleSaveCMS = async () => {
     if (!settings) return;
     setIsSaving(true);
+
+    // Primary update payload — includes direct columns if migration was applied
+    const updatePayload: Record<string, any> = {
+      cms_content: {
+        logo_url: cmsForm.logo_url,
+        hero_title: cmsForm.hero_title,
+        hero_subtitle: cmsForm.hero_subtitle,
+        footer_description: cmsForm.footer_description
+      },
+      contact_info: {
+        email: cmsForm.email,
+        phone: cmsForm.phone,
+        address: cmsForm.address,
+        website_url: cmsForm.website_url
+      },
+      social_links: {
+        tiktok: cmsForm.tiktok,
+        telegram: cmsForm.telegram,
+        youtube: cmsForm.youtube,
+        facebook: cmsForm.facebook,
+        whatsapp: cmsForm.whatsapp,
+        instagram: cmsForm.instagram,
+        linkedin: cmsForm.linkedin,
+        twitter: cmsForm.twitter,
+        // Fallback: store app links inside social_links JSONB until migration is run
+        play_store_url: cmsForm.play_store_url,
+        app_store_url: cmsForm.app_store_url,
+      },
+      bank_details: {
+        etb: cmsForm.banks_etb,
+        usd: cmsForm.banks_usd
+      },
+      pricing_usd: cmsForm.pricing_usd,
+      pricing_etb: cmsForm.pricing_etb,
+      payment_gateways: cmsForm.payment_gateways,
+      coin_packages: cmsForm.coin_packages,
+      ad_config: cmsForm.ad_config,
+      // Direct columns (available after running supabase/migrations/20260719000000_add_app_links.sql)
+      play_store_url: cmsForm.play_store_url,
+      app_store_url: cmsForm.app_store_url,
+    };
+
     const { error } = await supabase
       .from('settings')
-      .update({
-        cms_content: {
-          logo_url: cmsForm.logo_url,
-          hero_title: cmsForm.hero_title,
-          hero_subtitle: cmsForm.hero_subtitle,
-          footer_description: cmsForm.footer_description
-        },
-        contact_info: {
-          email: cmsForm.email,
-          phone: cmsForm.phone,
-          address: cmsForm.address,
-          website_url: cmsForm.website_url
-        },
-        social_links: {
-          tiktok: cmsForm.tiktok,
-          telegram: cmsForm.telegram,
-          youtube: cmsForm.youtube,
-          facebook: cmsForm.facebook,
-          whatsapp: cmsForm.whatsapp,
-          instagram: cmsForm.instagram,
-          linkedin: cmsForm.linkedin,
-          twitter: cmsForm.twitter
-        },
-        bank_details: {
-          etb: cmsForm.banks_etb,
-          usd: cmsForm.banks_usd
-        },
-        pricing_usd: cmsForm.pricing_usd,
-        pricing_etb: cmsForm.pricing_etb,
-        payment_gateways: cmsForm.payment_gateways,
-        coin_packages: cmsForm.coin_packages,
-        ad_config: cmsForm.ad_config
-      })
+      .update(updatePayload)
       .eq('id', settings.id);
 
-    if (error) alert('Error saving: ' + error.message);
-    else alert('CMS Content Deployed Successfully!');
+    if (error) {
+      if (error.code === '42703') {
+        // Column not yet created — retry without direct columns (JSONB fallback only)
+        const { play_store_url: _p, app_store_url: _a, ...safePayload } = updatePayload;
+        const { error: fallbackError } = await supabase
+          .from('settings')
+          .update(safePayload)
+          .eq('id', settings.id);
+        if (fallbackError) alert('Error saving: ' + fallbackError.message);
+        else alert('CMS Content Deployed! (Tip: run the migration SQL to enable dedicated app link columns).');
+      } else {
+        alert('Error saving: ' + error.message);
+      }
+    } else {
+      alert('CMS Content Deployed Successfully!');
+    }
     setIsSaving(false);
   };
 
@@ -1465,8 +1495,77 @@ export default function AdminPortal() {
                  </div>
               </div>
             )}
+
+          {/* ── Mobile App Links Management ── */}
+          <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5 space-y-8">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-primary/10 rounded-2xl">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="text-primary"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="18" r="1"/></svg>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold uppercase tracking-widest">Mobile App Links Management</h3>
+                <p className="text-foreground/40 text-sm mt-1">Paste live store URLs. Leave empty to show &ldquo;Coming Soon&rdquo; to users.</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <label className="block space-y-3">
+                <span className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-[0.2em]">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  Google Play Store Link
+                </span>
+                <input
+                  type="url"
+                  id="admin-input-play-store-url"
+                  value={cmsForm.play_store_url}
+                  onChange={(e) => setCmsForm({ ...cmsForm, play_store_url: e.target.value })}
+                  className="input-premium bg-background"
+                  placeholder="https://play.google.com/store/apps/details?id=..."
+                />
+                <p className="text-xs text-foreground/30 font-medium">
+                  {cmsForm.play_store_url ? '✅ Link set — badge opens Play Store' : '⏳ Empty — badge shows Coming Soon modal'}
+                </p>
+              </label>
+
+              <label className="block space-y-3">
+                <span className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-[0.2em]">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2c-2 0-3.8 1-4.7 2.7C6.4 3 4.6 2 3.1 2 .1 2-2 4.5-2 7.5c0 4.5 4.5 9 9.3 13 4.8-4 9.3-8.5 9.3-13C16.6 4.5 14.5 2 12 2z"/></svg>
+                  Apple App Store Link
+                </span>
+                <input
+                  type="url"
+                  id="admin-input-app-store-url"
+                  value={cmsForm.app_store_url}
+                  onChange={(e) => setCmsForm({ ...cmsForm, app_store_url: e.target.value })}
+                  className="input-premium bg-background"
+                  placeholder="https://apps.apple.com/us/app/..."
+                />
+                <p className="text-xs text-foreground/30 font-medium">
+                  {cmsForm.app_store_url ? '✅ Link set — badge opens App Store' : '⏳ Empty — badge shows Coming Soon modal'}
+                </p>
+              </label>
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t border-white/5">
+              <p className="text-xs text-foreground/30 max-w-xs">
+                Updates reflect globally on all pages instantly — no redeployment needed.
+              </p>
+              <button
+                id="admin-btn-save-app-links"
+                onClick={handleSaveCMS}
+                disabled={isSaving || !settings}
+                className="btn-primary flex items-center gap-2"
+              >
+                {isSaving ? 'Saving...' : 'Save Links'}
+              </button>
+            </div>
+          </div>
+
           </div>
         )}
+
+
+
 
         {activeTab === 'business' && (
           <div className="space-y-8 animate-in fade-in duration-500">
@@ -3544,19 +3643,6 @@ export default function AdminPortal() {
                           <td className="py-4 max-w-xs">
                             <p className="font-bold text-gray-400">📍 {typeof (user as any).location === 'string' ? (user as any).location : JSON.stringify((user as any).location)}</p>
                             <p className="text-[10px] text-gray-500 leading-normal italic mt-1">&quot;{(user as any).bio || 'No bio written'}&quot;</p>
-                          </td>
-                          <td className="py-4 text-center">
-                            {indicators.length === 0 ? (
-                              <span className="text-gray-500">Clear</span>
-                            ) : (
-                              <div className="flex flex-wrap gap-1 justify-center">
-                                {indicators.map((ind, idx) => (
-                                  <span key={idx} className="px-2 py-0.5 bg-red-500/10 text-red-500 rounded text-[9px] font-bold uppercase">{ind}</span>
-                                ))}
-                              </div>
-                            )}
-                          </td>
-                          <td className="py-4 text-center">
                             <span className={`text-sm font-black ${
                               score >= 60 ? 'text-red-500' :
                               score >= 30 ? 'text-amber-500' :

@@ -13,6 +13,7 @@ import {
   Users
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import AppStoreBadges from '@/components/AppStoreBadges';
 
 interface SystemSettings {
   cms_content?: {
@@ -20,6 +21,12 @@ interface SystemSettings {
     hero_subtitle?: string;
   };
   system_access_key?: string;
+  play_store_url?: string;
+  app_store_url?: string;
+  social_links?: {
+    play_store_url?: string;
+    app_store_url?: string;
+  };
 }
 
 // 6-Language Translation Helpers to prevent any mixed-language bleed-throughs
@@ -150,7 +157,16 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="pt-16 flex flex-wrap items-center justify-center gap-10 opacity-30 grayscale underline decoration-primary/20">
+          {/* ── App Store Download Badges ── */}
+          <AppStoreBadges
+            playStoreUrl={settings?.play_store_url || settings?.social_links?.play_store_url}
+            appStoreUrl={settings?.app_store_url || settings?.social_links?.app_store_url}
+            layout="row"
+            theme="light"
+            className="justify-center pt-4"
+          />
+
+          <div className="pt-8 flex flex-wrap items-center justify-center gap-10 opacity-30 grayscale underline decoration-primary/20">
              <div className="flex items-center gap-2 font-bold text-[10px] tracking-widest uppercase"><CheckCircle2 size={16}/> {t('Hero.verify1')}</div>
              <div className="flex items-center gap-2 font-bold text-[10px] tracking-widest uppercase"><ShieldCheck size={16}/> {t('Hero.verify2')}</div>
              <div className="flex items-center gap-2 font-bold text-[10px] tracking-widest uppercase"><Layers size={16}/> {t('Hero.verify3')}</div>

@@ -51,6 +51,7 @@ import GiftModal from '@/components/dashboard/GiftModal';
 import AcademyView from '@/components/dashboard/AcademyView';
 import WorkshopsView from '@/components/dashboard/WorkshopsView';
 import SubscriptionGate from '@/components/SubscriptionGate';
+import AppStoreBadges from '@/components/AppStoreBadges';
 import { getUserTier, calculateCompletionRate } from '@/lib/tiers';
 import { unregisterPushNotifications } from '@/lib/push-notifications';
 import { moderateText } from '@/lib/moderation';
@@ -116,6 +117,7 @@ function DashboardContent() {
   const [showPaywallTarget, setShowPaywallTarget] = useState<any>(null);
   const [showVerificationBlockModal, setShowVerificationBlockModal] = useState(false);
   const [showBenefitsModal, setShowBenefitsModal] = useState<null | 'premium' | 'vip'>(null);
+  const [appLinks, setAppLinks] = useState<{ play_store_url?: string; app_store_url?: string }>({});
 
   const handleTabClick = (tabId: string) => {
     const coreTabs = ['chat', 'community', 'workshops', 'wedding', 'gifts'];
@@ -129,6 +131,20 @@ function DashboardContent() {
     }
     setActiveTab(tabId);
   };
+
+  // Load app store links from settings
+  useEffect(() => {
+    const fetchAppLinks = async () => {
+      const { data } = await supabase.from('settings').select('play_store_url, app_store_url, social_links').limit(1).single();
+      if (data) {
+        setAppLinks({
+          play_store_url: (data as any).play_store_url || (data as any).social_links?.play_store_url || '',
+          app_store_url: (data as any).app_store_url || (data as any).social_links?.app_store_url || '',
+        });
+      }
+    };
+    fetchAppLinks();
+  }, []);
   const [dislikedIds, setDislikedIds] = useState<Set<string>>(new Set());
   const [activeGiftCandidate, setActiveGiftCandidate] = useState<any>(null);
   const [activeRequestNotification, setActiveRequestNotification] = useState<any>(null);
@@ -1161,7 +1177,14 @@ function DashboardContent() {
           ))}
         </nav>
 
-        <div className="mt-auto pt-8 border-t border-white/5 hidden md:block">
+        <div className="mt-auto pt-8 border-t border-white/5 hidden md:block space-y-4">
+          {/* App Store Badges */}
+          <AppStoreBadges
+            playStoreUrl={appLinks.play_store_url}
+            appStoreUrl={appLinks.app_store_url}
+            layout="column"
+            theme="dark"
+          />
            <button 
              onClick={handleLogout}
              className="w-full flex items-center gap-4 p-4 rounded-[1.5rem] text-red-400 hover:bg-red-400/10 transition-all duration-300"
