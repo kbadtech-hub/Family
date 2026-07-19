@@ -55,9 +55,18 @@ export async function POST(req: Request) {
     }
 
     // tx_ref format: "userId-planType-timestamp"
-    const parts = tx_ref.split('-');
-    const userId = parts[0];
-    const planType = parts[1];
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+    const match = tx_ref.match(uuidRegex);
+    let userId = '';
+    let planType = '';
+    if (match) {
+      userId = match[0];
+      planType = tx_ref.substring(userId.length + 1).split('-')[0];
+    } else {
+      const parts = tx_ref.split('-');
+      userId = parts[0];
+      planType = parts[1];
+    }
 
     if (!userId || !planType) {
       return NextResponse.json({ status: 'error', message: 'Invalid transaction reference format' }, { status: 400 });

@@ -61,13 +61,22 @@ export async function POST(req: Request) {
       // Dev/demo mode: no key configured — simulate success
       console.warn('[Chapa Verify] CHAPA_SECRET_KEY not set. Running in demo mode.');
 
-      const parts = tx_ref.split('-');
-      const extractedUserId = parts[0];
-      const planType = parts[1];
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+      const match = tx_ref.match(uuidRegex);
+      let extractedUserId = '';
+      let planType = '';
+      if (match) {
+        extractedUserId = match[0];
+        planType = tx_ref.substring(extractedUserId.length + 1).split('-')[0];
+      } else {
+        const parts = tx_ref.split('-');
+        extractedUserId = parts[0];
+        planType = parts[1];
+      }
 
       if (extractedUserId !== userId) {
         return NextResponse.json(
-          { status: 'error', message: 'User ID mismatch in tx_ref' },
+          { status: 'error', message: `User ID mismatch in tx_ref (Expected: ${userId}, Got: ${extractedUserId})` },
           { status: 403 }
         );
       }
@@ -199,14 +208,23 @@ export async function POST(req: Request) {
 
     // ── 3. Validate the tx_ref belongs to this user ────────────────────────────
     // tx_ref format: "userId-planType-timestamp"
-    const parts = tx_ref.split('-');
-    const extractedUserId = parts[0];
-    const planType = parts[1];
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+    const match = tx_ref.match(uuidRegex);
+    let extractedUserId = '';
+    let planType = '';
+    if (match) {
+      extractedUserId = match[0];
+      planType = tx_ref.substring(extractedUserId.length + 1).split('-')[0];
+    } else {
+      const parts = tx_ref.split('-');
+      extractedUserId = parts[0];
+      planType = parts[1];
+    }
 
     if (extractedUserId !== userId) {
       console.error(`[Chapa Verify] UserId mismatch: expected ${userId}, got ${extractedUserId}`);
       return NextResponse.json(
-        { status: 'error', message: 'User ID mismatch — transaction does not belong to this user' },
+        { status: 'error', message: `User ID mismatch — transaction does not belong to this user (Expected: ${userId}, Got: ${extractedUserId})` },
         { status: 403 }
       );
     }
