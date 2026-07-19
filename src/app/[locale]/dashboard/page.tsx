@@ -119,6 +119,8 @@ function DashboardContent() {
   const [showVerificationBlockModal, setShowVerificationBlockModal] = useState(false);
   const [showBenefitsModal, setShowBenefitsModal] = useState<null | 'premium' | 'vip'>(null);
   const [appLinks, setAppLinks] = useState<{ play_store_url?: string; app_store_url?: string }>({});
+  // IP-based Ethiopia detection — drives currency display, fully independent of UI language
+  const [isEthiopiaUser, setIsEthiopiaUser] = useState<boolean | null>(null);
 
   const handleTabClick = (tabId: string) => {
     const coreTabs = ['chat', 'community', 'workshops', 'wedding', 'gifts'];
@@ -146,6 +148,29 @@ function DashboardContent() {
     };
     fetchAppLinks();
   }, []);
+  // ── IP-based Location Detection (currency) ─────────────────────────────────
+  // Detects the user's actual country via IP — completely independent of locale.
+  // Ethiopia (ET) → ETB prices; all other countries → USD prices.
+  useEffect(() => {
+    const detectLocation = async () => {
+      try {
+        // profile.currency_locked is an admin override — respect it first
+        if (profile?.currency_locked === 'ETB') { setIsEthiopiaUser(true); return; }
+        if (profile?.currency_locked === 'USD') { setIsEthiopiaUser(false); return; }
+        const res = await fetch('https://ipapi.co/json/', {
+          signal: AbortSignal.timeout(4000),
+        });
+        const data = await res.json();
+        setIsEthiopiaUser(data?.country_code === 'ET');
+      } catch {
+        // On failure default to Ethiopia (app is primarily Ethiopia-focused)
+        setIsEthiopiaUser(true);
+      }
+    };
+    detectLocation();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.currency_locked]);
+
   const [dislikedIds, setDislikedIds] = useState<Set<string>>(new Set());
   const [activeGiftCandidate, setActiveGiftCandidate] = useState<any>(null);
   const [activeRequestNotification, setActiveRequestNotification] = useState<any>(null);
@@ -1573,8 +1598,8 @@ function DashboardContent() {
                           {locale === 'am' ? 'የፕሪሚየም አባልነት' : 'Premium Membership'}
                         </span>
                         <div className="text-white/95 font-black text-right">
-                          <span className="text-lg leading-none">{locale === 'am' ? 'ብር 700' : '$7.99'}</span>
-                          <span className="text-[9px] text-white/60 block font-bold leading-none mt-0.5">{locale === 'am' ? 'ከወር' : '/month'}</span>
+                          <span className="text-lg leading-none">{isEthiopiaUser ? 'ብር 700' : '$7.99'}</span>
+                          <span className="text-[9px] text-white/60 block font-bold leading-none mt-0.5">{isEthiopiaUser ? 'ከወር' : '/month'}</span>
                         </div>
                       </div>
 
@@ -1613,8 +1638,8 @@ function DashboardContent() {
                           {locale === 'am' ? 'የቪ.አይ.ፒ ልዩ አባልነት' : 'VIP Elite Membership'} 👑
                         </span>
                         <div className="text-white/95 font-black text-right">
-                          <span className="text-lg leading-none">{locale === 'am' ? 'ብር 1500' : '$12.99'}</span>
-                          <span className="text-[9px] text-white/60 block font-bold leading-none mt-0.5">{locale === 'am' ? 'ከወር' : '/month'}</span>
+                          <span className="text-lg leading-none">{isEthiopiaUser ? 'ብር 1,500' : '$12.99'}</span>
+                          <span className="text-[9px] text-white/60 block font-bold leading-none mt-0.5">{isEthiopiaUser ? 'ከወር' : '/month'}</span>
                         </div>
                       </div>
 
@@ -1817,8 +1842,8 @@ function DashboardContent() {
                     <div className="flex items-baseline gap-1 mt-0.5">
                       <span className="text-white font-black text-lg">
                         {showBenefitsModal === 'vip'
-                          ? (locale === 'am' ? 'ብር 1,500' : '$12.99')
-                          : (locale === 'am' ? 'ብር 700' : '$7.99')}
+                          ? (isEthiopiaUser ? 'ብር 1,500' : '$12.99')
+                          : (isEthiopiaUser ? 'ብር 700' : '$7.99')}
                       </span>
                       <span className="text-white/50 text-[9px] font-bold">{locale === 'am' ? '/ ወር' : '/ month'}</span>
                     </div>

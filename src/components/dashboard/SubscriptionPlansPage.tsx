@@ -34,7 +34,10 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
   const [isLocationVerified, setIsLocationVerified] = useState(false);
   const [isEthiopiaVerified, setIsEthiopiaVerified] = useState(false);
 
-  const isEthiopia = isLocationVerified ? isEthiopiaVerified : (profile?.location?.country?.toLowerCase() === 'ethiopia' || profile?.currency_locked === 'ETB');
+  // Currency is ALWAYS derived from the IP-based LocationGate result — never from profile.location
+  // (profile.location could be stale; a user in Dubai with "Ethiopia" stored must see USD)
+  // Before the gate runs, default to false (USD) — the gate is shown first anyway so prices are never displayed prematurely.
+  const isEthiopia = isLocationVerified ? isEthiopiaVerified : false;
   const currency = isEthiopia ? 'ETB' : 'USD';
   const isNative = typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.();
 

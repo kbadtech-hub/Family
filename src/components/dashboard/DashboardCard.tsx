@@ -111,48 +111,35 @@ export default function DashboardCard({
         </div>
       )}
 
-      {/* Top Glassmorphic Overlay for Compatibility Score & Tiers */}
-      <div className="absolute top-6 left-6 right-6 flex justify-between items-center z-10">
-        <div className="bg-primary/20 backdrop-blur-xl border border-white/20 px-4 py-2 rounded-full text-white text-[10px] font-black tracking-widest uppercase flex items-center gap-1.5 shadow-lg">
-          <Sparkles size={12} className="fill-white animate-pulse" />
-          {matchPercent}% {isAm ? 'ተዛማጅ' : 'Match'}
-        </div>
-        <div className="flex items-center gap-2">
-          {/* Trust Tier Badge */}
-          <div className={`backdrop-blur-xl border px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-lg ${badge.color}`}>
-            <span>{badge.emoji}</span>
-            <span>{badge.label}</span>
-          </div>
-
-          {/* Three-dot menu: Show ONLY Send Gift */}
-          <div className="relative">
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowMenu(!showMenu);
-              }}
-              className="bg-black/45 backdrop-blur-xl border border-white/25 p-2.5 rounded-full text-white shadow-lg flex items-center justify-center hover:bg-black/60 transition-colors"
-              aria-label="Safety menu"
-            >
-              <MoreVertical size={16} />
-            </button>
-            
-            {showMenu && (
-              <div className="absolute right-0 mt-2 w-44 bg-white rounded-2xl shadow-2xl z-30 overflow-hidden border border-border">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowMenu(false);
-                    onSendGift(candidate);
-                  }}
-                  className="w-full text-left px-4 py-3 hover:bg-muted text-xs font-bold text-primary flex items-center gap-2"
-                >
-                  <Gift size={14} />
-                  <span>{isAm ? 'ስጦታ ለመላክ' : 'Send Gift'}</span>
-                </button>
-              </div>
-            )}
-          </div>
+      {/* Top-right: 3-dot menu only — badges moved to metadata row below */}
+      <div className="absolute top-6 right-6 z-10">
+        <div className="relative">
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowMenu(!showMenu);
+            }}
+            className="bg-black/45 backdrop-blur-xl border border-white/25 p-2.5 rounded-full text-white shadow-lg flex items-center justify-center hover:bg-black/60 transition-colors"
+            aria-label="Safety menu"
+          >
+            <MoreVertical size={16} />
+          </button>
+          
+          {showMenu && (
+            <div className="absolute right-0 mt-2 w-44 bg-white rounded-2xl shadow-2xl z-30 overflow-hidden border border-border">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowMenu(false);
+                  onSendGift(candidate);
+                }}
+                className="w-full text-left px-4 py-3 hover:bg-muted text-xs font-bold text-primary flex items-center gap-2"
+              >
+                <Gift size={14} />
+                <span>{isAm ? 'ስጦታ ለመላክ' : 'Send Gift'}</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -179,6 +166,16 @@ export default function DashboardCard({
                 <MapPin size={8} /> {typeof candidate.location === 'string' ? candidate.location : candidate.location?.city || 'Addis Ababa'}
               </span>
             )}
+            {/* ── Match % badge — moved from top overlay ── */}
+            <span className="px-3 py-1 bg-primary/30 backdrop-blur-md rounded-full text-[8px] font-black tracking-widest uppercase flex items-center gap-1 border border-primary/20 text-white">
+              <Sparkles size={8} className="fill-white" />
+              {matchPercent}% {isAm ? 'ተዛማጅ' : 'Match'}
+            </span>
+            {/* ── Tier badge — moved from top overlay ── */}
+            <span className={`px-3 py-1 backdrop-blur-md rounded-full text-[8px] font-black tracking-widest uppercase flex items-center gap-1 border ${badge.color}`}>
+              <span className="text-[9px]">{badge.emoji}</span>
+              <span>{badge.label}</span>
+            </span>
           </div>
         </div>
 

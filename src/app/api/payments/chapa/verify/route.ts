@@ -35,16 +35,22 @@ export async function POST(req: Request) {
     // ── 1. Idempotency — prevent double-processing the same tx_ref ────────────
     const { data: existing } = await supabase
       .from('payments')
-      .select('id, status')
+      .select('id, status, plan_type')
       .eq('receipt_url', `Chapa TX: ${tx_ref}`)
       .maybeSingle();
 
     if (existing) {
       console.log(`[Chapa Verify] tx_ref ${tx_ref} already processed — skipping.`);
+      // Extract type so the client can correctly route the user
+      const existingPlanType = existing.plan_type || tx_ref.split('-')[1] || '';
+      const existingType = existingPlanType.startsWith('coins_') ? 'coins'
+        : existingPlanType.startsWith('vip_') ? 'vip'
+        : 'premium';
       return NextResponse.json({
         status: 'success',
         message: 'Payment already verified and processed',
         alreadyProcessed: true,
+        type: existingType,
       });
     }
 

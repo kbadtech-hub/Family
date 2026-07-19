@@ -235,7 +235,8 @@ export default function GiftsView({ locale }: { locale: string }) {
     setLoadingTopup(true);
 
     try {
-      const isEthiopia = profile?.location?.country?.toLowerCase() === 'ethiopia' || profile?.currency_locked === 'ETB';
+      // Use the IP-verified result from LocationGate (user must pass it before reaching this button)
+      const isEthiopia = isEthiopiaVerified;
       const currency = isEthiopia ? 'ETB' : 'USD';
 
       if (currency === 'ETB') {
@@ -383,7 +384,9 @@ export default function GiftsView({ locale }: { locale: string }) {
   };
 
   const currentCoinText = coinInstructions[locale as keyof typeof coinInstructions] || coinInstructions.en;
-  const isEthiopia = isLocationVerified ? isEthiopiaVerified : (profile?.location?.country?.toLowerCase() === 'ethiopia' || profile?.currency_locked === 'ETB');
+  // Currency is ALWAYS derived from the IP-based LocationGate result — never from profile.location
+  // The coin packs section is gated behind the LocationGate, so prices are never shown prematurely.
+  const isEthiopia = isLocationVerified ? isEthiopiaVerified : false;
 
   return (
     <div className="space-y-10">
