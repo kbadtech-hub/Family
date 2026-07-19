@@ -614,14 +614,6 @@ export default function GiftsView({ locale }: { locale: string }) {
                     <CheckCircle2 size={14} className="text-primary" />
                     {locale === 'am' ? 'አስተማማኝ የደህንነት ስርዓት' : 'Secure Verification System'}
                   </p>
-                 <button
-                   disabled={loadingTopup}
-                   onClick={topupCoins}
-                   className="w-full btn-primary py-4.5 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2"
-                 >
-                   {loadingTopup ? <Loader2 className="animate-spin text-white" /> : <CheckCircle2 size={14} />} 
-                   {locale === 'am' ? 'በሱቁ በኩል ይክፈሉ' : 'Checkout Natively'}
-                 </button>
                </div>
             ) : (
               <div className="bg-muted p-6 rounded-[2rem] border border-muted text-center space-y-4">
@@ -794,3 +786,4 @@ export default function GiftsView({ locale }: { locale: string }) {
     </div>
   );
 }
+
