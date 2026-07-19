@@ -313,14 +313,31 @@ function DashboardContent() {
 
   useEffect(() => {
     const tabParam = searchParams.get('tab');
-    const planParam = searchParams.get('plan') as 'premium' | 'vip' | null;
-    if (tabParam === 'payments' || tabParam === 'payment') {
-      setActiveTab('payments');
-      if (planParam === 'vip') setDefaultPaymentTab('vip');
-      else setDefaultPaymentTab('premium');
-      setShowPayment(false); // clear any stale modal flag
+    if (tabParam) {
+      if (tabParam === 'payments' || tabParam === 'payment') {
+        const planParam = searchParams.get('plan') as 'premium' | 'vip' | null;
+        setActiveTab('payments');
+        if (planParam === 'vip') setDefaultPaymentTab('vip');
+        else setDefaultPaymentTab('premium');
+        setShowPayment(false); // clear any stale modal flag
+      } else {
+        setActiveTab(tabParam);
+      }
+    } else {
+      setActiveTab('dashboard');
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      const currentTab = url.searchParams.get('tab');
+      if (currentTab !== activeTab) {
+        url.searchParams.set('tab', activeTab);
+        window.history.replaceState({}, '', url.toString());
+      }
+    }
+  }, [activeTab]);
 
   // ── Chapa Return Handler ─────────────────────────────────────────────────────
   // When Chapa redirects the user back after payment, it appends ?tx_ref=xxx to
@@ -1162,7 +1179,7 @@ function DashboardContent() {
       </div>
 
       {/* Main Content */}
-      <main className={`flex-1 overflow-y-auto ${activeTab === 'chat' ? 'p-0 md:p-16' : 'p-6 md:p-16'}`}>
+      <main className={`flex-1 flex flex-col ${activeTab === 'chat' ? 'h-[calc(100vh-80px)] md:h-screen overflow-hidden p-6 md:p-16' : 'overflow-y-auto p-6 md:p-16'}`}>
         <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-6 w-full border-b border-border pb-6">
           <div className="flex items-center justify-between w-full">
             {/* Company Logo in Header */}
@@ -1507,7 +1524,7 @@ function DashboardContent() {
 
         {/* Tab Components */}
         {activeTab === 'chat' && (
-           <div className="w-full h-[calc(100dvh-64px)] md:mt-10 md:h-[calc(100vh-200px)]">
+           <div className="w-full flex-1 min-h-0 mt-10">
               <SubscriptionGate allowVerifiedView={false}>
                  <ChatView isPremium={isPremium} />
               </SubscriptionGate>

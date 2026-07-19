@@ -1113,7 +1113,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
   if (loading) return <div className="flex-1 flex items-center justify-center">{t('loading')}</div>;
 
   return (
-    <div className="flex flex-col md:flex-row w-full bg-white rounded-none md:rounded-[2.5rem] overflow-hidden border-0 md:border md:border-muted md:shadow-2xl h-[calc(100dvh-64px)] md:h-[calc(100vh-200px)]" style={{touchAction:'manipulation'}}>
+    <div className="flex flex-col md:flex-row w-full bg-white rounded-[2.5rem] overflow-hidden border border-muted shadow-2xl h-full flex-1 min-h-0" style={{touchAction:'manipulation'}}>
       {/* Sidebar - Matches */}
       <aside className={`w-full md:w-80 border-b md:border-b-0 md:border-r border-muted flex flex-col md:h-full ${selectedMatch ? 'hidden md:flex' : 'flex h-full md:h-full'}`}>
         <div className="p-6 border-b border-muted">
