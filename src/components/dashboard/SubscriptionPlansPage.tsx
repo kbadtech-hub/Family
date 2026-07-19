@@ -16,6 +16,7 @@ import {
   Award
 } from 'lucide-react';
 import { useLocale } from 'next-intl';
+import LocationGate from '@/components/dashboard/LocationGate';
 
 interface SubscriptionPlansPageProps {
   profile: any;
@@ -30,7 +31,10 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
   const [selectedDuration, setSelectedDuration] = useState<string>('3m');
   const [isProcessing, setIsProcessing] = useState(false);
   
-  const isEthiopia = profile?.location?.country?.toLowerCase() === 'ethiopia' || profile?.currency_locked === 'ETB';
+  const [isLocationVerified, setIsLocationVerified] = useState(false);
+  const [isEthiopiaVerified, setIsEthiopiaVerified] = useState(false);
+
+  const isEthiopia = isLocationVerified ? isEthiopiaVerified : (profile?.location?.country?.toLowerCase() === 'ethiopia' || profile?.currency_locked === 'ETB');
   const currency = isEthiopia ? 'ETB' : 'USD';
   const isNative = typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.();
 
@@ -273,6 +277,20 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
       setIsProcessing(false);
     }
   };
+
+  if (!isLocationVerified) {
+    return (
+      <div className="py-12 px-4 max-w-lg mx-auto">
+        <LocationGate 
+          locale={locale} 
+          onVerified={(isEth) => {
+            setIsEthiopiaVerified(isEth);
+            setIsLocationVerified(true);
+          }} 
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-12 animate-in fade-in duration-500">

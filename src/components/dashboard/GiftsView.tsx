@@ -20,6 +20,7 @@ import {
   X
 } from 'lucide-react';
 import Image from 'next/image';
+import LocationGate from '@/components/dashboard/LocationGate';
 
 interface GiftRecord {
   id: string;
@@ -56,6 +57,8 @@ export default function GiftsView({ locale }: { locale: string }) {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [profile, setProfile] = useState<any>(null);
+  const [isLocationVerified, setIsLocationVerified] = useState(false);
+  const [isEthiopiaVerified, setIsEthiopiaVerified] = useState(false);
   
   // Delivery Modal State
   const [deliveryGift, setDeliveryGift] = useState<GiftRecord | null>(null);
@@ -379,7 +382,7 @@ export default function GiftsView({ locale }: { locale: string }) {
   };
 
   const currentCoinText = coinInstructions[locale as keyof typeof coinInstructions] || coinInstructions.en;
-  const isEthiopia = profile?.location?.country?.toLowerCase() === 'ethiopia' || profile?.currency_locked === 'ETB';
+  const isEthiopia = isLocationVerified ? isEthiopiaVerified : (profile?.location?.country?.toLowerCase() === 'ethiopia' || profile?.currency_locked === 'ETB');
 
   return (
     <div className="space-y-10">
@@ -552,7 +555,18 @@ export default function GiftsView({ locale }: { locale: string }) {
       )}
 
       {activeSubTab === 'topup' && (
-         <div className="bg-white rounded-[2.5rem] p-8 border border-muted shadow-xl max-w-2xl mx-auto space-y-8 animate-in fade-in duration-300">
+         !isLocationVerified ? (
+           <div className="py-6">
+             <LocationGate
+               locale={locale}
+               onVerified={(isEth) => {
+                 setIsEthiopiaVerified(isEth);
+                 setIsLocationVerified(true);
+               }}
+             />
+           </div>
+         ) : (
+           <div className="bg-white rounded-[2.5rem] p-8 border border-muted shadow-xl max-w-2xl mx-auto space-y-8 animate-in fade-in duration-300">
             <div className="text-center max-w-md mx-auto space-y-2">
                <Coins className="text-primary mx-auto animate-bounce animate-duration-1000" size={36} />
                <h3 className="font-black text-accent uppercase italic text-lg tracking-tight">{locale === 'am' ? 'የሳንቲም ጥቅል መምረጫ' : 'Select Coin Package'}</h3>
@@ -631,7 +645,8 @@ export default function GiftsView({ locale }: { locale: string }) {
               </div>
             )}
          </div>
-      )}
+         )
+       )}
 
       {/* Delivery Request Modal Overlay */}
       {deliveryGift && (
