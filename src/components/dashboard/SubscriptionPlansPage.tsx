@@ -237,7 +237,8 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
             first_name: firstName,
             last_name: lastName,
             tx_ref: txRef,
-            callback_url: window.location.origin + `/${locale}/dashboard?tab=payments&tx_ref=${txRef}`
+            callback_url: window.location.origin + '/api/payments/chapa/webhook',
+            return_url: window.location.origin + `/${locale}/dashboard?tab=payments&tx_ref=${txRef}`
           })
         });
 

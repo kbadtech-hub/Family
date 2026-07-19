@@ -249,7 +249,8 @@ export default function GiftsView({ locale }: { locale: string }) {
             first_name: (profile?.full_name || 'Beteseb User').split(' ')[0] || 'Beteseb',
             last_name: (profile?.full_name || 'Beteseb User').split(' ')[1] || 'User',
             tx_ref: txRef,
-            callback_url: window.location.origin + `/${locale}/dashboard?tab=gifts&tx_ref=${txRef}`
+            callback_url: window.location.origin + '/api/payments/chapa/webhook',
+            return_url: window.location.origin + `/${locale}/dashboard?tab=gifts&tx_ref=${txRef}`
           })
         });
 

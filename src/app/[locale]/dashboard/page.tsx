@@ -24,6 +24,7 @@ import {
   LogOut,
   ChevronRight,
   Gift,
+  Coins,
   Sparkles,
   Camera,
   Send,
@@ -307,25 +308,43 @@ function DashboardContent() {
   };
 
   const renderRoyalAvatar = (avatarUrl: string | null, gender: string | null, sizeClass = "w-10 h-10") => {
-    const isRoyal = completionRate === 100 && userTier === 'diamond';
+    const isVipActive = !!(profile as any)?.is_vip_member &&
+      (!(profile as any)?.vip_expires_at || new Date((profile as any).vip_expires_at) > new Date());
+    const isPremiumActive = !!(profile as any)?.premium_until &&
+      new Date((profile as any).premium_until) > new Date();
+    const isAdmin = ['admin', 'super_admin', 'expert'].includes(profile?.role || '');
+    const hasElevatedTier = isVipActive || isPremiumActive || isAdmin;
+    const borderClass = isVipActive
+      ? 'border-amber-400 ring-2 ring-amber-300'
+      : isPremiumActive || isAdmin
+        ? (gender === 'Female' ? 'border-pink-400 ring-2 ring-pink-300' : 'border-primary ring-2 ring-primary/30')
+        : 'border-primary/20';
     return (
       <div className="relative flex items-center justify-center shrink-0">
-        {isRoyal && (
-          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 text-[10px] animate-bounce z-10">
-            👑
+        {/* Crown / star above avatar for elevated users */}
+        {hasElevatedTier && (
+          <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-[11px] animate-bounce z-10 drop-shadow">
+            {isVipActive ? '👑' : '⭐'}
           </div>
         )}
-        <div className={`${sizeClass} rounded-full overflow-hidden flex items-center justify-center bg-muted transition-all border-2 ${
-          isRoyal 
-            ? (gender === 'Male' ? 'border-amber-400 ring-2 ring-amber-300' : 'border-pink-400 ring-2 ring-pink-300')
-            : 'border-primary/20'
-        }`}>
+        <div className={`${sizeClass} rounded-full overflow-hidden flex items-center justify-center bg-muted transition-all border-2 ${borderClass}`}>
           {avatarUrl ? (
             <Image src={avatarUrl} alt="Avatar" width={40} height={40} className="w-full h-full object-cover" />
           ) : (
             <UserCircle size={24} className="text-gray-300" />
           )}
         </div>
+        {/* Small tier badge at bottom-right of avatar */}
+        {isVipActive && (
+          <span className="absolute -bottom-1 -right-1 bg-amber-500 text-white text-[6px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wide border border-white shadow-sm leading-none">
+            VIP
+          </span>
+        )}
+        {!isVipActive && (isPremiumActive || isAdmin) && (
+          <span className="absolute -bottom-1 -right-1 bg-primary text-white text-[6px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wide border border-white shadow-sm leading-none">
+            PRO
+          </span>
+        )}
       </div>
     );
   };
@@ -396,7 +415,8 @@ function DashboardContent() {
             if (result.coinBalance !== undefined) {
               setProfile(prev => prev ? { ...prev, coins: result.coinBalance } : null);
             }
-            alert(`✅ ክፍያ ተቀብሏል! ${result.coinBalance} ሳንቲሞች ወደ ቦርሳዎ ተጨምረዋል።\n✅ Payment received! Your wallet has been credited with ${result.coinBalance} coins.`);
+            alert(`✅ ክፍያዎ ተጠናቋል! ኮይኖችዎ ገቢ ሆነዋል።\n✅ Payment received! Your wallet has been credited with ${result.coinBalance} coins.`);
+            setActiveTab('gifts');
           } else if (result.type === 'vip') {
             // For VIP: refresh profile and mark VIP active
             const { data: updatedProfile } = await supabase
@@ -414,7 +434,7 @@ function DashboardContent() {
               setProfile(prev => prev ? { ...prev, ...updatedProfile, is_premium: premiumNow } : null);
               setPaymentStatus('approved');
             }
-            alert(`👑 ቪአይፒ አባልነት ተፈቅዷል! እስከ ${new Date(result.vipExpiresAt).toLocaleDateString()} ድረስ ይቆያል።\n👑 VIP membership activated! Valid until ${new Date(result.vipExpiresAt).toLocaleDateString()}.`);
+            alert(`👑 ክፍያዎ ተጠናቋል! የቪአይፒ አባልነትዎ ገቢ ሆኗል።\n👑 VIP membership activated! Valid until ${new Date(result.vipExpiresAt).toLocaleDateString()}.`);
             setActiveTab('profile');
           } else {
             // Standard premium subscription
@@ -430,14 +450,27 @@ function DashboardContent() {
               setProfile(prev => prev ? { ...prev, ...updatedProfile, is_premium: isPremiumNow } : null);
               setPaymentStatus('approved');
             }
+            alert(`✅ ክፍያዎ ተጠናቋል! ፕሪሚየም አካውንትዎ ገቢ ሆኗል።\n✅ Payment verified and premium profile upgraded successfully!`);
             // Navigate to payments tab so the user sees their new status
             setActiveTab('payments');
           }
         } else {
           console.warn('[Dashboard] Chapa verify returned:', result.message);
+          if (txRef.includes('coins_')) {
+            setActiveTab('gifts');
+          } else {
+            setActiveTab('payments');
+          }
+          alert(`❌ ክፍያው አልተሳካም ወይም ተሰርዟል። እባክዎ እንደገና ይሞክሩ።\n❌ Payment failed or was cancelled. Please try again.`);
         }
       } catch (err) {
         console.error('[Dashboard] Chapa auto-verify error:', err);
+        if (txRef.includes('coins_')) {
+          setActiveTab('gifts');
+        } else {
+          setActiveTab('payments');
+        }
+        alert(`❌ ክፍያው አልተሳካም ወይም ተሰርዟል። እባክዎ እንደገና ይሞክሩ።\n❌ Payment failed or was cancelled. Please try again.`);
       } finally {
         // Clean tx_ref from URL to prevent re-triggering on page refresh
         const url = new URL(window.location.href);
@@ -811,11 +844,23 @@ function DashboardContent() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Deduct coins
+    // Deduct coins from user_wallets (profiles.coins column does not exist)
     if (!profile?.is_premium && profile?.role !== 'admin' && profile?.role !== 'super_admin') {
-      const userCoins = profile?.coins || 0;
-      await supabase.from('profiles').update({ coins: userCoins - COIN_PER_POST }).eq('id', user.id);
-      setProfile(prev => prev ? { ...prev, coins: userCoins - COIN_PER_POST } : null);
+      const { data: currentWallet } = await supabase
+        .from('user_wallets')
+        .select('coin_balance')
+        .eq('id', user.id)
+        .maybeSingle();
+      const currentBalance = Number(currentWallet?.coin_balance || 0);
+      const newBalance = Math.max(0, currentBalance - COIN_PER_POST);
+      await supabase.from('user_wallets').update({ coin_balance: newBalance, updated_at: new Date().toISOString() }).eq('id', user.id);
+      await supabase.from('coin_transactions').insert({
+        user_id: user.id,
+        amount: -COIN_PER_POST,
+        type: 'admin_adjustment',
+        note: 'Deducted for posting on community feed'
+      });
+      setProfile(prev => prev ? { ...prev, coins: newBalance } : null);
     }
 
     const { error } = await supabase.from('community_posts').insert({
@@ -1241,6 +1286,18 @@ function DashboardContent() {
             </div>
 
             <div className="flex items-center gap-3">
+              {/* Coin Balance Indicator */}
+              {profile && (
+                <button
+                  id="btn-coin-balance-indicator"
+                  onClick={() => setActiveTab('gifts')}
+                  title={locale === 'am' ? 'የኮይን ሂሳብዎ — ይጫኑ ለማሳደግ' : 'Your Coin Balance — click to top up'}
+                  className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 hover:bg-amber-500/20 hover:border-amber-500/40 transition-all text-xs font-black group"
+                >
+                  <Coins size={14} className="text-amber-500 group-hover:scale-110 transition-transform" />
+                  <span className="tabular-nums">{(profile.coins ?? 0).toLocaleString()}</span>
+                </button>
+              )}
               {/* Language Switcher */}
               <div className="relative">
                 <button

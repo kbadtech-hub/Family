@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   try {
-    const { amount, email, first_name, last_name, tx_ref, callback_url } = await req.json();
+    const { amount, email, first_name, last_name, tx_ref, callback_url, return_url } = await req.json();
 
     const chapaSecretKey = process.env.CHAPA_SECRET_KEY;
     const chapaSubAccountId = process.env.CHAPA_SUBACCOUNT_ID;
@@ -13,7 +13,7 @@ export async function POST(req: Request) {
         status: 'success',
         message: 'Demo checkout initialized successfully',
         data: {
-          checkout_url: `${callback_url}?status=success&tx_ref=${tx_ref}`
+          checkout_url: `${return_url || callback_url}?status=success&tx_ref=${tx_ref}`
         }
       });
     }
@@ -32,6 +32,7 @@ export async function POST(req: Request) {
         last_name,
         tx_ref,
         callback_url,
+        return_url,
         ...(chapaSubAccountId ? { subaccount_id: chapaSubAccountId } : {}),
         customization: {
           title: "Beteseb Matchmaking Premium",
