@@ -66,6 +66,7 @@ function DashboardContent() {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
+  const isFirstRender = useRef(true);
 
   interface Profile {
     id: string;
@@ -332,6 +333,15 @@ function DashboardContent() {
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href);
       const currentTab = url.searchParams.get('tab');
+      
+      if (isFirstRender.current) {
+        isFirstRender.current = false;
+        if (currentTab && currentTab !== activeTab) {
+          setActiveTab(currentTab === 'payment' ? 'payments' : currentTab);
+        }
+        return;
+      }
+
       if (currentTab !== activeTab) {
         url.searchParams.set('tab', activeTab);
         window.history.replaceState({}, '', url.toString());
