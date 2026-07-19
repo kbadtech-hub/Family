@@ -1,12 +1,12 @@
 -- =========================================================================
 -- BETESEB PLATFORM — COMPLETE UNIFIED MASTER DATABASE SCHEMA
--- VERSION: 7.0 (Final Production Build — All Phases + ALL Migrations Consolidated)
--- SUPERSEDES: v5, v6, and all 7 incremental migration files (delete those old files)
--- DATE: 2026-07-14
+-- VERSION: 8.0 (Final Production Build — All Phases + ALL Migrations Consolidated)
+-- SUPERSEDES: v5, v6, v7 and all incremental migration files (delete those old files)
+-- DATE: 2026-07-19
 -- DESCRIPTION: Single-file schema for the entire Beteseb platform.
 --              Includes: Core tables, Coin Economy, Gifts, Guardian/Wali,
 --              Vouching, Counseling, Community, Support/AI Chatbot,
---              SMS Queue, Interaction Telemetry, Daily Limits,
+--              SMS Queue, Interaction Telemetry, Daily Limits, VIP Tier,
 --              All RLS Policies, Triggers, Grants, Indexes, Seed Data.
 -- INSTRUCTIONS: Paste into Supabase SQL Editor and click Run.
 -- WARNING: Drops and recreates the public schema. Backup first if needed.
@@ -82,7 +82,13 @@ CREATE TABLE public.profiles (
   show_city             BOOLEAN DEFAULT TRUE NOT NULL,
   allow_friend_requests BOOLEAN DEFAULT TRUE NOT NULL,
   enable_read_receipts  BOOLEAN DEFAULT TRUE NOT NULL,
-  enable_last_seen      BOOLEAN DEFAULT TRUE NOT NULL
+  enable_last_seen      BOOLEAN DEFAULT TRUE NOT NULL,
+  is_vip_member         BOOLEAN DEFAULT FALSE,
+  is_ghost_mode_active  BOOLEAN DEFAULT FALSE,
+  hide_online_status    BOOLEAN DEFAULT FALSE,
+  hide_read_receipts    BOOLEAN DEFAULT FALSE,
+  strict_incognito      BOOLEAN DEFAULT FALSE,
+  vip_expires_at        TIMESTAMP WITH TIME ZONE DEFAULT NULL
 );
 
 CREATE TABLE public.verifications (
@@ -209,7 +215,6 @@ CREATE TABLE public.daily_limits (
 );
 
 
-
 -- =========================================================================
 -- PART 4b: PROFILE UNLOCKS (migration: 20260713000400)
 -- =========================================================================
@@ -222,6 +227,20 @@ CREATE TABLE public.profile_unlocks (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
   UNIQUE(user_id, target_id)
 );
+
+
+-- =========================================================================
+-- PART 4c: VIP PHOTO REVEALS (migration: 20260718000000)
+-- =========================================================================
+
+CREATE TABLE public.vip_photo_reveals (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  vip_id      UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  viewer_id   UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  created_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+  UNIQUE(vip_id, viewer_id)
+);
+
 
 -- =========================================================================
 -- PART 5: GIFT SYSTEM
@@ -432,6 +451,7 @@ CREATE TABLE public.wedding_vendors (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
 
+
 -- =========================================================================
 -- PART 10d: SETTINGS / CMS (migrations: 20260713000100 + 200 + 500)
 -- =========================================================================
@@ -448,8 +468,11 @@ CREATE TABLE public.settings (
   ad_config        JSONB DEFAULT '{"enabled":true,"test_mode":true,"unit_android":"ca-app-pub-3940256099942544/5224354917","unit_ios":"ca-app-pub-3940256099942544/1712485313"}'::jsonb,
   payment_gateways JSONB DEFAULT '{"stripe":true,"chapa":true,"telebirr":true,"paypal":true,"bank_transfer":true}'::jsonb,
   system_access_key VARCHAR(255) DEFAULT 'Harar@2026' NOT NULL,
+  play_store_url   TEXT DEFAULT '',
+  app_store_url    TEXT DEFAULT '',
   created_at       TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
+
 
 -- =========================================================================
 -- PART 11: FUNCTIONS AND TRIGGERS
@@ -567,7 +590,7 @@ $$;
 
 -- Unlock profile with coin deduction (migration: 20260713000400)
 CREATE OR REPLACE FUNCTION public.unlock_profile_with_coins(target_user_id UUID, cost_coins INTEGER)
-RETURNS BOOLEAN AS $
+RETURNS BOOLEAN AS $$
 DECLARE
   caller_id    UUID;
   caller_coins INTEGER;
@@ -583,7 +606,7 @@ BEGIN
   INSERT INTO public.profile_unlocks (user_id, target_id) VALUES (caller_id, target_user_id);
   RETURN TRUE;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 
 -- =========================================================================
@@ -618,6 +641,7 @@ ALTER TABLE public.sms_queue             ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.interaction_telemetry ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.call_violations       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profile_unlocks       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vip_photo_reveals     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.wedding_vendors       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.settings              ENABLE ROW LEVEL SECURITY;
 
@@ -627,9 +651,32 @@ ALTER TABLE public.settings              ENABLE ROW LEVEL SECURITY;
 -- =========================================================================
 
 -- Profiles
-CREATE POLICY "Public Profiles Select"   ON public.profiles FOR SELECT USING (true);
+CREATE POLICY "Public Profiles Select"   ON public.profiles FOR SELECT TO authenticated USING (true);
 CREATE POLICY "Users Own Profile Update" ON public.profiles FOR UPDATE USING (auth.uid() = id);
 CREATE POLICY "Users Own Profile Insert" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
+
+-- Profiles (Additional restrictive/alternative policies from user migrations)
+DROP POLICY IF EXISTS "Allow users to read their own profile" ON public.profiles;
+CREATE POLICY "Allow users to read their own profile" 
+ON public.profiles 
+FOR SELECT 
+TO authenticated 
+USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Allow users to update their own profile" ON public.profiles;
+CREATE POLICY "Allow users to update their own profile" 
+ON public.profiles 
+FOR UPDATE 
+TO authenticated 
+USING (auth.uid() = id)
+WITH CHECK (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Allow users to insert their own profile" ON public.profiles;
+CREATE POLICY "Allow users to insert their own profile" 
+ON public.profiles 
+FOR INSERT 
+TO authenticated, anon
+WITH CHECK (true);
 
 -- Verifications
 CREATE POLICY "Own Verification Access"  ON public.verifications FOR ALL USING (auth.uid() = user_id);
@@ -768,11 +815,16 @@ CREATE POLICY "telemetry_isolation_policy" ON public.interaction_telemetry FOR A
     )
   );
 
-
-
 -- Profile Unlocks
 CREATE POLICY "Users can view own unlocks"   ON public.profile_unlocks FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can insert own unlocks" ON public.profile_unlocks FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- VIP Photo Reveals
+CREATE POLICY "Users can insert own photo reveals" ON public.vip_photo_reveals
+  FOR INSERT WITH CHECK (auth.uid() = vip_id OR auth.uid() = viewer_id);
+
+CREATE POLICY "Users can view relevant photo reveals" ON public.vip_photo_reveals
+  FOR SELECT USING (auth.uid() = vip_id OR auth.uid() = viewer_id);
 
 -- Call Violations
 CREATE POLICY "Admin view call violations"          ON public.call_violations FOR SELECT USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin','super_admin')));
@@ -783,15 +835,41 @@ CREATE POLICY "Allow public read access to wedding_vendors" ON public.wedding_ve
 
 -- Settings
 CREATE POLICY "Allow public read access to settings" ON public.settings FOR SELECT USING (true);
-CREATE POLICY "Allow admin updates to settings"      ON public.settings FOR UPDATE USING (true);
+CREATE POLICY "Allow admin updates to settings"      ON public.settings FOR UPDATE USING (
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'super_admin'))
+);
+
 
 -- =========================================================================
--- PART 14: ROLE GRANTS
+-- PART 14: ROLE GRANTS & PERMISSIONS
 -- =========================================================================
 
-GRANT SELECT, INSERT, UPDATE            ON ALL TABLES IN SCHEMA public TO authenticated;
+-- 1. Grant Schema Usage (restoring schema permissions after clean slate initialization)
+GRANT USAGE ON SCHEMA public TO anon;
+GRANT USAGE ON SCHEMA public TO authenticated;
+GRANT USAGE ON SCHEMA public TO service_role;
+
+-- 2. Give full permissions to service_role (bypasses RLS for backend API logic)
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO service_role;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO service_role;
+GRANT ALL PRIVILEGES ON ALL ROUTINES IN SCHEMA public TO service_role;
+
+-- 3. Grant basic CRUD permissions to authenticated and anon users
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO authenticated;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO anon;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon;
+
+-- 4. Set up default privileges for future tables/sequences
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO postgres, service_role, authenticated, anon;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO postgres, service_role, authenticated, anon;
+
+-- 5. Specific function execute grants
 GRANT EXECUTE ON FUNCTION public.delete_own_user_account() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.unlock_profile_with_coins(UUID, INTEGER) TO authenticated;
 
+-- 6. Specific object overrides (ensuring specific tables maintain exact accessibility limits)
 GRANT ALL ON public.guardians            TO authenticated;
 GRANT ALL ON public.guardian_endorsements TO authenticated;
 GRANT ALL ON public.guardian_endorsements TO anon;
@@ -816,17 +894,12 @@ GRANT ALL ON public.daily_limits         TO authenticated;
 GRANT ALL ON public.daily_limits         TO service_role;
 GRANT SELECT, INSERT ON public.profile_unlocks      TO authenticated;
 GRANT SELECT, INSERT ON public.profile_unlocks      TO service_role;
-GRANT EXECUTE ON FUNCTION public.unlock_profile_with_coins(UUID, INTEGER) TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.vip_photo_reveals TO authenticated;
+GRANT ALL PRIVILEGES ON public.vip_photo_reveals TO service_role;
 GRANT SELECT ON public.wedding_vendors              TO authenticated;
 GRANT SELECT ON public.wedding_vendors              TO anon;
 GRANT SELECT ON public.settings                     TO authenticated;
 GRANT SELECT ON public.settings                     TO anon;
-
--- Grant all permissions on all tables and sequences in public schema to service_role
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO service_role;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO service_role;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO service_role;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO service_role;
 
 
 -- =========================================================================
@@ -838,6 +911,7 @@ CREATE INDEX IF NOT EXISTS idx_profiles_verification_status ON public.profiles(v
 CREATE INDEX IF NOT EXISTS idx_profiles_role                ON public.profiles(role);
 CREATE INDEX IF NOT EXISTS idx_profiles_is_verified         ON public.profiles(is_verified);
 CREATE INDEX IF NOT EXISTS idx_profiles_premium_until       ON public.profiles(premium_until);
+CREATE INDEX IF NOT EXISTS idx_profiles_is_vip_member       ON public.profiles(is_vip_member);
 
 CREATE INDEX IF NOT EXISTS idx_friendships_sender_receiver  ON public.friendships(sender_id, receiver_id);
 CREATE INDEX IF NOT EXISTS idx_friendships_status           ON public.friendships(status);
@@ -871,10 +945,14 @@ CREATE INDEX IF NOT EXISTS idx_resolved_kb_locale           ON public.resolved_k
 
 CREATE INDEX IF NOT EXISTS idx_guardians_user_id            ON public.guardians(user_id);
 CREATE INDEX IF NOT EXISTS idx_daily_limits_user_id         ON public.daily_limits(user_id);
-CREATE INDEX IF NOT EXISTS idx_profile_unlocks_user_id ON public.profile_unlocks(user_id);
-CREATE INDEX IF NOT EXISTS idx_call_violations_caller_id ON public.call_violations(caller_id);
-CREATE INDEX IF NOT EXISTS idx_wedding_vendors_category  ON public.wedding_vendors(category);
+CREATE INDEX IF NOT EXISTS idx_profile_unlocks_user_id      ON public.profile_unlocks(user_id);
+CREATE INDEX IF NOT EXISTS idx_vip_photo_reveals_lookup     ON public.vip_photo_reveals(vip_id, viewer_id);
+CREATE INDEX IF NOT EXISTS idx_call_violations_caller_id    ON public.call_violations(caller_id);
+CREATE INDEX IF NOT EXISTS idx_wedding_vendors_category     ON public.wedding_vendors(category);
 CREATE INDEX IF NOT EXISTS idx_sms_queue_status             ON public.sms_queue(status);
+CREATE INDEX IF NOT EXISTS idx_post_comments_post_id        ON public.post_comments(post_id);
+CREATE INDEX IF NOT EXISTS idx_post_reactions_post_id       ON public.post_reactions(post_id);
+CREATE INDEX IF NOT EXISTS idx_payments_user_id             ON public.payments(user_id);
 
 
 -- =========================================================================
@@ -885,7 +963,7 @@ INSERT INTO public.gift_catalog (id, name_en, name_am, name_om, name_ti, name_so
   ('11111111-1111-1111-1111-111111111111', 'Habesha Coffee Sini',     'የሀበሻ ሲኒ',            'Sini Buna Habeshaa',           'ፅዋ ቡን ሓበሻ',    'Koobka Bunka Xabashida', 'فنجان قهوة حبشية',         'sini_coffee',     20,  'cultural', 1, 0.15,   0.00),
   ('33333333-3333-3333-3333-333333333333', 'Shamma Candle',           'የፍቅር ሻማ',            'Shamaa Habeshaa',              'ሽምዓ ሓበሻ',      'Shamaa Xabashida',       'شمعة حبشية',               'shamma_candle',   15,  'cultural', 1, 0.15,   0.00),
   ('44444444-4444-4444-4444-444444444444', 'Jebena Pot',              'የሀበሻ ጀበና',            'Jabanaa Habeshaa',             'ጀበና ሓበሻ',      'Kettle Xabashida',       'جبنة حبشية',               'jebena_pot',      100, 'cultural', 2, 0.15,  10.00),
-  ('22222222-2222-2222-2222-222222222222', 'Habesha Flower',          'የማር አበባ',             'Abaaroo Habeshaa',             'ዕምባባ ሓበሻ',    'Ubaxa Xabashida',        'وردة حبشية',               'habesha_flower',  50,  'flowers',  1, 0.15,   0.00),
+  ('22222222-2222-2222-2222-222222222222', 'Habesha Flower',          'የማር አበባ',             'Abaaroo Habeshaa',             'ዕምባባ ሓበሻ',    'Ubaxa Xabashida',        'وردة حبሽية',               'habesha_flower',  50,  'flowers',  1, 0.15,   0.00),
   ('88888888-8888-8888-8888-888888888888', 'Premium Boxed Flowers',   'በቅንጡ ሳጥን አበባዎች',    'Abaaroo Luxury Box',           'ዕምባባታት ፅኑዕ', 'Ubax Boxed',             'أزهار فاخرة مغلفة',        'boxed_flowers',   80,  'flowers',  2, 0.15,  20.00),
   ('55555555-5555-5555-5555-555555555555', 'Romantic Love Doves',     'የፍቅር እርግቦች',         'Guutoo jaalalaa',              'ርግብታት ፍቕሪ',   'Flutter Dove',           'حمام الحب الرومانسي',      'love_doves',      150, 'pets',     4, 0.20,  30.00),
   ('66666666-6666-6666-6666-666666666666', 'Luxury Poodle Puppy',     'የቅንጦት ቡችላ',          'Saree Luxury',                 'ቅንጡ ዕትብት',    'Ey puppy',               'جرو بودل فاخر',            'luxury_puppy',    500, 'pets',     4, 0.25, 150.00),
@@ -938,7 +1016,7 @@ ON CONFLICT (user_id) DO NOTHING;
 
 
 -- =========================================================================
--- END | Beteseb Platform Database Schema v6.0 | Production Ready
--- Tables: 32 | Triggers: 7 | RLS Policies: 52+ | Indexes: 32+
+-- END | Beteseb Platform Database Schema v8.0 | Production Ready
+-- Tables: 33 | Triggers: 7 | RLS Policies: 54+ | Indexes: 34+
 -- SUPERSEDES all previous SQL files. This is the ONLY file needed.
 -- =========================================================================
