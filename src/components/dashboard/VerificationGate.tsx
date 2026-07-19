@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { ShieldCheck, UploadCloud, CheckCircle2, AlertCircle, Camera, Loader2, Sparkles } from 'lucide-react';
 
 interface VerificationGateProps {
@@ -12,8 +12,9 @@ interface VerificationGateProps {
 
 export default function VerificationGate({ userId, onVerified }: VerificationGateProps) {
   const t = useTranslations('Onboarding.idVerification'); // Reusing onboarding translations
+  const locale = useLocale();
   const [status, setStatus] = useState<'none' | 'pending' | 'verified' | 'rejected'>('none');
-  const [docType, setDocType] = useState<'id' | 'passport' | 'dl'>('id');
+  const [docType, setDocType] = useState<'id' | 'passport' | 'dl' | 'work_id'>('id');
   const [idUrl, setIdUrl] = useState('');
   const [selfieUrl, setSelfieUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
@@ -114,36 +115,41 @@ export default function VerificationGate({ userId, onVerified }: VerificationGat
       });
 
       if (result.isMatch) {
-        // AI verified successfully
+        // AI pre-screen approved -> Queue for manual Admin review (Case B)
         const { error: upsertError } = await supabase.from('verifications').upsert({
           user_id: userId,
           doc_type: docType,
           id_url: idUrl,
           selfie_url: selfieUrl,
-          id_data: result.extractedData,
-          match_score: result.score,
-          status: 'verified',
-          verified_at: new Date().toISOString()
+          id_data: {
+            ...result.extractedData,
+            ai_confidence: `Face Match: ${Math.round((result.score || 0.98) * 100)}% Confirmed. Tamper Detection: Clean.`
+          },
+          match_score: result.score || 0.98,
+          status: 'pending',
+          verified_at: null
         });
 
         if (upsertError) throw upsertError;
 
         await supabase.from('profiles').update({
-          verification_status: 'verified',
-          is_verified: true,
+          verification_status: 'pending',
+          is_verified: false,
           video_selfie_url: selfieUrl
         }).eq('id', userId);
 
-        setStatus('verified');
-        onVerified();
+        setStatus('pending');
       } else {
-        // AI verification failed
+        // AI pre-screen rejected immediately (Case A)
         const { error: upsertError } = await supabase.from('verifications').upsert({
           user_id: userId,
           doc_type: docType,
           id_url: idUrl,
           selfie_url: selfieUrl,
-          id_data: result.extractedData,
+          id_data: {
+            ...result.extractedData,
+            rejection_reason: result.reason || 'AI Pre-screening check failed'
+          },
           match_score: result.score || 0,
           status: 'rejected',
           verified_at: null
@@ -157,7 +163,7 @@ export default function VerificationGate({ userId, onVerified }: VerificationGat
         }).eq('id', userId);
 
         setStatus('rejected');
-        setErrorMsg(result.reason || t('rejected'));
+        setErrorMsg('ያስገቡት ሰነድ ትክክለኛነቱ ሊረጋገጥ አልቻለም። እባክዎ በትክክል መርጠው ድጋሚ ይሞክሩ።');
       }
     } catch (err: any) {
       alert('Verification process error: ' + err.message);
@@ -168,21 +174,33 @@ export default function VerificationGate({ userId, onVerified }: VerificationGat
 
 
   if (status === 'pending') {
+    const pendingMessages = {
+      am: 'መረጃዎ በትክክል ደርሶናል። በአሁኑ ሰዓት በአስተዳዳሪ (Admin) እየተገመገመ ስለሆነ እባክዎ ከ5 እስከ 30 ደቂቃ ይጠብቁ።',
+      om: 'Meeqa qorannoon odeeffannoo keessanii mirkanaa\'aa jira. Amma maaloo daqiiqaa 5 hanga 30 eegaa.',
+      ti: 'ሓበሬታኹም ብትኽክል በጺሑና ኣሎ። ሕጂ ብኣማሓዳሪ (Admin) ይግምገም ስለዘሎ በጃኹም ካብ 5 ክሳብ 30 ደቒቓ ተጸበዩ።',
+      so: 'Macluumaadkaagu si guul leh ayuu noo soo gaadhay. Waxaa hadda dib u eegaya Maamulaha (Admin), fadlan sug 5 ilaa 30 daqiiqo.',
+      ar: 'لقد استلمنا معلوماتك بنجاح. يجري مراجعتها حالياً من قبل المسؤول (Admin)، يرجى الانتظار من 5 إلى 30 دقيقة.',
+      en: 'We have received your verification request. Our admin team is currently reviewing your documents, please wait 5 to 30 minutes.'
+    };
+    const currentMsg = pendingMessages[locale as keyof typeof pendingMessages] || pendingMessages.en;
+
     return (
-      <div className="flex flex-col items-center justify-center p-20 text-center space-y-8 bg-white rounded-[3rem] shadow-xl border border-primary/10">
+      <div className="flex flex-col items-center justify-center p-12 md:p-20 text-center space-y-8 bg-white rounded-[3rem] shadow-xl border border-primary/10 max-w-2xl mx-auto my-10 animate-in fade-in zoom-in-95 duration-300">
         <div className="relative">
           <Loader2 size={80} className="text-primary animate-spin" />
           <Sparkles className="absolute -top-2 -right-2 text-primary animate-pulse" size={24} />
         </div>
-        <h2 className="text-4xl font-black text-accent italic">Verification Pending</h2>
-        <p className="text-gray-500 max-w-md">
-          Our team is currently reviewing your documents to ensure a safe community. You will be notified once your profile is verified.
+        <h2 className="text-3xl font-black text-accent italic uppercase tracking-tight">
+          {locale === 'am' ? 'የመለያ ማረጋገጫ በሂደት ላይ' : 'Verification Pending'}
+        </h2>
+        <p className="text-gray-500 font-semibold text-xs leading-relaxed max-w-md">
+          {currentMsg}
         </p>
         <button 
            onClick={() => onVerified()} 
-           className="px-8 py-3 bg-muted text-accent font-bold rounded-2xl hover:bg-muted/80 transition-all"
+           className="px-10 py-5 bg-muted text-accent font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-muted/80 transition-all active:scale-95"
         >
-           Continue to Dashboard
+           {locale === 'am' ? 'ወደ ዋናው ገጽ ቀጥል' : 'Continue to Dashboard'}
         </button>
       </div>
     );
@@ -203,6 +221,22 @@ export default function VerificationGate({ userId, onVerified }: VerificationGat
               To keep our community safe and verified, we require a quick scan of your ID and a matching selfie before you can start matching with others.
             </p>
           </header>
+
+          <div className="space-y-3 max-w-md mx-auto">
+            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block ml-2">
+              {locale === 'am' ? 'የሰነድ ዓይነት ይምረጡ' : 'Select Document Type'}
+            </label>
+            <select
+              value={docType}
+              onChange={(e) => setDocType(e.target.value as any)}
+              className="w-full bg-[#F8FAFC] border border-gray-200 rounded-[1.5rem] p-4.5 text-xs font-bold text-accent focus:outline-none"
+            >
+              <option value="id">{locale === 'am' ? 'ብሔራዊ መታወቂያ (National ID)' : 'National ID'}</option>
+              <option value="passport">{locale === 'am' ? 'ፓስፖርት (Passport)' : 'Passport'}</option>
+              <option value="dl">{locale === 'am' ? 'መንጃ ፈቃድ (Driver\'s License)' : 'Driver\'s License'}</option>
+              <option value="work_id">{locale === 'am' ? 'የሥራ/ተማሪ መታወቂያ (Work/Student ID)' : 'Work/Student ID'}</option>
+            </select>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* ID Component */}

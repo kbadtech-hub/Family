@@ -99,6 +99,7 @@ function DashboardContent() {
   const [defaultPaymentTab, setDefaultPaymentTab] = useState<'premium' | 'vip'>('premium');
   const [profile, setProfile] = useState<Profile | null>(null);
   const [verificationStatus, setVerificationStatus] = useState<string>('loading');
+  const [rejectionReason, setRejectionReason] = useState<string>('');
   const [warningMessage, setWarningMessage] = useState<string | null>(null);
   // Trial model removed (Blueprint v4.0) â€” using freemium tier-based limits
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
@@ -517,7 +518,7 @@ function DashboardContent() {
       } else {
         // Fallback: check verifications table for latest submission status
         const { data: verifyData } = await supabase.from('verifications')
-          .select('status')
+          .select('status, id_data')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(1)
@@ -525,6 +526,12 @@ function DashboardContent() {
 
         const currentVerifyStatus = verifyData?.status || 'none';
         setVerificationStatus(currentVerifyStatus);
+        if (currentVerifyStatus === 'rejected') {
+          setRejectionReason(
+            verifyData?.id_data?.rejection_reason || 
+            (locale === 'am' ? 'ያልተገለጸ ምክንያት' : 'No reason specified')
+          );
+        }
 
         // If verifications table says verified but profiles doesn't, sync profiles
         if (currentVerifyStatus === 'verified') {
@@ -1289,9 +1296,9 @@ function DashboardContent() {
           </div>
         </header>
 
-        {/* Verification Banner â€” use the synced local verificationStatus state, NOT the raw
+        {/* Verification Banner — use the synced local verificationStatus state, NOT the raw
             profile fields which may be stale on first render before DB sync completes */}
-        {verificationStatus !== 'verified' && verificationStatus !== 'pending' && verificationStatus !== 'loading' && (
+        {verificationStatus !== 'verified' && verificationStatus !== 'pending' && verificationStatus !== 'loading' && verificationStatus !== 'rejected' && (
           <div className="mb-10 bg-gradient-to-r from-primary to-orange-400 p-8 md:p-10 rounded-[3rem] text-white shadow-2xl shadow-primary/20 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:scale-110 transition-transform duration-700" />
             <div className="relative flex flex-col md:flex-row items-center justify-between gap-8">
@@ -1316,7 +1323,55 @@ function DashboardContent() {
           </div>
         )}
 
-        {/* â”€â”€ Floating Friend-Request Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* Case B: Pending Review Notification Banner */}
+        {verificationStatus === 'pending' && (
+          <div className="mb-10 bg-blue-50 border border-blue-100 p-8 md:p-10 rounded-[3rem] text-accent shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 animate-in fade-in duration-500">
+            <div className="relative flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+              <div className="w-16 h-16 bg-blue-500 text-white rounded-3xl flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20">
+                <Loader2 size={28} className="animate-spin" />
+              </div>
+              <div className="space-y-2">
+                <h4 className="text-sm font-black uppercase tracking-wider text-blue-600">
+                  {locale === 'am' ? 'የመለያ ማረጋገጫ በሂደት ላይ' : 'Verification Pending Review'}
+                </h4>
+                <p className="text-xs font-semibold text-gray-500 max-w-xl leading-relaxed">
+                  {locale === 'am' 
+                    ? 'መረጃዎ በትክክል ደርሶናል። በአሁኑ ሰዓት በአስተዳዳሪ (Admin) እየተገመገመ ስለሆነ እባክዎ ከ5 እስከ 30 ደቂቃ ይጠብቁ።'
+                    : 'We have received your verification request. Our admin team is currently reviewing your documents, please wait 5 to 30 minutes.'}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Case A & Admin Decline: Rejected Notification Banner */}
+        {verificationStatus === 'rejected' && (
+          <div className="mb-10 bg-red-50 border border-red-100 p-8 md:p-10 rounded-[3rem] text-accent shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 animate-in fade-in duration-500">
+            <div className="relative flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+              <div className="w-16 h-16 bg-red-500 text-white rounded-3xl flex items-center justify-center shrink-0 shadow-lg shadow-red-500/20">
+                <AlertCircle size={28} />
+              </div>
+              <div className="space-y-2">
+                <h4 className="text-sm font-black uppercase tracking-wider text-red-600">
+                  {locale === 'am' ? 'ማረጋገጫው ውድቅ ተደርጓል' : 'Verification Rejected'}
+                </h4>
+                <p className="text-xs font-semibold text-gray-500 max-w-xl leading-relaxed">
+                  {locale === 'am' 
+                    ? `ያስገቡት ዶክመንት ውድቅ ተደርጓል። ምክንያት፦ ${rejectionReason}። እባክዎ በትክክል አስተካክለው ድጋሚ ይሞክሩ።`
+                    : `Your verification request has been rejected. Reason: ${rejectionReason}. Please correct it and try again.`}
+                </p>
+              </div>
+            </div>
+            <button 
+              onClick={() => router.push('/onboarding?step=4')}
+              className="bg-red-500 hover:bg-red-600 text-white px-10 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs shadow-xl shadow-red-500/10 hover:scale-105 active:scale-95 transition-all shrink-0 flex items-center gap-2"
+            >
+              🔄 {locale === 'am' ? 'ድጋሚ አስገባ' : 'Try Again'}
+            </button>
+          </div>
+        )}
+
+        {/* ——— Floating Friend-Request Toast —————————————————————————————— */}
         {activeRequestNotification && (
           <div className="fixed bottom-24 md:bottom-8 left-1/2 -translate-x-1/2 z-[300] w-[92vw] max-w-sm animate-in slide-in-from-bottom-6 duration-500">
             <div className="bg-white rounded-[2rem] shadow-2xl border border-primary/20 p-5 flex items-center gap-4">

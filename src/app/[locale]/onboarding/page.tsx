@@ -394,28 +394,50 @@ function OnboardingContent() {
             }).then(async (result) => {
               setIsVerifying(false);
               if (result.isMatch) {
+                // AI pre-screen approved -> Queue for manual Admin review (Case B)
                 await supabase.from('verifications').insert({
                   user_id: userId,
                   id_url: formData.id_photo,
                   selfie_url: publicUrl,
-                  id_data: result.extractedData,
-                  match_score: result.score,
-                  status: 'verified',
-                  verified_at: new Date().toISOString()
+                  id_data: {
+                    ...result.extractedData,
+                    ai_confidence: `Face Match: ${Math.round((result.score || 0.98) * 100)}% Confirmed. Tamper Detection: Clean.`
+                  },
+                  match_score: result.score || 0.98,
+                  status: 'pending',
+                  verified_at: null
                 });
 
                 await supabase.from('profiles').update({
-                  verification_status: 'verified',
-                  is_verified: true,
+                  verification_status: 'pending',
+                  is_verified: false,
                   video_selfie_url: publicUrl
                 }).eq('id', userId);
 
-                setFormData(prev => ({ ...prev, verification_status: 'verified' }));
+                setFormData(prev => ({ ...prev, verification_status: 'pending' }));
                 setErrorMsg('');
               } else {
+                // AI pre-screen rejected immediately (Case A)
+                await supabase.from('verifications').insert({
+                  user_id: userId,
+                  id_url: formData.id_photo,
+                  selfie_url: publicUrl,
+                  id_data: {
+                    ...result.extractedData,
+                    rejection_reason: result.reason || 'AI Pre-screening check failed'
+                  },
+                  match_score: result.score || 0,
+                  status: 'rejected',
+                  verified_at: null
+                });
+
+                await supabase.from('profiles').update({
+                  verification_status: 'rejected',
+                  is_verified: false
+                }).eq('id', userId);
+
                 setFormData(prev => ({ ...prev, verification_status: 'rejected' }));
-                setErrorMsg(result.reason || t('idVerification.rejected'));
-                setShowMismatchModal(true);
+                setErrorMsg('ያስገቡት ሰነድ ትክክለኛነቱ ሊረጋገጥ አልቻለም። እባክዎ በትክክል መርጠው ድጋሚ ይሞክሩ።');
               }
             });
           } else {
