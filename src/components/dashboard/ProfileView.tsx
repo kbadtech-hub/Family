@@ -585,7 +585,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
 
   const handleLanguageChange = (newLocale: string) => {
     setFormData({...formData, preferred_language: newLocale});
-    const params = new URLSearchParams(searchParams?.toString() || '');
+    const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
     const queryString = params.toString();
     const targetPath = queryString ? `${pathname}?${queryString}` : pathname;
     router.replace(targetPath, { locale: newLocale });

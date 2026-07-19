@@ -49,7 +49,7 @@ export default function Header() {
   ];
 
   const handleLanguageChange = (newLocale: string) => {
-    const params = new URLSearchParams(searchParams?.toString() || '');
+    const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
     const queryString = params.toString();
     const targetPath = queryString ? `${pathname}?${queryString}` : pathname;
     router.replace(targetPath, { locale: newLocale });

@@ -256,7 +256,7 @@ function DashboardContent() {
   };
 
   const handleLanguageChange = (newLocale: string) => {
-    const params = new URLSearchParams(searchParams?.toString() || '');
+    const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
     const queryString = params.toString();
     const targetPath = queryString ? `${pathname}?${queryString}` : pathname;
     router.replace(targetPath, { locale: newLocale });
@@ -1179,8 +1179,8 @@ function DashboardContent() {
       </div>
 
       {/* Main Content */}
-      <main className={`flex-1 flex flex-col ${activeTab === 'chat' ? 'h-[calc(100vh-80px)] md:h-screen overflow-hidden p-6 md:p-16' : 'overflow-y-auto p-6 md:p-16'}`}>
-        <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-6 w-full border-b border-border pb-6">
+      <main className={`flex-1 flex flex-col ${activeTab === 'chat' ? 'h-[calc(100vh-80px)] md:h-screen overflow-hidden p-0' : 'overflow-y-auto p-6 md:p-16'}`}>
+        <header className={`flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 w-full border-b border-border pb-6 ${activeTab === 'chat' ? 'mb-0 px-6 pt-6 md:px-16 md:pt-16' : 'mb-10'}`}>
           <div className="flex items-center justify-between w-full">
             {/* Company Logo in Header */}
             <div className="flex items-center gap-4">
@@ -1524,7 +1524,7 @@ function DashboardContent() {
 
         {/* Tab Components */}
         {activeTab === 'chat' && (
-           <div className="w-full flex-1 min-h-0 mt-10">
+           <div className="w-full flex-1 min-h-0 mt-0">
               <SubscriptionGate allowVerifiedView={false}>
                  <ChatView isPremium={isPremium} />
               </SubscriptionGate>
