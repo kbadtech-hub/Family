@@ -30,9 +30,57 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
   const [selectedDuration, setSelectedDuration] = useState<string>('3m');
   const [isProcessing, setIsProcessing] = useState(false);
   
-  // Enforce strict country location rules
   const isEthiopia = profile?.location?.country?.toLowerCase() === 'ethiopia' || profile?.currency_locked === 'ETB';
   const currency = isEthiopia ? 'ETB' : 'USD';
+  const isNative = typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.();
+
+  // Multi-lingual instructions for Google Play Policy compliance (Web-to-App upgrade)
+  const instructions = {
+    am: {
+      title: 'የተመረጠው አገልግሎት',
+      upgradeTitle: 'በዌብሳይታችን ይክፈሉ',
+      desc: 'ይህን መተግበሪያ ወደ ፕሪሚየም ወይም ቪአይፒ ለማሳደግ፣ እባክዎ በስልክዎ ወይም በኮምፒተርዎ ብሮውዘር ወደ ዌብሳይታችን (beteseb1.online) በመሄድ ክፍያ ይፈጽሙ።',
+      footer: 'ክፍያውን እንደፈጸሙ መተግበሪያው በራስ-ሰር ይከፈትልዎታል።',
+      badge: 'አስተማማኝ የደህንነት ስርዓት'
+    },
+    om: { // Oromiffa
+      title: 'Tajaajila Filatame',
+      upgradeTitle: 'Weebsaayitii Keenya irratti Kafalaa',
+      desc: 'Appilikeeshinii kana gara Premium ykn VIPtti ol guddisuuf, maaloo bilbila ykn kompiutara keessaniin weebsaayitii keenya (beteseb1.online) daawwachuun kafaltii raawwadhaa.',
+      footer: 'Kafaltii raawwattanii yeroo xumurtan appilikeeshiniin keessan ofumaan banama.',
+      badge: 'Sirna Nageenya Mirkanaa\'ee'
+    },
+    ti: { // Tigrinya
+      title: 'ዝተመርጸ ኣገልግሎት',
+      upgradeTitle: 'ኣብ ወብሳይትና ይክፈሉ',
+      desc: 'ነዚ መተግበሪያ ናብ ፕሪሚየም ናይ ቪኣይፒ ንምዕባይ፡ በጃኹም ብስልኪ ወይ ብኮምፒተርኩም ብሮውዘር ናብ ወብሳይትና (beteseb1.online) ብምኻድ ክፍሊት ይፈጽሙ።',
+      footer: 'ክፍሊት ከምዝፈጸምኩም መተግበሪያኡ ብባዕሉ ክኽፈት እዩ።',
+      badge: 'ውሑስ ናይ ምርግጋጽ ስርዓት'
+    },
+    so: { // Somali
+      title: 'Adeegga la Doortay',
+      upgradeTitle: 'Ku Bixi Websaydkayaga',
+      desc: 'Si aad abkan ugu cusboonaysiiso Premium ama VIP, fadlan ka booqo websaydkayaga (beteseb1.online) taleefankaaga ama kombuyuutarkaaga si aad lacag bixinta u dhamaystirto.',
+      footer: 'Markaad lacag bixinta dhamaystirto, abkaagu si toos ah ayuu u furmi doonaa.',
+      badge: 'Nidaamka Amniga ee la Hubiyay'
+    },
+    ar: { // Arabic
+      title: 'الخدمة المختارة',
+      upgradeTitle: 'ادفع على موقعنا الإلكتروني',
+      desc: 'لترقية هذا التطبيق إلى فئة مميزة (Premium) أو VIP، يرجى زيارة موقعنا الإلكتروني (beteseb1.online) على متصفح الهاتف أو الكمبيوتر لإتمام عملية الدفع.',
+      footer: 'بمجرد إتمام الدفع، سيتم تفعيل حسابك في التطبيق تلقائياً.',
+      badge: 'نظام تحقق آمن'
+    },
+    en: {
+      title: 'Selected Category',
+      upgradeTitle: 'Pay on our Website',
+      desc: 'To upgrade this app to Premium or VIP status, please visit our website (beteseb1.online) on your phone or computer browser to make a secure payment.',
+      footer: 'Your app will automatically unlock once the payment is completed.',
+      badge: 'Secure Verification System'
+    }
+  };
+
+  const currentText = instructions[locale as keyof typeof instructions] || instructions.en;
 
   // 1. Premium Pricing Packages
   const premiumPlans = {
@@ -340,48 +388,78 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
           </div>
         </div>
 
-        <div className="p-8 bg-[#F8FAFC] rounded-[2.5rem] border border-border space-y-6 text-center">
-          <div className="space-y-2">
-            <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest">
-              {isAm ? 'የተመረጠው አገልግሎት' : 'Selected Category'}
-            </h4>
-            <p className="text-2xl font-black text-accent italic uppercase tracking-tighter">
-              {activePlanType === 'vip' ? 'Beteseb VIP Status' : 'Beteseb Premium'}
+        {isNative ? (
+          <div className="p-8 bg-primary/5 rounded-[2.5rem] border border-primary/20 space-y-6 text-center">
+            <div className="space-y-2">
+              <h4 className="text-xs font-black text-primary uppercase tracking-widest">
+                {currentText.title}
+              </h4>
+              <p className="text-2xl font-black text-accent italic uppercase tracking-tighter">
+                {activePlanType === 'vip' ? 'Beteseb VIP Status' : 'Beteseb Premium'}
+              </p>
+            </div>
+
+            <div className="p-6 bg-white rounded-3xl border border-gray-150 shadow-inner flex flex-col items-center justify-center gap-4 animate-in fade-in zoom-in duration-300">
+              <span className="text-xs font-bold text-gray-500 leading-relaxed text-center">
+                {currentText.desc}
+              </span>
+              <div className="w-full p-4 bg-[#F8FAFC] border border-border rounded-2xl select-all font-black text-primary text-sm tracking-wider text-center cursor-pointer active:scale-95 transition-all">
+                beteseb1.online
+              </div>
+              <span className="text-[10px] text-gray-400 font-bold uppercase italic text-center">
+                {currentText.footer}
+              </span>
+            </div>
+
+            <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider flex items-center justify-center gap-2">
+              <ShieldCheck size={14} className="text-primary" />
+              {currentText.badge}
             </p>
           </div>
-
-          <div className="p-6 bg-white rounded-3xl border border-gray-150 shadow-inner flex flex-col items-center justify-center gap-1">
-            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-              {isAm ? 'ጠቅላላ ክፍያ' : 'Total Amount Due'}
-            </span>
-            <div className="flex items-baseline gap-1 text-accent italic font-black">
-              <span className="text-4xl">
-                {currency === 'ETB' ? 'ብር ' : '$'}
-                {currentPlans.find(p => p.id === selectedDuration)?.price || 0}
-              </span>
-              <span className="text-[10px] text-primary font-bold uppercase">{currency}</span>
+        ) : (
+          <div className="p-8 bg-[#F8FAFC] rounded-[2.5rem] border border-border space-y-6 text-center">
+            <div className="space-y-2">
+              <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                {isAm ? 'የተመረጠው አገልግሎት' : 'Selected Category'}
+              </h4>
+              <p className="text-2xl font-black text-accent italic uppercase tracking-tighter">
+                {activePlanType === 'vip' ? 'Beteseb VIP Status' : 'Beteseb Premium'}
+              </p>
             </div>
-            {currentPlans.find(p => p.id === selectedDuration)?.discount ? (
-              <span className="text-[10px] bg-red-500 text-white font-black px-3 py-1 rounded-full uppercase tracking-wider animate-pulse">
-                {currentPlans.find(p => p.id === selectedDuration)?.discount}% {isAm ? 'ቅናሽ ተደርጓል' : 'Discount Applied'}
+
+            <div className="p-6 bg-white rounded-3xl border border-gray-150 shadow-inner flex flex-col items-center justify-center gap-1">
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                {isAm ? 'ጠቅላላ ክፍያ' : 'Total Amount Due'}
               </span>
-            ) : null}
+              <div className="flex items-baseline gap-1 text-accent italic font-black">
+                <span className="text-4xl">
+                  {currency === 'ETB' ? 'ብር ' : '$'}
+                  {currentPlans.find(p => p.id === selectedDuration)?.price || 0}
+                </span>
+                <span className="text-[10px] text-primary font-bold uppercase">{currency}</span>
+              </div>
+              {currentPlans.find(p => p.id === selectedDuration)?.discount ? (
+                <span className="text-[10px] bg-red-500 text-white font-black px-3 py-1 rounded-full uppercase tracking-wider animate-pulse">
+                  {currentPlans.find(p => p.id === selectedDuration)?.discount}% {isAm ? 'ቅናሽ ተደርጓል' : 'Discount Applied'}
+                </span>
+              ) : null}
+            </div>
+
+            <button 
+              onClick={handleCheckout}
+              disabled={isProcessing}
+              className={`w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-2xl flex items-center justify-center gap-3 transition-all active:scale-95 ${activePlanType === 'vip' ? 'bg-amber-500 text-white shadow-amber-500/20 hover:bg-amber-600' : 'bg-primary text-white shadow-primary/20 hover:bg-primary-hover'}`}
+            >
+              {isProcessing ? <Loader2 className="animate-spin text-white" /> : <CreditCard size={16} />}
+              {isAm ? 'ክፍያን ፈጽም' : 'Complete Upgrade'}
+            </button>
+
+            <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider flex items-center justify-center gap-2">
+              <ShieldCheck size={14} className="text-primary" />
+              {isAm ? 'አስተማማኝ ክፍያ • ወዲያውኑ ገባሪ ይሆናል' : 'Secure gateway • Activated instantly'}
+            </p>
           </div>
-
-          <button 
-            onClick={handleCheckout}
-            disabled={isProcessing}
-            className={`w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-2xl flex items-center justify-center gap-3 transition-all active:scale-95 ${activePlanType === 'vip' ? 'bg-amber-500 text-white shadow-amber-500/20 hover:bg-amber-600' : 'bg-primary text-white shadow-primary/20 hover:bg-primary-hover'}`}
-          >
-            {isProcessing ? <Loader2 className="animate-spin text-white" /> : <CreditCard size={16} />}
-            {isAm ? 'ክፍያን ፈጽም' : 'Complete Upgrade'}
-          </button>
-
-          <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider flex items-center justify-center gap-2">
-            <ShieldCheck size={14} className="text-primary" />
-            {isAm ? 'አስተማማኝ ክፍያ • ወዲያውኑ ገባሪ ይሆናል' : 'Secure gateway • Activated instantly'}
-          </p>
-        </div>
+        )}
       </div>
 
       {/* ── CARD PLAN LIST ────────────────────────────────────────────────── */}

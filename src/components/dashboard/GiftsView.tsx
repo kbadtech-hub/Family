@@ -55,6 +55,7 @@ export default function GiftsView({ locale }: { locale: string }) {
   const [coinBalance, setCoinBalance] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const [profile, setProfile] = useState<any>(null);
   
   // Delivery Modal State
   const [deliveryGift, setDeliveryGift] = useState<GiftRecord | null>(null);
@@ -91,6 +92,12 @@ export default function GiftsView({ locale }: { locale: string }) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     setUserId(user.id);
+
+    // Fetch profile
+    const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+    if (profileData) {
+      setProfile(profileData);
+    }
 
     // Fetch coin packages from settings
     try {
@@ -221,24 +228,55 @@ export default function GiftsView({ locale }: { locale: string }) {
   };
 
   const topupCoins = async () => {
-    if (!userId) return;
+    if (!userId || !selectedPack) return;
     setLoadingTopup(true);
 
     try {
-      // Simulate top-up
-      const { error } = await supabase
-        .from('coin_transactions')
-        .insert({
-          user_id: userId,
-          amount: selectedPack.coins,
-          type: 'purchase'
+      const isEthiopia = profile?.location?.country?.toLowerCase() === 'ethiopia' || profile?.currency_locked === 'ETB';
+      const currency = isEthiopia ? 'ETB' : 'USD';
+
+      if (currency === 'ETB') {
+        const txRef = `${userId}-${selectedPack.id}-${Date.now()}`;
+        const response = await fetch('/api/payments/chapa/initialize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: selectedPack.priceEtb,
+            email: profile?.email || 'user@example.com',
+            first_name: (profile?.full_name || 'Beteseb User').split(' ')[0] || 'Beteseb',
+            last_name: (profile?.full_name || 'Beteseb User').split(' ')[1] || 'User',
+            tx_ref: txRef,
+            callback_url: window.location.origin + `/${locale}/dashboard?tab=gifts&tx_ref=${txRef}`
+          })
         });
 
-      if (error) throw error;
+        const data = await response.json();
+        if (data.status === 'success' && data.data?.checkout_url) {
+          window.location.href = data.data.checkout_url;
+        } else {
+          throw new Error(data.message || 'Chapa initialization failed');
+        }
+      } else {
+        const response = await fetch('/api/payments/stripe/initialize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: selectedPack.priceUsd,
+            email: profile?.email || 'user@example.com',
+            planType: selectedPack.id,
+            userId: userId,
+            successUrl: window.location.origin + `/${locale}/dashboard?status=success`,
+            cancelUrl: window.location.origin + `/${locale}/dashboard?status=cancel`
+          })
+        });
 
-      setCoinBalance(prev => prev + selectedPack.coins);
-      alert(locale === 'am' ? 'ሳንቲሞች በተሳካ ሁኔታ ተገዝተዋል!' : 'Top-up completed successfully!');
-      setActiveSubTab('received');
+        const data = await response.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          throw new Error(data.error || 'Stripe initialization failed');
+        }
+      }
     } catch (err: any) {
       alert("Error: " + err.message);
     } finally {
@@ -312,6 +350,36 @@ export default function GiftsView({ locale }: { locale: string }) {
       </div>
     );
   }
+
+  const coinInstructions = {
+    am: {
+      desc: 'ይህን ሳንቲም (Coins) ለመግዛት፣ እባክዎ በስልክዎ ወይም በኮምፒተርዎ ብሮውዘር ወደ ዌብሳይታችን በመሄድ ክፍያ ይፈጽሙ፦',
+      footer: 'ክፍያውን እንደፈጸሙ ሳንቲሞቹ በራስ-ሰር ወደ አካውንትዎ ይገባሉ።'
+    },
+    om: {
+      desc: 'Saantima (Coins) kana bituuf, maaloo bilbila ykn kompiutara keessaniin weebsaayitii keenya (beteseb1.online) daawwachuun kafaltii raawwadhaa:',
+      footer: 'Kafaltii raawwattanii yeroo xumurtan saantimichi ofumaan herrega keessanitti dabalama.'
+    },
+    ti: {
+      desc: 'እዚ ሳንቲም (Coins) ንምዕዳግ፡ በጃኹም ብስልኪ ወይ ብኮምፒተርኩም ብሮውዘር ናብ ወብሳይትና (beteseb1.online) ብምኻድ ክፍሊት ይፈጽሙ፡',
+      footer: 'ክፍሊት ከምዝፈጸምኩም ሳንቲም ብባዕሉ ናብ አካውንትኩም ክኣቱ እዩ።'
+    },
+    so: {
+      desc: 'Si aad u iibsato shilimaantan (Coins), fadlan ka booqo websaydkayaga (beteseb1.online) taleefankaaga ama kombuyuutarkaaga si aad lacag bixinta u dhamaystirto:',
+      footer: 'Markaad lacag bixinta dhamaystirto, shilimaantu si toos ah ayay kuugu shubmi doonaan.'
+    },
+    ar: {
+      desc: 'لشراء هذه العملات (Coins)، يرجى زيارة موقعنا الإلكتروني (beteseb1.online) على متصفح الهاتف أو الكمبيوتر لإتمام عملية الدفع:',
+      footer: 'بمجرد إتمام الدفع، ستضاف العملات إلى حسابك تلقائياً.'
+    },
+    en: {
+      desc: 'To purchase these coins, please visit our website (beteseb1.online) on your phone or computer browser to make a secure payment:',
+      footer: 'Your coins will be automatically credited to your account once the payment is completed.'
+    }
+  };
+
+  const currentCoinText = coinInstructions[locale as keyof typeof coinInstructions] || coinInstructions.en;
+  const isEthiopia = profile?.location?.country?.toLowerCase() === 'ethiopia' || profile?.currency_locked === 'ETB';
 
   return (
     <div className="space-y-10">
@@ -512,7 +580,7 @@ export default function GiftsView({ locale }: { locale: string }) {
                       <Coins size={20} className="text-primary" /> {pack.coins}
                    </div>
                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                      {locale === 'am' ? `${pack.priceEtb} ብር` : `$${pack.priceUsd}`}
+                      {isEthiopia ? `${pack.priceEtb} ብር` : `$${pack.priceUsd}`}
                    </span>
                  </button>
                ))}
@@ -520,12 +588,32 @@ export default function GiftsView({ locale }: { locale: string }) {
 
             {/* Checkout Options */}
             {isMobileNative ? (
-              <div className="bg-primary/5 p-6 rounded-[2rem] border border-primary/10 text-center space-y-4">
-                 <p className="text-[10px] text-gray-500 leading-relaxed italic">
-                    {locale === 'am'
-                      ? 'ክፍያዎን በአፕል አፕ ስቶር ወይም ጎግል ፕሌይ የውስጥ የክፍያ ሥርዓት በኩል በደህንነት ይፈጽማሉ።'
-                      : 'Purchase securely through your Apple App Store or Google Play account.'}
-                 </p>
+               <div className="p-8 bg-primary/5 rounded-[2.5rem] border border-primary/20 space-y-6 text-center animate-in fade-in zoom-in duration-300">
+                 <div className="space-y-2">
+                   <h4 className="text-xs font-black text-primary uppercase tracking-widest">
+                     {locale === 'am' ? 'የተመረጠው የሳንቲም ጥቅል' : 'Selected Coin Pack'}
+                   </h4>
+                   <p className="text-2xl font-black text-accent italic uppercase tracking-tighter">
+                     {selectedPack ? `${selectedPack.coins} Coins` : ''}
+                   </p>
+                 </div>
+
+                 <div className="p-6 bg-white rounded-3xl border border-gray-150 shadow-inner flex flex-col items-center justify-center gap-4">
+                   <span className="text-xs font-bold text-gray-500 leading-relaxed text-center">
+                     {currentCoinText.desc}
+                   </span>
+                   <div className="w-full p-4 bg-[#F8FAFC] border border-border rounded-2xl select-all font-black text-primary text-sm tracking-wider text-center cursor-pointer active:scale-95 transition-all">
+                     beteseb1.online
+                   </div>
+                   <span className="text-[10px] text-gray-400 font-bold uppercase italic text-center">
+                     {currentCoinText.footer}
+                   </span>
+                 </div>
+
+                  <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider flex items-center justify-center gap-2">
+                    <CheckCircle2 size={14} className="text-primary" />
+                    {locale === 'am' ? 'አስተማማኝ የደህንነት ስርዓት' : 'Secure Verification System'}
+                  </p>
                  <button
                    disabled={loadingTopup}
                    onClick={topupCoins}
@@ -534,7 +622,7 @@ export default function GiftsView({ locale }: { locale: string }) {
                    {loadingTopup ? <Loader2 className="animate-spin text-white" /> : <CheckCircle2 size={14} />} 
                    {locale === 'am' ? 'በሱቁ በኩል ይክፈሉ' : 'Checkout Natively'}
                  </button>
-              </div>
+               </div>
             ) : (
               <div className="bg-muted p-6 rounded-[2rem] border border-muted text-center space-y-4">
                  <div className="flex items-center justify-center gap-2 text-primary font-bold text-[9px] uppercase tracking-widest">
