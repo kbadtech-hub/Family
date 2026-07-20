@@ -18,6 +18,7 @@ import {
 import { useLocale } from 'next-intl';
 import LocationGate from '@/components/dashboard/LocationGate';
 import SystemAlertModal from '@/components/ui/SystemAlertModal';
+import { generateChapaTxRef } from '@/lib/subscription';
 
 interface SubscriptionPlansPageProps {
   profile: any;
@@ -244,7 +245,7 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
 
       if (currency === 'ETB') {
         // Initialize Chapa online gateway
-        const txRef = `${profile.id}-${selectedDuration}-${Date.now()}`;
+        const txRef = generateChapaTxRef(profile.id, selectedDuration);
         const response = await fetch('/api/payments/chapa/initialize', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

@@ -22,6 +22,7 @@ import {
 import Image from 'next/image';
 import LocationGate from '@/components/dashboard/LocationGate';
 import SystemAlertModal from '@/components/ui/SystemAlertModal';
+import { generateChapaTxRef } from '@/lib/subscription';
 
 interface GiftRecord {
   id: string;
@@ -251,7 +252,7 @@ export default function GiftsView({ locale }: { locale: string }) {
       const currency = isEthiopia ? 'ETB' : 'USD';
 
       if (currency === 'ETB') {
-        const txRef = `${userId}-${selectedPack.id}-${Date.now()}`;
+        const txRef = generateChapaTxRef(userId, selectedPack.id);
         const response = await fetch('/api/payments/chapa/initialize', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

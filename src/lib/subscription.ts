@@ -129,3 +129,12 @@ export const BANK_DETAILS = {
     { method: 'Bank (SWIFT)', details: 'Contact support for SWIFT/IBAN details', name: 'Beteseb Global' }
   ]
 };
+
+// ─── Chapa TxRef Generator (Max 50 Chars) ────────────────────────────────────
+
+export function generateChapaTxRef(userId: string, planType: string): string {
+  const shortPlan = planType.replace('coins_', 'c').replace('vip_', 'v');
+  const ts = Date.now().toString(36).slice(-6);
+  const ref = `${userId}-${shortPlan}-${ts}`;
+  return ref.slice(0, 50);
+}

@@ -18,6 +18,7 @@ import {
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import SystemAlertModal from '@/components/ui/SystemAlertModal';
+import { generateChapaTxRef } from '@/lib/subscription';
 
 export default function PaymentTab() {
   const locale = useLocale();
@@ -324,7 +325,7 @@ export default function PaymentTab() {
       const lastName = nameParts.slice(1).join(' ') || 'User';
 
       if (currency === 'ETB') {
-        const txRef = `${userId}-${plan.id}-${Date.now()}`;
+        const txRef = generateChapaTxRef(userId, plan.id);
         const response = await fetch('/api/payments/chapa/initialize', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
