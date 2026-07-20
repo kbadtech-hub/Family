@@ -368,6 +368,114 @@ export default function AdminPortal() {
     }
   };
 
+  // Realtime & PWA State
+  const [deferredPwaPrompt, setDeferredPwaPrompt] = useState<any>(null);
+  const [isPwaInstalled, setIsPwaInstalled] = useState(false);
+  const [realtimeAlerts, setRealtimeAlerts] = useState<{ id: string; type: string; title: string; subtitle: string; time: string }[]>([]);
+  const [unreadAlertCount, setUnreadAlertCount] = useState(0);
+  const [showAlertsDrawer, setShowAlertsDrawer] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  // 1. PWA beforeinstallprompt Listener
+  useEffect(() => {
+    const handlePrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPwaPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handlePrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handlePrompt);
+  }, []);
+
+  // 2. Realtime PostgreSQL Audio & Visual Notification Listener
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const playNotificationSound = () => {
+      if (!soundEnabled) return;
+      try {
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.3);
+      } catch (e) {
+        console.warn('Sound play error:', e);
+      }
+    };
+
+    const channel = supabase.channel('admin-realtime-feed')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'verifications' }, (payload) => {
+        playNotificationSound();
+        setUnreadAlertCount(prev => prev + 1);
+        setRealtimeAlerts(prev => [
+          {
+            id: String(Date.now()),
+            type: 'verification',
+            title: '🛡️ አዲስ የማንነት ማረጋገጫ (New Verification)',
+            subtitle: 'አዲስ መታወቂያ እና ሰልፊ ለመገምገም ደርሷል',
+            time: new Date().toLocaleTimeString()
+          },
+          ...prev
+        ]);
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'payments' }, (payload) => {
+        playNotificationSound();
+        setUnreadAlertCount(prev => prev + 1);
+        setRealtimeAlerts(prev => [
+          {
+            id: String(Date.now()),
+            type: 'payment',
+            title: '💳 አዲስ ክፍያ (New Payment Request)',
+            subtitle: `አዲስ ክፍያ ተፈጽሟል፦ ${payload.new.amount} ${payload.new.currency}`,
+            time: new Date().toLocaleTimeString()
+          },
+          ...prev
+        ]);
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'support_tickets' }, (payload) => {
+        playNotificationSound();
+        setUnreadAlertCount(prev => prev + 1);
+        setRealtimeAlerts(prev => [
+          {
+            id: String(Date.now()),
+            type: 'support',
+            title: '📩 አዲስ የእርዳታ ጥያቄ (New Support Ticket)',
+            subtitle: payload.new.subject || 'ደንበኛ የእርዳታ ጥያቄ ልኳል',
+            time: new Date().toLocaleTimeString()
+          },
+          ...prev
+        ]);
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'counselor_bookings' }, (payload) => {
+        playNotificationSound();
+        setUnreadAlertCount(prev => prev + 1);
+        setRealtimeAlerts(prev => [
+          {
+            id: String(Date.now()),
+            type: 'counseling',
+            title: '📅 አዲስ የካውንስሊንግ ቀጠሮ (Counselor Booking)',
+            subtitle: 'አዲስ የምክር አገልግሎት ቀጠሮ ተይዟል',
+            time: new Date().toLocaleTimeString()
+          },
+          ...prev
+        ]);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isAuthenticated, soundEnabled]);
+
   useEffect(() => {
     const fetchUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -1159,32 +1267,92 @@ export default function AdminPortal() {
          <div className="flex items-center gap-2">
             <Image src="/logo.png" alt="Logo" width={120} height={30} className="h-8 w-auto object-contain" />
          </div>
-         <button 
-           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            aria-label="Toggle menu"
-           className="p-3 bg-primary/10 text-primary rounded-xl"
-         >
-            {isSidebarOpen ? <X size={24} /> : <Layout size={24} />}
-         </button>
+
+         <div className="flex items-center gap-2">
+            {/* Realtime Alert Bell */}
+            <button
+              onClick={() => {
+                setShowAlertsDrawer(!showAlertsDrawer);
+                setUnreadAlertCount(0);
+              }}
+              className="relative p-3 bg-primary/10 text-primary rounded-xl hover:scale-105 transition-all"
+              title="Realtime Admin Alerts"
+            >
+              <ShieldAlert size={20} />
+              {unreadAlertCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] font-black w-5 h-5 rounded-full flex items-center justify-center animate-bounce">
+                  {unreadAlertCount}
+                </span>
+              )}
+            </button>
+
+            {/* PWA Install Button */}
+            {deferredPwaPrompt && (
+              <button
+                onClick={async () => {
+                  deferredPwaPrompt.prompt();
+                  const { outcome } = await deferredPwaPrompt.userChoice;
+                  if (outcome === 'accepted') {
+                    setIsPwaInstalled(true);
+                    setDeferredPwaPrompt(null);
+                  }
+                }}
+                className="px-3 py-2 bg-gradient-to-r from-red-600 to-amber-500 text-white rounded-xl font-bold text-[10px] uppercase tracking-wider shadow-lg flex items-center gap-1"
+              >
+                📲 ጫን
+              </button>
+            )}
+
+            <button 
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              aria-label="Toggle menu"
+              className="p-3 bg-primary/10 text-primary rounded-xl"
+            >
+               {isSidebarOpen ? <X size={24} /> : <Layout size={24} />}
+            </button>
+         </div>
       </div>
 
       {/* Admin Sidebar */}
       <aside className={`fixed inset-y-0 left-0 w-72 bg-card text-card-foreground flex flex-col p-8 shadow-2xl border-r border-border z-[70] transition-transform duration-500 lg:relative lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="mb-12">
+        <div className="mb-8">
           <Link href="/" className="flex items-center gap-2 text-primary group decoration-transparent">
              <Heart size={24} className="fill-primary group-hover:scale-110 transition-transform" />
              <span className="text-2xl font-bold tracking-tighter uppercase">BETESEB</span>
           </Link>
-          <p className="text-xs text-gray-400 mt-1 uppercase font-bold tracking-widest opacity-50">System Control</p>
+          <p className="text-xs text-gray-400 mt-1 uppercase font-bold tracking-widest opacity-50">System Control Portal</p>
         </div>
 
-        <nav className="space-y-1 flex-1">
+        {/* PWA App Install Banner in Sidebar */}
+        {deferredPwaPrompt && (
+          <div className="mb-6 p-4 bg-gradient-to-br from-primary/20 to-amber-500/10 rounded-2xl border border-primary/30 space-y-2">
+            <p className="text-[10px] font-extrabold uppercase text-amber-400 tracking-wider">
+              📲 ዌብ አፑን ወደ ስልክዎ ይጫኑ (Add to Home Screen)
+            </p>
+            <button
+              onClick={async () => {
+                deferredPwaPrompt.prompt();
+                const { outcome } = await deferredPwaPrompt.userChoice;
+                if (outcome === 'accepted') {
+                  setIsPwaInstalled(true);
+                  setDeferredPwaPrompt(null);
+                }
+              }}
+              className="w-full py-2.5 bg-primary hover:bg-primary/90 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-md transition-all"
+            >
+              አፕሊኬሽኑን አሁኑኑ ጫን (Install App)
+            </button>
+          </div>
+        )}
+
+        <nav className="space-y-1 flex-1 overflow-y-auto pr-1">
           {[
             { id: 'stats', icon: BarChart3, label: 'Analytics', superOnly: true },
             { id: 'cms', icon: Layout, label: 'Standard CMS' },
+            { id: 'pricing', icon: Coins, label: 'Pricing & Services Center', superOnly: true },
             { id: 'marketplace_cms', icon: Layout, label: 'Academy & Vendor CMS' },
             { id: 'business', icon: SettingsIcon, label: 'Business Settings', superOnly: true },
-            { id: 'social', icon: Globe, label: 'Social Media Links', superOnly: true },
+            { id: 'social', icon: Globe, label: 'Social & App Links', superOnly: true },
             { id: 'verification', icon: ShieldCheck, label: 'Verifications' },
             { id: 'vouching', icon: ShieldCheck, label: 'Vouch Reviews' },
             { id: 'bookings', icon: Calendar, label: 'Counselor Bookings' },
@@ -1208,12 +1376,12 @@ export default function AdminPortal() {
                 setActiveTab(item.id);
                 setIsSidebarOpen(false);
               }}
-              className={`w-full flex items-center gap-3 p-4 rounded-2xl transition-all duration-300 ${
-                activeTab === item.id ? 'bg-primary text-white shadow-xl shadow-primary/20 scale-105' : 'text-foreground/40 hover:bg-white/5'
+              className={`w-full flex items-center gap-3 p-4 rounded-2xl transition-all duration-300 min-h-[48px] ${
+                activeTab === item.id ? 'bg-primary text-white shadow-xl shadow-primary/20 scale-105 font-bold' : 'text-foreground/40 hover:bg-white/5 font-semibold'
               }`}
             >
               <item.icon size={20} />
-              <span className="font-semibold text-xs tracking-widest uppercase">{item.label}</span>
+              <span className="text-xs tracking-widest uppercase">{item.label}</span>
             </button>
           ))}
         </nav>
@@ -1687,19 +1855,23 @@ export default function AdminPortal() {
                     <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-10">Official Platforms</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                        {[
+                         { id: 'tiktok', label: 'TikTok' },
+                         { id: 'telegram', label: 'Telegram' },
                          { id: 'youtube', label: 'YouTube' },
                          { id: 'facebook', label: 'Facebook' },
-                         { id: 'telegram', label: 'Telegram' },
+                         { id: 'instagram', label: 'Instagram' },
                          { id: 'whatsapp', label: 'WhatsApp' },
                          { id: 'linkedin', label: 'LinkedIn' },
-                         { id: 'twitter', label: 'Twitter / X' }
+                         { id: 'twitter', label: 'Twitter / X' },
+                         { id: 'play_store_url', label: 'Google Play Store App URL' },
+                         { id: 'app_store_url', label: 'Apple App Store App URL' }
                        ].map(social => (
                           <div key={social.id} className="space-y-2">
-                             <label className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest">{social.label} Link</label>
+                             <label className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest">{social.label}</label>
                              <div className="relative group">
                                 <input 
                                   type="text" 
-                                  placeholder={`https://${social.id}.com/beteseb`}
+                                  placeholder={`https://${social.id.includes('store') ? 'store' : social.id}.com/...`}
                                   value={(cmsForm[social.id] as string) || ""}
                                   onChange={(e) => setCmsForm({...cmsForm, [social.id]: e.target.value})}
                                   className="input-premium bg-background pl-12"
@@ -1717,11 +1889,11 @@ export default function AdminPortal() {
                 <div className="space-y-8">
                    <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5">
                       <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6">Live Footer Preview</h3>
-                      <p className="text-[10px] text-foreground/40 uppercase mb-8">Visible Icons</p>
+                      <p className="text-[10px] text-foreground/40 uppercase mb-8">Active Connected Links</p>
                       <div className="flex flex-wrap gap-4">
-                         {['youtube', 'facebook', 'telegram', 'whatsapp', 'linkedin', 'twitter'].map(id => (
+                         {['tiktok', 'telegram', 'youtube', 'facebook', 'instagram', 'whatsapp', 'linkedin', 'twitter', 'play_store_url', 'app_store_url'].map(id => (
                             (cmsForm[id] as string) && (
-                               <div key={id} className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-inner">
+                               <div key={id} className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-inner" title={id}>
                                   <Globe size={20} />
                                 </div>
                             )
