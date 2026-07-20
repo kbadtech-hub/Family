@@ -426,6 +426,7 @@ export default function AdminPortal() {
           },
           ...prev
         ]);
+        setVerifications(prev => [payload.new as any, ...prev]);
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'payments' }, (payload) => {
         playNotificationSound();
@@ -440,6 +441,7 @@ export default function AdminPortal() {
           },
           ...prev
         ]);
+        setPayments(prev => [payload.new as any, ...prev]);
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'support_tickets' }, (payload) => {
         playNotificationSound();
@@ -454,6 +456,7 @@ export default function AdminPortal() {
           },
           ...prev
         ]);
+        setSupportTickets(prev => [payload.new as any, ...prev]);
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'counselor_bookings' }, (payload) => {
         playNotificationSound();
@@ -468,11 +471,45 @@ export default function AdminPortal() {
           },
           ...prev
         ]);
+        setCounselorBookings(prev => [payload.new as any, ...prev]);
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[Admin Realtime] Channel status:', status);
+      });
+
+    const pollInterval = setInterval(async () => {
+      const { data: pendingVer } = await supabase
+        .from('verifications')
+        .select('*, profiles(full_name, birth_date, location)')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+      if (pendingVer && pendingVer.length > 0) {
+        setVerifications(prev => {
+          const existingIds = new Set(prev.map((v: any) => v.id));
+          const genuinelyNew = pendingVer.filter((v: any) => !existingIds.has(v.id));
+          if (genuinelyNew.length > 0) {
+            playNotificationSound();
+            setUnreadAlertCount(c => c + genuinelyNew.length);
+            setRealtimeAlerts(a => [
+              ...genuinelyNew.map((v: any) => ({
+                id: v.id,
+                type: 'verification',
+                title: '🛡️ አዲስ የማንነት ማረጋገጫ (New Verification)',
+                subtitle: `${v.profiles?.full_name || 'Unknown'} — ማረጋገጫ ጠብቋል`,
+                time: new Date().toLocaleTimeString()
+              })),
+              ...a
+            ]);
+            return [...genuinelyNew, ...prev];
+          }
+          return prev;
+        });
+      }
+    }, 30000);
 
     return () => {
       supabase.removeChannel(channel);
+      clearInterval(pollInterval);
     };
   }, [isAuthenticated, soundEnabled]);
 
