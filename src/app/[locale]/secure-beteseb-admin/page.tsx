@@ -1395,6 +1395,67 @@ export default function AdminPortal() {
         />
       )}
 
+      {/* Realtime Alert Feed Drawer */}
+      {showAlertsDrawer && (
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex justify-end">
+          <div className="w-full max-w-md bg-card text-card-foreground h-full p-6 shadow-2xl border-l border-border flex flex-col animate-in slide-in-from-right duration-300">
+            <div className="flex justify-between items-center mb-6 pb-4 border-b border-border">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                  <ShieldAlert size={20} />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-sm uppercase tracking-wider">የቀጥታ ሁነቶች (Realtime Feed)</h3>
+                  <p className="text-[10px] text-gray-400">Live system activity & alerts</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setSoundEnabled(!soundEnabled)}
+                  className={`p-2 rounded-xl text-xs font-bold ${soundEnabled ? 'bg-emerald-500/10 text-emerald-500' : 'bg-gray-500/10 text-gray-400'}`}
+                  title="Toggle alert sound"
+                >
+                  {soundEnabled ? '🔊 Sound On' : '🔇 Muted'}
+                </button>
+                <button
+                  onClick={() => setShowAlertsDrawer(false)}
+                  className="p-2 text-gray-400 hover:text-primary rounded-xl"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+              {realtimeAlerts.length === 0 ? (
+                <div className="text-center py-20 text-gray-500 text-xs italic">
+                  ምንም አዲስ የቀጥታ ማሳወቂያ የለም (No recent activity)
+                </div>
+              ) : (
+                realtimeAlerts.map(alert => (
+                  <div key={alert.id} className="p-4 bg-background rounded-2xl border border-white/5 space-y-1">
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-xs text-primary">{alert.title}</span>
+                      <span className="text-[9px] text-gray-400">{alert.time}</span>
+                    </div>
+                    <p className="text-xs text-gray-300 font-medium">{alert.subtitle}</p>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {realtimeAlerts.length > 0 && (
+              <button
+                onClick={() => setRealtimeAlerts([])}
+                className="mt-4 w-full py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl font-bold text-xs uppercase tracking-wider"
+              >
+                ታሪክ አጽዳ (Clear Alerts)
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Admin Content Area */}
       <main className="flex-1 p-6 md:p-10 overflow-y-auto pt-28 lg:pt-10">
         {activeTab === 'cms' && (
@@ -2145,6 +2206,61 @@ export default function AdminPortal() {
                            </label>
                         </div>
                      ))}
+                  </div>
+                </div>
+
+                {/* 5. Counseling & Educational Video Services Base Pricing */}
+                <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5 space-y-6 lg:col-span-2 xl:col-span-4">
+                  <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em]">Counseling & Class Video Pricing (የካውንስሊንግ እና የቪዲዮ ትምህርቶች ዋጋ)</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <label className="block bg-background p-4 rounded-2xl border border-white/5">
+                      <span className="text-[10px] font-bold text-foreground/50 uppercase block mb-1">Counseling Session Fee (ETB)</span>
+                      <input
+                        type="number"
+                        value={cmsForm.pricing_etb?.counseling || 500}
+                        onChange={(e) => setCmsForm({
+                          ...cmsForm,
+                          pricing_etb: { ...cmsForm.pricing_etb, counseling: parseInt(e.target.value) }
+                        })}
+                        className="input-premium py-2 text-xs"
+                      />
+                    </label>
+                    <label className="block bg-background p-4 rounded-2xl border border-white/5">
+                      <span className="text-[10px] font-bold text-foreground/50 uppercase block mb-1">Counseling Session Fee (USD)</span>
+                      <input
+                        type="number"
+                        value={cmsForm.pricing_usd?.counseling || 15}
+                        onChange={(e) => setCmsForm({
+                          ...cmsForm,
+                          pricing_usd: { ...cmsForm.pricing_usd, counseling: parseInt(e.target.value) }
+                        })}
+                        className="input-premium py-2 text-xs"
+                      />
+                    </label>
+                    <label className="block bg-background p-4 rounded-2xl border border-white/5">
+                      <span className="text-[10px] font-bold text-foreground/50 uppercase block mb-1">Video Class Base Fee (ETB)</span>
+                      <input
+                        type="number"
+                        value={cmsForm.pricing_etb?.class || 250}
+                        onChange={(e) => setCmsForm({
+                          ...cmsForm,
+                          pricing_etb: { ...cmsForm.pricing_etb, class: parseInt(e.target.value) }
+                        })}
+                        className="input-premium py-2 text-xs"
+                      />
+                    </label>
+                    <label className="block bg-background p-4 rounded-2xl border border-white/5">
+                      <span className="text-[10px] font-bold text-foreground/50 uppercase block mb-1">Video Class Base Fee (USD)</span>
+                      <input
+                        type="number"
+                        value={cmsForm.pricing_usd?.class || 5}
+                        onChange={(e) => setCmsForm({
+                          ...cmsForm,
+                          pricing_usd: { ...cmsForm.pricing_usd, class: parseInt(e.target.value) }
+                        })}
+                        className="input-premium py-2 text-xs"
+                      />
+                    </label>
                   </div>
                 </div>
               </div>
