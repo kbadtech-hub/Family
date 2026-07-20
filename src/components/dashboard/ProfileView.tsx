@@ -1509,6 +1509,18 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                 )}
               </button>
 
+              <button
+                disabled={isDeletingAccount}
+                onClick={() => setShowDeleteConfirmModal(false)}
+                className="w-full py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-2xl font-bold uppercase text-xs tracking-wider transition-all"
+              >
+                {locale === 'am' ? 'ተመለስ (አትሰርዝ)' : 'Cancel (Keep Account)'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Upgrade Paywall Modal for Locked Privacy Settings */}
       {showUpgradeModal && (
         <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
