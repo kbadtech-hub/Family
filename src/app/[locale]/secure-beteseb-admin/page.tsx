@@ -1367,7 +1367,7 @@ export default function AdminPortal() {
             { id: 'matches', icon: Heart, label: 'Matches' },
             { id: 'staff', icon: Users, label: 'Manage Staff', superOnly: true },
             { id: 'security', icon: ShieldAlert, label: 'Access Control', superOnly: true },
-          .map(item => (
+          ].map(item => (
             <button
               key={item.id}
               onClick={() => {
