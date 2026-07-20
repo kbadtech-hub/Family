@@ -15,8 +15,7 @@ import {
   Loader2,
   X,
   Upload,
-  AlertCircle,
-  ShieldCheck
+  AlertCircle
 } from 'lucide-react';
 import { calculateStarSign } from '@/lib/abushakir';
 import { simulateIdentityVerification } from '@/lib/verification';
@@ -251,7 +250,7 @@ function OnboardingContent() {
   const [errorMsg, setErrorMsg] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [showMismatchModal, setShowMismatchModal] = useState(false);
-  const [showVerificationSubmittedModal, setShowVerificationSubmittedModal] = useState(false);
+  const [showVerificationReceivedModal, setShowVerificationReceivedModal] = useState(false);
   const [isNamePreFilled, setIsNamePreFilled] = useState(false);
   const [isBirthDatePreFilled, setIsBirthDatePreFilled] = useState(false);
   const [formData, setFormData] = useState({
@@ -432,7 +431,6 @@ function OnboardingContent() {
 
                 setFormData(prev => ({ ...prev, verification_status: 'pending' }));
                 setErrorMsg('');
-                setShowVerificationSubmittedModal(true);
               } else {
                 // AI pre-screen rejected immediately (Case A)
                 await supabase.from('verifications').insert({
@@ -476,7 +474,6 @@ function OnboardingContent() {
             setIsVerifying(false);
             setFormData(prev => ({ ...prev, verification_status: 'pending' }));
             setErrorMsg('');
-            setShowVerificationSubmittedModal(true);
           }
         } else {
           console.error("Storage upload failed:", error);
@@ -763,7 +760,7 @@ function OnboardingContent() {
       if (step === 3) {
         setStep(6);
       } else if (step === 5) {
-        router.push('/dashboard');
+        setShowVerificationReceivedModal(true);
       } else {
         setStep(s => Math.min(s + 1, 7));
       }
@@ -1818,33 +1815,35 @@ function OnboardingContent() {
               </div>
             )}
 
-            {showVerificationSubmittedModal && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-                <div className="bg-white rounded-[2.5rem] max-w-md w-full p-8 border border-blue-100 shadow-2xl mx-4 text-center space-y-6 relative overflow-hidden animate-in zoom-in-95 duration-300">
-                  <div className="w-20 h-20 bg-blue-50 text-blue-500 border border-blue-200 rounded-[2rem] mx-auto flex items-center justify-center text-3xl shadow-inner animate-pulse">
-                    <ShieldCheck size={38} />
+            {/* ── Verification Request Received Modal ── */}
+            {showVerificationReceivedModal && (
+              <div className="fixed inset-0 z-[10000] bg-[#0F172A]/80 backdrop-blur-md flex items-center justify-center p-4">
+                <div className="bg-white rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl text-center space-y-6 border border-emerald-100 animate-in zoom-in-95 duration-200">
+                  <div className="w-20 h-20 bg-emerald-50 border border-emerald-200 text-emerald-600 rounded-[2rem] mx-auto flex items-center justify-center text-3xl shadow-inner relative">
+                    <ShieldCheck size={40} />
+                    <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500"></span>
+                    </span>
                   </div>
-
+                  
                   <div className="space-y-2">
                     <h3 className="text-xl font-black italic text-accent">
-                      {locale === 'am' ? 'መረጃዎን በስኬት ተቀብለናል!' : 'Verification Documents Received!'}
+                      {locale === 'am' ? 'መረጃዎን በሚገባ ተቀብለናል!' : 'Verification Request Received!'}
                     </h3>
                     <p className="text-xs text-gray-500 font-semibold leading-relaxed">
                       {locale === 'am'
-                        ? 'የመታወቂያ እና የ3 ሰከንድ የቀጥታ ቪዲዮ ሰልፊ መረጃዎ በስኬት ደርሶናል። መረጃው ተጣርቶ ሙሉ ለማድረግ ከ 5 እስከ 30 ደቂቃ ይወስዳል። ውጤቱን በቅርቡ በዳሽቦርድዎ ላይ እናሳውቀዎታለን።'
-                        : 'Your ID document and live video selfie have been received. Verification takes 5 to 30 minutes. We will notify you on your dashboard shortly.'}
+                        ? 'መታወቂያዎን እና የቀጥታ ሰልፊ መረጃዎን በሚገባ ተቀብለናል። ለማረጋገጥ የተወሰነ ደቂቃ (ከ5 እስከ 30 ደቂቃ) ስለሚወስድ በቅርቡ እናሳውቅዎታለን። እባክዎን ወደ ዳሽቦርድ ይመለሱ።'
+                        : 'We have received your ID document and live selfie verification. It will take a few minutes (5 to 30 mins) to review and verify. We will notify you shortly. Please return to the dashboard.'}
                     </p>
                   </div>
 
                   <button
                     type="button"
-                    onClick={() => {
-                      setShowVerificationSubmittedModal(false);
-                      router.push('/dashboard');
-                    }}
-                    className="w-full py-4 bg-primary hover:bg-primary/95 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                    onClick={() => router.push('/dashboard')}
+                    className="w-full py-4 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-2"
                   >
-                    {locale === 'am' ? 'ወደ ዳሽቦርድ ተመለሱ' : 'Return to Dashboard'} <ChevronRight size={18} />
+                    {locale === 'am' ? 'ቤት / ዳሽቦርድ ተመለስ' : 'Return to Dashboard'} <ChevronRight size={16} />
                   </button>
                 </div>
               </div>
