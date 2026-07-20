@@ -1815,6 +1815,8 @@ function OnboardingContent() {
                   </div>
                 </div>
               </div>
+            )}
+
             {showVerificationSubmittedModal && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
                 <div className="bg-white rounded-[2.5rem] max-w-md w-full p-8 border border-blue-100 shadow-2xl mx-4 text-center space-y-6 relative overflow-hidden animate-in zoom-in-95 duration-300">
