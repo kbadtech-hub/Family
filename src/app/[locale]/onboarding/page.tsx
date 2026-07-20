@@ -251,6 +251,10 @@ function OnboardingContent() {
   const [errorMsg, setErrorMsg] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [showMismatchModal, setShowMismatchModal] = useState(false);
+  const [mismatchDetails, setMismatchDetails] = useState<{
+    type: 'name' | 'birth_date' | 'both';
+    message: string;
+  }>({ type: 'both', message: '' });
   const [showVerificationReceivedModal, setShowVerificationReceivedModal] = useState(false);
   const [isNamePreFilled, setIsNamePreFilled] = useState(false);
   const [isBirthDatePreFilled, setIsBirthDatePreFilled] = useState(false);
@@ -452,8 +456,22 @@ function OnboardingContent() {
                   is_verified: false
                 }).eq('id', userId);
 
+                const reasonLower = (result.reason || '').toLowerCase();
+                const isNameFail = reasonLower.includes('name') || reasonLower.includes('ስም');
+                const isDobFail = reasonLower.includes('birth') || reasonLower.includes('date') || reasonLower.includes('year') || reasonLower.includes('month') || reasonLower.includes('day') || reasonLower.includes('ልደት');
+
+                let mType: 'name' | 'birth_date' | 'both' = 'both';
+                if (isNameFail && isDobFail) mType = 'both';
+                else if (isNameFail) mType = 'name';
+                else if (isDobFail) mType = 'birth_date';
+
+                setMismatchDetails({
+                  type: mType,
+                  message: result.reason || ''
+                });
                 setFormData(prev => ({ ...prev, verification_status: 'rejected' }));
-                setErrorMsg('ያስገቡት ሰነድ ትክክለኛነቱ ሊረጋገጥ አልቻለም። እባክዎ በትክክል መርጠው ድጋሚ ይሞክሩ።');
+                setShowMismatchModal(true);
+                setErrorMsg('');
               }
             });
           } else {
@@ -678,8 +696,9 @@ function OnboardingContent() {
         if (!formData.selfie_photo) {
           return locale === 'am' ? 'እባክዎ በላይቭ ካሜራ የ3 ሰከንድ ቪዲዮ ሰልፊ ይቅረጹ ወይም ፋይል ይጫኑ።' : 'Please record a 3-second live video selfie or upload a file first.';
         }
-        if (formData.verification_status !== 'verified') {
-          return locale === 'am' ? 'የመታወቂያ እና የሰልፊ ማመሳከሪያው ማረጋገጫ አልተጠናቀቀም ወይም አልተገጣጠመም። እባክዎ በትክክል ያስገቡ።' : 'Identity verification match has not succeeded. Please record again or check details.';
+        if (formData.verification_status === 'rejected') {
+          setShowMismatchModal(true);
+          return locale === 'am' ? 'የመታወቂያ እና የቀጥታ ሰልፊ ማመሳከሪያው ውድቅ ተደርጓል። እባክዎን የተሳሳተውን መረጃ ያስተካክሉ ወይም መታወቂያዎን በድጋሚ ይጫኑ።' : 'Identity verification match failed. Please correct your details or re-upload your ID.';
         }
         break;
       default:
@@ -1770,14 +1789,55 @@ function OnboardingContent() {
                       <AlertCircle size={32} />
                     </div>
                     <h3 className="text-xl font-extrabold text-gray-900 tracking-tight mb-3">
-                      {locale === 'am' ? 'የማንነት ማረጋገጫ አልተሳካም' : 'Identity Mismatch Detected'}
+                      {mismatchDetails.type === 'name' 
+                        ? (locale === 'am' ? 'የስም አለመመሳሰል ተገኝቷል' : 'Full Name Mismatch')
+                        : mismatchDetails.type === 'birth_date'
+                        ? (locale === 'am' ? 'የልደት ቀን አለመመሳሰል ተገኝቷል' : 'Birth Date Mismatch')
+                        : (locale === 'am' ? 'የማንነት መረጃ አለመመሳሰል ተገኝቷል' : 'Identity Mismatch Detected')}
                     </h3>
-                    <p className="text-sm text-gray-600 leading-relaxed mb-8">
-                      {locale === 'am' 
-                        ? 'ያስገቡት ሰነድ ከተመዘገበው ማንነትዎ ጋር አይዛመድም። እባክዎን ትክክለኛ ማንነትዎን የሚወክል መታወቂያ/ፓስፖርት ይጫኑ ወይም መረጃዎን ያስተካክሉ።'
-                        : 'The document provided does not match your registered identity. Please upload a valid ID/Passport that represents your true identity, or correct your information.'}
-                    </p>
+                    
+                    <div className="bg-red-50/70 p-4 rounded-2xl border border-red-100 text-left mb-6 text-xs space-y-2">
+                      <p className="text-gray-700 leading-relaxed font-medium">
+                        {mismatchDetails.type === 'name' 
+                          ? (locale === 'am' 
+                              ? `በመዝገባ ሰዓት ያስገቡት ስም ("${formData.full_name}") ከመታወቂያው ላይ ካለው ስም ጋር አይመሳሰልም። እባክዎን ስምዎን ያስተካክሉ ወይም ትክክለኛውን መታወቂያ ይጫኑ።`
+                              : `The registered name ("${formData.full_name}") does not match the name extracted from your ID document. Please correct your profile name or upload matching ID.`)
+                          : mismatchDetails.type === 'birth_date'
+                          ? (locale === 'am'
+                              ? `በመዝገባ ሰዓት ያስገቡት የልደት ቀን ("${formData.birth_date}") ከመታወቂያው ላይ ካለው የልደት ቀን ጋር አይመሳሰልም። እባክዎን የልደት ቀንዎን ያስተካክሉ ወይም ትክክለኛውን መታወቂያ ይጫኑ።`
+                              : `The registered birth date ("${formData.birth_date}") does not match the birth date on your ID document. Please correct your profile birth date or upload matching ID.`)
+                          : (locale === 'am'
+                              ? `በመዝገባ ሰዓት ያስገቡት ስም ("${formData.full_name}") እና የልደት ቀን ("${formData.birth_date}") ከመታወቂያው ላይ ካለው መረጃ ጋር አይመሳሰሉም። እባክዎን መረጃዎን ያስተካክሉ ወይም ትክክለኛውን መታወቂያ ይጫኑ።`
+                              : `Both registered name ("${formData.full_name}") and birth date ("${formData.birth_date}") do not match your ID document.`)}
+                      </p>
+                      {mismatchDetails.message && (
+                        <p className="text-[10px] text-red-600 font-semibold italic border-t border-red-100 pt-2">
+                          {mismatchDetails.message}
+                        </p>
+                      )}
+                    </div>
+
                     <div className="w-full flex flex-col gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            verification_status: 'unverified'
+                          }));
+                          setErrorMsg('');
+                          setShowMismatchModal(false);
+                          setStep(1);
+                        }}
+                        className="w-full bg-primary hover:bg-primary/95 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30"
+                      >
+                        {mismatchDetails.type === 'name'
+                          ? (locale === 'am' ? 'ወደ ኦንቦርዲንግ ተመለስና ስም አስተካክል' : 'Go to Step 1 & Correct Name')
+                          : mismatchDetails.type === 'birth_date'
+                          ? (locale === 'am' ? 'ወደ ኦንቦርዲንግ ተመለስና የልደት ቀን አስተካክል' : 'Go to Step 1 & Correct Birth Date')
+                          : (locale === 'am' ? 'ወደ ኦንቦርዲንግ ተመለስና መረጃ አስተካክል' : 'Go to Step 1 & Correct Profile Info')}
+                      </button>
+
                       <button
                         type="button"
                         onClick={() => {
@@ -1791,24 +1851,9 @@ function OnboardingContent() {
                           setShowMismatchModal(false);
                           setStep(4);
                         }}
-                        className="w-full bg-primary hover:bg-primary/95 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30"
-                      >
-                        {locale === 'am' ? 'መታወቂያ እንደገና ይጫኑ' : 'Re-upload ID Document'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setFormData(prev => ({
-                            ...prev,
-                            verification_status: 'unverified'
-                          }));
-                          setErrorMsg('');
-                          setShowMismatchModal(false);
-                          setStep(1);
-                        }}
                         className="w-full bg-slate-100 hover:bg-slate-200 text-gray-700 py-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all"
                       >
-                        {locale === 'am' ? 'መረጃ ያስተካክሉ' : 'Correct Profile Info'}
+                        {locale === 'am' ? 'መታወቂያ እንደገና ይጫኑ' : 'Re-upload ID Document'}
                       </button>
                     </div>
                   </div>
@@ -1830,12 +1875,12 @@ function OnboardingContent() {
                   
                   <div className="space-y-2">
                     <h3 className="text-xl font-black italic text-accent">
-                      {locale === 'am' ? 'መረጃዎን በሚገባ ተቀብለናል!' : 'Verification Request Received!'}
+                      {locale === 'am' ? 'መረጃዎቹን በትክክል ተቀብለናል!' : 'Information Received Successfully!'}
                     </h3>
                     <p className="text-xs text-gray-500 font-semibold leading-relaxed">
                       {locale === 'am'
-                        ? 'መታወቂያዎን እና የቀጥታ ሰልፊ መረጃዎን በሚገባ ተቀብለናል። ለማረጋገጥ የተወሰነ ደቂቃ (ከ5 እስከ 30 ደቂቃ) ስለሚወስድ በቅርቡ እናሳውቅዎታለን። እባክዎን ወደ ዳሽቦርድ ይመለሱ።'
-                        : 'We have received your ID document and live selfie verification. It will take a few minutes (5 to 30 mins) to review and verify. We will notify you shortly. Please return to the dashboard.'}
+                        ? 'መታወቂያዎን እና የቀጥታ ሰልፊ መረጃዎን በሚገባ ተቀብለናል። አጣርተን ቬሪፋይ እስክናደርግልዎ ድረስ እባክዎን በትዕግስት ይጠብቁን። እባክዎን ወደ ዳሽቦርድ ይመለሱ።'
+                        : 'We have received your ID document and live selfie verification. Please wait patiently while we verify your information. Please return to the dashboard.'}
                     </p>
                   </div>
 
@@ -1844,7 +1889,7 @@ function OnboardingContent() {
                     onClick={() => router.push('/dashboard')}
                     className="w-full py-4 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-2"
                   >
-                    {locale === 'am' ? 'ቤት / ዳሽቦርድ ተመለስ' : 'Return to Dashboard'} <ChevronRight size={16} />
+                    {locale === 'am' ? 'ወደ ዳሽቦርድ ይሂዱ' : 'Go to Dashboard'} <ChevronRight size={16} />
                   </button>
                 </div>
               </div>
