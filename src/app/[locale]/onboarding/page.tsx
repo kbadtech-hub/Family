@@ -250,6 +250,7 @@ function OnboardingContent() {
   const [errorMsg, setErrorMsg] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [showMismatchModal, setShowMismatchModal] = useState(false);
+  const [showVerificationSubmittedModal, setShowVerificationSubmittedModal] = useState(false);
   const [isNamePreFilled, setIsNamePreFilled] = useState(false);
   const [isBirthDatePreFilled, setIsBirthDatePreFilled] = useState(false);
   const [formData, setFormData] = useState({
@@ -430,6 +431,7 @@ function OnboardingContent() {
 
                 setFormData(prev => ({ ...prev, verification_status: 'pending' }));
                 setErrorMsg('');
+                setShowVerificationSubmittedModal(true);
               } else {
                 // AI pre-screen rejected immediately (Case A)
                 await supabase.from('verifications').insert({
@@ -473,6 +475,7 @@ function OnboardingContent() {
             setIsVerifying(false);
             setFormData(prev => ({ ...prev, verification_status: 'pending' }));
             setErrorMsg('');
+            setShowVerificationSubmittedModal(true);
           }
         } else {
           console.error("Storage upload failed:", error);
@@ -1810,6 +1813,36 @@ function OnboardingContent() {
                       </button>
                     </div>
                   </div>
+                </div>
+              </div>
+            {showVerificationSubmittedModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+                <div className="bg-white rounded-[2.5rem] max-w-md w-full p-8 border border-blue-100 shadow-2xl mx-4 text-center space-y-6 relative overflow-hidden animate-in zoom-in-95 duration-300">
+                  <div className="w-20 h-20 bg-blue-50 text-blue-500 border border-blue-200 rounded-[2rem] mx-auto flex items-center justify-center text-3xl shadow-inner animate-pulse">
+                    <ShieldCheck size={38} />
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-black italic text-accent">
+                      {locale === 'am' ? 'መረጃዎን በስኬት ተቀብለናል!' : 'Verification Documents Received!'}
+                    </h3>
+                    <p className="text-xs text-gray-500 font-semibold leading-relaxed">
+                      {locale === 'am'
+                        ? 'የመታወቂያ እና የ3 ሰከንድ የቀጥታ ቪዲዮ ሰልፊ መረጃዎ በስኬት ደርሶናል። መረጃው ተጣርቶ ሙሉ ለማድረግ ከ 5 እስከ 30 ደቂቃ ይወስዳል። ውጤቱን በቅርቡ በዳሽቦርድዎ ላይ እናሳውቀዎታለን።'
+                        : 'Your ID document and live video selfie have been received. Verification takes 5 to 30 minutes. We will notify you on your dashboard shortly.'}
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowVerificationSubmittedModal(false);
+                      router.push('/dashboard');
+                    }}
+                    className="w-full py-4 bg-primary hover:bg-primary/95 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                  >
+                    {locale === 'am' ? 'ወደ ዳሽቦርድ ተመለሱ' : 'Return to Dashboard'} <ChevronRight size={18} />
+                  </button>
                 </div>
               </div>
             )}
