@@ -271,6 +271,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [deleteErrorMsg, setDeleteErrorMsg] = useState('');
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || '',
@@ -318,6 +319,8 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
   const hasVouched = vouchRequests.some(v => v.vouch_status === 'approved');
   const userTier = getUserTier(profile, hasVouched);
   const isRoyal = userCompletion === 100 && userTier === 'diamond';
+  const isPremiumUser = profile?.is_premium || ['gold', 'platinum', 'diamond'].includes(userTier) || profile?.is_vip_member;
+  const isVipUser = profile?.is_vip_member;
 
   const getTierBadge = (tier: string) => {
     switch (tier) {
@@ -844,113 +847,6 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                </p>
              </div>
 
-             {formData.is_vip_member && (
-               <div className="space-y-4 pt-6 col-span-full border-t-2 border-dashed border-amber-300 bg-amber-50/15 p-6 rounded-[2rem] border border-amber-200/50 mt-4">
-                 <div className="flex items-center gap-2">
-                   <span className="text-lg">👑</span>
-                   <h4 className="text-sm font-black text-amber-800 uppercase tracking-widest bg-clip-text bg-gradient-to-r from-amber-600 to-yellow-600">
-                     VIP Privacy & Control Dashboard
-                   </h4>
-                 </div>
-                 <p className="text-[10px] text-amber-700 font-bold uppercase tracking-wider">
-                   Exclusive Control Panel for active Beteseb VIP members
-                 </p>
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                   <label className="flex items-center gap-3 cursor-pointer">
-                     <input 
-                       type="checkbox"
-                       checked={formData.is_ghost_mode_active}
-                       onChange={(e) => setFormData({...formData, is_ghost_mode_active: e.target.checked})}
-                       className="w-5 h-5 rounded-lg border-amber-400 text-amber-500 focus:ring-amber-500/20 accent-amber-500"
-                     />
-                     <div className="flex flex-col">
-                       <span className="text-xs font-bold text-slate-700">Activate Ghost Mode</span>
-                       <span className="text-[9px] text-slate-400 font-medium">Blurs your photo (blurRadius=25) and hides full name in feeds</span>
-                     </div>
-                   </label>
-
-                   <label className="flex items-center gap-3 cursor-pointer">
-                     <input 
-                       type="checkbox"
-                       checked={formData.hide_online_status}
-                       onChange={(e) => setFormData({...formData, hide_online_status: e.target.checked})}
-                       className="w-5 h-5 rounded-lg border-amber-400 text-amber-500 focus:ring-amber-500/20 accent-amber-500"
-                     />
-                     <div className="flex flex-col">
-                       <span className="text-xs font-bold text-slate-700">Hide Online Status</span>
-                       <span className="text-[9px] text-slate-400 font-medium">Conceals active indicators and Last Seen information</span>
-                     </div>
-                   </label>
-
-                   <label className="flex items-center gap-3 cursor-pointer">
-                     <input 
-                       type="checkbox"
-                       checked={formData.hide_read_receipts}
-                       onChange={(e) => setFormData({...formData, hide_read_receipts: e.target.checked})}
-                       className="w-5 h-5 rounded-lg border-amber-400 text-amber-500 focus:ring-amber-500/20 accent-amber-500"
-                     />
-                     <div className="flex flex-col">
-                       <span className="text-xs font-bold text-slate-700">Hide Read Receipts</span>
-                       <span className="text-[9px] text-slate-400 font-medium">Prevents typing indicators and read status triggers</span>
-                     </div>
-                   </label>
-
-                   <label className="flex items-center gap-3 cursor-pointer">
-                     <input 
-                       type="checkbox"
-                       checked={formData.strict_incognito}
-                       onChange={(e) => setFormData({...formData, strict_incognito: e.target.checked})}
-                       className="w-5 h-5 rounded-lg border-amber-400 text-amber-500 focus:ring-amber-500/20 accent-amber-500"
-                     />
-                     <div className="flex flex-col">
-                       <span className="text-xs font-bold text-slate-700">Strict Incognito</span>
-                       <span className="text-[9px] text-slate-400 font-medium">Removes your profile from recommendation discovery pools</span>
-                     </div>
-                   </label>
-                 </div>
-               </div>
-             )}
-
-              <div className="space-y-4 pt-4 col-span-full border-t border-gray-100">
-                <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">
-                  {t('privacySettings')}
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input 
-                      type="checkbox"
-                      checked={formData.show_age}
-                      onChange={(e) => setFormData({...formData, show_age: e.target.checked})}
-                      className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary"
-                    />
-                    <span className="text-xs font-bold text-slate-600">
-                      {t('showAge')}
-                    </span>
-                  </label>
-
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input 
-                      type="checkbox"
-                      checked={formData.show_city}
-                      onChange={(e) => setFormData({...formData, show_city: e.target.checked})}
-                      className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary"
-                    />
-                    <span className="text-xs font-bold text-slate-600">
-                      {t('showCity')}
-                    </span>
-                  </label>
-
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input 
-                      type="checkbox"
-                      checked={formData.allow_friend_requests}
-                      onChange={(e) => setFormData({...formData, allow_friend_requests: e.target.checked})}
-                      className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary"
-                    />
-                    <span className="text-xs font-bold text-slate-600">
-                      {t('allowFriendRequests')}
-                    </span>
-                  </label>
 
                   <label className="flex items-center gap-3 cursor-pointer">
                     <input 
@@ -1371,12 +1267,39 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                 )}
               </button>
 
+      {/* Upgrade Paywall Modal for Locked Privacy Settings */}
+      {showUpgradeModal && (
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-[2.5rem] p-6 sm:p-8 max-w-sm w-full shadow-2xl border border-amber-200 text-center space-y-5 relative">
+            <div className="w-16 h-16 bg-gradient-to-tr from-amber-400 to-yellow-300 rounded-full flex items-center justify-center text-slate-900 mx-auto shadow-lg shadow-amber-300/30">
+              <Lock size={28} />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-black text-slate-900 tracking-tight">
+                {locale === 'am' ? 'የፕሪሚየም እና ቪአይፒ ግላዊነት አገልግሎት' : 'Premium Privacy Controls'}
+              </h3>
+              <p className="text-xs text-gray-500 font-semibold leading-relaxed">
+                {locale === 'am'
+                  ? 'የዕድሜ፣ የከተማ፣ የባለፉት የመስመር ላይ ሁኔታ እና የመልዕክት ንባብ ምልክቶችን የመቆጣጠር አገልግሎት ለፕሪሚየም እና ቪአይፒ አባላት ብቻ የተፈቀደ ነው። አሁኑኑ አካውንትዎን አፕግሬድ ያድርጉ!'
+                  : 'Controlling your age, city, last seen status, and read receipts is exclusive to Premium & VIP members. Upgrade your account today!'}
+              </p>
+            </div>
+            <div className="flex flex-col gap-2 pt-2">
               <button
-                disabled={isDeletingAccount}
-                onClick={() => setShowDeleteConfirmModal(false)}
-                className="w-full py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-2xl font-bold uppercase text-xs tracking-wider transition-all"
+                onClick={() => {
+                  setShowUpgradeModal(false);
+                  window.location.href = '?tab=payment';
+                }}
+                className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-amber-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
               >
-                {locale === 'am' ? 'ተመለስ (አትሰርዝ)' : 'Cancel (Keep Account)'}
+                <Sparkles size={16} className="fill-slate-950" />
+                {locale === 'am' ? 'ወደ ፕሪሚየም/ቪአይፒ አፕግሬድ ያድርጉ' : 'Upgrade to Premium / VIP'}
+              </button>
+              <button
+                onClick={() => setShowUpgradeModal(false)}
+                className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold text-xs uppercase tracking-wider rounded-2xl transition-all"
+              >
+                {locale === 'am' ? 'ዝጋ (Close)' : 'Close'}
               </button>
             </div>
           </div>
