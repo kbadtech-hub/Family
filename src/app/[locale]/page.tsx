@@ -129,21 +129,15 @@ export default function Home() {
           {/* Slogan Title — generous leading prevents Ethiopic/Arabic baseline collision */}
           <h1 className="text-4xl md:text-6xl font-black tracking-wide text-[#0F172A]" style={{ lineHeight: '1.6' }}>
             <span className="block mb-3">
-              {(settings?.cms_content?.hero_title && settings.cms_content.hero_title.trim()) 
-                ? settings.cms_content.hero_title 
-                : t('Hero.title1')}
+              {t('Hero.title1')}
             </span>
-            {(!settings?.cms_content?.hero_title || !settings.cms_content.hero_title.trim()) && (
-              <span className="text-primary italic block mt-1">
-                 {t('Hero.title2')}
-              </span>
-            )}
+            <span className="text-primary italic block mt-1">
+              {t('Hero.title2')}
+            </span>
           </h1>
           
           <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed font-medium">
-            {(settings?.cms_content?.hero_subtitle && settings.cms_content.hero_subtitle.trim()) 
-              ? settings.cms_content.hero_subtitle 
-              : t('Hero.subtitle')}
+            {t('Hero.subtitle')}
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-6">

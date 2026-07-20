@@ -2,7 +2,7 @@
 const fs = require('fs');
 const en = {
   Index: {
-    Hero: { tagline: 'Traditional warmth, modern matching', title1: 'Strong Marriages,', title2: 'A Family for Generations!', subtitle: 'The premier global platform dedicated to building sustainable Ethiopian homes through heritage-focused matching and AI-powered counseling.', cta1: 'Create Account', cta2: 'Our Vision', verify1: 'PASSPORT VERIFIED', verify2: 'IDENTITY SECURED', verify3: 'ABUSHAKIR ENGINE' },
+    Hero: { tagline: 'Traditional warmth, modern matching', title1: 'Strong Marriages,', title2: 'A Family for Generations!', subtitle: 'Beteseb is a sacred, secure matrimonial bridge built specifically for Ethiopians and the global Diaspora. Blending centuries of traditional matchmaking logic with advanced modern security, we guide serious individuals toward lifelong marriage and family building.', cta1: 'Create Account', cta2: 'Our Vision', verify1: 'PASSPORT VERIFIED', verify2: 'IDENTITY SECURED', verify3: 'ABUSHAKIR ENGINE' },
     Vision: { tagline: 'Our Heritage', title: 'Preserving Family In a Digital World.', subtitle: 'At the heart of the Beteseb vision lies the Abushakir wisdom. We blend centuries of traditional Ethiopian matchmaking logic with modern behavioral encryption to create verified, sacred unions across the global Diaspora.', cta: 'EXPLORE OUR VISION', stat: 'Matching Accuracy' },
     modal: { step1: 'Step 1: Security & Pricing', where: 'Where are you located?', currencyNote: 'We use your location to show pricing in your local currency (ETB or USD) and protect your privacy.', localTitle: 'Inside Ethiopia', localSub: 'Payments in ETB', globalTitle: 'Global Diaspora', globalSub: 'Payments in USD' }
   },
