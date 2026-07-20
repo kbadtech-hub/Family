@@ -1367,8 +1367,6 @@ export default function AdminPortal() {
             { id: 'matches', icon: Heart, label: 'Matches' },
             { id: 'staff', icon: Users, label: 'Manage Staff', superOnly: true },
             { id: 'security', icon: ShieldAlert, label: 'Access Control', superOnly: true },
-          ]
-          .filter(item => !item.superOnly || currentUser?.role === 'super_admin' || currentUser?.role === 'superadmin')
           .map(item => (
             <button
               key={item.id}
@@ -4128,6 +4126,28 @@ export default function AdminPortal() {
           </div>
         )}
       </main>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-card/95 backdrop-blur-md border-t border-border z-[60] flex items-center justify-around px-2 shadow-2xl">
+        {[
+          { id: 'pricing', icon: Coins, label: 'Pricing' },
+          { id: 'verification', icon: ShieldCheck, label: 'Verifications' },
+          { id: 'payments', icon: Heart, label: 'Payments' },
+          { id: 'social', icon: Globe, label: 'Social & Apps' },
+          { id: 'cms', icon: Layout, label: 'CMS' }
+        ].map(item => (
+          <button
+            key={item.id}
+            onClick={() => setActiveTab(item.id)}
+            className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
+              activeTab === item.id ? 'text-primary scale-110 font-bold' : 'text-foreground/40 hover:text-foreground'
+            }`}
+          >
+            <item.icon size={18} />
+            <span className="text-[9px] uppercase tracking-wider mt-0.5">{item.label}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
