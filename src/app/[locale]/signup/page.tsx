@@ -360,7 +360,7 @@ function SignupContent() {
           return;
         }
 
-        router.push('/onboarding');
+        router.push('/dashboard');
       }
     } catch (err: any) {
       setError(err.message || 'Verification error occurred.');

@@ -594,10 +594,6 @@ function DashboardContent() {
       // 1. Fetch Profile
       const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
       if (profileData) {
-        if (!profileData.onboarding_completed) {
-          router.push('/onboarding');
-          return;
-        }
         if (profileData.warning_message) {
           setWarningMessage(profileData.warning_message);
         }
