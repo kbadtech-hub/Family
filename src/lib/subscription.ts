@@ -131,7 +131,13 @@ export const BANK_DETAILS = {
 };
 
 // ─── Chapa TxRef Generator (Max 50 Chars) ────────────────────────────────────
-
+/**
+ * Generates a Chapa transaction reference under 50 characters.
+ * Compresses plan prefixes:
+ *  - 'coins_100' -> 'c100'
+ *  - 'vip_1m'    -> 'v1m'
+ * Parsed on server by verify and webhook routes.
+ */
 export function generateChapaTxRef(userId: string, planType: string): string {
   const shortPlan = planType.replace('coins_', 'c').replace('vip_', 'v');
   const ts = Date.now().toString(36).slice(-6);

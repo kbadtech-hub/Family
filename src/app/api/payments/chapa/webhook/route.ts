@@ -84,42 +84,35 @@ export async function POST(req: Request) {
       return NextResponse.json({ status: 'success', message: 'Already processed' });
     }
 
-    const isCoins = planType.startsWith('coins_');
-    const isVip = planType.startsWith('vip_');
+    const isCoins = planType.startsWith('coins_') || planType.startsWith('c');
+    const isVip = planType.startsWith('vip_') || planType.startsWith('v');
 
     if (isCoins) {
-      const amountCoins = parseInt(planType.split('_')[1]) || 50;
+      const amountCoins = planType.startsWith('coins_')
+        ? (parseInt(planType.replace('coins_', '')) || 50)
+        : (parseInt(planType.replace(/^c_?/, '')) || 50);
 
       await supabase.from('payments').insert({
         user_id: userId,
-        plan_type: planType,
+        plan_type: `coins_${amountCoins}`,
         amount: parseFloat(String(amount || 0)),
         currency: 'ETB',
         status: 'approved',
         receipt_url: `Chapa TX: ${tx_ref}`,
       });
 
-      const { data: wallet } = await supabase.from('user_wallets').select('coin_balance').eq('id', userId).maybeSingle();
-      const currentBalance = Number(wallet?.coin_balance || 0);
-
-      await supabase.from('user_wallets').upsert({
-        id: userId,
-        coin_balance: currentBalance + amountCoins,
-        updated_at: new Date().toISOString()
-      });
-
       await supabase.from('coin_transactions').insert({
         user_id: userId,
         amount: amountCoins,
         type: 'purchase',
-        note: `Chapa Coin Purchase (Webhook): ${planType}`
+        note: `Chapa Coin Purchase (Webhook): ${amountCoins} coins (${tx_ref})`
       });
 
       console.log(`[Chapa Webhook] ✅ User ${userId} credited with ${amountCoins} coins via Chapa.`);
       return NextResponse.json({ status: 'success', message: 'Payment recorded and coins credited successfully' });
     } else if (isVip) {
       let days = 30;
-      const cleanPlan = planType.replace('vip_', '');
+      const cleanPlan = planType.startsWith('vip_') ? planType.replace('vip_', '') : planType.replace(/^v_?/, '');
       if (cleanPlan === '3m') days = 90;
       if (cleanPlan === '6m') days = 180;
       if (cleanPlan === '12m' || cleanPlan === '1y') days = 365;

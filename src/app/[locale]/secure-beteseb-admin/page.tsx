@@ -238,6 +238,16 @@ export default function AdminPortal() {
   const [currentVideo, setCurrentVideo] = useState<any>({
     title: '', title_am: '', title_om: '', title_ti: '', title_so: '', title_ar: '',
     description: '', description_am: '', description_om: '', description_ti: '', description_so: '', description_ar: '',
+
+  // Manual Payment Resolution & Chapa Lookup States
+  const [manualEmailOrId, setManualEmailOrId] = useState('');
+  const [manualCreditType, setManualCreditType] = useState<'coins' | 'vip' | 'premium'>('coins');
+  const [manualAmountOrPlan, setManualAmountOrPlan] = useState('100');
+  const [manualNote, setManualNote] = useState('');
+  const [manualProcessing, setManualProcessing] = useState(false);
+  const [chapaLookupRef, setChapaLookupRef] = useState('');
+  const [chapaLookupResult, setChapaLookupResult] = useState<any>(null);
+  const [chapaLookupLoading, setChapaLookupLoading] = useState(false);
     youtube_url: '', category: 'Pre-Marriage', is_free: false, coin_price: 30, order_index: 10, duration_minutes: 15
   });
   const [currentVendor, setCurrentVendor] = useState<any>({
@@ -865,23 +875,123 @@ export default function AdminPortal() {
     const { error } = await supabase.from('payments').update({ status }).eq('id', id);
     
     if (!error && status === 'approved' && userId && planType) {
-       // Calculate premium duration based on plan
-       let days = 30;
-       if (planType === '3m') days = 90;
-       if (planType === '6m') days = 180;
-       if (planType === '12m' || planType === '1y') days = 365;
-       if (planType === 'lifetime') days = 36500; // ~100 years
+      const isCoins = planType.startsWith('coins_') || planType.startsWith('c');
+      const isVip = planType.startsWith('vip_') || planType.startsWith('v');
 
-       const premiumUntil = new Date();
-       premiumUntil.setDate(premiumUntil.getDate() + days);
+      if (isCoins) {
+        const amountCoins = planType.startsWith('coins_')
+          ? (parseInt(planType.replace('coins_', '')) || 50)
+          : (parseInt(planType.replace(/^c_?/, '')) || 50);
 
-       await supabase.from('profiles').update({ 
-          premium_until: premiumUntil.toISOString()
-       }).eq('id', userId);
+        await supabase.from('coin_transactions').insert({
+          user_id: userId,
+          amount: amountCoins,
+          type: 'purchase',
+          note: `Admin approved payment ID ${id} (${planType})`
+        });
+      } else if (isVip) {
+        let days = 30;
+        const cleanPlan = planType.startsWith('vip_') ? planType.replace('vip_', '') : planType.replace(/^v_?/, '');
+        if (cleanPlan === '3m') days = 90;
+        if (cleanPlan === '6m') days = 180;
+        if (cleanPlan === '12m' || cleanPlan === '1y') days = 365;
+        if (cleanPlan === 'lifetime') days = 36500;
+
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + days);
+
+        await supabase.from('profiles').update({ 
+           is_vip_member: true,
+           vip_expires_at: expiresAt.toISOString()
+        }).eq('id', userId);
+      } else {
+        let days = 30;
+        if (planType === '3m') days = 90;
+        if (planType === '6m') days = 180;
+        if (planType === '12m' || planType === '1y') days = 365;
+        if (planType === 'lifetime') days = 36500;
+
+        const premiumUntil = new Date();
+        premiumUntil.setDate(premiumUntil.getDate() + days);
+
+        await supabase.from('profiles').update({ 
+           premium_until: premiumUntil.toISOString()
+        }).eq('id', userId);
+      }
     }
 
     setPayments(prev => prev.map(p => p.id === id ? { ...p, status } : p));
     setIsSaving(false);
+  };
+
+  const handleManualCreditSubmit = async () => {
+    if (!manualEmailOrId || !manualAmountOrPlan) {
+      alert('Please fill in user email/ID and amount/plan');
+      return;
+    }
+    setManualProcessing(true);
+    try {
+      const res = await fetch('/api/admin/payments/manual', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'manual_credit',
+          emailOrId: manualEmailOrId,
+          creditType: manualCreditType,
+          amountOrPlan: manualAmountOrPlan,
+          note: manualNote
+        })
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        alert('✅ Success: ' + data.message);
+        setManualEmailOrId('');
+        setManualNote('');
+        const { data: payData } = await supabase.from('payments').select('*, profiles(full_name)').order('created_at', { ascending: false });
+        if (payData) setPayments(payData as any);
+      } else {
+        alert('❌ Error: ' + (data.message || 'Manual credit failed'));
+      }
+    } catch (err: any) {
+      alert('Error: ' + err.message);
+    } finally {
+      setManualProcessing(false);
+    }
+  };
+
+  const handleChapaLookupSubmit = async (autoProcess = false) => {
+    if (!chapaLookupRef) {
+      alert('Please enter a Chapa reference or tx_ref');
+      return;
+    }
+    setChapaLookupLoading(true);
+    try {
+      const res = await fetch('/api/admin/payments/manual', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'verify_chapa_ref',
+          chapaRef: chapaLookupRef,
+          autoProcess
+        })
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        setChapaLookupResult(data);
+        alert('✅ Chapa Result:\n' + (data.message || 'Transaction retrieved'));
+        if (autoProcess) {
+          const { data: payData } = await supabase.from('payments').select('*, profiles(full_name)').order('created_at', { ascending: false });
+          if (payData) setPayments(payData as any);
+        }
+      } else {
+        alert('❌ Error: ' + (data.message || 'Chapa lookup failed'));
+        setChapaLookupResult(null);
+      }
+    } catch (err: any) {
+      alert('Error: ' + err.message);
+    } finally {
+      setChapaLookupLoading(false);
+    }
   };
 
   const handleSaveLesson = async () => {
@@ -2462,10 +2572,154 @@ export default function AdminPortal() {
 
         {activeTab === 'payments' && (
            <div className="space-y-8 animate-in fade-in duration-500">
-              <header>
-                <h2 className="text-3xl font-bold text-accent italic">Manual Payments</h2>
-                <p className="text-gray-500">Approve or reject bank transfer receipts uploaded by users.</p>
+              <header className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-3xl font-bold text-accent italic">Payment Management</h2>
+                  <p className="text-gray-500">Approve bank receipts, credit coins/VIP, or verify Chapa transactions.</p>
+                </div>
               </header>
+
+              {/* Resolution Cards Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                 {/* Card 1: Direct Manual Credit */}
+                 <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-100 space-y-4">
+                    <h3 className="text-lg font-bold text-accent flex items-center gap-2">
+                       <Coins className="text-primary" size={20} /> Manual Coin & VIP Credit
+                    </h3>
+                    <div className="space-y-3">
+                       <div>
+                          <label className="text-xs font-bold text-gray-400 uppercase">User Email or User ID</label>
+                          <input
+                             type="text"
+                             value={manualEmailOrId}
+                             onChange={(e) => setManualEmailOrId(e.target.value)}
+                             placeholder="e.g. eliyasfami3@gmail.com or UUID"
+                             className="w-full p-3 bg-muted rounded-xl text-sm font-medium border-none mt-1 focus:ring-2 focus:ring-primary"
+                          />
+                       </div>
+                       <div className="grid grid-cols-2 gap-3">
+                          <div>
+                             <label className="text-xs font-bold text-gray-400 uppercase">Type</label>
+                             <select
+                                value={manualCreditType}
+                                onChange={(e) => {
+                                   const val = e.target.value as any;
+                                   setManualCreditType(val);
+                                   if (val === 'coins') setManualAmountOrPlan('100');
+                                   else if (val === 'vip') setManualAmountOrPlan('vip_1m');
+                                   else setManualAmountOrPlan('1m');
+                                }}
+                                className="w-full p-3 bg-muted rounded-xl text-sm font-medium border-none mt-1 focus:ring-2 focus:ring-primary"
+                             >
+                                <option value="coins">Coins</option>
+                                <option value="vip">VIP Status</option>
+                                <option value="premium">Premium Status</option>
+                             </select>
+                          </div>
+                          <div>
+                             <label className="text-xs font-bold text-gray-400 uppercase">Amount / Plan</label>
+                             {manualCreditType === 'coins' ? (
+                                <select
+                                   value={manualAmountOrPlan}
+                                   onChange={(e) => setManualAmountOrPlan(e.target.value)}
+                                   className="w-full p-3 bg-muted rounded-xl text-sm font-medium border-none mt-1 focus:ring-2 focus:ring-primary"
+                                >
+                                   <option value="50">50 Coins</option>
+                                   <option value="100">100 Coins</option>
+                                   <option value="500">500 Coins</option>
+                                   <option value="1000">1000 Coins</option>
+                                </select>
+                             ) : manualCreditType === 'vip' ? (
+                                <select
+                                   value={manualAmountOrPlan}
+                                   onChange={(e) => setManualAmountOrPlan(e.target.value)}
+                                   className="w-full p-3 bg-muted rounded-xl text-sm font-medium border-none mt-1 focus:ring-2 focus:ring-primary"
+                                >
+                                   <option value="vip_1m">1 Month VIP</option>
+                                   <option value="vip_3m">3 Months VIP</option>
+                                   <option value="vip_6m">6 Months VIP</option>
+                                   <option value="vip_12m">1 Year VIP</option>
+                                   <option value="vip_lifetime">Lifetime VIP</option>
+                                </select>
+                             ) : (
+                                <select
+                                   value={manualAmountOrPlan}
+                                   onChange={(e) => setManualAmountOrPlan(e.target.value)}
+                                   className="w-full p-3 bg-muted rounded-xl text-sm font-medium border-none mt-1 focus:ring-2 focus:ring-primary"
+                                >
+                                   <option value="1m">1 Month Premium</option>
+                                   <option value="3m">3 Months Premium</option>
+                                   <option value="6m">6 Months Premium</option>
+                                   <option value="12m">1 Year Premium</option>
+                                   <option value="lifetime">Lifetime Premium</option>
+                                </select>
+                             )}
+                          </div>
+                       </div>
+                       <div>
+                          <label className="text-xs font-bold text-gray-400 uppercase">Resolution Note</label>
+                          <input
+                             type="text"
+                             value={manualNote}
+                             onChange={(e) => setManualNote(e.target.value)}
+                             placeholder="Reason for manual credit..."
+                             className="w-full p-3 bg-muted rounded-xl text-sm font-medium border-none mt-1 focus:ring-2 focus:ring-primary"
+                          />
+                       </div>
+                       <button
+                          onClick={handleManualCreditSubmit}
+                          disabled={manualProcessing || !manualEmailOrId}
+                          className="w-full py-3 bg-primary text-white font-bold rounded-xl text-sm uppercase tracking-wider hover:opacity-90 disabled:opacity-50 transition-all shadow-md"
+                       >
+                          {manualProcessing ? 'Processing...' : 'Grant Coins / Status'}
+                       </button>
+                    </div>
+                 </div>
+
+                 {/* Card 2: Chapa Transaction Lookup */}
+                 <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-100 space-y-4">
+                    <h3 className="text-lg font-bold text-accent flex items-center gap-2">
+                       <ShieldCheck className="text-green-500" size={20} /> Chapa Ref Verification & Auto-Resolve
+                    </h3>
+                    <div className="space-y-3">
+                       <div>
+                          <label className="text-xs font-bold text-gray-400 uppercase">Chapa Ref / tx_ref</label>
+                          <input
+                             type="text"
+                             value={chapaLookupRef}
+                             onChange={(e) => setChapaLookupRef(e.target.value)}
+                             placeholder="e.g. APLc8aT770PM or tx_ref"
+                             className="w-full p-3 bg-muted rounded-xl text-sm font-medium border-none mt-1 focus:ring-2 focus:ring-primary"
+                          />
+                       </div>
+                       <div className="flex gap-2">
+                          <button
+                             onClick={() => handleChapaLookupSubmit(false)}
+                             disabled={chapaLookupLoading || !chapaLookupRef}
+                             className="flex-1 py-3 bg-accent text-white font-bold rounded-xl text-xs uppercase tracking-wider hover:opacity-90 disabled:opacity-50 transition-all"
+                          >
+                             {chapaLookupLoading ? 'Checking...' : 'Lookup API Details'}
+                          </button>
+                          <button
+                             onClick={() => handleChapaLookupSubmit(true)}
+                             disabled={chapaLookupLoading || !chapaLookupRef}
+                             className="flex-1 py-3 bg-green-600 text-white font-bold rounded-xl text-xs uppercase tracking-wider hover:opacity-90 disabled:opacity-50 transition-all shadow-md"
+                          >
+                             Verify & Auto-Credit User
+                          </button>
+                       </div>
+                       {chapaLookupResult && chapaLookupResult.chapaData && (
+                          <div className="p-4 bg-muted/60 rounded-xl text-xs space-y-1.5 border border-gray-200">
+                             <div className="font-bold text-accent">Status: <span className="text-green-600 uppercase">{chapaLookupResult.chapaData.status}</span></div>
+                             <div>Amount: <b>{chapaLookupResult.chapaData.amount} {chapaLookupResult.chapaData.currency}</b></div>
+                             <div>User Email: <b>{chapaLookupResult.chapaData.email}</b></div>
+                             <div>tx_ref: <span className="font-mono text-[10px] text-gray-600">{chapaLookupResult.chapaData.tx_ref}</span></div>
+                             <div>Chapa Ref: <span className="font-mono text-[10px] text-gray-600">{chapaLookupResult.chapaData.reference}</span></div>
+                          </div>
+                       )}
+                    </div>
+                 </div>
+              </div>
 
               <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
                  <table className="w-full text-left">
