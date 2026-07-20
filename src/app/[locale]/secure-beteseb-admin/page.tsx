@@ -477,35 +477,67 @@ export default function AdminPortal() {
         console.log('[Admin Realtime] Channel status:', status);
       });
 
+    // ✅ FIXED: Poll via server-side API (/api/admin/feed) that uses SERVICE ROLE KEY
+    //    This bypasses RLS entirely so admin always sees all pending items.
     const pollInterval = setInterval(async () => {
-      const { data: pendingVer } = await supabase
-        .from('verifications')
-        .select('*, profiles(full_name, birth_date, location)')
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
-      if (pendingVer && pendingVer.length > 0) {
-        setVerifications(prev => {
-          const existingIds = new Set(prev.map((v: any) => v.id));
-          const genuinelyNew = pendingVer.filter((v: any) => !existingIds.has(v.id));
-          if (genuinelyNew.length > 0) {
-            playNotificationSound();
-            setUnreadAlertCount(c => c + genuinelyNew.length);
-            setRealtimeAlerts(a => [
-              ...genuinelyNew.map((v: any) => ({
-                id: v.id,
-                type: 'verification',
-                title: '🛡️ አዲስ የማንነት ማረጋገጫ (New Verification)',
-                subtitle: `${v.profiles?.full_name || 'Unknown'} — ማረጋገጫ ጠብቋል`,
-                time: new Date().toLocaleTimeString()
-              })),
-              ...a
-            ]);
-            return [...genuinelyNew, ...prev];
-          }
-          return prev;
-        });
+      try {
+        const res = await fetch('/api/admin/feed');
+        if (!res.ok) return;
+        const feed = await res.json();
+
+        // Handle new verifications
+        if (feed.verifications?.length > 0) {
+          setVerifications(prev => {
+            const existingIds = new Set(prev.map((v: any) => v.id));
+            const genuinelyNew = feed.verifications.filter((v: any) => !existingIds.has(v.id));
+            if (genuinelyNew.length > 0) {
+              playNotificationSound();
+              setUnreadAlertCount(c => c + genuinelyNew.length);
+              setRealtimeAlerts(a => [
+                ...genuinelyNew.map((v: any) => ({
+                  id: v.id,
+                  type: 'verification',
+                  title: '🛡️ አዲስ የማንነት ማረጋገጫ (New Verification)',
+                  subtitle: `${v.profiles?.full_name || 'Unknown'} — ማረጋገጫ ጠብቋል`,
+                  time: new Date().toLocaleTimeString()
+                })),
+                ...a
+              ]);
+              return [...genuinelyNew, ...prev];
+            }
+            return prev;
+          });
+        }
+
+        // Handle new payments
+        if (feed.payments?.length > 0) {
+          setPayments(prev => {
+            const existingIds = new Set(prev.map((p: any) => p.id));
+            const genuinelyNew = feed.payments.filter((p: any) => !existingIds.has(p.id));
+            if (genuinelyNew.length > 0) {
+              playNotificationSound();
+              setUnreadAlertCount(c => c + genuinelyNew.length);
+            }
+            return genuinelyNew.length > 0 ? [...genuinelyNew, ...prev] : prev;
+          });
+        }
+
+        // Handle new support tickets
+        if (feed.tickets?.length > 0) {
+          setSupportTickets(prev => {
+            const existingIds = new Set(prev.map((t: any) => t.id));
+            const genuinelyNew = feed.tickets.filter((t: any) => !existingIds.has(t.id));
+            if (genuinelyNew.length > 0) {
+              playNotificationSound();
+              setUnreadAlertCount(c => c + genuinelyNew.length);
+            }
+            return genuinelyNew.length > 0 ? [...genuinelyNew, ...prev] : prev;
+          });
+        }
+      } catch (pollErr) {
+        console.warn('[Admin Poll] Error fetching feed:', pollErr);
       }
-    }, 30000);
+    }, 15000);
 
     return () => {
       supabase.removeChannel(channel);
@@ -785,42 +817,46 @@ export default function AdminPortal() {
       const input = prompt(locale === 'am' ? 'እባክዎ ውድቅ የተደረገበትን ምክንያት ያስገቡ (ለምሳሌ፦ ያስገቡት ስም ከመታወቂያው ጋር አይመሳሰልም)፦' : 'Please enter the rejection reason (e.g. name mismatch):');
       if (input === null) {
         setIsSaving(false);
-        return; // user cancelled prompt
+        return;
       }
       reason = input.trim() || (locale === 'am' ? 'ያልተገለጸ ምክንያት' : 'No reason specified');
     }
 
-    // Merge rejection reason into current record's id_data JSONB
-    let newIdData = {};
-    if (status === 'rejected') {
-      const { data: currentReq } = await supabase.from('verifications').select('id_data').eq('id', id).single();
-      newIdData = {
-        ...(currentReq?.id_data || {}),
-        rejection_reason: reason
-      };
-    }
+    try {
+      // ✅ FIXED: Call server-side API that uses SERVICE ROLE KEY → bypasses RLS
+      const res = await fetch('/api/admin/verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, userId, status, reason }),
+      });
 
-    const { error } = await supabase.from('verifications').update({ 
-      status, 
-      verified_at: status === 'verified' ? new Date().toISOString() : null,
-      id_data: status === 'rejected' ? newIdData : undefined
-    }).eq('id', id);
-    
-    if (!error && userId) {
-      if (status === 'verified') {
-        await supabase.from('profiles').update({ 
-          is_verified: true,
-          verification_status: 'verified'
-        }).eq('id', userId);
-      } else if (status === 'rejected') {
-        await supabase.from('profiles').update({ 
-          is_verified: false,
-          verification_status: 'rejected'
-        }).eq('id', userId);
+      const result = await res.json();
+
+      if (!res.ok) {
+        alert('Error: ' + (result.error || 'Failed to update verification'));
+        setIsSaving(false);
+        return;
       }
+
+      // Update local state so UI reflects change immediately
+      setVerifications(prev => prev.map(v =>
+        v.id === id
+          ? { ...v, status, id_data: result.idData || v.id_data }
+          : v
+      ));
+
+      // Close detail modal if open
+      setSelectedVerification(null);
+
+      alert(status === 'verified'
+        ? (locale === 'am' ? '✅ ማረጋገጫ ጸድቋል! ተጠቃሚው ማሳወቂያ ይደርሰዋል።' : '✅ Verification approved!')
+        : (locale === 'am' ? '❌ ማረጋገጫ ውድቅ ተደርጓል!' : '❌ Verification rejected!')
+      );
+    } catch (err: any) {
+      console.error('[handleUpdateVerification] Error:', err);
+      alert('Network error: ' + err.message);
     }
     
-    setVerifications(prev => prev.map(v => v.id === id ? { ...v, status, id_data: status === 'rejected' ? newIdData : v.id_data } : v));
     setIsSaving(false);
   };
 
