@@ -645,7 +645,6 @@ function OnboardingContent() {
         }
 
         if (!formData.gender) return t('errors.genderRequired') || 'Gender is required';
-        if (!formData.avatar_url) return locale === 'am' ? 'እባክዎ የመገለጫ ፎቶ ይጫኑ።' : 'Please upload a profile picture.';
         if (!formData.religion) return t('errors.religionRequired') || 'Religion is required';
         if (!formData.marital_status) return t('errors.maritalRequired') || 'Marital status is required';
         
@@ -1581,14 +1580,118 @@ function OnboardingContent() {
           </div>
         );
       case 7:
+        const activeCountryName = selectedCountry === 'Others' ? customCountry : selectedCountry;
+        const activeRegionName = selectedRegion === 'Others' ? customRegion : selectedRegion;
+        const activeCityName = selectedCity === 'Others' ? customCity : selectedCity;
         return (
           <div className="space-y-8 text-center animate-in zoom-in duration-500">
-             <div className="mx-auto w-24 h-24 bg-green-100 rounded-full flex items-center justify-center">
-                <CheckCircle2 size={48} className="text-green-500" />
+             <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center shadow-lg shadow-green-500/10">
+                <CheckCircle2 size={44} className="text-green-500" />
              </div>
-             <h2 className="text-4xl font-bold text-accent italic">{t('finishTitle')}</h2>
-             <p className="text-lg text-gray-600">{t('finishSubtitle')}</p>
-             <button onClick={handleFinish} disabled={isSubmitting} className="w-full btn-primary py-4 flex items-center justify-center gap-3">
+             
+             <div className="space-y-2">
+               <h2 className="text-3xl md:text-4xl font-extrabold text-accent italic tracking-tight">{t('finishTitle')}</h2>
+               <p className="text-xs md:text-sm text-gray-500 max-w-md mx-auto font-medium">{t('finishSubtitle')}</p>
+             </div>
+
+             {/* ── Profile Summary Review Card ── */}
+             <div className="bg-[#FDFBF9] rounded-[2rem] p-6 border border-gray-200/80 text-left space-y-5 shadow-inner">
+                <div className="flex items-center justify-between border-b border-gray-200 pb-3">
+                  <h3 className="font-extrabold text-xs uppercase tracking-wider text-accent flex items-center gap-2">
+                    📋 {locale === 'am' ? 'የገባውን መረጃ ማጠቃለያ ያረጋግጡ' : 'Review & Confirm Your Information'}
+                  </h3>
+                  <span className="text-[10px] font-bold text-gray-400">Step 1-6</span>
+                </div>
+
+                {/* Section 1: Basic Info */}
+                <div className="bg-white rounded-2xl p-4 border border-gray-100 space-y-2 relative group hover:border-primary/30 transition-all">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-primary uppercase tracking-wider">
+                      👤 {locale === 'am' ? 'መሰረታዊ መረጃ' : 'Basic Profile'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setStep(1)}
+                      className="text-[10px] font-extrabold text-primary hover:underline bg-primary/5 px-3 py-1 rounded-full"
+                    >
+                      ✏️ {locale === 'am' ? 'አስተካክል' : 'Edit'}
+                    </button>
+                  </div>
+                  <div className="text-xs text-gray-600 space-y-1 font-medium">
+                    <p><strong className="text-gray-900">{locale === 'am' ? 'ስም' : 'Name'}:</strong> {formData.full_name || '-'}</p>
+                    <p><strong className="text-gray-900">{locale === 'am' ? 'ልደት' : 'Birth Date'}:</strong> {formData.birth_date || '-'}</p>
+                    <p><strong className="text-gray-900">{locale === 'am' ? 'ጾታ & ሃይማኖት' : 'Gender & Religion'}:</strong> {formData.gender || '-'} • {formData.religion || '-'}</p>
+                    <p><strong className="text-gray-900">{locale === 'am' ? 'ቦታ' : 'Location'}:</strong> {activeCountryName || '-'}, {activeRegionName || '-'}, {activeCityName || '-'}</p>
+                  </div>
+                </div>
+
+                {/* Section 2: Career & Preferences */}
+                <div className="bg-white rounded-2xl p-4 border border-gray-100 space-y-2 relative group hover:border-primary/30 transition-all">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-primary uppercase tracking-wider">
+                      💼 {locale === 'am' ? 'ሙያ እና እሴቶች' : 'Career & Values'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setStep(2)}
+                      className="text-[10px] font-extrabold text-primary hover:underline bg-primary/5 px-3 py-1 rounded-full"
+                    >
+                      ✏️ {locale === 'am' ? 'አስተካክል' : 'Edit'}
+                    </button>
+                  </div>
+                  <div className="text-xs text-gray-600 space-y-1 font-medium">
+                    <p><strong className="text-gray-900">{locale === 'am' ? 'ስራ' : 'Job'}:</strong> {formData.job || '-'}</p>
+                    <p><strong className="text-gray-900">{locale === 'am' ? 'የገንዘብ ልማድ' : 'Finance Habit'}:</strong> {formData.finance_habit || '-'}</p>
+                    <p><strong className="text-gray-900">{locale === 'am' ? 'የቤተሰብ እሴት' : 'Family Values'}:</strong> {formData.family_value || '-'}</p>
+                  </div>
+                </div>
+
+                {/* Section 3: Partner Requirements */}
+                <div className="bg-white rounded-2xl p-4 border border-gray-100 space-y-2 relative group hover:border-primary/30 transition-all">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-primary uppercase tracking-wider">
+                      ❤️ {locale === 'am' ? 'የተጣማሪ መስፈርት' : 'Partner Preferences'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setStep(3)}
+                      className="text-[10px] font-extrabold text-primary hover:underline bg-primary/5 px-3 py-1 rounded-full"
+                    >
+                      ✏️ {locale === 'am' ? 'አስተካክል' : 'Edit'}
+                    </button>
+                  </div>
+                  <div className="text-xs text-gray-600 space-y-1 font-medium">
+                    <p><strong className="text-gray-900">{locale === 'am' ? 'የእድሜ ክልል' : 'Age Range'}:</strong> {formData.partner_age_min} - {formData.partner_age_max} {locale === 'am' ? 'ዓመት' : 'years'}</p>
+                    <p><strong className="text-gray-900">{locale === 'am' ? 'ሃይማኖት' : 'Religion'}:</strong> {formData.partner_religion || '-'}</p>
+                    <p><strong className="text-gray-900">{locale === 'am' ? 'አላማ' : 'Intent'}:</strong> {formData.partner_intent || '-'}</p>
+                  </div>
+                </div>
+
+                {/* Section 4: Gallery Photos */}
+                {formData.gallery_photos.length > 0 && (
+                  <div className="bg-white rounded-2xl p-4 border border-gray-100 space-y-2 relative group hover:border-primary/30 transition-all">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-bold text-primary uppercase tracking-wider">
+                        🖼️ {locale === 'am' ? 'የጋለሪ ፎቶዎች' : 'Gallery Photos'} ({formData.gallery_photos.length})
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setStep(6)}
+                        className="text-[10px] font-extrabold text-primary hover:underline bg-primary/5 px-3 py-1 rounded-full"
+                      >
+                        ✏️ {locale === 'am' ? 'አስተካክል' : 'Edit'}
+                      </button>
+                    </div>
+                    <div className="flex gap-2 overflow-x-auto pt-1">
+                      {formData.gallery_photos.map((url, idx) => (
+                        <img key={idx} src={url} alt="Gallery" className="w-12 h-12 rounded-xl object-cover border border-gray-200" />
+                      ))}
+                    </div>
+                  </div>
+                )}
+             </div>
+
+             <button onClick={handleFinish} disabled={isSubmitting} className="w-full btn-primary py-5 text-xs font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 hover:shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-3">
                 {isSubmitting ? <Loader2 className="animate-spin" /> : t('finishCTA')}
              </button>
           </div>
@@ -1605,11 +1708,20 @@ function OnboardingContent() {
             // Verification Progress Bar (2 steps)
             [4, 5].map((i, idx) => {
                const displayNum = idx + 1;
+               const isCompleted = step > i;
                return (
                  <React.Fragment key={i}>
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold transition-all ${step === i ? 'bg-primary text-white scale-110 shadow-lg' : step > i ? 'bg-primary text-white' : 'bg-white text-gray-300'}`}>
-                       <span className="text-[8px]">{displayNum}</span>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (isCompleted) setStep(i);
+                      }}
+                      className={`w-7 h-7 rounded-full flex items-center justify-center font-bold transition-all ${
+                        step === i ? 'bg-primary text-white scale-110 shadow-lg ring-4 ring-primary/20' : isCompleted ? 'bg-primary text-white cursor-pointer hover:scale-110' : 'bg-white text-gray-300 border border-gray-200'
+                      }`}
+                    >
+                       <span className="text-[10px] font-black">{displayNum}</span>
+                    </button>
                     {idx < 1 && <div className={`flex-1 h-1 mx-1 rounded-full ${step > i ? 'bg-primary' : 'bg-white'}`} />}
                  </React.Fragment>
                );
@@ -1618,11 +1730,28 @@ function OnboardingContent() {
             // Onboarding Progress Bar (5 steps: 1, 2, 3, 6, 7)
             [1, 2, 3, 6, 7].map((i, idx) => {
                const displayNum = idx + 1;
+               const isCompleted = step > i || (step === 7 && i !== 7);
                return (
                  <React.Fragment key={i}>
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold transition-all ${step === i ? 'bg-primary text-white scale-110 shadow-lg' : step > i || (step === 7) ? 'bg-primary text-white' : 'bg-white text-gray-300'}`}>
-                       <span className="text-[8px]">{displayNum}</span>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (i < step || step === 7) {
+                          setErrorMsg('');
+                          setStep(i);
+                        }
+                      }}
+                      title={`Step ${displayNum}`}
+                      className={`w-7 h-7 rounded-full flex items-center justify-center font-bold transition-all ${
+                        step === i 
+                          ? 'bg-primary text-white scale-110 shadow-lg ring-4 ring-primary/20' 
+                          : isCompleted 
+                          ? 'bg-primary text-white cursor-pointer hover:scale-110' 
+                          : 'bg-white text-gray-300 border border-gray-200'
+                      }`}
+                    >
+                       <span className="text-[10px] font-black">{displayNum}</span>
+                    </button>
                     {idx < 4 && <div className={`flex-1 h-1 mx-1 rounded-full ${step > i ? 'bg-primary' : 'bg-white'}`} />}
                  </React.Fragment>
                );

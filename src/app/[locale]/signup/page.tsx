@@ -169,9 +169,8 @@ function SignupContent() {
         return;
       }
 
-      // Social users bypass the phone verification gate and go directly to onboarding or dashboard
-
-      router.push(result.isNewUser ? '/onboarding' : '/dashboard');
+      // Social users go directly to dashboard (onboarding can be done voluntarily from dashboard)
+      router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
     } finally {
@@ -286,7 +285,7 @@ function SignupContent() {
           onboarding_completed: false,
         }, { onConflict: 'id' }).select();
 
-        router.push('/onboarding');
+        router.push('/dashboard');
 
       } else if (view === 'phone') {
         // ── Phone Signup via Supabase Auth with derived email (No OTP!) ───────
@@ -318,7 +317,7 @@ function SignupContent() {
           onboarding_completed: false,
         }, { onConflict: 'id' }).select();
 
-        router.push('/onboarding');
+        router.push('/dashboard');
       }
     } catch (err: any) {
       setError(err.message || 'Signup failed. Please try again.');
@@ -948,6 +947,26 @@ function SignupContent() {
                     <>{locale === 'am' ? 'ቀጥል' : 'Continue'} <ChevronRight size={18} /></>
                   )}
                 </button>
+
+                {view === 'email' && (
+                  <button
+                    type="button"
+                    onClick={() => { setError(''); setView('phone'); }}
+                    className="w-full text-[11px] font-bold text-primary hover:underline text-center pt-3 block"
+                  >
+                    {locale === 'am' ? '📲 በስልክ ቁጥር ለመመዝገብ እዚህ ይጫኑ' : '📲 Register with Phone Number instead'}
+                  </button>
+                )}
+
+                {view === 'phone' && (
+                  <button
+                    type="button"
+                    onClick={() => { setError(''); setView('email'); }}
+                    className="w-full text-[11px] font-bold text-primary hover:underline text-center pt-3 block"
+                  >
+                    {locale === 'am' ? '✉️ በኢሜይል አድራሻ ለመመዝገብ እዚህ ይጫኑ' : '✉️ Register with Email Address instead'}
+                  </button>
+                )}
               </form>
             )}
 

@@ -117,12 +117,8 @@ function LoginContent() {
       }
 
       // Existing user → go straight to dashboard
-      // New user → needs to complete onboarding first
-      if (result.isNewUser) {
-        router.push('/onboarding');
-      } else {
-        router.push('/dashboard');
-      }
+      // All users go directly to dashboard (onboarding can be done voluntarily from dashboard)
+      router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
     } finally {
@@ -155,14 +151,7 @@ function LoginContent() {
           return;
         }
 
-        // Check if onboarding is completed
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('onboarding_completed')
-          .eq('id', data.user.id)
-          .maybeSingle();
-
-        router.push(profile?.onboarding_completed ? '/dashboard' : '/onboarding');
+        router.push('/dashboard');
 
       } else if (view === 'phone') {
         // ── Phone Login via Supabase Auth with derived email (No OTP!) ──────────
@@ -180,14 +169,7 @@ function LoginContent() {
           return;
         }
 
-        // Check if onboarding is completed
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('onboarding_completed')
-          .eq('id', data.user.id)
-          .maybeSingle();
-
-        router.push(profile?.onboarding_completed ? '/dashboard' : '/onboarding');
+        router.push('/dashboard');
       }
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
@@ -586,6 +568,26 @@ function LoginContent() {
                     <>{t('signIn')} <ChevronRight size={18} /></>
                   )}
                 </button>
+
+                {view === 'email' && (
+                  <button
+                    type="button"
+                    onClick={() => { setError(''); setView('phone'); }}
+                    className="w-full text-[11px] font-bold text-primary hover:underline text-center pt-3 block"
+                  >
+                    {locale === 'am' ? '📲 በስልክ ቁጥር ለመግባት እዚህ ይጫኑ' : '📲 Sign in with Phone Number instead'}
+                  </button>
+                )}
+
+                {view === 'phone' && (
+                  <button
+                    type="button"
+                    onClick={() => { setError(''); setView('email'); }}
+                    className="w-full text-[11px] font-bold text-primary hover:underline text-center pt-3 block"
+                  >
+                    {locale === 'am' ? '✉️ በኢሜይል አድራሻ ለመግባት እዚህ ይጫኑ' : '✉️ Sign in with Email Address instead'}
+                  </button>
+                )}
               </form>
             )}
 
