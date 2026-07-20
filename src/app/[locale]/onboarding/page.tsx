@@ -865,27 +865,21 @@ function OnboardingContent() {
               </div>
 
               {/* Legal Name Input */}
-              {!isNamePreFilled ? (
-                <div className="space-y-2">
-                  <label className="block text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
-                    {locale === 'am' ? 'ሙሉ ስም (Display Name)' : 'Legal Name / Display Name'}
-                  </label>
-                  <input 
-                    type="text" 
-                    value={formData.full_name}
-                    onChange={(e) => updateField('full_name', e.target.value)}
-                    className="w-full rounded-2xl border-gray-200 shadow-sm focus:border-primary focus:ring-primary p-4 bg-muted/30 text-sm font-semibold" 
-                    placeholder={locale === 'am' ? 'ለምሳሌ፡ ዮናስ አበበ' : 'e.g. Dawit Kebede'}
-                  />
-                </div>
-              ) : (
-                <div className="space-y-1 bg-[#F8F9FA]/40 p-4 rounded-2xl border border-gray-150">
-                  <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider">
-                    {locale === 'am' ? 'Display Name / ሙሉ ስም' : 'Display Name / Full Name'}
-                  </span>
-                  <p className="text-sm font-bold text-accent">{formData.full_name}</p>
-                </div>
-              )}
+              <div className="space-y-2">
+                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
+                  {locale === 'am' ? 'ህጋዊ ሙሉ ስም (በመታወቂያ/ፓስፖርት ላይ ያለ)' : 'Official Legal Full Name (As on Passport/ID)'}
+                </label>
+                <input 
+                  type="text" 
+                  value={formData.full_name}
+                  onChange={(e) => updateField('full_name', e.target.value)}
+                  className="w-full rounded-2xl border-gray-200 shadow-sm focus:border-primary focus:ring-primary p-4 bg-white text-sm font-semibold border" 
+                  placeholder={locale === 'am' ? 'ለምሳሌ፡ ዮናስ አበበ ከበደ' : 'e.g. Dawit Kebede Alemu'}
+                />
+                <p className="text-[10px] text-gray-400 font-medium ml-1">
+                  {locale === 'am' ? '💡 እባክዎ ህጋዊ ሙሉ ስምዎን ያስገቡ (የጎግል/ፌስቡክ ስም አይወሰድም)' : '💡 Enter your official legal name (Google/Facebook names are not pre-populated)'}
+                </p>
+              </div>
 
               {/* Gender Input */}
               <div className="space-y-2">

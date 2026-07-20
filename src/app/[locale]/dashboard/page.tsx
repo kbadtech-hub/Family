@@ -1451,6 +1451,34 @@ function DashboardContent() {
           </div>
         </header>
 
+        {/* Onboarding Incomplete Banner */}
+        {profile && !profile.onboarding_completed && (
+          <div className="mb-10 bg-gradient-to-r from-accent via-slate-900 to-primary p-8 md:p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden group border border-amber-500/30">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:scale-110 transition-transform duration-700" />
+            <div className="relative flex flex-col md:flex-row items-center justify-between gap-8">
+               <div className="space-y-4 text-center md:text-left">
+                  <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-500/20 text-amber-300 rounded-full text-[10px] font-black uppercase tracking-widest border border-amber-500/40">
+                     ✨ {locale === 'am' ? 'ኦንቦርዲንግ አልተጠናቀቀም' : 'Onboarding Pending'}
+                  </div>
+                  <h2 className="text-3xl font-black italic tracking-tighter text-white">
+                    {locale === 'am' ? 'የመገለጫ እና የተጣማሪ መስፈርትዎን ያሟሉ' : 'Complete Your Profile & Preferences'}
+                  </h2>
+                  <p className="text-white/80 font-medium max-w-xl text-xs md:text-sm leading-relaxed">
+                    {locale === 'am'
+                      ? 'በመድረካችን ላይ ከሌሎች አባላት ጋር በይፋ ለመገናኘት፣ የትዳር አጋር ተዛማጅ ለማግኘት እና አባልነትዎን ሙሉ ለማድረግ የኦንቦርዲንግ መረጃዎን ይሙሉ'
+                      : 'Complete your profile information, values, and partner criteria to start connecting with suitable matches on Beteseb.'}
+                  </p>
+               </div>
+               <button 
+                 onClick={() => router.push('/onboarding')}
+                 className="bg-primary hover:bg-primary/90 text-white px-10 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all shrink-0 flex items-center gap-3"
+               >
+                  {locale === 'am' ? '🚀 ኦንቦርዲንግ ጀምር' : '🚀 Start Onboarding'} <ChevronRight size={20} />
+               </button>
+            </div>
+          </div>
+        )}
+
         {/* Verification Banner — use the synced local verificationStatus state, NOT the raw
             profile fields which may be stale on first render before DB sync completes */}
         {verificationStatus !== 'verified' && verificationStatus !== 'pending' && verificationStatus !== 'loading' && verificationStatus !== 'rejected' && (
