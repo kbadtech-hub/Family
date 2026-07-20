@@ -15,7 +15,8 @@ import {
   Loader2,
   X,
   Upload,
-  AlertCircle
+  AlertCircle,
+  ShieldCheck
 } from 'lucide-react';
 import { calculateStarSign } from '@/lib/abushakir';
 import { simulateIdentityVerification } from '@/lib/verification';
