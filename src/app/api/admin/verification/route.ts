@@ -104,11 +104,13 @@ export async function POST(req: Request) {
           ? `ሰላም ${profile.full_name || ''}! የእርስዎ Beteseb አካውንት ማንነት ማረጋገጥ ጸድቋል። ✅ አሁን ሙሉ አቅሜዎን ይጠቀሙ።`
           : `ሰላም ${profile.full_name || ''}! የማንነት ማረጋገጫ ጥያቄዎ ውድቅ ተደርጓል። ምክንያት፦ ${reason || 'ያልተገለጸ ምክንያት'}። እባክዎ ዳግም ይሞክሩ።`;
 
-      await supabaseAdmin.from('sms_queue').insert({
-        phone: profile.phone,
-        message: smsMessage,
-        status: 'pending',
-      }).then(() => {}).catch(() => {});
+      try {
+        await supabaseAdmin.from('sms_queue').insert({
+          phone: profile.phone,
+          message: smsMessage,
+          status: 'pending',
+        });
+      } catch (_) {}
     }
 
     return NextResponse.json({
