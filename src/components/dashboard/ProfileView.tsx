@@ -1131,8 +1131,8 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                   </p>
                 </div>
               </div>
-         </div>
-      </div>
+            </div>
+          </div>
 
       <div className="bg-white rounded-[2rem] md:rounded-[3rem] p-8 md:p-10 border border-gray-100 shadow-xl space-y-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
