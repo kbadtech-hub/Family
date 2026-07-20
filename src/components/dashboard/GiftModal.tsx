@@ -256,7 +256,7 @@ export default function GiftModal({ recipientId, recipientName, locale, onClose,
           }
 
           setCoinBalance(prev => prev + selectedPack.coins);
-          alert(locale === 'am' ? 'ሳንቲሞች በተሳካ ሁኔታ ተገዝተዋል!' : 'Coins purchased successfully via native App Store!');
+          setSuccessMsg(locale === 'am' ? 'ሳንቲሞች በተሳካ ሁኔታ ተገዝተዋል!' : 'Coins purchased successfully via native App Store!');
           setActiveTab('gallery');
           setLoading(false);
         }, 1500);

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useTranslations, useLocale } from 'next-intl';
 import { CreditCard, Check, Sparkles, Zap, ShieldCheck, Wallet, Loader2, Star, Image as ImageIcon } from 'lucide-react';
+import SystemAlertModal from '@/components/ui/SystemAlertModal';
 
 interface PricingPlan {
   id: string;
@@ -23,6 +24,16 @@ export default function PaymentPortal({ profile, onPaymentStarted }: { profile: 
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const [alertModal, setAlertModal] = useState<{ isOpen: boolean; message: string; type: 'error' | 'success' | 'info' | 'warning'; title?: string }>({
+    isOpen: false,
+    message: '',
+    type: 'info'
+  });
+
+  const showAlert = (message: string, type: 'error' | 'success' | 'info' | 'warning' = 'info', title?: string) => {
+    setAlertModal({ isOpen: true, message, type, title });
+  };
   const [screenshot, setScreenshot] = useState<File | null>(null);
   const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
   const [bankDetails, setBankDetails] = useState<any[]>([]);
@@ -65,7 +76,7 @@ export default function PaymentPortal({ profile, onPaymentStarted }: { profile: 
 
   const handlePayment = async () => {
     if (!selectedPlan || !screenshot) {
-       alert(tp('uploadFailedAlert'));
+       showAlert(tp('uploadFailedAlert'), 'warning');
        return;
     }
     setIsProcessing(true);
@@ -102,10 +113,11 @@ export default function PaymentPortal({ profile, onPaymentStarted }: { profile: 
 
        if (insertError) throw insertError;
 
-       alert(tp('uploadSuccess'));
+       showAlert(tp('uploadSuccess'), 'success');
        onPaymentStarted();
     } catch (err: any) {
-       alert("Error: " + err.message);
+       const errMsg = typeof err?.message === 'string' ? err.message : JSON.stringify(err);
+       showAlert("Error: " + errMsg, 'error');
     } finally {
        setIsProcessing(false);
     }
@@ -267,6 +279,13 @@ export default function PaymentPortal({ profile, onPaymentStarted }: { profile: 
         <div className="w-px h-6 bg-gray-300" />
         <img src="https://stripe.com/favicon.ico" alt="Stripe" className="h-6" />
       </div>
+      <SystemAlertModal 
+        isOpen={alertModal.isOpen} 
+        message={alertModal.message} 
+        type={alertModal.type} 
+        title={alertModal.title} 
+        onClose={() => setAlertModal(prev => ({ ...prev, isOpen: false }))} 
+      />
     </div>
   );
 }

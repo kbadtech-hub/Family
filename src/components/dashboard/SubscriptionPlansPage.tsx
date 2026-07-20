@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useLocale } from 'next-intl';
 import LocationGate from '@/components/dashboard/LocationGate';
+import SystemAlertModal from '@/components/ui/SystemAlertModal';
 
 interface SubscriptionPlansPageProps {
   profile: any;
@@ -28,6 +29,16 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
   const locale = useLocale();
   const isAm = locale === 'am';
   const [activePlanType, setActivePlanType] = useState<'premium' | 'vip'>(defaultTab);
+  
+  const [alertModal, setAlertModal] = useState<{ isOpen: boolean; message: string; type: 'error' | 'success' | 'info' | 'warning'; title?: string }>({
+    isOpen: false,
+    message: '',
+    type: 'info'
+  });
+
+  const showAlert = (message: string, type: 'error' | 'success' | 'info' | 'warning' = 'info', title?: string) => {
+    setAlertModal({ isOpen: true, message, type, title });
+  };
   const [selectedDuration, setSelectedDuration] = useState<string>('3m');
   const [isProcessing, setIsProcessing] = useState(false);
   
@@ -188,10 +199,11 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
 
           const verifyData = await verifyResponse.json();
           if (verifyData.status === 'success') {
-            alert(locale === 'am' ? 'የፕሌይ ስቶር ክፍያ በተሳካ ሁኔታ ተጠናቋል!' : 'Upgrade via Play Store completed successfully!');
-            window.location.reload();
+            showAlert(locale === 'am' ? 'የፕሌይ ስቶር ክፍያ በተሳካ ሁኔታ ተጠናቋል!' : 'Upgrade via Play Store completed successfully!', 'success');
+            setTimeout(() => window.location.reload(), 1500);
           } else {
-            throw new Error(verifyData.message || 'Google Play validation failed on server.');
+            const errStr = typeof verifyData.message === 'string' ? verifyData.message : JSON.stringify(verifyData.message || 'Google Play validation failed');
+            throw new Error(errStr);
           }
         } else {
           // Verify with Apple App Store backend API
@@ -207,15 +219,17 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
 
           const verifyData = await verifyResponse.json();
           if (verifyData.status === 'success') {
-            alert(locale === 'am' ? 'የአፕል ስቶር ክፍያ በተሳካ ሁኔታ ተጠናቋል!' : 'Upgrade via App Store completed successfully!');
-            window.location.reload();
+            showAlert(locale === 'am' ? 'የአፕል ስቶር ክፍያ በተሳካ ሁኔታ ተጠናቋል!' : 'Upgrade via App Store completed successfully!', 'success');
+            setTimeout(() => window.location.reload(), 1500);
           } else {
-            throw new Error(verifyData.message || 'Apple receipt validation failed on server.');
+            const errStr = typeof verifyData.message === 'string' ? verifyData.message : JSON.stringify(verifyData.message || 'Apple receipt validation failed');
+            throw new Error(errStr);
           }
         }
       } catch (err: any) {
         console.error("Native Purchase error details:", err);
-        alert(locale === 'am' ? `ክፍያው አልተሳካም፦ ${err.message}` : `Purchase failed: ${err.message}`);
+        const errMsg = typeof err?.message === 'string' ? err.message : (typeof err === 'string' ? err : JSON.stringify(err));
+        showAlert(locale === 'am' ? `ክፍያው አልተሳካም፦ ${errMsg}` : `Purchase failed: ${errMsg}`, 'error');
       } finally {
         setIsProcessing(false);
       }
@@ -223,7 +237,7 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
     }
 
     try {
-      const email = profile?.email || 'user@example.com';
+      const email = profile?.email || '';
       const nameParts = (profile?.full_name || 'Beteseb User').split(' ');
       const firstName = nameParts[0] || 'Beteseb';
       const lastName = nameParts.slice(1).join(' ') || 'User';
@@ -250,7 +264,8 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
           if (onPaymentStarted) onPaymentStarted();
           window.location.href = data.data.checkout_url;
         } else {
-          throw new Error(data.message || 'Chapa initialization failed');
+          const errStr = typeof data.message === 'string' ? data.message : (data.message ? JSON.stringify(data.message) : 'Chapa initialization failed');
+          throw new Error(errStr);
         }
       } else {
         // Initialize Stripe online gateway
@@ -272,11 +287,14 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
           if (onPaymentStarted) onPaymentStarted();
           window.location.href = data.url;
         } else {
-          throw new Error(data.error || 'Stripe initialization failed');
+          const errStr = typeof data.error === 'string' ? data.error : (data.error ? JSON.stringify(data.error) : 'Stripe initialization failed');
+          throw new Error(errStr);
         }
       }
     } catch (err: any) {
-      alert("Checkout initialization failed: " + err.message);
+      const rawMsg = err?.message || err;
+      const displayMsg = typeof rawMsg === 'string' ? rawMsg : JSON.stringify(rawMsg);
+      showAlert(displayMsg, 'error', isAm ? 'የክፍያ ችግር ተፈጥሯል' : 'Payment Initialization Failed');
     } finally {
       setIsProcessing(false);
     }
@@ -527,6 +545,13 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
 
 
 
+      <SystemAlertModal 
+        isOpen={alertModal.isOpen} 
+        message={alertModal.message} 
+        type={alertModal.type} 
+        title={alertModal.title} 
+        onClose={() => setAlertModal(prev => ({ ...prev, isOpen: false }))} 
+      />
     </div>
   );
 }

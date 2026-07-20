@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
+import SystemAlertModal from '@/components/ui/SystemAlertModal';
 
 export default function PaymentTab() {
   const locale = useLocale();
@@ -28,6 +29,16 @@ export default function PaymentTab() {
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pendingPayment, setPendingPayment] = useState<any>(null);
+
+  const [alertModal, setAlertModal] = useState<{ isOpen: boolean; message: string; type: 'error' | 'success' | 'info' | 'warning'; title?: string }>({
+    isOpen: false,
+    message: '',
+    type: 'info'
+  });
+
+  const showAlert = (message: string, type: 'error' | 'success' | 'info' | 'warning' = 'info', title?: string) => {
+    setAlertModal({ isOpen: true, message, type, title });
+  };
   const [success, setSuccess] = useState(false);
   const [isMobileNative, setIsMobileNative] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
@@ -228,10 +239,11 @@ export default function PaymentTab() {
 
           const verifyData = await verifyResponse.json();
           if (verifyData.status === 'success') {
-            alert(t('upgradePlaySuccess'));
-            window.location.reload();
+            showAlert(t('upgradePlaySuccess'), 'success');
+            setTimeout(() => window.location.reload(), 1500);
           } else {
-            throw new Error(verifyData.message || 'Google Play validation failed on server.');
+            const errStr = typeof verifyData.message === 'string' ? verifyData.message : JSON.stringify(verifyData.message || 'Google Play validation failed');
+            throw new Error(errStr);
           }
         } else {
           // Verify with Apple App Store backend API
@@ -247,15 +259,17 @@ export default function PaymentTab() {
 
           const verifyData = await verifyResponse.json();
           if (verifyData.status === 'success') {
-            alert(t('upgradeAppSuccess'));
-            window.location.reload();
+            showAlert(t('upgradeAppSuccess'), 'success');
+            setTimeout(() => window.location.reload(), 1500);
           } else {
-            throw new Error(verifyData.message || 'Apple receipt validation failed on server.');
+            const errStr = typeof verifyData.message === 'string' ? verifyData.message : JSON.stringify(verifyData.message || 'Apple receipt validation failed');
+            throw new Error(errStr);
           }
         }
       } catch (err: any) {
         console.error("Native Purchase error details:", err);
-        alert(t('purchaseFailed', { error: err.message }));
+        const errMsg = typeof err?.message === 'string' ? err.message : JSON.stringify(err);
+        showAlert(t('purchaseFailed', { error: errMsg }), 'error');
       } finally {
         setIsSubmitting(false);
       }
@@ -287,10 +301,10 @@ export default function PaymentTab() {
             premium_until: premiumUntil.toISOString()
           }).eq('id', userId);
 
-          alert(t('upgradeSimSuccess'));
-          window.location.reload();
+          showAlert(t('upgradeSimSuccess'), 'success');
+          setTimeout(() => window.location.reload(), 1500);
         } else {
-          alert("Payment trigger failed: " + error.message);
+          showAlert("Payment trigger failed: " + error.message, 'error');
         }
         setIsSubmitting(false);
       }, 1500);
@@ -304,7 +318,7 @@ export default function PaymentTab() {
     if (!plan) return;
 
     try {
-      const email = userProfile?.email || 'user@example.com';
+      const email = userProfile?.email || '';
       const nameParts = (userProfile?.full_name || 'Beteseb User').split(' ');
       const firstName = nameParts[0] || 'Beteseb';
       const lastName = nameParts.slice(1).join(' ') || 'User';
@@ -329,7 +343,8 @@ export default function PaymentTab() {
         if (data.status === 'success' && data.data?.checkout_url) {
           window.location.href = data.data.checkout_url;
         } else {
-          throw new Error(data.message || 'Chapa initialization failed');
+          const errStr = typeof data.message === 'string' ? data.message : (data.message ? JSON.stringify(data.message) : 'Chapa initialization failed');
+          throw new Error(errStr);
         }
       } else {
         const response = await fetch('/api/payments/stripe/initialize', {
@@ -349,11 +364,14 @@ export default function PaymentTab() {
         if (data.url) {
           window.location.href = data.url;
         } else {
-          throw new Error(data.error || 'Stripe initialization failed');
+          const errStr = typeof data.error === 'string' ? data.error : (data.error ? JSON.stringify(data.error) : 'Stripe initialization failed');
+          throw new Error(errStr);
         }
       }
     } catch (err: any) {
-      alert("Online checkout initialization failed: " + err.message);
+      const rawMsg = err?.message || err;
+      const displayMsg = typeof rawMsg === 'string' ? rawMsg : JSON.stringify(rawMsg);
+      showAlert("Online checkout initialization failed: " + displayMsg, 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -555,6 +573,13 @@ export default function PaymentTab() {
            </div>
         )
       )}
+      <SystemAlertModal 
+        isOpen={alertModal.isOpen} 
+        message={alertModal.message} 
+        type={alertModal.type} 
+        title={alertModal.title} 
+        onClose={() => setAlertModal(prev => ({ ...prev, isOpen: false }))} 
+      />
     </div>
   );
 }

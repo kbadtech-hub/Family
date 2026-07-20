@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import LocationGate from '@/components/dashboard/LocationGate';
+import SystemAlertModal from '@/components/ui/SystemAlertModal';
 
 interface GiftRecord {
   id: string;
@@ -59,6 +60,16 @@ export default function GiftsView({ locale }: { locale: string }) {
   const [profile, setProfile] = useState<any>(null);
   const [isLocationVerified, setIsLocationVerified] = useState(false);
   const [isEthiopiaVerified, setIsEthiopiaVerified] = useState(false);
+
+  const [alertModal, setAlertModal] = useState<{ isOpen: boolean; message: string; type: 'error' | 'success' | 'info' | 'warning'; title?: string }>({
+    isOpen: false,
+    message: '',
+    type: 'info'
+  });
+
+  const showAlert = (message: string, type: 'error' | 'success' | 'info' | 'warning' = 'info', title?: string) => {
+    setAlertModal({ isOpen: true, message, type, title });
+  };
   
   // Delivery Modal State
   const [deliveryGift, setDeliveryGift] = useState<GiftRecord | null>(null);
@@ -246,7 +257,7 @@ export default function GiftsView({ locale }: { locale: string }) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             amount: selectedPack.priceEtb,
-            email: profile?.email || 'user@example.com',
+            email: profile?.email || '',
             first_name: (profile?.full_name || 'Beteseb User').split(' ')[0] || 'Beteseb',
             last_name: (profile?.full_name || 'Beteseb User').split(' ')[1] || 'User',
             tx_ref: txRef,
@@ -259,7 +270,8 @@ export default function GiftsView({ locale }: { locale: string }) {
         if (data.status === 'success' && data.data?.checkout_url) {
           window.location.href = data.data.checkout_url;
         } else {
-          throw new Error(data.message || 'Chapa initialization failed');
+          const errStr = typeof data.message === 'string' ? data.message : (data.message ? JSON.stringify(data.message) : 'Chapa initialization failed');
+          throw new Error(errStr);
         }
       } else {
         const response = await fetch('/api/payments/stripe/initialize', {
@@ -267,7 +279,7 @@ export default function GiftsView({ locale }: { locale: string }) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             amount: selectedPack.priceUsd,
-            email: profile?.email || 'user@example.com',
+            email: profile?.email || '',
             planType: selectedPack.id,
             userId: userId,
             successUrl: window.location.origin + `/${locale}/dashboard?status=success`,
@@ -279,11 +291,14 @@ export default function GiftsView({ locale }: { locale: string }) {
         if (data.url) {
           window.location.href = data.url;
         } else {
-          throw new Error(data.error || 'Stripe initialization failed');
+          const errStr = typeof data.error === 'string' ? data.error : (data.error ? JSON.stringify(data.error) : 'Stripe initialization failed');
+          throw new Error(errStr);
         }
       }
     } catch (err: any) {
-      alert("Error: " + err.message);
+      const rawMsg = err?.message || err;
+      const displayMsg = typeof rawMsg === 'string' ? rawMsg : JSON.stringify(rawMsg);
+      showAlert(displayMsg, 'error', locale === 'am' ? 'የኮይን መግዣ ችግር ተፈጥሯል' : 'Coin Purchase Error');
     } finally {
       setLoadingTopup(false);
     }
@@ -802,6 +817,13 @@ export default function GiftsView({ locale }: { locale: string }) {
          </div>
       )}
 
+      <SystemAlertModal 
+        isOpen={alertModal.isOpen} 
+        message={alertModal.message} 
+        type={alertModal.type} 
+        title={alertModal.title} 
+        onClose={() => setAlertModal(prev => ({ ...prev, isOpen: false }))} 
+      />
     </div>
   );
 }

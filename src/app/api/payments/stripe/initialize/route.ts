@@ -6,6 +6,11 @@ export async function POST(req: Request) {
 
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const validEmail = (email && typeof email === 'string' && emailRegex.test(email.trim()) && !email.includes('example.com'))
+      ? email.trim()
+      : `user_${(userId || Date.now()).toString().slice(0, 15)}@beteseb1.online`;
+
     if (!stripeSecretKey) {
       console.warn("STRIPE_SECRET_KEY is not defined. Returning demo checkout URL.");
       return NextResponse.json({
@@ -24,7 +29,7 @@ export async function POST(req: Request) {
     params.append('mode', 'payment');
     params.append('success_url', successUrl);
     params.append('cancel_url', cancelUrl);
-    params.append('customer_email', email);
+    params.append('customer_email', validEmail);
     params.append('metadata[userId]', userId);
     params.append('metadata[planType]', planType);
 
@@ -38,10 +43,16 @@ export async function POST(req: Request) {
     });
 
     const data = await response.json();
+    if (data.error) {
+      const errMsg = typeof data.error === 'string' 
+        ? data.error 
+        : (data.error.message || JSON.stringify(data.error));
+      return NextResponse.json({ error: errMsg }, { status: 400 });
+    }
     return NextResponse.json(data);
 
   } catch (error: any) {
     console.error("Stripe Session Initialization Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error?.message || 'Stripe initialization failed' }, { status: 500 });
   }
 }
