@@ -315,24 +315,38 @@ function OnboardingContent() {
   const [isRecording, setIsRecording] = useState(false);
   const [countdown, setCountdown] = useState(3);
   const [cameraActive, setCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState('');
   const cameraVideoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
 
+  // Automatically attach cameraStream to <video> when element mounts in DOM
+  useEffect(() => {
+    if (cameraActive && cameraStream && cameraVideoRef.current) {
+      cameraVideoRef.current.srcObject = cameraStream;
+    }
+  }, [cameraStream, cameraActive]);
+
   const startCamera = async () => {
     try {
+      setCameraError('');
       setCameraActive(true);
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'user', width: 400, height: 400 }, 
-        audio: false 
-      });
-      setCameraStream(stream);
-      if (cameraVideoRef.current) {
-        cameraVideoRef.current.srcObject = stream;
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 640 } }, 
+          audio: false 
+        });
+      } catch {
+        // Fallback for mobile browsers with restrictive resolution constraints
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
       }
-    } catch (err) {
+      setCameraStream(stream);
+    } catch (err: any) {
       console.error("Error accessing camera:", err);
-      alert(locale === 'am' ? "ካሜራውን መክፈት አልተቻለም። እባክዎ ፍቃድ መስጠትዎን ያረጋግጡ።" : "Could not open camera. Please grant camera permission.");
+      setCameraError(locale === 'am'
+        ? "ካሜራውን መክፈት አልተቻለም። እባክዎ የካሜራ ፍቃድ መስጠትዎን ያረጋግጡ።"
+        : "Could not open camera. Please grant camera permission in your browser settings.");
       setCameraActive(false);
     }
   };
@@ -1380,6 +1394,20 @@ function OnboardingContent() {
                   : 'Your camera is strictly required to capture your profile verification image and record identity verification media. Please record a 3-second live selfie video or upload a video file. Your camera is used solely to verify profile authenticity.'}
               </p>
             </div>
+
+            {cameraError && (
+              <div className="max-w-sm mx-auto p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-3 text-red-600 text-xs animate-in fade-in">
+                <AlertCircle size={18} className="shrink-0" />
+                <p className="font-bold text-left">{cameraError}</p>
+              </div>
+            )}
+
+            {cameraActive && !cameraError && (
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-green-50 border border-green-200 rounded-full text-green-700 text-[10px] font-bold uppercase tracking-widest animate-pulse">
+                <CheckCircle2 size={14} />
+                <span>{locale === 'am' ? 'ካሜራ ተፈቅዷል • በላይቭ ላይ ነው' : 'Camera Allowed • Live Stream Active'}</span>
+              </div>
+            )}
 
             <div className="relative w-64 h-64 mx-auto rounded-[3rem] border-4 border-dashed border-primary/20 bg-muted/30 overflow-hidden flex items-center justify-center group shadow-md">
                {formData.selfie_photo ? (

@@ -268,6 +268,10 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
   const [photos, setPhotos] = useState<string[]>(profile?.gallery_urls || []);
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [deleteErrorMsg, setDeleteErrorMsg] = useState('');
+
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || '',
     username: profile?.username || '',
@@ -1302,26 +1306,82 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
            </p>
            
            <button 
-             onClick={async () => {
-               const confirmMsg = t('deleteConfirm');
-               
-               if (confirm(confirmMsg)) {
-                 const { error } = await supabase.rpc('delete_own_user_account');
-                 if (!error) {
-                   await supabase.auth.signOut();
-                   alert(t('deleteSuccess'));
-                   window.location.href = '/';
-                 } else {
-                   alert("Deletion failed: " + error.message);
-                 }
-               }
+             onClick={() => {
+               setDeleteErrorMsg('');
+               setShowDeleteConfirmModal(true);
              }}
-             className="w-full bg-red-600 hover:bg-red-700 text-white py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-red-500/20"
+             className="w-full bg-red-600 hover:bg-red-700 text-white py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-red-500/20 active:scale-95 transition-all"
            >
               {t('deleteAccountButton')}
            </button>
         </div>
       </div>
+
+      {/* ── Branded Beteseb Account Deletion Confirmation Modal ── */}
+      {showDeleteConfirmModal && (
+        <div className="fixed inset-0 z-[10000] bg-[#0F172A]/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl text-center space-y-6 border border-red-100 animate-in zoom-in-95 duration-200">
+            <div className="w-20 h-20 bg-red-50 border border-red-200 text-red-500 rounded-[2rem] mx-auto flex items-center justify-center text-3xl shadow-inner">
+              <Trash2 size={36} />
+            </div>
+            
+            <div className="space-y-2">
+              <h3 className="text-xl font-black italic text-red-600">
+                {locale === 'am' ? 'አካውንትዎን ለማስረዝ እርግጠኛ ነዎት?' : 'Confirm Account Deletion'}
+              </h3>
+              <p className="text-xs text-gray-500 font-semibold leading-relaxed">
+                {locale === 'am'
+                  ? 'አካውንትዎን ከሰረዙ በኋላ ሁሉም መረጃዎችዎ፣ ሜሴጆችዎ፣ የቪአይፒ አባልነትዎ እና የክፍያ ታሪክዎ ለዘለቄታው ይጠፋሉ። ይህ ድርጊት ሊመለስ አይችልም።'
+                  : 'Deleting your account will permanently wipe all your data, messages, VIP status, and payment logs. This action cannot be undone.'}
+              </p>
+            </div>
+
+            {deleteErrorMsg && (
+              <p className="text-xs font-bold text-red-600 bg-red-50 p-3 rounded-xl border border-red-100">
+                {deleteErrorMsg}
+              </p>
+            )}
+
+            <div className="space-y-3 pt-2">
+              <button
+                disabled={isDeletingAccount}
+                onClick={async () => {
+                  setIsDeletingAccount(true);
+                  setDeleteErrorMsg('');
+                  try {
+                    const { error } = await supabase.rpc('delete_own_user_account');
+                    if (!error) {
+                      await supabase.auth.signOut();
+                      window.location.href = '/';
+                    } else {
+                      setDeleteErrorMsg(error.message || 'Account deletion failed');
+                      setIsDeletingAccount(false);
+                    }
+                  } catch (err: any) {
+                    setDeleteErrorMsg(err.message || 'An unexpected error occurred');
+                    setIsDeletingAccount(false);
+                  }
+                }}
+                className="w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-red-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isDeletingAccount ? (
+                  <Loader2 className="animate-spin" size={18} />
+                ) : (
+                  locale === 'am' ? 'አዎ፣ አካውንቴን ሰርዝ' : 'Yes, Delete My Account'
+                )}
+              </button>
+
+              <button
+                disabled={isDeletingAccount}
+                onClick={() => setShowDeleteConfirmModal(false)}
+                className="w-full py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-2xl font-bold uppercase text-xs tracking-wider transition-all"
+              >
+                {locale === 'am' ? 'ተመለስ (አትሰርዝ)' : 'Cancel (Keep Account)'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

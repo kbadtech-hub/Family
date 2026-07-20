@@ -122,6 +122,23 @@ function DashboardContent() {
   // IP-based Ethiopia detection — drives currency display, fully independent of UI language
   const [isEthiopiaUser, setIsEthiopiaUser] = useState<boolean | null>(null);
 
+  // Custom Beteseb Branded Modal Notice (Replaces raw browser alert popups)
+  const [paymentNoticeModal, setPaymentNoticeModal] = useState<{
+    isOpen: boolean;
+    type: 'coins' | 'vip' | 'premium' | 'error';
+    titleAm: string;
+    titleEn: string;
+    messageAm: string;
+    messageEn: string;
+  }>({
+    isOpen: false,
+    type: 'coins',
+    titleAm: '',
+    titleEn: '',
+    messageAm: '',
+    messageEn: ''
+  });
+
   const handleTabClick = (tabId: string) => {
     const coreTabs = ['chat', 'community', 'workshops', 'wedding', 'gifts'];
     if (coreTabs.includes(tabId) && verificationStatus !== 'verified') {
@@ -440,7 +457,14 @@ function DashboardContent() {
             if (result.coinBalance !== undefined) {
               setProfile(prev => prev ? { ...prev, coins: result.coinBalance } : null);
             }
-            alert(`✅ ክፍያዎ ተጠናቋል! ኮይኖችዎ ገቢ ሆነዋል።\n✅ Payment received! Your wallet has been credited with ${result.coinBalance} coins.`);
+            setPaymentNoticeModal({
+              isOpen: true,
+              type: 'coins',
+              titleAm: 'ክፍያዎ ተጠናቋል! 🪙',
+              titleEn: 'Payment Received! 🪙',
+              messageAm: `ኮይኖችዎ ገቢ ሆነዋል። የኮይን ሂሳብዎ ወደ ${result.coinBalance || 0} አድጓል።`,
+              messageEn: `Payment received! Your wallet has been credited with ${result.coinBalance || 0} coins.`
+            });
             setActiveTab('gifts');
           } else if (result.type === 'vip') {
             // For VIP: refresh profile and mark VIP active
@@ -459,7 +483,15 @@ function DashboardContent() {
               setProfile(prev => prev ? { ...prev, ...updatedProfile, is_premium: premiumNow } : null);
               setPaymentStatus('approved');
             }
-            alert(`👑 ክፍያዎ ተጠናቋል! የቪአይፒ አባልነትዎ ገቢ ሆኗል።\n👑 VIP membership activated! Valid until ${new Date(result.vipExpiresAt).toLocaleDateString()}.`);
+            const expiresDate = result.vipExpiresAt ? new Date(result.vipExpiresAt).toLocaleDateString() : '';
+            setPaymentNoticeModal({
+              isOpen: true,
+              type: 'vip',
+              titleAm: 'የቪ.አይ.ፒ አባልነት ተረጋግጧል! 👑',
+              titleEn: 'VIP Status Activated! 👑',
+              messageAm: `እንኳን ደስ አለዎት! የቪ.አይ.ፒ ልዩ አባልነትዎ እስከ ${expiresDate} ድረስ በስኬት ገቢ ሆኗል።`,
+              messageEn: `VIP membership activated! Valid until ${expiresDate}.`
+            });
             setActiveTab('profile');
           } else {
             // Standard premium subscription
@@ -475,7 +507,14 @@ function DashboardContent() {
               setProfile(prev => prev ? { ...prev, ...updatedProfile, is_premium: isPremiumNow } : null);
               setPaymentStatus('approved');
             }
-            alert(`✅ ክፍያዎ ተጠናቋል! ፕሪሚየም አካውንትዎ ገቢ ሆኗል።\n✅ Payment verified and premium profile upgraded successfully!`);
+            setPaymentNoticeModal({
+              isOpen: true,
+              type: 'premium',
+              titleAm: 'ፕሪሚየም አባልነት ተረጋግጧል! ⭐',
+              titleEn: 'Premium Profile Upgraded! ⭐',
+              messageAm: 'ክፍያዎ ተረጋግጦ የፕሪሚየም አባልነትዎ በስኬት ገቢ ሆኗል።',
+              messageEn: 'Payment verified and premium profile upgraded successfully!'
+            });
             // Navigate to payments tab so the user sees their new status
             setActiveTab('payments');
           }
@@ -486,7 +525,14 @@ function DashboardContent() {
           } else {
             setActiveTab('payments');
           }
-          alert(`❌ ክፍያው አልተሳካም ወይም ተሰርዟል። እባክዎ እንደገና ይሞክሩ።\n❌ Payment failed or was cancelled. Please try again.`);
+          setPaymentNoticeModal({
+            isOpen: true,
+            type: 'error',
+            titleAm: 'ክፍያው አልተሳካም',
+            titleEn: 'Payment Failed or Cancelled',
+            messageAm: 'ክፍያው አልተሳካም ወይም ተሰርዟል። እባክዎ እንደገና ይሞክሩ።',
+            messageEn: 'Payment failed or was cancelled. Please try again.'
+          });
         }
       } catch (err) {
         console.error('[Dashboard] Chapa auto-verify error:', err);
@@ -495,7 +541,14 @@ function DashboardContent() {
         } else {
           setActiveTab('payments');
         }
-        alert(`❌ ክፍያው አልተሳካም ወይም ተሰርዟል። እባክዎ እንደገና ይሞክሩ።\n❌ Payment failed or was cancelled. Please try again.`);
+        setPaymentNoticeModal({
+          isOpen: true,
+          type: 'error',
+          titleAm: 'ክፍያው አልተሳካም',
+          titleEn: 'Payment Failed or Cancelled',
+          messageAm: 'ክፍያው አልተሳካም ወይም ተሰርዟል። እባክዎ እንደገና ይሞክሩ።',
+          messageEn: 'Payment failed or was cancelled. Please try again.'
+        });
       } finally {
         // Clean tx_ref from URL to prevent re-triggering on page refresh
         const url = new URL(window.location.href);
@@ -1949,6 +2002,40 @@ function DashboardContent() {
               defaultTab={defaultPaymentTab}
               onPaymentStarted={() => setShowPayment(false)}
             />
+          </div>
+        </div>
+      )}
+      {/* ── Branded Beteseb Payment Notice Modal ────────────────────────────── */}
+      {paymentNoticeModal.isOpen && (
+        <div className="fixed inset-0 z-[10000] bg-[#0F172A]/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl text-center space-y-6 border border-border animate-in zoom-in-95 duration-200">
+            <div className={`w-20 h-20 rounded-[2rem] mx-auto flex items-center justify-center text-4xl shadow-inner border ${
+              paymentNoticeModal.type === 'vip' 
+                ? 'bg-amber-50 border-amber-200 text-amber-500' 
+                : paymentNoticeModal.type === 'coins' 
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-500' 
+                : paymentNoticeModal.type === 'premium' 
+                ? 'bg-primary/10 border-primary/20 text-primary' 
+                : 'bg-red-50 border-red-200 text-red-500'
+            }`}>
+              {paymentNoticeModal.type === 'vip' ? '👑' : paymentNoticeModal.type === 'coins' ? '🪙' : paymentNoticeModal.type === 'premium' ? '⭐' : '❌'}
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-xl font-black italic text-accent">
+                {locale === 'am' ? paymentNoticeModal.titleAm : paymentNoticeModal.titleEn}
+              </h3>
+              <p className="text-xs text-gray-500 font-semibold leading-relaxed">
+                {locale === 'am' ? paymentNoticeModal.messageAm : paymentNoticeModal.messageEn}
+              </p>
+            </div>
+            <button
+              onClick={() => setPaymentNoticeModal(prev => ({ ...prev, isOpen: false }))}
+              className={`w-full py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl transition-all active:scale-95 text-white ${
+                paymentNoticeModal.type === 'error' ? 'bg-accent hover:bg-black' : 'bg-primary shadow-primary/20 hover:bg-primary/90'
+              }`}
+            >
+              {locale === 'am' ? 'እሺ (ተቀብያለሁ)' : 'OK (Got it)'}
+            </button>
           </div>
         </div>
       )}
