@@ -37,4 +37,4 @@ SET
     "class": 25,
     "discount": 0
   }'::jsonb
-WHERE id = '00000000-0000-0000-0000-000000000000';
+WHERE true;

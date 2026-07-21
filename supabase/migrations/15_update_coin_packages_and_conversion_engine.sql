@@ -11,4 +11,4 @@ SET coin_packages = '[
   {"id":"coins_7000", "baseCoins":7000, "bonusPercent":7,  "bonusCoins":490, "coins":7490, "priceEtb":2100, "priceUsd":10.50, "discount":"+7% BONUS"},
   {"id":"coins_10000","baseCoins":10000,"bonusPercent":10, "bonusCoins":1000,"coins":11000,"priceEtb":3000, "priceUsd":15.00, "discount":"+10% BONUS"}
 ]'::jsonb
-WHERE id = 1 OR id IS NOT NULL;
+WHERE true;
