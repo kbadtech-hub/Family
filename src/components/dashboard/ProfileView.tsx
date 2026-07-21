@@ -319,8 +319,26 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
   const hasVouched = vouchRequests.some(v => v.vouch_status === 'approved');
   const userTier = getUserTier(profile, hasVouched);
   const isRoyal = userCompletion === 100 && userTier === 'diamond';
-  const isPremiumUser = profile?.is_premium || ['gold', 'platinum', 'diamond'].includes(userTier) || profile?.is_vip_member;
-  const isVipUser = profile?.is_vip_member;
+  
+  const isPaidVip = Boolean(profile?.is_vip_member) &&
+    (!profile?.vip_expires_at || new Date(profile.vip_expires_at) > new Date() || Boolean(profile?.is_lifetime));
+  const isPaidPremium = Boolean(profile?.is_lifetime) ||
+    Boolean(profile?.is_premium) ||
+    (profile?.premium_until && new Date(profile.premium_until) > new Date()) ||
+    ['admin', 'super_admin', 'expert'].includes(profile?.role || '');
+
+  const isDiamondUser = userTier === 'diamond' || isPaidPremium;
+  const isPlatinumUser = userTier === 'platinum';
+
+  // Basic privacy controls (Show Last Seen Status & Enable Read Receipts)
+  // Accessible to: Platinum Free, Diamond Paid, and VIP Paid
+  const canAccessBasicPrivacy = isPaidVip || isDiamondUser || isPlatinumUser;
+
+  // Full match privacy controls (Show Age on Matching Card, Show City, Allow Friend Requests)
+  // Accessible ONLY to: Diamond Paid and VIP Paid (NOT Platinum Free or Golden/unverified Free)
+  const canAccessFullPrivacy = isPaidVip || isDiamondUser;
+  const isPremiumUser = canAccessFullPrivacy;
+  const isVipUser = isPaidVip;
 
   const getTierBadge = (tier: string) => {
     switch (tier) {
@@ -977,7 +995,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                     <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-2">
                       {t('privacySettings')}
                     </h4>
-                    {!isPremiumUser && (
+                    {(!canAccessFullPrivacy || !canAccessBasicPrivacy) && (
                       <span className="px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-700 text-[9px] font-black uppercase tracking-wider rounded-full flex items-center gap-1">
                         <Lock size={10} /> {locale === 'am' ? 'የፕሪሚየም አገልግሎት' : 'Premium Feature'}
                       </span>
@@ -987,111 +1005,111 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                     <label 
                       onClick={(e) => {
-                        if (!isPremiumUser) {
+                        if (!canAccessFullPrivacy) {
                           e.preventDefault();
                           setShowUpgradeModal(true);
                         }
                       }}
-                      className={`flex items-center gap-3 ${isPremiumUser ? 'cursor-pointer' : 'cursor-pointer group'}`}
+                      className={`flex items-center gap-3 ${canAccessFullPrivacy ? 'cursor-pointer' : 'cursor-pointer group'}`}
                     >
                       <input 
                         type="checkbox"
                         checked={formData.show_age}
-                        disabled={!isPremiumUser}
-                        onChange={(e) => isPremiumUser && setFormData({...formData, show_age: e.target.checked})}
+                        disabled={!canAccessFullPrivacy}
+                        onChange={(e) => canAccessFullPrivacy && setFormData({...formData, show_age: e.target.checked})}
                         className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary disabled:opacity-50"
                       />
                       <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
                         {t('showAge')}
-                        {!isPremiumUser && <Lock size={12} className="text-amber-500 group-hover:scale-110 transition-transform" />}
+                        {!canAccessFullPrivacy && <Lock size={12} className="text-amber-500 group-hover:scale-110 transition-transform" />}
                       </span>
                     </label>
 
                     <label 
                       onClick={(e) => {
-                        if (!isPremiumUser) {
+                        if (!canAccessFullPrivacy) {
                           e.preventDefault();
                           setShowUpgradeModal(true);
                         }
                       }}
-                      className={`flex items-center gap-3 ${isPremiumUser ? 'cursor-pointer' : 'cursor-pointer group'}`}
+                      className={`flex items-center gap-3 ${canAccessFullPrivacy ? 'cursor-pointer' : 'cursor-pointer group'}`}
                     >
                       <input 
                         type="checkbox"
                         checked={formData.show_city}
-                        disabled={!isPremiumUser}
-                        onChange={(e) => isPremiumUser && setFormData({...formData, show_city: e.target.checked})}
+                        disabled={!canAccessFullPrivacy}
+                        onChange={(e) => canAccessFullPrivacy && setFormData({...formData, show_city: e.target.checked})}
                         className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary disabled:opacity-50"
                       />
                       <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
                         {t('showCity')}
-                        {!isPremiumUser && <Lock size={12} className="text-amber-500 group-hover:scale-110 transition-transform" />}
+                        {!canAccessFullPrivacy && <Lock size={12} className="text-amber-500 group-hover:scale-110 transition-transform" />}
                       </span>
                     </label>
 
                     <label 
                       onClick={(e) => {
-                        if (!isPremiumUser) {
+                        if (!canAccessFullPrivacy) {
                           e.preventDefault();
                           setShowUpgradeModal(true);
                         }
                       }}
-                      className={`flex items-center gap-3 ${isPremiumUser ? 'cursor-pointer' : 'cursor-pointer group'}`}
+                      className={`flex items-center gap-3 ${canAccessFullPrivacy ? 'cursor-pointer' : 'cursor-pointer group'}`}
                     >
                       <input 
                         type="checkbox"
                         checked={formData.allow_friend_requests}
-                        disabled={!isPremiumUser}
-                        onChange={(e) => isPremiumUser && setFormData({...formData, allow_friend_requests: e.target.checked})}
+                        disabled={!canAccessFullPrivacy}
+                        onChange={(e) => canAccessFullPrivacy && setFormData({...formData, allow_friend_requests: e.target.checked})}
                         className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary disabled:opacity-50"
                       />
                       <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
                         {t('allowFriendRequests')}
-                        {!isPremiumUser && <Lock size={12} className="text-amber-500 group-hover:scale-110 transition-transform" />}
+                        {!canAccessFullPrivacy && <Lock size={12} className="text-amber-500 group-hover:scale-110 transition-transform" />}
                       </span>
                     </label>
 
                     <label 
                       onClick={(e) => {
-                        if (!isPremiumUser) {
+                        if (!canAccessBasicPrivacy) {
                           e.preventDefault();
                           setShowUpgradeModal(true);
                         }
                       }}
-                      className={`flex items-center gap-3 ${isPremiumUser ? 'cursor-pointer' : 'cursor-pointer group'}`}
+                      className={`flex items-center gap-3 ${canAccessBasicPrivacy ? 'cursor-pointer' : 'cursor-pointer group'}`}
                     >
                       <input 
                         type="checkbox"
                         checked={formData.enable_last_seen}
-                        disabled={!isPremiumUser}
-                        onChange={(e) => isPremiumUser && setFormData({...formData, enable_last_seen: e.target.checked})}
+                        disabled={!canAccessBasicPrivacy}
+                        onChange={(e) => canAccessBasicPrivacy && setFormData({...formData, enable_last_seen: e.target.checked})}
                         className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary disabled:opacity-50"
                       />
                       <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
                         {locale === 'am' ? 'ባለፉት የመስመር ላይ ሁኔታ አሳይ (Show Last Seen Status)' : 'Show Last Seen Status'}
-                        {!isPremiumUser && <Lock size={12} className="text-amber-500 group-hover:scale-110 transition-transform" />}
+                        {!canAccessBasicPrivacy && <Lock size={12} className="text-amber-500 group-hover:scale-110 transition-transform" />}
                       </span>
                     </label>
 
                     <label 
                       onClick={(e) => {
-                        if (!isPremiumUser) {
+                        if (!canAccessBasicPrivacy) {
                           e.preventDefault();
                           setShowUpgradeModal(true);
                         }
                       }}
-                      className={`flex items-center gap-3 ${isPremiumUser ? 'cursor-pointer' : 'cursor-pointer group'}`}
+                      className={`flex items-center gap-3 ${canAccessBasicPrivacy ? 'cursor-pointer' : 'cursor-pointer group'}`}
                     >
                       <input 
                         type="checkbox"
                         checked={formData.enable_read_receipts}
-                        disabled={!isPremiumUser}
-                        onChange={(e) => isPremiumUser && setFormData({...formData, enable_read_receipts: e.target.checked})}
+                        disabled={!canAccessBasicPrivacy}
+                        onChange={(e) => canAccessBasicPrivacy && setFormData({...formData, enable_read_receipts: e.target.checked})}
                         className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary disabled:opacity-50"
                       />
                       <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
                         {locale === 'am' ? 'የመልዕክት ንባብ ምልክቶች (Enable Read Receipts)' : 'Enable Read Receipts'}
-                        {!isPremiumUser && <Lock size={12} className="text-amber-500 group-hover:scale-110 transition-transform" />}
+                        {!canAccessBasicPrivacy && <Lock size={12} className="text-amber-500 group-hover:scale-110 transition-transform" />}
                       </span>
                     </label>
                   </div>

@@ -1655,51 +1655,53 @@ function DashboardContent() {
               )}
 
               {/* ── Premium & VIP Hero Cards ───────────────────────────── */}
-              {!isPremium && (
+              {!isVipActive && (
                 <div className="w-full space-y-4">
 
-                  {/* ── PREMIUM CARD ── */}
-                  <div
-                    onClick={() => setShowBenefitsModal('premium')}
-                    className="w-full cursor-pointer group relative overflow-hidden rounded-[2.5rem] p-8 text-white shadow-2xl shadow-primary/25 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] select-none"
-                    style={{ background: 'linear-gradient(135deg, #C2410C 0%, #EA580C 40%, #FB923C 100%)' }}
-                  >
-                    {/* decorative circles */}
-                    <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
-                    <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-white/5 rounded-full" />
+                  {/* ── PREMIUM CARD (Hidden for active Premium/Diamond/VIP users) ── */}
+                  {!isPremium && (
+                    <div
+                      onClick={() => setShowBenefitsModal('premium')}
+                      className="w-full cursor-pointer group relative overflow-hidden rounded-[2.5rem] p-8 text-white shadow-2xl shadow-primary/25 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] select-none"
+                      style={{ background: 'linear-gradient(135deg, #C2410C 0%, #EA580C 40%, #FB923C 100%)' }}
+                    >
+                      {/* decorative circles */}
+                      <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
+                      <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-white/5 rounded-full" />
 
-                    <div className="relative flex flex-col gap-5 w-full">
-                      {/* Top Row: Title spanning edge-to-edge with Price */}
-                      <div className="flex justify-between items-center w-full border-b border-white/15 pb-4">
-                        <span className="text-sm font-black uppercase tracking-wider text-white">
-                          {locale === 'am' ? 'የፕሪሚየም አባልነት' : 'Premium Membership'}
-                        </span>
-                        <div className="text-white/95 font-black text-right">
-                          <span className="text-lg leading-none">{isEthiopiaUser ? 'ብር 700' : '$7.99'}</span>
-                          <span className="text-[9px] text-white/60 block font-bold leading-none mt-0.5">{isEthiopiaUser ? 'ከወር' : '/month'}</span>
+                      <div className="relative flex flex-col gap-5 w-full">
+                        {/* Top Row: Title spanning edge-to-edge with Price */}
+                        <div className="flex justify-between items-center w-full border-b border-white/15 pb-4">
+                          <span className="text-sm font-black uppercase tracking-wider text-white">
+                            {locale === 'am' ? 'የፕሪሚየም አባልነት' : 'Premium Membership'}
+                          </span>
+                          <div className="text-white/95 font-black text-right">
+                            <span className="text-lg leading-none">{isEthiopiaUser ? 'ብር 700' : '$7.99'}</span>
+                            <span className="text-[9px] text-white/60 block font-bold leading-none mt-0.5">{isEthiopiaUser ? 'ከወር' : '/month'}</span>
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Middle Row: Icon & Descriptive Tag */}
-                      <div className="flex items-center justify-start gap-4">
-                        <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
-                          <Sparkles size={20} className="text-white fill-white/50" />
+                        {/* Middle Row: Icon & Descriptive Tag */}
+                        <div className="flex items-center justify-start gap-4">
+                          <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
+                            <Sparkles size={20} className="text-white fill-white/50" />
+                          </div>
+                          <span className="text-[10px] text-white/80 font-bold italic leading-relaxed">
+                            {locale === 'am' ? 'ያልተገደበ ዕጩዎች፣ የቀጥታ ቻት እና ሙሉ ፕሮፋይሎችን ይክፈቱ።' : 'Unlock unlimited matches, private chat & full bios.'}
+                          </span>
                         </div>
-                        <span className="text-[10px] text-white/80 font-bold italic leading-relaxed">
-                          {locale === 'am' ? 'ያልተገደበ ዕጩዎች፣ የቀጥታ ቻት እና ሙሉ ፕሮፋይሎችን ይክፈቱ።' : 'Unlock unlimited matches, private chat & full bios.'}
-                        </span>
-                      </div>
 
-                      {/* Bottom Row: Centered Upgrade Button */}
-                      <div className="flex justify-center w-full mt-1">
-                        <div className="w-full text-center bg-white text-primary text-xs font-black uppercase tracking-[0.15em] py-4.5 rounded-2xl shadow-lg group-hover:bg-orange-50 transition-colors">
-                          {locale === 'am' ? 'ወደ ፕሪሚየም ያሳድጉ' : 'Upgrade to Premium'}
+                        {/* Bottom Row: Centered Upgrade Button */}
+                        <div className="flex justify-center w-full mt-1">
+                          <div className="w-full text-center bg-white text-primary text-xs font-black uppercase tracking-[0.15em] py-4.5 rounded-2xl shadow-lg group-hover:bg-orange-50 transition-colors">
+                            {locale === 'am' ? 'ወደ ፕሪሚየም ያሳድጉ' : 'Upgrade to Premium'}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  )}
 
-                  {/* ── VIP CARD ── */}
+                  {/* ── VIP CARD (Visible for all non-VIP users, including Diamond/Premium users) ── */}
                   <div
                     onClick={() => setShowBenefitsModal('vip')}
                     className="w-full cursor-pointer group relative overflow-hidden rounded-[2.5rem] p-8 text-white shadow-2xl shadow-amber-500/30 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] select-none"
