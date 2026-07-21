@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { resolveCoinAmount, COIN_PACKAGES } from '@/lib/coins';
 
 // Apple App Store receipt validation endpoints
 const APPLE_SANDBOX_URL = 'https://sandbox.itunes.apple.com/verifyReceipt';
@@ -44,14 +45,17 @@ export async function POST(req: Request) {
       const isCoins = planType.startsWith('coins_');
       let amountCoins = 0;
       if (isCoins) {
-        amountCoins = parseInt(planType.split('_')[1]) || 50;
+        amountCoins = resolveCoinAmount(planType, 0, 'USD');
       }
+
+      const coinPack = COIN_PACKAGES.find(p => p.id === planType || p.coins === amountCoins);
+      const paidUsd = isCoins ? (coinPack?.priceUsd || 0.15) : getPlanPriceUSD(planType);
 
       // Record transaction in database
       await supabase.from('payments').insert({
         user_id: userId,
         plan_type: planType,
-        amount: isCoins ? (amountCoins === 50 ? 5 : amountCoins === 100 ? 10 : amountCoins === 500 ? 40 : 70) : getPlanPriceUSD(planType),
+        amount: paidUsd,
         currency: 'USD',
         status: 'approved',
         receipt_url: `Apple Transaction ID (Simulated): ${receiptData}`
@@ -140,12 +144,14 @@ export async function POST(req: Request) {
     const isCoinsProduct = planType.startsWith('coins_');
 
     if (isCoinsProduct) {
-      const amountCoins = parseInt(planType.split('_')[1]) || 50;
+      const amountCoins = resolveCoinAmount(planType, 0, 'USD');
+      const coinPack = COIN_PACKAGES.find(p => p.id === planType || p.coins === amountCoins);
+      const paidUsd = coinPack?.priceUsd || 0.15;
 
       await supabase.from('payments').insert({
         user_id: userId,
         plan_type: planType,
-        amount: amountCoins === 50 ? 5 : amountCoins === 100 ? 10 : amountCoins === 500 ? 40 : 70,
+        amount: paidUsd,
         currency: 'USD',
         status: 'approved',
         receipt_url: `Apple Transaction ID: ${latestInfo.original_transaction_id}`

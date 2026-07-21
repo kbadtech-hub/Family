@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { COIN_PACKAGES } from '@/lib/coins';
 import { 
   Gift, 
   Coins, 
@@ -87,13 +88,8 @@ export default function GiftsView({ locale }: { locale: string }) {
 
   // Topup State
   const [loadingTopup, setLoadingTopup] = useState(false);
-  const [coinPacks, setCoinPacks] = useState<any[]>([
-    { id: 'coins_50', coins: 50, priceEtb: 50, priceUsd: 1.0 },
-    { id: 'coins_100', coins: 100, priceEtb: 100, priceUsd: 2.0 },
-    { id: 'coins_500', coins: 500, priceEtb: 450, priceUsd: 8.0, discount: '10% OFF' },
-    { id: 'coins_1000', coins: 1000, priceEtb: 800, priceUsd: 15.0, discount: '20% OFF' }
-  ]);
-  const [selectedPack, setSelectedPack] = useState<any>(null);
+  const [coinPacks, setCoinPacks] = useState<any[]>(COIN_PACKAGES);
+  const [selectedPack, setSelectedPack] = useState<any>(COIN_PACKAGES[2]);
   const [isMobileNative, setIsMobileNative] = useState(false);
 
   useEffect(() => {

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { COIN_PACKAGES } from '@/lib/coins';
 import { 
   Gift, 
   Coins, 
@@ -57,15 +58,10 @@ export default function GiftModal({ recipientId, recipientName, locale, onClose,
   const [interactionScore, setInteractionScore] = useState<number>(0);
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'cultural' | 'pets' | 'flowers' | 'coupons'>('all');
 
-  // Coin packs to buy
-  const coinPacks = [
-    { id: 'coins_50', coins: 50, priceEtb: 50, priceUsd: 1.0 },
-    { id: 'coins_100', coins: 100, priceEtb: 100, priceUsd: 2.0 },
-    { id: 'coins_500', coins: 500, priceEtb: 450, priceUsd: 8.0, discount: '10% OFF' },
-    { id: 'coins_1000', coins: 1000, priceEtb: 800, priceUsd: 15.0, discount: '20% OFF' }
-  ];
+  // Coin packs to buy (Imported from $1 USD = 200 ETB parity matrix)
+  const coinPacks = COIN_PACKAGES;
 
-  const [selectedPack, setSelectedPack] = useState<any>(coinPacks[1]);
+  const [selectedPack, setSelectedPack] = useState<any>(coinPacks[2]);
   const [isMobileNative, setIsMobileNative] = useState(false);
 
   useEffect(() => {

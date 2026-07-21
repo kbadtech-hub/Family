@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { resolveCoinAmount } from '@/lib/coins';
 
 /**
  * Admin API Endpoint (/api/admin/payments/manual)
@@ -39,7 +40,7 @@ export async function POST(req: Request) {
       const userId = targetUser.id;
 
       if (creditType === 'coins') {
-        const numCoins = parseInt(String(amountOrPlan)) || 50;
+        const numCoins = resolveCoinAmount(String(amountOrPlan), 0, 'ETB');
 
         await supabase.from('payments').insert({
           user_id: userId,
@@ -213,9 +214,8 @@ export async function POST(req: Request) {
         const isVip = planType.startsWith('vip_') || planType.startsWith('v');
 
         if (isCoins) {
-          const amountCoins = planType.startsWith('coins_')
-            ? (parseInt(planType.replace('coins_', '')) || 50)
-            : (parseInt(planType.replace(/^c_?/, '')) || 50);
+          const paidAmt = parseFloat(String(tx.amount || 0));
+          const amountCoins = resolveCoinAmount(planType, paidAmt, 'ETB');
 
           await supabase.from('payments').insert({
             user_id: targetUser.id,

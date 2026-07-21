@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { resolveCoinAmount } from '@/lib/coins';
 
 /**
  * BETESEB — Chapa Payment Verification Endpoint
@@ -85,9 +86,7 @@ export async function POST(req: Request) {
       const isVip = planType.startsWith('vip_') || planType.startsWith('v');
 
       if (isCoins) {
-        const amountCoins = planType.startsWith('coins_')
-          ? (parseInt(planType.replace('coins_', '')) || 50)
-          : (parseInt(planType.replace(/^c_?/, '')) || 50);
+        const amountCoins = resolveCoinAmount(planType, 0, 'ETB');
 
         await supabase.from('payments').insert({
           user_id: userId,
@@ -252,9 +251,8 @@ export async function POST(req: Request) {
     const { data: profileData } = await supabase.from('profiles').select('full_name, email').eq('id', userId).maybeSingle();
 
     if (isCoins) {
-      const amountCoins = planType.startsWith('coins_')
-        ? (parseInt(planType.replace('coins_', '')) || 50)
-        : (parseInt(planType.replace(/^c_?/, '')) || 50);
+      const coinAmt = parseFloat(String(txData?.amount || 0));
+      const amountCoins = resolveCoinAmount(planType, coinAmt, 'ETB');
 
       await supabase.from('payments').insert({
         user_id: userId,
@@ -266,7 +264,6 @@ export async function POST(req: Request) {
       });
 
       // Mirror into financial_transactions master ledger
-      const coinAmt = parseFloat(String(txData?.amount || 0));
       const coinFee = Math.round(coinAmt * 0.035 * 100) / 100;
       try {
         await supabase.from('financial_transactions').insert({

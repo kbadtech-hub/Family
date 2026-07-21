@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { resolveCoinAmount } from '@/lib/coins';
 
 export async function POST(req: Request) {
   try {
@@ -20,7 +21,7 @@ export async function POST(req: Request) {
       const isVip = planType.startsWith('vip_');
 
       if (isCoins) {
-        const amountCoins = parseInt(planType.split('_')[1]) || 50;
+        const amountCoins = resolveCoinAmount(planType, amountTotal, 'USD');
 
         await supabase.from('payments').insert({
           user_id: userId,
