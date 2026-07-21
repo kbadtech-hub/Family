@@ -19,7 +19,9 @@ import {
   Sparkles,
   Crown,
   PieChart,
-  ChevronRight
+  ChevronRight,
+  Activity,
+  Calendar
 } from 'lucide-react';
 
 interface UserProfileAnalytics {
@@ -42,17 +44,40 @@ interface UserProfileAnalytics {
 export default function UserAnalytics() {
   const [profiles, setProfiles] = useState<UserProfileAnalytics[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastSyncedAt, setLastSyncedAt] = useState<string>(new Date().toLocaleTimeString());
   const [searchQuery, setSearchQuery] = useState('');
   const [tierFilter, setTierFilter] = useState<string>('all');
   const [kycFilter, setKycFilter] = useState<string>('all');
   const [locationFilter, setLocationFilter] = useState<string>('all');
+  const [dateFilter, setDateFilter] = useState<string>('all');
 
   useEffect(() => {
     fetchAnalyticsData();
+
+    // 1. Setup Supabase Realtime Channels for Instant Sync
+    const channelProfiles = supabase
+      .channel('realtime_user_analytics')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+        fetchAnalyticsData(false);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'verifications' }, () => {
+        fetchAnalyticsData(false);
+      })
+      .subscribe();
+
+    // 2. Fallback Polling every 8 seconds for 100% data freshness
+    const interval = setInterval(() => {
+      fetchAnalyticsData(false);
+    }, 8000);
+
+    return () => {
+      supabase.removeChannel(channelProfiles);
+      clearInterval(interval);
+    };
   }, []);
 
-  const fetchAnalyticsData = async () => {
-    setLoading(true);
+  const fetchAnalyticsData = async (showLoader = true) => {
+    if (showLoader) setLoading(true);
     try {
       // Fetch profiles
       const { data: profs } = await supabase
@@ -73,16 +98,26 @@ export default function UserAnalytics() {
       }));
 
       setProfiles(enrichedProfiles);
+      setLastSyncedAt(new Date().toLocaleTimeString());
     } catch (err) {
       console.error('Error fetching user analytics:', err);
     } finally {
-      setLoading(false);
+      if (showLoader) setLoading(false);
     }
   };
 
   // Compute Metrics
   const metrics = useMemo(() => {
     const totalUsers = profiles.length;
+
+    const now = new Date();
+    const todayStr = now.toDateString();
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toDateString();
+
+    let yesterdayNewUsers = 0;
+    let todayNewUsers = 0;
 
     let silverCount = 0;
     let goldCount = 0;
@@ -100,6 +135,10 @@ export default function UserAnalytics() {
     const countryCounts: Record<string, number> = {};
 
     profiles.forEach((p) => {
+      const pDate = new Date(p.created_at);
+      if (pDate.toDateString() === yesterdayStr) yesterdayNewUsers++;
+      if (pDate.toDateString() === todayStr) todayNewUsers++;
+
       // 1. Tiers Breakdown
       const tier = getUserTier(p as any, Boolean(p.has_vouched));
       if (tier === 'silver') silverCount++;
@@ -145,6 +184,8 @@ export default function UserAnalytics() {
 
     return {
       totalUsers,
+      yesterdayNewUsers,
+      todayNewUsers,
       silverCount,
       goldCount,
       platinumCount,
@@ -162,6 +203,12 @@ export default function UserAnalytics() {
 
   // Filtered dataset for table
   const filteredProfiles = useMemo(() => {
+    const now = new Date();
+    const todayStr = now.toDateString();
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toDateString();
+
     return profiles.filter((p) => {
       const query = searchQuery.toLowerCase().trim();
       const matchesSearch =
@@ -194,9 +241,19 @@ export default function UserAnalytics() {
         (locationFilter === 'domestic' && isEth) ||
         (locationFilter === 'diaspora' && !isEth);
 
-      return matchesSearch && matchesTier && matchesKyc && matchesLocation;
+      let matchesDate = true;
+      if (dateFilter !== 'all') {
+        const pDate = new Date(p.created_at);
+        if (dateFilter === 'today') {
+          matchesDate = pDate.toDateString() === todayStr;
+        } else if (dateFilter === 'yesterday') {
+          matchesDate = pDate.toDateString() === yesterdayStr;
+        }
+      }
+
+      return matchesSearch && matchesTier && matchesKyc && matchesLocation && matchesDate;
     });
-  }, [profiles, searchQuery, tierFilter, kycFilter, locationFilter]);
+  }, [profiles, searchQuery, tierFilter, kycFilter, locationFilter, dateFilter]);
 
   const renderTierBadge = (profile: UserProfileAnalytics) => {
     const tier = getUserTier(profile as any, Boolean(profile.has_vouched));
@@ -226,18 +283,53 @@ export default function UserAnalytics() {
             <Users size={28} />
           </div>
           <div>
-            <h2 className="text-3xl font-black italic tracking-tight text-accent">ገፅ ሁለት፡ የተጠቃሚዎች እና ኦንቦርዲንግ አናሊቲክስ</h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-3xl font-black italic tracking-tight text-accent">ገፅ ሁለት፡ የተጠቃሚዎች እና ኦንቦርዲንግ አናሊቲክስ</h2>
+              <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 animate-pulse">
+                <Activity size={12} /> LIVE Sync Active ({lastSyncedAt})
+              </span>
+            </div>
             <p className="text-xs text-gray-400 font-medium">User Tiers (Silver to Diamond/VIP), Onboarding/KYC Funnel & Geographic Diaspora Distribution</p>
           </div>
         </div>
 
         <button
-          onClick={fetchAnalyticsData}
+          onClick={() => fetchAnalyticsData(true)}
           className="px-5 py-3 bg-card hover:bg-white/10 border border-border text-foreground rounded-2xl font-black text-xs uppercase tracking-wider shadow-lg flex items-center gap-2"
         >
           <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh Analytics
         </button>
       </header>
+
+      {/* Yesterday & Today New Registrations Highlights */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-card p-6 rounded-[2.5rem] border border-amber-500/30 shadow-2xl space-y-2">
+          <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em] text-amber-400">
+            <span>የትናንትና አዲስ ምዝገባ</span>
+            <span>24H PAST</span>
+          </div>
+          <h4 className="text-3xl font-black text-foreground">{metrics.yesterdayNewUsers}</h4>
+          <p className="text-xs text-gray-400 font-bold">New Accounts Opened Yesterday</p>
+        </div>
+
+        <div className="bg-card p-6 rounded-[2.5rem] border border-emerald-500/30 shadow-2xl space-y-2">
+          <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">
+            <span>የዛሬ አዲስ ምዝገባ</span>
+            <span className="animate-pulse">LIVE TODAY</span>
+          </div>
+          <h4 className="text-3xl font-black text-foreground">{metrics.todayNewUsers}</h4>
+          <p className="text-xs text-emerald-400 font-bold">New Accounts Registered Today</p>
+        </div>
+
+        <div className="bg-card p-6 rounded-[2.5rem] border border-border shadow-2xl space-y-2">
+          <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+            <span>ጠቅላላ የተመዘገቡ</span>
+            <span>ALL TIME</span>
+          </div>
+          <h4 className="text-3xl font-black text-foreground">{metrics.totalUsers}</h4>
+          <p className="text-xs text-primary font-bold">Total Platform Registered Users</p>
+        </div>
+      </div>
 
       {/* SECTION 1: User Tiers & Levels Breakdown */}
       <div className="space-y-4">
@@ -501,6 +593,17 @@ export default function UserAnalytics() {
                 className="pl-9 pr-3 py-2 bg-background border border-border rounded-xl text-xs font-medium text-foreground"
               />
             </div>
+
+            {/* Date Filter */}
+            <select
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="px-3 py-2 bg-background border border-border rounded-xl text-xs font-bold text-foreground"
+            >
+              <option value="all">All Dates</option>
+              <option value="today">Registered Today (ዛሬ)</option>
+              <option value="yesterday">Registered Yesterday (ትናንትና)</option>
+            </select>
 
             {/* Tier Filter */}
             <select
