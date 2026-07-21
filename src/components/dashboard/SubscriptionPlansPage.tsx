@@ -319,40 +319,7 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
     <div className="max-w-6xl mx-auto space-y-12 animate-in fade-in duration-500">
       
       {/* ── HEADER SECTION ─────────────────────────────────────────────────── */}
-      <div className="text-center space-y-4 max-w-2xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-bold text-xs uppercase tracking-widest">
-          <Sparkles size={14} className="fill-primary/20 animate-pulse" />
-          {isAm ? 'ቤተሰብ ፕሪሚየም እና ቪአይፒ' : 'Beteseb Premium & VIP Hub'}
-        </div>
-        <h2 className="text-4xl md:text-5xl font-black text-accent italic uppercase tracking-tighter leading-none">
-          {activePlanType === 'vip' 
-            ? (isAm ? 'እንኳን ወደ ቪአይፒ አገልግሎት በደህና መጡ' : 'Welcome to VIP Status')
-            : (isAm ? 'እንኳን ወደ ፕሪሚየም አገልግሎት በደህና መጡ' : 'Upgrade to Premium')}
-        </h2>
-        <p className="text-gray-500 font-medium italic text-sm md:text-base leading-relaxed">
-          {activePlanType === 'vip'
-            ? (isAm ? 'የእርስዎን ግላዊነት ሙሉ በሙሉ የሚቆጣጠሩበት፣ ከፍተኛ ጥበቃ የሚደረግለት እና ልዩ የሆኑ ፊቸሮችን የሚያገኙበት የቪአይፒ ክለብ።' : 'Exquisite privacy controls, complete incognito features, and golden crown status for elite matchmaking.')
-            : (isAm ? 'ያልተገደበ የጽሑፍ ውይይት፣ ሙሉ የመገለጫ መረጃዎች እና ምርጥ አማራጮችን በማግኘት የትዳር አጋርዎን በፍጥነት ያግኙ።' : 'Unlock unlimited matches, contact profiles directly, access expert classes, and find your lifetime partner today.')}
-        </p>
-      </div>
 
-      {/* ── TAB SELECTOR ──────────────────────────────────────────────────── */}
-      <div className="flex bg-[#F1F5F9] p-1.5 rounded-[2rem] w-fit border border-gray-200/50 shadow-sm mx-auto">
-        <button 
-          onClick={() => setActivePlanType('premium')}
-          className={`flex items-center gap-2 px-8 py-4 rounded-[1.7rem] text-xs font-black uppercase tracking-widest transition-all ${activePlanType === 'premium' ? 'bg-primary text-white shadow-lg' : 'text-gray-400 hover:text-accent'}`}
-        >
-          <Zap size={14} className={activePlanType === 'premium' ? 'fill-white' : ''} />
-          {isAm ? 'ፕሪሚየም አባልነት' : 'Premium Plans'}
-        </button>
-        <button 
-          onClick={() => setActivePlanType('vip')}
-          className={`flex items-center gap-2 px-8 py-4 rounded-[1.7rem] text-xs font-black uppercase tracking-widest transition-all ${activePlanType === 'vip' ? 'bg-amber-500 text-white shadow-lg' : 'text-gray-400 hover:text-accent'}`}
-        >
-          <Crown size={14} className={activePlanType === 'vip' ? 'fill-white text-yellow-300' : ''} />
-          {isAm ? 'ቪአይፒ አባልነት' : 'VIP Plans'}
-        </button>
-      </div>
 
       {/* ── BENEFITS GRID ─────────────────────────────────────────────────── */}
       <div className="bg-white p-8 md:p-12 rounded-[3.5rem] border border-primary/10 shadow-xl grid grid-cols-1 md:grid-cols-2 gap-8 items-center relative overflow-hidden">

@@ -72,13 +72,28 @@ export default function UserAnalytics() {
   const fetchAnalyticsData = async () => {
     setLoading(true);
     try {
-      // Fetch profiles
+      // 1. Attempt to fetch via Service Role API endpoint (bypasses RLS)
+      const res = await fetch('/api/admin/analytics');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.profiles && Array.isArray(json.profiles)) {
+          const vouchedUserIds = new Set(json.vouchedUserIds || []);
+          const enrichedProfiles: UserProfileAnalytics[] = json.profiles.map((p: any) => ({
+            ...p,
+            has_vouched: vouchedUserIds.has(p.id)
+          }));
+          setProfiles(enrichedProfiles);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // 2. Fallback to direct client-side Supabase query
       const { data: profs } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
-      // Fetch vouched records to resolve Platinum tier
       const { data: vouches } = await supabase
         .from('vouch_records')
         .select('user_id');

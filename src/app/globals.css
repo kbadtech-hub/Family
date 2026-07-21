@@ -102,13 +102,13 @@ p, span, div {
 }
 
 /* Admin Specific Overrides */
-.admin-dark {
-   --background: #09090b;
-   --foreground: #fafafa;
-   --card: #18181b;
-   --card-foreground: #fafafa;
-   --border: #27272a;
-   --muted: #27272a;
+.admin-light {
+   --background: #F8FAFC;
+   --foreground: #0F172A;
+   --card: #FFFFFF;
+   --card-foreground: #0F172A;
+   --border: #E2E8F0;
+   --muted: #F1F5F9;
 }
 
 /* ── Mobile Zoom Lock ──────────────────────────────────────────────────────────

@@ -97,7 +97,86 @@ export default function FinancialTracker() {
     try {
       const unifiedMap = new Map<string, FinancialTransaction>();
 
-      // 1. Fetch from financial_transactions
+      // 1. Attempt to fetch via Service Role API endpoint (bypasses RLS)
+      const res = await fetch('/api/admin/financials');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.transactions && Array.isArray(json.transactions)) {
+          json.transactions.forEach((ft: any) => {
+            const key = ft.tx_ref || ft.id;
+            unifiedMap.set(key, ft as FinancialTransaction);
+          });
+        }
+        if (json.payments && Array.isArray(json.payments)) {
+          json.payments.forEach((p: any) => {
+            const txRef = p.receipt_url?.replace(/^Chapa TX: /, '') || p.id;
+            if (!unifiedMap.has(txRef) && !unifiedMap.has(p.id)) {
+              const isVip = p.plan_type?.startsWith('vip');
+              const isCoins = p.plan_type?.startsWith('coins');
+              const isChapa = p.receipt_url?.includes('Chapa');
+              const isPlayStore = p.receipt_url?.includes('Google') || p.receipt_url?.includes('Play');
+              const isAppStore = p.receipt_url?.includes('Apple') || p.receipt_url?.includes('AppStore');
+
+              const source = isVip ? 'subscription_vip' : isCoins ? 'coin_sale' : 'subscription_premium';
+              const gateway = isChapa ? 'chapa' : isPlayStore ? 'play_store' : isAppStore ? 'app_store' : 'bank_transfer';
+              const fee = isChapa ? Math.round((p.amount || 0) * 0.035 * 100) / 100
+                        : (isPlayStore || isAppStore) ? Math.round((p.amount || 0) * 0.15 * 100) / 100
+                        : 0;
+              const status = p.status === 'approved' ? 'completed' : p.status === 'rejected' ? 'failed' : 'pending';
+
+              unifiedMap.set(txRef, {
+                id: p.id,
+                tx_ref: txRef,
+                user_id: p.user_id,
+                user_name_snapshot: p.profiles?.full_name || p.profiles?.email || 'Beteseb User',
+                revenue_source: source,
+                payment_gateway: gateway,
+                currency: p.currency || 'ETB',
+                gross_amount: Number(p.amount || 0),
+                gateway_fee: fee,
+                net_amount: Number(p.amount || 0) - fee,
+                payment_status: status,
+                created_at: p.created_at
+              });
+            }
+          });
+        }
+        if (json.coinTransactions && Array.isArray(json.coinTransactions)) {
+          json.coinTransactions.forEach((ct: any) => {
+            if (ct.amount_etb > 0 || ct.amount_usd > 0) {
+              const txRef = `COIN-${ct.id.substring(0, 8)}`;
+              if (!unifiedMap.has(txRef) && !unifiedMap.has(ct.id)) {
+                const curr = ct.amount_usd > 0 ? 'USD' : 'ETB';
+                const gross = ct.amount_usd > 0 ? Number(ct.amount_usd) : Number(ct.amount_etb);
+
+                unifiedMap.set(txRef, {
+                  id: ct.id,
+                  tx_ref: txRef,
+                  user_id: ct.user_id,
+                  user_name_snapshot: ct.profiles?.full_name || ct.profiles?.email || 'Beteseb User',
+                  revenue_source: 'coin_sale',
+                  payment_gateway: 'telebirr',
+                  currency: curr,
+                  gross_amount: gross,
+                  gateway_fee: Math.round(gross * 0.02 * 100) / 100,
+                  net_amount: gross - (Math.round(gross * 0.02 * 100) / 100),
+                  payment_status: 'completed',
+                  created_at: ct.created_at
+                });
+              }
+            }
+          });
+        }
+
+        const sorted = Array.from(unifiedMap.values()).sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        setTransactions(sorted);
+        setLoading(false);
+        return;
+      }
+
+      // 2. Fallback to direct client-side Supabase query
       const { data: ftData } = await supabase
         .from('financial_transactions')
         .select('*')
@@ -110,7 +189,6 @@ export default function FinancialTracker() {
         });
       }
 
-      // 2. Merge from payments table
       const { data: payData } = await supabase
         .from('payments')
         .select('*, profiles(full_name, email)')
