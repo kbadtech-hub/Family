@@ -75,6 +75,28 @@ export async function POST(req: Request) {
       return NextResponse.json({ status: 'error', message: error.message }, { status: 500 });
     }
 
+    // Mirror purchase type transactions into financial_transactions master ledger
+    if (type === 'purchase') {
+      const { data: profile } = await supabase.from('profiles').select('full_name, email').eq('id', userId).maybeSingle();
+      const numAmount = parseFloat(amount);
+      try {
+        await supabase.from('financial_transactions').insert({
+          tx_ref: referenceId || `COIN-${data.id}`,
+          user_id: userId,
+          user_name_snapshot: profile?.full_name || profile?.email || 'Coin Buyer',
+          user_email_snapshot: profile?.email || null,
+          revenue_source: 'coin_sale',
+          payment_gateway: 'chapa',
+          currency: 'ETB',
+          gross_amount: numAmount,
+          gateway_fee: Math.round(numAmount * 0.035 * 100) / 100,
+          net_amount: Math.max(0, numAmount - Math.round(numAmount * 0.035 * 100) / 100),
+          payment_status: 'completed',
+          metadata: { coin_units: numAmount, note: note || '' }
+        });
+      } catch (err) {}
+    }
+
     // Fetch updated balance
     const { data: wallet } = await supabase
       .from('user_wallets')

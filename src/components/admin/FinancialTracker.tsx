@@ -24,9 +24,7 @@ import {
   Gift,
   Key,
   PieChart,
-  ArrowUpRight,
-  Zap,
-  Activity
+  ArrowUpRight
 } from 'lucide-react';
 
 export interface FinancialTransaction {
@@ -49,7 +47,6 @@ export interface FinancialTransaction {
 export default function FinancialTracker() {
   const [transactions, setTransactions] = useState<FinancialTransaction[]>([]);
   const [loading, setLoading] = useState(true);
-  const [lastSyncedAt, setLastSyncedAt] = useState<string>(new Date().toLocaleTimeString());
   const [searchQuery, setSearchQuery] = useState('');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [gatewayFilter, setGatewayFilter] = useState<string>('all');
@@ -76,99 +73,132 @@ export default function FinancialTracker() {
   useEffect(() => {
     fetchFinancialData();
 
-    // 1. Setup Supabase Realtime Channels for Instant Sync
-    const channelFT = supabase
-      .channel('realtime_financial_transactions')
+    // Live WebSockets Real-Time Channel for instant updates when payments occur
+    const channel = supabase
+      .channel('financial-tracker-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'financial_transactions' }, () => {
-        fetchFinancialData(false);
+        fetchFinancialData();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, () => {
-        fetchFinancialData(false);
+        fetchFinancialData();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'coin_transactions' }, () => {
-        fetchFinancialData(false);
+        fetchFinancialData();
       })
       .subscribe();
 
-    // 2. Fallback Polling every 8 seconds for 100% data freshness
-    const interval = setInterval(() => {
-      fetchFinancialData(false);
-    }, 8000);
-
     return () => {
-      supabase.removeChannel(channelFT);
-      clearInterval(interval);
+      supabase.removeChannel(channel);
     };
   }, []);
 
-  const fetchFinancialData = async (showLoader = true) => {
-    if (showLoader) setLoading(true);
+  const fetchFinancialData = async () => {
+    setLoading(true);
     try {
-      // 1. Fetch from financial_transactions master ledger
-      const { data: ftData, error: ftError } = await supabase
+      const unifiedMap = new Map<string, FinancialTransaction>();
+
+      // 1. Fetch from financial_transactions
+      const { data: ftData } = await supabase
         .from('financial_transactions')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (!ftError && ftData && ftData.length > 0) {
-        setTransactions(ftData as FinancialTransaction[]);
-      } else {
-        // Fallback: Build unified dataset from existing payments & coin_transactions tables
-        const { data: payData } = await supabase
-          .from('payments')
-          .select('*, profiles(full_name, email)')
-          .order('created_at', { ascending: false });
-
-        const formattedPayments: FinancialTransaction[] = (payData || []).map((p: any) => {
-          const isVip = p.plan_type?.startsWith('vip');
-          const isCoins = p.plan_type?.startsWith('coins');
-          const isChapa = p.receipt_url?.includes('Chapa');
-          const isPlayStore = p.receipt_url?.includes('Google') || p.receipt_url?.includes('Play');
-          const isAppStore = p.receipt_url?.includes('Apple') || p.receipt_url?.includes('AppStore');
-
-          const source = isVip ? 'subscription_vip' : isCoins ? 'coin_sale' : 'subscription_premium';
-          const gateway = isChapa ? 'chapa' : isPlayStore ? 'play_store' : isAppStore ? 'app_store' : 'bank_transfer';
-          const fee = isChapa ? Math.round((p.amount || 0) * 0.035 * 100) / 100
-                    : (isPlayStore || isAppStore) ? Math.round((p.amount || 0) * 0.15 * 100) / 100
-                    : 0;
-          const status = p.status === 'approved' ? 'completed' : p.status === 'rejected' ? 'failed' : 'pending';
-
-          return {
-            id: p.id,
-            tx_ref: p.receipt_url?.replace(/^Chapa TX: /, '') || p.id,
-            user_id: p.user_id,
-            user_name_snapshot: p.profiles?.full_name || p.profiles?.email || 'System User',
-            user_email_snapshot: p.profiles?.email || null,
-            revenue_source: source,
-            payment_gateway: gateway,
-            currency: p.currency || 'ETB',
-            gross_amount: p.amount || 0,
-            gateway_fee: fee,
-            net_amount: Math.max(0, (p.amount || 0) - fee),
-            payment_status: status,
-            created_at: p.created_at
-          };
+      if (ftData) {
+        ftData.forEach((ft: any) => {
+          const key = ft.tx_ref || ft.id;
+          unifiedMap.set(key, ft as FinancialTransaction);
         });
-
-        setTransactions(formattedPayments);
       }
-      setLastSyncedAt(new Date().toLocaleTimeString());
+
+      // 2. Merge from payments table
+      const { data: payData } = await supabase
+        .from('payments')
+        .select('*, profiles(full_name, email)')
+        .order('created_at', { ascending: false });
+
+      if (payData) {
+        payData.forEach((p: any) => {
+          const txRef = p.receipt_url?.replace(/^Chapa TX: /, '') || p.id;
+          if (!unifiedMap.has(txRef) && !unifiedMap.has(p.id)) {
+            const isVip = p.plan_type?.startsWith('vip');
+            const isCoins = p.plan_type?.startsWith('coins');
+            const isChapa = p.receipt_url?.includes('Chapa');
+            const isPlayStore = p.receipt_url?.includes('Google') || p.receipt_url?.includes('Play');
+            const isAppStore = p.receipt_url?.includes('Apple') || p.receipt_url?.includes('AppStore');
+
+            const source = isVip ? 'subscription_vip' : isCoins ? 'coin_sale' : 'subscription_premium';
+            const gateway = isChapa ? 'chapa' : isPlayStore ? 'play_store' : isAppStore ? 'app_store' : 'bank_transfer';
+            const fee = isChapa ? Math.round((p.amount || 0) * 0.035 * 100) / 100
+                      : (isPlayStore || isAppStore) ? Math.round((p.amount || 0) * 0.15 * 100) / 100
+                      : 0;
+            const status = p.status === 'approved' ? 'completed' : p.status === 'rejected' ? 'failed' : 'pending';
+
+            unifiedMap.set(txRef, {
+              id: p.id,
+              tx_ref: txRef,
+              user_id: p.user_id,
+              user_name_snapshot: p.profiles?.full_name || p.profiles?.email || 'Beteseb User',
+              user_email_snapshot: p.profiles?.email || null,
+              revenue_source: source,
+              payment_gateway: gateway,
+              currency: p.currency || 'ETB',
+              gross_amount: p.amount || 0,
+              gateway_fee: fee,
+              net_amount: Math.max(0, (p.amount || 0) - fee),
+              payment_status: status,
+              created_at: p.created_at
+            });
+          }
+        });
+      }
+
+      // 3. Merge from coin_transactions (purchases)
+      const { data: coinData } = await supabase
+        .from('coin_transactions')
+        .select('*, profiles(full_name, email)')
+        .eq('type', 'purchase')
+        .order('created_at', { ascending: false });
+
+      if (coinData) {
+        coinData.forEach((ct: any) => {
+          const ctRef = ct.reference_id || ct.id;
+          if (!unifiedMap.has(ctRef) && !unifiedMap.has(ct.id)) {
+            // Note: If coin transaction was recorded (e.g. 100 coins for 100 ETB)
+            const amt = Number(ct.amount) || 100;
+            const fee = Math.round(amt * 0.035 * 100) / 100;
+            unifiedMap.set(ctRef, {
+              id: ct.id,
+              tx_ref: ctRef,
+              user_id: ct.user_id,
+              user_name_snapshot: ct.profiles?.full_name || ct.profiles?.email || 'Coin Purchaser',
+              user_email_snapshot: ct.profiles?.email || null,
+              revenue_source: 'coin_sale',
+              payment_gateway: 'chapa',
+              currency: 'ETB',
+              gross_amount: amt,
+              gateway_fee: fee,
+              net_amount: Math.max(0, amt - fee),
+              payment_status: 'completed',
+              created_at: ct.created_at
+            });
+          }
+        });
+      }
+
+      const mergedList = Array.from(unifiedMap.values()).sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      setTransactions(mergedList);
     } catch (err) {
       console.error('Error fetching financial data:', err);
     } finally {
-      if (showLoader) setLoading(false);
+      setLoading(false);
     }
   };
 
   // Filtered dataset
   const filteredTransactions = useMemo(() => {
-    const now = new Date();
-    const todayStr = now.toDateString();
-
-    const yesterday = new Date(now);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toDateString();
-
     return transactions.filter((tx) => {
       // Search
       const query = searchQuery.toLowerCase().trim();
@@ -189,17 +219,14 @@ export default function FinancialTracker() {
       let matchesDate = true;
       if (dateRange !== 'all') {
         const txDate = new Date(tx.created_at);
+        const now = new Date();
         if (dateRange === 'today') {
-          matchesDate = txDate.toDateString() === todayStr;
-        } else if (dateRange === 'yesterday') {
-          matchesDate = txDate.toDateString() === yesterdayStr;
+          matchesDate = txDate.toDateString() === now.toDateString();
         } else if (dateRange === '7days') {
-          const sevenDaysAgo = new Date();
-          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+          const sevenDaysAgo = new Date(now.setDate(now.getDate() - 7));
           matchesDate = txDate >= sevenDaysAgo;
         } else if (dateRange === '30days') {
-          const thirtyDaysAgo = new Date();
-          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+          const thirtyDaysAgo = new Date(now.setDate(now.getDate() - 30));
           matchesDate = txDate >= thirtyDaysAgo;
         } else if (dateRange === 'ytd') {
           matchesDate = txDate.getFullYear() === now.getFullYear();
@@ -210,7 +237,7 @@ export default function FinancialTracker() {
     });
   }, [transactions, searchQuery, sourceFilter, gatewayFilter, currencyFilter, statusFilter, dateRange]);
 
-  // Aggregate Metrics & Categorization Breakdown
+  // Aggregate Metrics
   const metrics = useMemo(() => {
     let totalGrossEtb = 0;
     let totalFeeEtb = 0;
@@ -220,24 +247,6 @@ export default function FinancialTracker() {
     let totalFeeUsd = 0;
     let totalNetUsd = 0;
 
-    // Yesterday & Today metrics
-    const now = new Date();
-    const todayStr = now.toDateString();
-    const yesterday = new Date(now);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toDateString();
-
-    let yesterdayRevenueEtb = 0;
-    let yesterdayRevenueUsd = 0;
-    let yesterdayCoinSalesEtb = 0;
-    let yesterdayCoinSalesUsd = 0;
-
-    let todayRevenueEtb = 0;
-    let todayRevenueUsd = 0;
-    let todayCoinSalesEtb = 0;
-    let todayCoinSalesUsd = 0;
-
-    // Categorized Breakdown
     let vipRevenueEtb = 0;
     let vipRevenueUsd = 0;
     let premiumRevenueEtb = 0;
@@ -246,12 +255,8 @@ export default function FinancialTracker() {
     let coinsRevenueUsd = 0;
     let coursesRevenueEtb = 0;
     let coursesRevenueUsd = 0;
-    let coursesCoinsUsed = 0;
     let counselingRevenueEtb = 0;
     let counselingRevenueUsd = 0;
-    let counselingCoinsUsed = 0;
-    let giftsCoinsUsed = 0;
-    let unlocksCoinsUsed = 0;
 
     let gatewayChapaEtb = 0;
     let gatewayChapaUsd = 0;
@@ -260,16 +265,10 @@ export default function FinancialTracker() {
     let gatewayAppStoreEtb = 0;
     let gatewayAppStoreUsd = 0;
 
-    transactions.forEach((tx) => {
+    filteredTransactions.forEach((tx) => {
       if (tx.payment_status !== 'completed') return;
 
-      const txDate = new Date(tx.created_at);
-      const isYesterday = txDate.toDateString() === yesterdayStr;
-      const isToday = txDate.toDateString() === todayStr;
-
       const isEtb = tx.currency === 'ETB';
-      const isUsd = tx.currency === 'USD';
-      const isCoins = tx.currency === 'COINS';
       const gross = Number(tx.gross_amount) || 0;
       const fee = Number(tx.gateway_fee) || 0;
       const net = Number(tx.net_amount) || (gross - fee);
@@ -278,15 +277,6 @@ export default function FinancialTracker() {
         totalGrossEtb += gross;
         totalFeeEtb += fee;
         totalNetEtb += net;
-
-        if (isYesterday) {
-          yesterdayRevenueEtb += gross;
-          if (tx.revenue_source === 'coin_sale') yesterdayCoinSalesEtb += gross;
-        }
-        if (isToday) {
-          todayRevenueEtb += gross;
-          if (tx.revenue_source === 'coin_sale') todayCoinSalesEtb += gross;
-        }
 
         if (tx.revenue_source === 'subscription_vip') vipRevenueEtb += gross;
         if (tx.revenue_source === 'subscription_premium') premiumRevenueEtb += gross;
@@ -297,19 +287,10 @@ export default function FinancialTracker() {
         if (tx.payment_gateway === 'chapa') gatewayChapaEtb += gross;
         if (tx.payment_gateway === 'play_store') gatewayPlayStoreEtb += gross;
         if (tx.payment_gateway === 'app_store') gatewayAppStoreEtb += gross;
-      } else if (isUsd) {
+      } else if (tx.currency === 'USD') {
         totalGrossUsd += gross;
         totalFeeUsd += fee;
         totalNetUsd += net;
-
-        if (isYesterday) {
-          yesterdayRevenueUsd += gross;
-          if (tx.revenue_source === 'coin_sale') yesterdayCoinSalesUsd += gross;
-        }
-        if (isToday) {
-          todayRevenueUsd += gross;
-          if (tx.revenue_source === 'coin_sale') todayCoinSalesUsd += gross;
-        }
 
         if (tx.revenue_source === 'subscription_vip') vipRevenueUsd += gross;
         if (tx.revenue_source === 'subscription_premium') premiumRevenueUsd += gross;
@@ -320,30 +301,22 @@ export default function FinancialTracker() {
         if (tx.payment_gateway === 'chapa') gatewayChapaUsd += gross;
         if (tx.payment_gateway === 'play_store') gatewayPlayStoreUsd += gross;
         if (tx.payment_gateway === 'app_store') gatewayAppStoreUsd += gross;
-      } else if (isCoins) {
-        if (tx.revenue_source === 'course_sale') coursesCoinsUsed += gross;
-        if (tx.revenue_source === 'counseling_sale') counselingCoinsUsed += gross;
-        if (tx.revenue_source === 'gift_purchase') giftsCoinsUsed += gross;
-        if (tx.revenue_source === 'profile_unlock') unlocksCoinsUsed += gross;
       }
     });
 
     return {
       totalGrossEtb, totalFeeEtb, totalNetEtb,
       totalGrossUsd, totalFeeUsd, totalNetUsd,
-      yesterdayRevenueEtb, yesterdayRevenueUsd, yesterdayCoinSalesEtb, yesterdayCoinSalesUsd,
-      todayRevenueEtb, todayRevenueUsd, todayCoinSalesEtb, todayCoinSalesUsd,
       vipRevenueEtb, vipRevenueUsd,
       premiumRevenueEtb, premiumRevenueUsd,
       coinsRevenueEtb, coinsRevenueUsd,
-      coursesRevenueEtb, coursesRevenueUsd, coursesCoinsUsed,
-      counselingRevenueEtb, counselingRevenueUsd, counselingCoinsUsed,
-      giftsCoinsUsed, unlocksCoinsUsed,
+      coursesRevenueEtb, coursesRevenueUsd,
+      counselingRevenueEtb, counselingRevenueUsd,
       gatewayChapaEtb, gatewayChapaUsd,
       gatewayPlayStoreEtb, gatewayPlayStoreUsd,
       gatewayAppStoreEtb, gatewayAppStoreUsd
     };
-  }, [transactions]);
+  }, [filteredTransactions]);
 
   // Export CSV Functionality
   const handleExportCSV = () => {
@@ -423,6 +396,7 @@ export default function FinancialTracker() {
         .single();
 
       if (error) {
+        // Local state append fallback if table doesn't exist yet
         setTransactions(prev => [{ ...newTx, id: `manual-${Date.now()}` } as FinancialTransaction, ...prev]);
       } else if (data) {
         setTransactions(prev => [data as FinancialTransaction, ...prev]);
@@ -503,12 +477,7 @@ export default function FinancialTracker() {
               <DollarSign size={28} />
             </div>
             <div>
-              <div className="flex items-center gap-3">
-                <h2 className="text-3xl font-black italic tracking-tight text-accent">ገፅ አንድ፡ የፋይናንስ እና የገቢ መዝገብ መከታተያ</h2>
-                <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 animate-pulse">
-                  <Activity size={12} /> LIVE Sync Active ({lastSyncedAt})
-                </span>
-              </div>
+              <h2 className="text-3xl font-black italic tracking-tight text-accent">ገፅ አንድ፡ የፋይናንስ እና የገቢ መዝገብ መከታተያ</h2>
               <p className="text-xs text-gray-400 font-medium">Financial Auditability, Revenue Ledger & Gateway Analytics (Chapa, Play Store, App Store)</p>
             </div>
           </div>
@@ -516,7 +485,7 @@ export default function FinancialTracker() {
 
         <div className="flex items-center gap-3">
           <button
-            onClick={() => fetchFinancialData(true)}
+            onClick={fetchFinancialData}
             className="p-3 bg-card hover:bg-white/10 border border-border text-foreground rounded-2xl transition-all"
             title="Refresh Data"
           >
@@ -537,49 +506,14 @@ export default function FinancialTracker() {
         </div>
       </header>
 
-      {/* Yesterday vs Today & All-time Overview Cards */}
+      {/* Financial Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Yesterday's Revenue Card */}
-        <div className="bg-card p-6 rounded-[2.5rem] border border-amber-500/30 shadow-2xl relative overflow-hidden group">
-          <div className="flex justify-between items-start mb-3">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400">የትናንትና ገቢ (Yesterday)</span>
-            <span className="px-2 py-0.5 bg-amber-500/10 text-amber-400 rounded-lg text-[9px] font-black">24H PAST</span>
-          </div>
-          <h3 className="text-3xl font-black italic tracking-tight text-foreground">
-            ብር {metrics.yesterdayRevenueEtb.toLocaleString()}
-          </h3>
-          <p className="text-xs font-bold text-amber-400 mt-1">
-            + ${metrics.yesterdayRevenueUsd.toLocaleString()} USD
-          </p>
-          <div className="mt-3 pt-2 border-t border-border/50 text-[10px] font-bold text-gray-400 flex justify-between">
-            <span>Coin Sales: ብር {metrics.yesterdayCoinSalesEtb.toLocaleString()}</span>
-            <span>${metrics.yesterdayCoinSalesUsd.toLocaleString()} USD</span>
-          </div>
-        </div>
-
-        {/* Today's Realtime Revenue Card */}
-        <div className="bg-card p-6 rounded-[2.5rem] border border-emerald-500/30 shadow-2xl relative overflow-hidden group">
-          <div className="flex justify-between items-start mb-3">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">የዛሬ ገቢ (Today Realtime)</span>
-            <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 rounded-lg text-[9px] font-black animate-pulse">LIVE</span>
-          </div>
-          <h3 className="text-3xl font-black italic tracking-tight text-foreground">
-            ብር {metrics.todayRevenueEtb.toLocaleString()}
-          </h3>
-          <p className="text-xs font-bold text-emerald-400 mt-1">
-            + ${metrics.todayRevenueUsd.toLocaleString()} USD
-          </p>
-          <div className="mt-3 pt-2 border-t border-border/50 text-[10px] font-bold text-gray-400 flex justify-between">
-            <span>Coin Sales: ብር {metrics.todayCoinSalesEtb.toLocaleString()}</span>
-            <span>${metrics.todayCoinSalesUsd.toLocaleString()} USD</span>
-          </div>
-        </div>
-
         {/* Total ETB Revenue Card */}
         <div className="bg-card p-6 rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden group">
-          <div className="flex justify-between items-start mb-3">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Total ETB Revenue (ብር)</span>
-            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform" />
+          <div className="flex justify-between items-start mb-4">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">Total ETB Revenue (ብር)</span>
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400">
               <TrendingUp size={16} />
             </div>
           </div>
@@ -588,13 +522,14 @@ export default function FinancialTracker() {
           </h3>
           <div className="mt-4 pt-3 border-t border-border/50 flex justify-between text-[11px] font-bold">
             <span className="text-gray-400">Fee: ብር {metrics.totalFeeEtb.toLocaleString()}</span>
-            <span className="text-emerald-400">Net: ብr {metrics.totalNetEtb.toLocaleString()}</span>
+            <span className="text-emerald-400">Net: ብር {metrics.totalNetEtb.toLocaleString()}</span>
           </div>
         </div>
 
         {/* Total USD Revenue Card */}
         <div className="bg-card p-6 rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden group">
-          <div className="flex justify-between items-start mb-3">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform" />
+          <div className="flex justify-between items-start mb-4">
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-sky-400">Total USD Revenue ($)</span>
             <div className="w-8 h-8 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-400">
               <DollarSign size={16} />
@@ -608,89 +543,46 @@ export default function FinancialTracker() {
             <span className="text-sky-400">Net: ${metrics.totalNetUsd.toLocaleString()}</span>
           </div>
         </div>
-      </div>
 
-      {/* DISTINCT CATEGORIZED REVENUE MATRIX (በየዘርፉ የተከፋፈለ የገቢ ዘገባ) */}
-      <div className="bg-card p-8 rounded-[3rem] border border-border shadow-2xl space-y-6">
-        <div className="flex items-center gap-3">
-          <PieChart className="text-primary" size={24} />
-          <div>
-            <h3 className="text-xl font-bold uppercase tracking-wider text-accent">በየዘርፉ የተከፋፈለ የገቢ ዘገባ (Categorized Revenue Streams)</h3>
-            <p className="text-xs text-gray-400 font-medium">Distinct revenue metrics for Subscriptions, Coin Sales, Courses, and Counseling Services</p>
+        {/* Subscriptions Card */}
+        <div className="bg-card p-6 rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform" />
+          <div className="flex justify-between items-start mb-4">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400">VIP & Premium Subscriptions</span>
+            <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400">
+              <CrownIcon />
+            </div>
+          </div>
+          <h3 className="text-2xl font-black italic tracking-tight text-foreground">
+            ብር {(metrics.vipRevenueEtb + metrics.premiumRevenueEtb).toLocaleString()}
+          </h3>
+          <p className="text-xs text-amber-400 font-bold mt-1">
+            + ${(metrics.vipRevenueUsd + metrics.premiumRevenueUsd).toLocaleString()} USD
+          </p>
+          <div className="mt-3 pt-2 border-t border-border/50 text-[10px] font-bold text-gray-400 flex justify-between">
+            <span>VIP: ብር {metrics.vipRevenueEtb.toLocaleString()}</span>
+            <span>Premium: ብር {metrics.premiumRevenueEtb.toLocaleString()}</span>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* VIP Subscriptions */}
-          <div className="p-6 bg-background rounded-3xl border border-amber-500/20 space-y-3 relative">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase text-amber-400 tracking-wider flex items-center gap-1.5"><CrownIcon /> 1. VIP Subscriptions</span>
-              <span className="text-[9px] bg-amber-500/10 text-amber-400 px-2.5 py-1 rounded-full font-bold">VIP Revenue</span>
-            </div>
-            <div className="space-y-1">
-              <p className="text-2xl font-black text-foreground">ብር {metrics.vipRevenueEtb.toLocaleString()}</p>
-              <p className="text-xs font-bold text-amber-400">+ ${metrics.vipRevenueUsd.toLocaleString()} USD</p>
+        {/* Coin Sales Card */}
+        <div className="bg-card p-6 rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform" />
+          <div className="flex justify-between items-start mb-4">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-yellow-500">Coin Economy Sales</span>
+            <div className="w-8 h-8 rounded-xl bg-yellow-500/10 flex items-center justify-center text-yellow-500">
+              <Coins size={16} />
             </div>
           </div>
-
-          {/* Premium Subscriptions */}
-          <div className="p-6 bg-background rounded-3xl border border-primary/20 space-y-3 relative">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase text-primary tracking-wider flex items-center gap-1.5"><TrendingUp size={14} /> 2. Premium Subscriptions</span>
-              <span className="text-[9px] bg-primary/10 text-primary px-2.5 py-1 rounded-full font-bold">Standard Premium</span>
-            </div>
-            <div className="space-y-1">
-              <p className="text-2xl font-black text-foreground">ብር {metrics.premiumRevenueEtb.toLocaleString()}</p>
-              <p className="text-xs font-bold text-primary">+ ${metrics.premiumRevenueUsd.toLocaleString()} USD</p>
-            </div>
-          </div>
-
-          {/* Coin Sales */}
-          <div className="p-6 bg-background rounded-3xl border border-yellow-500/20 space-y-3 relative">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase text-yellow-500 tracking-wider flex items-center gap-1.5"><Coins size={14} /> 3. Coin Economy Sales</span>
-              <span className="text-[9px] bg-yellow-500/10 text-yellow-500 px-2.5 py-1 rounded-full font-bold">Coin Packages</span>
-            </div>
-            <div className="space-y-1">
-              <p className="text-2xl font-black text-foreground">ብር {metrics.coinsRevenueEtb.toLocaleString()}</p>
-              <p className="text-xs font-bold text-yellow-500">+ ${metrics.coinsRevenueUsd.toLocaleString()} USD</p>
-            </div>
-          </div>
-
-          {/* Course & Video Sales */}
-          <div className="p-6 bg-background rounded-3xl border border-blue-500/20 space-y-3 relative">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase text-blue-400 tracking-wider flex items-center gap-1.5"><BookOpen size={14} /> 4. Courses & Videos</span>
-              <span className="text-[9px] bg-blue-500/10 text-blue-400 px-2.5 py-1 rounded-full font-bold">Academy Sales</span>
-            </div>
-            <div className="space-y-1">
-              <p className="text-2xl font-black text-foreground">ብር {metrics.coursesRevenueEtb.toLocaleString()}</p>
-              <p className="text-xs font-bold text-blue-400">+ ${metrics.coursesRevenueUsd.toLocaleString()} USD | 🪙 {metrics.coursesCoinsUsed} Coins</p>
-            </div>
-          </div>
-
-          {/* Counseling & Counseling Services */}
-          <div className="p-6 bg-background rounded-3xl border border-emerald-500/20 space-y-3 relative">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase text-emerald-400 tracking-wider flex items-center gap-1.5"><UserCheck size={14} /> 5. Counseling & Therapy</span>
-              <span className="text-[9px] bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-full font-bold">Counselor Session</span>
-            </div>
-            <div className="space-y-1">
-              <p className="text-2xl font-black text-foreground">ብር {metrics.counselingRevenueEtb.toLocaleString()}</p>
-              <p className="text-xs font-bold text-emerald-400">+ ${metrics.counselingRevenueUsd.toLocaleString()} USD | 🪙 {metrics.counselingCoinsUsed} Coins</p>
-            </div>
-          </div>
-
-          {/* Gifts & Profile Unlocks */}
-          <div className="p-6 bg-background rounded-3xl border border-purple-500/20 space-y-3 relative">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase text-purple-400 tracking-wider flex items-center gap-1.5"><Gift size={14} /> 6. Gifts & Unlocks</span>
-              <span className="text-[9px] bg-purple-500/10 text-purple-400 px-2.5 py-1 rounded-full font-bold">Coin Consumption</span>
-            </div>
-            <div className="space-y-1">
-              <p className="text-2xl font-black text-foreground">🪙 {metrics.giftsCoinsUsed + metrics.unlocksCoinsUsed} Coins</p>
-              <p className="text-xs font-bold text-purple-400">Gifts: 🪙{metrics.giftsCoinsUsed} | Unlocks: 🪙{metrics.unlocksCoinsUsed}</p>
-            </div>
+          <h3 className="text-2xl font-black italic tracking-tight text-foreground">
+            ብር {metrics.coinsRevenueEtb.toLocaleString()}
+          </h3>
+          <p className="text-xs text-yellow-500 font-bold mt-1">
+            + ${metrics.coinsRevenueUsd.toLocaleString()} USD
+          </p>
+          <div className="mt-3 pt-2 border-t border-border/50 text-[10px] font-bold text-gray-400 flex justify-between">
+            <span>Courses: ብር {metrics.coursesRevenueEtb.toLocaleString()}</span>
+            <span>Counseling: ብር {metrics.counselingRevenueEtb.toLocaleString()}</span>
           </div>
         </div>
       </div>
@@ -825,8 +717,7 @@ export default function FinancialTracker() {
               className="px-4 py-3 bg-background border border-border rounded-2xl text-xs font-bold text-foreground"
             >
               <option value="all">All Time</option>
-              <option value="today">Today (ዛሬ)</option>
-              <option value="yesterday">Yesterday (ትናንትና)</option>
+              <option value="today">Today</option>
               <option value="7days">Last 7 Days</option>
               <option value="30days">Last 30 Days</option>
               <option value="ytd">Year to Date</option>

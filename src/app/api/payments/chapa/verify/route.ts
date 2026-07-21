@@ -235,6 +235,8 @@ export async function POST(req: Request) {
     const isCoins = planType.startsWith('coins_') || planType.startsWith('c');
     const isVip = planType.startsWith('vip_') || planType.startsWith('v');
 
+    const { data: profileData } = await supabase.from('profiles').select('full_name, email').eq('id', userId).maybeSingle();
+
     if (isCoins) {
       const amountCoins = planType.startsWith('coins_')
         ? (parseInt(planType.replace('coins_', '')) || 50)
@@ -248,6 +250,25 @@ export async function POST(req: Request) {
         status: 'approved',
         receipt_url: `Chapa TX: ${tx_ref}`,
       });
+
+      // Mirror into financial_transactions master ledger
+      const coinAmt = parseFloat(String(txData?.amount || 0));
+      const coinFee = Math.round(coinAmt * 0.035 * 100) / 100;
+      try {
+        await supabase.from('financial_transactions').insert({
+          tx_ref: tx_ref,
+          user_id: userId,
+          user_name_snapshot: profileData?.full_name || profileData?.email || 'Beteseb User',
+          user_email_snapshot: profileData?.email || null,
+          revenue_source: 'coin_sale',
+          payment_gateway: 'chapa',
+          currency: txData?.currency || 'ETB',
+          gross_amount: coinAmt,
+          gateway_fee: coinFee,
+          net_amount: Math.max(0, coinAmt - coinFee),
+          payment_status: 'completed'
+        });
+      } catch (err) {}
 
       await supabase.from('coin_transactions').insert({
         user_id: userId,
@@ -276,14 +297,33 @@ export async function POST(req: Request) {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + days);
 
+      const vipAmt = parseFloat(String(txData?.amount || 0));
       await supabase.from('payments').insert({
         user_id: userId,
         plan_type: planType,
-        amount: parseFloat(String(txData?.amount || 0)),
+        amount: vipAmt,
         currency: txData?.currency || 'ETB',
         status: 'approved',
         receipt_url: `Chapa TX: ${tx_ref}`,
       });
+
+      // Mirror into financial_transactions master ledger
+      const vipFee = Math.round(vipAmt * 0.035 * 100) / 100;
+      try {
+        await supabase.from('financial_transactions').insert({
+          tx_ref: tx_ref,
+          user_id: userId,
+          user_name_snapshot: profileData?.full_name || profileData?.email || 'Beteseb User',
+          user_email_snapshot: profileData?.email || null,
+          revenue_source: 'subscription_vip',
+          payment_gateway: 'chapa',
+          currency: txData?.currency || 'ETB',
+          gross_amount: vipAmt,
+          gateway_fee: vipFee,
+          net_amount: Math.max(0, vipAmt - vipFee),
+          payment_status: 'completed'
+        });
+      } catch (err) {}
 
       const { error: profileError } = await supabase
         .from('profiles')
@@ -308,14 +348,33 @@ export async function POST(req: Request) {
       const premiumUntil = new Date();
       premiumUntil.setDate(premiumUntil.getDate() + days);
 
+      const premAmt = parseFloat(String(txData?.amount || 0));
       await supabase.from('payments').insert({
         user_id: userId,
         plan_type: planType,
-        amount: parseFloat(String(txData?.amount || 0)),
+        amount: premAmt,
         currency: txData?.currency || 'ETB',
         status: 'approved',
         receipt_url: `Chapa TX: ${tx_ref}`,
       });
+
+      // Mirror into financial_transactions master ledger
+      const premFee = Math.round(premAmt * 0.035 * 100) / 100;
+      try {
+        await supabase.from('financial_transactions').insert({
+          tx_ref: tx_ref,
+          user_id: userId,
+          user_name_snapshot: profileData?.full_name || profileData?.email || 'Beteseb User',
+          user_email_snapshot: profileData?.email || null,
+          revenue_source: 'subscription_premium',
+          payment_gateway: 'chapa',
+          currency: txData?.currency || 'ETB',
+          gross_amount: premAmt,
+          gateway_fee: premFee,
+          net_amount: Math.max(0, premAmt - premFee),
+          payment_status: 'completed'
+        });
+      } catch (err) {}
 
       const { error: profileError } = await supabase
         .from('profiles')
