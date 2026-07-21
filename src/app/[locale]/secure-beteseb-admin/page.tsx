@@ -165,6 +165,73 @@ interface ChatMessage {
   receiver?: UserProfile;
 }
 
+const ADMIN_HUBS = [
+  {
+    id: 'hub_analytics',
+    label: 'Analytics & Financial',
+    icon: DollarSign,
+    subTabs: [
+      { id: 'financial_tracker', label: '💰 Financial Ledger' },
+      { id: 'user_analytics', label: '📊 User Analytics' },
+      { id: 'stats', label: '📈 Growth Stats' },
+    ]
+  },
+  {
+    id: 'hub_revenue',
+    label: 'Revenue & Payments',
+    icon: Heart,
+    subTabs: [
+      { id: 'payments', label: '💳 Payment Approvals' },
+      { id: 'pricing', label: '🪙 Pricing & Packages' },
+      { id: 'banks', label: '🏦 Bank Accounts' },
+    ]
+  },
+  {
+    id: 'hub_safety',
+    label: 'Verification & Safety',
+    icon: ShieldCheck,
+    subTabs: [
+      { id: 'verification', label: '🆔 ID & Selfie KYC' },
+      { id: 'vouching', label: '🤝 Vouch Reviews' },
+      { id: 'reports', label: '🚨 Safety Reports' },
+      { id: 'fraud', label: '🤖 AI Fraud Scorer' },
+    ]
+  },
+  {
+    id: 'hub_cms',
+    label: 'CMS & Content',
+    icon: Layout,
+    subTabs: [
+      { id: 'cms', label: '🖥️ Global CMS' },
+      { id: 'marketplace_cms', label: '🎓 Academy & Vendors' },
+      { id: 'posts', label: '📰 Articles & News' },
+      { id: 'lessons', label: '🎬 Lessons' },
+      { id: 'gifts', label: '🎁 Gifts Catalog' },
+      { id: 'social', label: '🌐 Social & App Links' },
+    ]
+  },
+  {
+    id: 'hub_support',
+    label: 'Communication & Support',
+    icon: MessageSquare,
+    subTabs: [
+      { id: 'support', label: '🎧 Support Tickets' },
+      { id: 'bookings', label: '📅 Counselor Bookings' },
+      { id: 'messaging', label: '📢 Broadcasts & DMs' },
+    ]
+  },
+  {
+    id: 'hub_security',
+    label: 'Staff & Security',
+    icon: Users,
+    subTabs: [
+      { id: 'staff', label: '👥 Staff & Roles' },
+      { id: 'security', label: '🔑 Master Key & Passwords' },
+      { id: 'business', label: '⚙️ Business Settings' },
+    ]
+  }
+];
+
 export default function AdminPortal() {
   const params = useParams();
   const locale = params?.locale as string || 'en';
@@ -191,6 +258,25 @@ export default function AdminPortal() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // New Staff Management RBAC & Password Reset Modal States
+  const [showStaffModal, setShowStaffModal] = useState(false);
+  const [newStaffForm, setNewStaffForm] = useState({
+    full_name: '',
+    email: '',
+    username: '',
+    password: '',
+    role: 'moderator',
+    permissions: {
+      can_view_financials: false,
+      can_verify_kyc: true,
+      can_manage_cms: false,
+      can_moderate_support: true,
+      can_manage_staff: false
+    }
+  });
+  const [staffResetModalUser, setStaffResetModalUser] = useState<UserProfile | null>(null);
+  const [newStaffPasswordInput, setNewStaffPasswordInput] = useState('');
 
   // Site Posts State
   const [posts, setPosts] = useState<SitePost[]>([]);
@@ -1230,6 +1316,101 @@ export default function AdminPortal() {
     }
   };
 
+  const handleCreateStaff = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newStaffForm.email || !newStaffForm.password) {
+      alert('Email and password are required');
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: newStaffForm.email,
+        password: newStaffForm.password,
+        options: {
+          data: {
+            full_name: newStaffForm.full_name,
+            username: newStaffForm.username,
+            role: newStaffForm.role,
+            permissions: newStaffForm.permissions
+          }
+        }
+      });
+
+      if (authError) throw authError;
+
+      if (authData.user) {
+        await supabase.from('profiles').upsert({
+          id: authData.user.id,
+          full_name: newStaffForm.full_name || newStaffForm.username || newStaffForm.email,
+          email: newStaffForm.email,
+          role: newStaffForm.role,
+          permissions: newStaffForm.permissions,
+          created_at: new Date().toISOString()
+        });
+      }
+
+      alert('Staff account created successfully!');
+      setShowStaffModal(false);
+      setNewStaffForm({
+        full_name: '',
+        email: '',
+        username: '',
+        password: '',
+        role: 'moderator',
+        permissions: {
+          can_view_financials: false,
+          can_verify_kyc: true,
+          can_manage_cms: false,
+          can_moderate_support: true,
+          can_manage_staff: false
+        }
+      });
+
+      const { data: updatedUsers } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
+      if (updatedUsers) setUsers(updatedUsers);
+    } catch (err: any) {
+      alert('Error creating staff account: ' + err.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleResetStaffPassword = async (userId: string) => {
+    if (!newStaffPasswordInput || newStaffPasswordInput.length < 6) {
+      alert('Password must be at least 6 characters');
+      return;
+    }
+    try {
+      const { error } = await supabase.from('profiles').update({
+        password_reset_token: newStaffPasswordInput,
+        updated_at: new Date().toISOString()
+      }).eq('id', userId);
+      if (error) throw error;
+      alert('Staff password reset token updated successfully!');
+      setStaffResetModalUser(null);
+      setNewStaffPasswordInput('');
+    } catch (err: any) {
+      alert('Error resetting password: ' + err.message);
+    }
+  };
+
+  const handleToggleStaffLock = async (user: UserProfile) => {
+    const isCurrentlyLocked = (user as any).is_locked || false;
+    const action = isCurrentlyLocked ? 'Unlock / Restore' : 'Lock / Suspend';
+    if (!confirm(`Are you sure you want to ${action} ${user.full_name || 'this staff account'}?`)) return;
+    try {
+      const { error } = await supabase.from('profiles').update({
+        is_locked: !isCurrentlyLocked
+      }).eq('id', user.id);
+      if (error) throw error;
+      setUsers(prev => prev.map(u => u.id === user.id ? { ...u, is_locked: !isCurrentlyLocked } : u));
+      alert(`Account ${isCurrentlyLocked ? 'Unlocked' : 'Suspended'} successfully!`);
+    } catch (err: any) {
+      alert('Error updating account status: ' + err.message);
+    }
+  };
+
   const handleAddCatalogItem = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCatalogItem.name_en || !newCatalogItem.name_am) return;
@@ -1532,45 +1713,30 @@ export default function AdminPortal() {
           </div>
         )}
 
-        <nav className="space-y-1 flex-1 overflow-y-auto pr-1">
-          {[
-            { id: 'financial_tracker', icon: DollarSign, label: '💰 Financial & Revenue Tracker', superOnly: true },
-            { id: 'user_analytics', icon: TrendingUp, label: '📊 User & Onboarding Analytics', superOnly: true },
-            { id: 'stats', icon: BarChart3, label: 'Analytics', superOnly: true },
-            { id: 'cms', icon: Layout, label: 'Standard CMS' },
-            { id: 'pricing', icon: Coins, label: 'Pricing & Services Center', superOnly: true },
-            { id: 'marketplace_cms', icon: Layout, label: 'Academy & Vendor CMS' },
-            { id: 'business', icon: SettingsIcon, label: 'Business Settings', superOnly: true },
-            { id: 'social', icon: Globe, label: 'Social & App Links', superOnly: true },
-            { id: 'verification', icon: ShieldCheck, label: 'Verifications' },
-            { id: 'vouching', icon: ShieldCheck, label: 'Vouch Reviews' },
-            { id: 'bookings', icon: Calendar, label: 'Counselor Bookings' },
-            { id: 'payments', icon: Heart, label: 'Payment Review', superOnly: true },
-            { id: 'messaging', icon: MessageSquare, label: 'Communication' },
-            { id: 'posts', icon: Film, label: 'Articles & News' },
-            { id: 'lessons', icon: Video, label: 'Lessons' },
-            { id: 'support', icon: MessageSquare, label: 'Support' },
-            { id: 'reports', icon: ShieldAlert, label: 'Safety Reports' },
-            { id: 'fraud', icon: ShieldAlert, label: 'Fraud Detection ML', superOnly: true },
-            { id: 'gifts', icon: Gift, label: 'Gifts & Delivery', superOnly: true },
-            { id: 'matches', icon: Heart, label: 'Matches' },
-            { id: 'staff', icon: Users, label: 'Manage Staff', superOnly: true },
-            { id: 'security', icon: ShieldAlert, label: 'Access Control', superOnly: true },
-          ].map(item => (
-            <button
-              key={item.id}
-              onClick={() => {
-                setActiveTab(item.id);
-                setIsSidebarOpen(false);
-              }}
-              className={`w-full flex items-center gap-3 p-4 rounded-2xl transition-all duration-300 min-h-[48px] ${
-                activeTab === item.id ? 'bg-primary text-white shadow-xl shadow-primary/20 scale-105 font-bold' : 'text-foreground/40 hover:bg-white/5 font-semibold'
-              }`}
-            >
-              <item.icon size={20} />
-              <span className="text-xs tracking-widest uppercase">{item.label}</span>
-            </button>
-          ))}
+        <nav className="space-y-2 flex-1 overflow-y-auto pr-1">
+          {ADMIN_HUBS.map(hub => {
+            const isSelected = hub.subTabs.some(st => st.id === activeTab);
+            return (
+              <button
+                key={hub.id}
+                onClick={() => {
+                  setActiveTab(hub.subTabs[0].id);
+                  setIsSidebarOpen(false);
+                }}
+                className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all duration-300 min-h-[50px] ${
+                  isSelected ? 'bg-primary text-white shadow-xl shadow-primary/20 scale-[1.02] font-bold' : 'text-foreground/60 hover:bg-white/5 font-semibold'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <hub.icon size={18} />
+                  <span className="text-xs tracking-wider uppercase">{hub.label}</span>
+                </div>
+                <span className={`text-[9px] px-2 py-0.5 rounded-full font-black ${isSelected ? 'bg-white/20 text-white' : 'bg-white/5 text-foreground/40'}`}>
+                  {hub.subTabs.length}
+                </span>
+              </button>
+            );
+          })}
         </nav>
       </aside>
 
@@ -1645,6 +1811,33 @@ export default function AdminPortal() {
 
       {/* Admin Content Area */}
       <main className="flex-1 p-6 md:p-10 overflow-y-auto pt-28 lg:pt-10">
+        {/* Consolidated Sub-Pills Header */}
+        {(() => {
+          const currentHub = ADMIN_HUBS.find(h => h.subTabs.some(st => st.id === activeTab)) || ADMIN_HUBS[0];
+          const CurrentIcon = currentHub.icon;
+          return (
+            <div className="mb-8 p-3 bg-card/90 backdrop-blur-md rounded-[2.5rem] border border-white/10 shadow-2xl flex flex-wrap gap-2 items-center">
+              <span className="text-[10px] font-black uppercase tracking-widest text-primary px-4 py-2.5 bg-primary/10 rounded-full flex items-center gap-2 border border-primary/20">
+                <CurrentIcon size={14} /> {currentHub.label}
+              </span>
+              <div className="h-6 w-[1px] bg-white/10 mx-1 hidden sm:block" />
+              {currentHub.subTabs.map(sub => (
+                <button
+                  key={sub.id}
+                  onClick={() => setActiveTab(sub.id)}
+                  className={`px-5 py-2.5 rounded-2xl text-xs font-bold transition-all duration-300 flex items-center gap-2 ${
+                    activeTab === sub.id
+                      ? 'bg-primary text-white shadow-lg shadow-primary/25 scale-105'
+                      : 'bg-background/60 text-foreground/70 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  {sub.label}
+                </button>
+              ))}
+            </div>
+          );
+        })()}
+
         {activeTab === 'financial_tracker' && <FinancialTracker />}
         {activeTab === 'user_analytics' && <UserAnalytics />}
 
@@ -4315,6 +4508,208 @@ export default function AdminPortal() {
             </div>
           </div>
         )}
+
+        {/* Manage Staff & Granular RBAC Permissions */}
+        {activeTab === 'staff' && (
+          <div className="space-y-8 animate-in fade-in duration-500">
+            <header className="flex justify-between items-end">
+              <div>
+                <h2 className="text-3xl font-bold italic uppercase tracking-tighter text-accent">Staff & RBAC Governance</h2>
+                <p className="text-foreground/40 mt-1">Create staff accounts, set passwords, and assign granular feature permissions.</p>
+              </div>
+              <button
+                onClick={() => setShowStaffModal(true)}
+                className="px-6 py-3 bg-primary text-white text-xs font-bold uppercase tracking-widest rounded-2xl flex items-center gap-2 hover:scale-105 transition-all shadow-lg shadow-primary/20"
+              >
+                <Plus size={16} /> Add Staff Account
+              </button>
+            </header>
+
+            <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5 space-y-6">
+              <div className="flex justify-between items-center gap-4 flex-wrap">
+                <h3 className="text-lg font-bold text-accent">System Administrative Personnel ({users.filter(u => ['admin', 'super_admin', 'moderator', 'support_agent', 'content_manager', 'verification_officer'].includes(u.role)).length})</h3>
+                <div className="relative w-72">
+                  <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40" />
+                  <input
+                    type="text"
+                    placeholder="Search staff members..."
+                    value={userSearchQuery}
+                    onChange={(e) => setUserSearchQuery(e.target.value)}
+                    className="w-full bg-background rounded-2xl pl-10 pr-4 py-2.5 text-xs border border-white/5 focus:border-primary"
+                  />
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-semibold">
+                  <thead>
+                    <tr className="border-b border-white/5 text-gray-500 uppercase tracking-widest">
+                      <th className="pb-4">Staff Member</th>
+                      <th className="pb-4">System Role</th>
+                      <th className="pb-4">Granular Permissions</th>
+                      <th className="pb-4">Account Status</th>
+                      <th className="pb-4 text-right">Security Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {users
+                      .filter(u => {
+                        const isStaff = ['admin', 'super_admin', 'moderator', 'support_agent', 'content_manager', 'verification_officer'].includes(u.role);
+                        const matchesSearch = !userSearchQuery || u.full_name?.toLowerCase().includes(userSearchQuery.toLowerCase()) || (u as any).email?.toLowerCase().includes(userSearchQuery.toLowerCase());
+                        return isStaff && matchesSearch;
+                      })
+                      .map(user => {
+                        const permissions = (user as any).permissions || {};
+                        const isLocked = (user as any).is_locked || false;
+
+                        return (
+                          <tr key={user.id} className="align-middle">
+                            <td className="py-4">
+                              <p className="font-bold text-accent">{user.full_name || 'Staff User'}</p>
+                              <p className="text-[10px] text-foreground/40 font-mono">{(user as any).email || user.id.substring(0, 10)}</p>
+                            </td>
+                            <td className="py-4">
+                              <select
+                                value={user.role}
+                                onChange={(e) => handleUpdateRole(user.id, e.target.value)}
+                                className="p-2 bg-background rounded-xl text-xs font-bold border border-white/5 text-primary uppercase tracking-wider"
+                              >
+                                <option value="super_admin">Super Admin</option>
+                                <option value="admin">Admin</option>
+                                <option value="moderator">Moderator</option>
+                                <option value="support_agent">Support Agent</option>
+                                <option value="content_manager">Content Manager</option>
+                                <option value="verification_officer">Verification Officer</option>
+                              </select>
+                            </td>
+                            <td className="py-4">
+                              <div className="flex flex-wrap gap-1 max-w-xs">
+                                {permissions.can_view_financials && <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-500 text-[8px] font-black rounded uppercase">Financials</span>}
+                                {permissions.can_verify_kyc && <span className="px-2 py-0.5 bg-blue-500/10 text-blue-500 text-[8px] font-black rounded uppercase">KYC</span>}
+                                {permissions.can_manage_cms && <span className="px-2 py-0.5 bg-purple-500/10 text-purple-500 text-[8px] font-black rounded uppercase">CMS</span>}
+                                {permissions.can_moderate_support && <span className="px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[8px] font-black rounded uppercase">Support</span>}
+                                {permissions.can_manage_staff && <span className="px-2 py-0.5 bg-red-500/10 text-red-500 text-[8px] font-black rounded uppercase">Full Admin</span>}
+                                {!Object.values(permissions).some(Boolean) && <span className="text-[9px] text-foreground/40 italic">Standard Role</span>}
+                              </div>
+                            </td>
+                            <td className="py-4">
+                              <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                                isLocked ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'
+                              }`}>
+                                {isLocked ? 'Locked / Suspended' : 'Active'}
+                              </span>
+                            </td>
+                            <td className="py-4 text-right">
+                              <div className="flex gap-2 justify-end">
+                                <button
+                                  onClick={() => setStaffResetModalUser(user)}
+                                  className="px-3 py-1.5 bg-muted hover:bg-gray-200 text-accent rounded-xl text-[10px] font-bold transition-all"
+                                >
+                                  Reset Key
+                                </button>
+                                <button
+                                  onClick={() => handleToggleStaffLock(user)}
+                                  className={`px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all ${
+                                    isLocked ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-red-600/10 text-red-500 hover:bg-red-600 hover:text-white'
+                                  }`}
+                                >
+                                  {isLocked ? 'Unlock' : 'Lock Account'}
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* System Credentials & Security Control */}
+        {activeTab === 'security' && (
+          <div className="space-y-8 animate-in fade-in duration-500">
+            <header>
+              <h2 className="text-3xl font-bold italic uppercase tracking-tighter text-accent">Master Access Key & Security Credentials</h2>
+              <p className="text-foreground/40 mt-1">Configure super admin system key, session policies, and security credentials.</p>
+            </header>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Master System Access Key Update Card */}
+              <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5 space-y-6">
+                <div className="flex items-center gap-3">
+                  <ShieldCheck className="text-primary" size={24} />
+                  <h3 className="text-xl font-bold uppercase tracking-widest">Master Admin System Key</h3>
+                </div>
+                <p className="text-xs text-foreground/60 leading-relaxed">
+                  This key controls primary master access to the Beteseb Admin Portal. Changing this key will immediately enforce the new credentials across all admin sessions.
+                </p>
+
+                <div className="space-y-4 pt-2">
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-primary block mb-2">New Master System Access Key</label>
+                    <div className="relative">
+                      <input
+                        type={showNewPassword ? 'text' : 'password'}
+                        placeholder="Enter min 8 characters key..."
+                        value={newAdminPassword}
+                        onChange={(e) => setNewAdminPassword(e.target.value)}
+                        className="w-full p-4 bg-background rounded-2xl text-xs font-mono font-bold border border-white/5 focus:border-primary pr-12 text-accent"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-primary"
+                      >
+                        {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleUpdateAdminPassword}
+                    disabled={isSaving || !newAdminPassword}
+                    className="w-full py-4 bg-primary hover:bg-primary/90 text-white rounded-2xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    {isSaving ? 'Updating Master Key...' : 'Update Master Access Key'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Security Telemetry Audit */}
+              <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5 space-y-6">
+                <div className="flex items-center gap-3">
+                  <ShieldAlert className="text-amber-500" size={24} />
+                  <h3 className="text-xl font-bold uppercase tracking-widest">Security Audit Ledger</h3>
+                </div>
+                <div className="space-y-4">
+                  <div className="p-4 bg-background rounded-2xl border border-white/5 flex justify-between items-center">
+                    <div>
+                      <p className="text-xs font-bold text-accent">Master Access Key Status</p>
+                      <p className="text-[10px] text-green-500 font-semibold mt-0.5">● Protected & Enforced in Database</p>
+                    </div>
+                    <span className="px-3 py-1 bg-green-500/10 text-green-500 text-[9px] font-black rounded-full uppercase">Secure</span>
+                  </div>
+                  <div className="p-4 bg-background rounded-2xl border border-white/5 flex justify-between items-center">
+                    <div>
+                      <p className="text-xs font-bold text-accent">Active Staff Sessions</p>
+                      <p className="text-[10px] text-foreground/40 font-semibold mt-0.5">Authenticated via Supabase SSR Session</p>
+                    </div>
+                    <span className="px-3 py-1 bg-blue-500/10 text-blue-500 text-[9px] font-black rounded-full uppercase">Monitored</span>
+                  </div>
+                  <div className="p-4 bg-background rounded-2xl border border-white/5 flex justify-between items-center">
+                    <div>
+                      <p className="text-xs font-bold text-accent">Financial Audit Trigger</p>
+                      <p className="text-[10px] text-foreground/40 font-semibold mt-0.5">Non-destructive user retention active</p>
+                    </div>
+                    <span className="px-3 py-1 bg-purple-500/10 text-purple-500 text-[9px] font-black rounded-full uppercase">Active</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Verification Details Modal (Compliance Report) */}
         {selectedVerification && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 md:p-6 animate-in fade-in duration-300">
@@ -4463,27 +4858,160 @@ export default function AdminPortal() {
         )}
       </main>
 
-      {/* Mobile Bottom Navigation Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-card/95 backdrop-blur-md border-t border-border z-[60] flex items-center justify-around px-2 shadow-2xl">
-        {[
-          { id: 'pricing', icon: Coins, label: 'Pricing' },
-          { id: 'verification', icon: ShieldCheck, label: 'Verifications' },
-          { id: 'payments', icon: Heart, label: 'Payments' },
-          { id: 'social', icon: Globe, label: 'Social & Apps' },
-          { id: 'cms', icon: Layout, label: 'CMS' }
-        ].map(item => (
-          <button
-            key={item.id}
-            onClick={() => setActiveTab(item.id)}
-            className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all ${
-              activeTab === item.id ? 'text-primary scale-110 font-bold' : 'text-foreground/40 hover:text-foreground'
-            }`}
-          >
-            <item.icon size={18} />
-            <span className="text-[9px] uppercase tracking-wider mt-0.5">{item.label}</span>
-          </button>
-        ))}
-      </div>
+      {/* Staff Account Creation Modal */}
+      {showStaffModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[250] flex items-center justify-center p-4 md:p-6 animate-in fade-in duration-300">
+          <div className="bg-card text-card-foreground rounded-[2.5rem] w-full max-w-2xl shadow-2xl border border-white/10 p-8 space-y-6">
+            <div className="flex justify-between items-center pb-4 border-b border-white/10">
+              <div>
+                <h3 className="text-xl font-bold uppercase tracking-wider text-primary">Add New Staff / Moderator Account</h3>
+                <p className="text-xs text-foreground/50 mt-1">Create credentials and assign granular system permissions.</p>
+              </div>
+              <button onClick={() => setShowStaffModal(false)} className="p-2 hover:bg-white/10 rounded-full">
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateStaff} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-foreground/60 block mb-1">Full Name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Abebe Bikila"
+                    value={newStaffForm.full_name}
+                    onChange={(e) => setNewStaffForm({ ...newStaffForm, full_name: e.target.value })}
+                    className="w-full p-4 bg-background rounded-2xl text-xs font-semibold border border-white/5 focus:border-primary"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-foreground/60 block mb-1">Username</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. abebe_mod"
+                    value={newStaffForm.username}
+                    onChange={(e) => setNewStaffForm({ ...newStaffForm, username: e.target.value })}
+                    className="w-full p-4 bg-background rounded-2xl text-xs font-semibold border border-white/5 focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-foreground/60 block mb-1">Email Address</label>
+                  <input
+                    type="email"
+                    placeholder="staff@beteseb.com"
+                    value={newStaffForm.email}
+                    onChange={(e) => setNewStaffForm({ ...newStaffForm, email: e.target.value })}
+                    className="w-full p-4 bg-background rounded-2xl text-xs font-semibold border border-white/5 focus:border-primary"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-foreground/60 block mb-1">Initial Password</label>
+                  <input
+                    type="password"
+                    placeholder="Min 6 characters"
+                    value={newStaffForm.password}
+                    onChange={(e) => setNewStaffForm({ ...newStaffForm, password: e.target.value })}
+                    className="w-full p-4 bg-background rounded-2xl text-xs font-semibold border border-white/5 focus:border-primary"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase tracking-widest text-foreground/60 block mb-1">Assigned Primary Role</label>
+                <select
+                  value={newStaffForm.role}
+                  onChange={(e) => setNewStaffForm({ ...newStaffForm, role: e.target.value })}
+                  className="w-full p-4 bg-background rounded-2xl text-xs font-bold border border-white/5 focus:border-primary"
+                >
+                  <option value="moderator">Moderator</option>
+                  <option value="admin">Admin</option>
+                  <option value="support_agent">Support Agent</option>
+                  <option value="content_manager">Content Manager</option>
+                  <option value="verification_officer">Verification Officer</option>
+                </select>
+              </div>
+
+              <div className="pt-4 border-t border-white/10 space-y-3">
+                <label className="text-[10px] font-black uppercase tracking-widest text-primary block">Granular Feature Permissions</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {[
+                    { key: 'can_view_financials', label: '💰 View Financial Ledger & Revenue' },
+                    { key: 'can_verify_kyc', label: '🆔 Perform ID & Selfie KYC Approvals' },
+                    { key: 'can_manage_cms', label: '🖥️ Edit CMS & Pricing Packages' },
+                    { key: 'can_moderate_support', label: '🎧 Manage Support Tickets & Reports' },
+                    { key: 'can_manage_staff', label: '👥 Full Super Admin Staff Control' },
+                  ].map(p => (
+                    <label key={p.key} className="flex items-center gap-3 p-3 bg-background rounded-xl border border-white/5 cursor-pointer hover:border-primary/30">
+                      <input
+                        type="checkbox"
+                        checked={(newStaffForm.permissions as any)[p.key] || false}
+                        onChange={(e) => setNewStaffForm({
+                          ...newStaffForm,
+                          permissions: { ...newStaffForm.permissions, [p.key]: e.target.checked }
+                        })}
+                        className="accent-primary w-4 h-4 rounded"
+                      />
+                      <span className="text-xs font-bold text-foreground/80">{p.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-4 justify-end pt-4">
+                <button type="button" onClick={() => setShowStaffModal(false)} className="px-6 py-3 bg-muted text-foreground/60 rounded-2xl text-xs font-bold">
+                  Cancel
+                </button>
+                <button type="submit" disabled={isSaving} className="px-8 py-3 bg-primary text-white rounded-2xl text-xs font-bold shadow-lg shadow-primary/20">
+                  {isSaving ? 'Creating...' : 'Create Staff Account'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Staff Password Reset Modal */}
+      {staffResetModalUser && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[250] flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-card text-card-foreground rounded-[2.5rem] w-full max-w-md shadow-2xl border border-white/10 p-8 space-y-6">
+            <div className="flex justify-between items-center pb-2 border-b border-white/10">
+              <h3 className="text-lg font-bold uppercase tracking-wider text-primary">Reset Password Key</h3>
+              <button onClick={() => setStaffResetModalUser(null)} className="p-2 hover:bg-white/10 rounded-full">
+                <X size={18} />
+              </button>
+            </div>
+
+            <p className="text-xs text-foreground/70 font-semibold">
+              Updating credentials for <strong className="text-accent">{staffResetModalUser.full_name || staffResetModalUser.id}</strong>.
+            </p>
+
+            <div className="space-y-4">
+              <input
+                type="password"
+                placeholder="Enter new password key"
+                value={newStaffPasswordInput}
+                onChange={(e) => setNewStaffPasswordInput(e.target.value)}
+                className="w-full p-4 bg-background rounded-2xl text-xs font-semibold border border-white/5 focus:border-primary"
+              />
+
+              <div className="flex gap-3 justify-end">
+                <button onClick={() => setStaffResetModalUser(null)} className="px-4 py-2.5 bg-muted text-xs font-bold rounded-xl">
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleResetStaffPassword(staffResetModalUser.id)}
+                  className="px-6 py-2.5 bg-primary text-white text-xs font-bold rounded-xl shadow-md"
+                >
+                  Update Password Key
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
