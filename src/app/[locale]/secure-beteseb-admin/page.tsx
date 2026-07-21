@@ -6,6 +6,8 @@ import { supabase } from '@/lib/supabase';
 import { queueSMS } from '@/lib/sms';
 import { translator } from '../../../lib/translator';
 import Image from 'next/image';
+import FinancialTracker from '@/components/admin/FinancialTracker';
+import UserAnalytics from '@/components/admin/UserAnalytics';
 import { 
   BarChart3, 
   Users, 
@@ -37,7 +39,9 @@ import {
   Truck,
   Coins,
   MapPin,
-  Phone
+  Phone,
+  DollarSign,
+  TrendingUp
 } from 'lucide-react';
 
 interface UserProfile {
@@ -164,7 +168,7 @@ interface ChatMessage {
 export default function AdminPortal() {
   const params = useParams();
   const locale = params?.locale as string || 'en';
-  const [activeTab, setActiveTab] = useState('cms');
+  const [activeTab, setActiveTab] = useState('financial_tracker');
   const [settings, setSettings] = useState<SystemSettings | null>(null);
   const [supportTickets, setSupportTickets] = useState<SupportTicket[]>([]);
   const [verifications, setVerifications] = useState<VerificationRequest[]>([]);
@@ -238,6 +242,11 @@ export default function AdminPortal() {
   const [currentVideo, setCurrentVideo] = useState<any>({
     title: '', title_am: '', title_om: '', title_ti: '', title_so: '', title_ar: '',
     description: '', description_am: '', description_om: '', description_ti: '', description_so: '', description_ar: '',
+    youtube_url: '', category: 'Pre-Marriage', is_free: false, coin_price: 30, order_index: 10, duration_minutes: 15
+  });
+  const [currentVendor, setCurrentVendor] = useState<any>({
+    name: '', category: 'Venue', rating: 4.8, location: 'Addis Ababa', contact: ''
+  });
 
   // Manual Payment Resolution & Chapa Lookup States
   const [manualEmailOrId, setManualEmailOrId] = useState('');
@@ -248,11 +257,6 @@ export default function AdminPortal() {
   const [chapaLookupRef, setChapaLookupRef] = useState('');
   const [chapaLookupResult, setChapaLookupResult] = useState<any>(null);
   const [chapaLookupLoading, setChapaLookupLoading] = useState(false);
-    youtube_url: '', category: 'Pre-Marriage', is_free: false, coin_price: 30, order_index: 10, duration_minutes: 15
-  });
-  const [currentVendor, setCurrentVendor] = useState<any>({
-    name: '', category: 'Venue', rating: 4.8, location: 'Addis Ababa', contact: ''
-  });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1530,6 +1534,8 @@ export default function AdminPortal() {
 
         <nav className="space-y-1 flex-1 overflow-y-auto pr-1">
           {[
+            { id: 'financial_tracker', icon: DollarSign, label: '💰 Financial & Revenue Tracker', superOnly: true },
+            { id: 'user_analytics', icon: TrendingUp, label: '📊 User & Onboarding Analytics', superOnly: true },
             { id: 'stats', icon: BarChart3, label: 'Analytics', superOnly: true },
             { id: 'cms', icon: Layout, label: 'Standard CMS' },
             { id: 'pricing', icon: Coins, label: 'Pricing & Services Center', superOnly: true },
@@ -1639,6 +1645,9 @@ export default function AdminPortal() {
 
       {/* Admin Content Area */}
       <main className="flex-1 p-6 md:p-10 overflow-y-auto pt-28 lg:pt-10">
+        {activeTab === 'financial_tracker' && <FinancialTracker />}
+        {activeTab === 'user_analytics' && <UserAnalytics />}
+
         {activeTab === 'cms' && (
           <div className="space-y-8 animate-in fade-in duration-500">
             <header className="flex justify-between items-end">
