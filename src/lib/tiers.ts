@@ -29,6 +29,7 @@ export interface ProfileData {
   premium_until?: string | null;
   role?: string;
   has_children?: string;
+  is_lifetime?: boolean;
 }
 
 /**
@@ -80,7 +81,8 @@ export type TrustTier = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond';
 export function getUserTier(profile: ProfileData | null, hasVouchedRecords: boolean): TrustTier {
   if (!profile) return 'bronze';
   
-  const isPremium = (profile.premium_until && new Date(profile.premium_until) > new Date()) || 
+  const isPremium = Boolean(profile.is_lifetime) ||
+                    (profile.premium_until && new Date(profile.premium_until) > new Date()) || 
                     ['admin', 'super_admin', 'expert'].includes(profile.role || '');
   
   if (isPremium) {

@@ -109,11 +109,11 @@ export default function PaymentTab() {
           const rawPricing = currency === 'ETB' ? data.pricing_etb : data.pricing_usd;
           if (rawPricing) {
             const dynamicPlans = [
-              { id: '1m', name: '1 Month', price: rawPricing['1m'] || (currency === 'ETB' ? 500 : 15), period: 'monthly' },
-              { id: '3m', name: '3 Months', price: rawPricing['3m'] || (currency === 'ETB' ? 1200 : 39), period: 'quarterly' },
-              { id: '6m', name: '6 Months', price: rawPricing['6m'] || (currency === 'ETB' ? 2200 : 69), period: 'semi-annually' },
-              { id: '1y', name: '1 Year', price: rawPricing['12m'] || (currency === 'ETB' ? 3500 : 120), period: 'yearly' },
-              { id: 'lifetime', name: 'Lifetime', price: rawPricing['lifetime'] || (currency === 'ETB' ? 9999 : 299), period: 'lifetime' }
+              { id: '1m', name: '1 Month', price: rawPricing['1m'] || (currency === 'ETB' ? 149.99 : 7.99), period: 'monthly' },
+              { id: '3m', name: '3 Months', price: rawPricing['3m'] || (currency === 'ETB' ? 379.99 : 19.99), period: 'quarterly' },
+              { id: '6m', name: '6 Months', price: rawPricing['6m'] || (currency === 'ETB' ? 649.99 : 33.99), period: 'semi-annually' },
+              { id: '1y', name: '1 Year', price: rawPricing['12m'] || (currency === 'ETB' ? 999.99 : 49.99), period: 'yearly' },
+              { id: 'lifetime', name: 'Lifetime', price: rawPricing['lifetime'] || (currency === 'ETB' ? 1499.99 : 74.99), period: 'lifetime' }
             ];
             setPlans(dynamicPlans);
           } else {

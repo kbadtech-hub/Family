@@ -83,21 +83,29 @@ export async function POST(req: Request) {
           coinBalance: currentBalance + amountCoins
         });
       } else {
+        const isLifetime = planType === 'lifetime' || planType.endsWith('lifetime');
         const expiresAt = new Date();
         let days = 30;
         if (planType === '3m') days = 90;
-        if (planType === '12m') days = 365;
-        if (planType === 'lifetime') days = 36500;
+        if (planType === '6m') days = 180;
+        if (planType === '12m' || planType === '1y') days = 365;
+        if (isLifetime) days = 36500;
         expiresAt.setDate(expiresAt.getDate() + days);
 
-        await supabase.from('profiles').update({
+        const updatePayload: any = {
           premium_until: expiresAt.toISOString()
-        }).eq('id', userId);
+        };
+        if (isLifetime) {
+          updatePayload.is_lifetime = true;
+        }
+
+        await supabase.from('profiles').update(updatePayload).eq('id', userId);
 
         return NextResponse.json({
           status: 'success',
           message: 'Apple receipt validated (Simulated) and account upgraded successfully',
-          premiumUntil: expiresAt.toISOString()
+          premiumUntil: expiresAt.toISOString(),
+          isLifetime
         });
       }
     }
@@ -202,13 +210,19 @@ export async function POST(req: Request) {
         console.error('Failed to log Apple payment transaction in DB:', paymentError);
       }
 
+      const isLifetime = planType === 'lifetime' || planType.endsWith('lifetime');
+      const vipUpdatePayload: any = {
+        is_vip_member: true,
+        vip_expires_at: expiresAt.toISOString()
+      };
+      if (isLifetime) {
+        vipUpdatePayload.is_lifetime = true;
+      }
+
       // 5. Upgrade user's VIP validity in profiles table
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({
-          is_vip_member: true,
-          vip_expires_at: expiresAt.toISOString()
-        })
+        .update(vipUpdatePayload)
         .eq('id', userId);
 
       if (profileError) {
@@ -223,6 +237,7 @@ export async function POST(req: Request) {
         status: 'success',
         message: 'Receipt validated and VIP account upgraded successfully',
         vipExpiresAt: expiresAt.toISOString(),
+        isLifetime,
         type: 'vip'
       });
     }
@@ -243,12 +258,18 @@ export async function POST(req: Request) {
       console.error('Failed to log Apple payment transaction in DB:', paymentError);
     }
 
+    const isLifetime = planType === 'lifetime' || planType.endsWith('lifetime');
+    const premUpdatePayload: any = {
+      premium_until: expiresAt.toISOString()
+    };
+    if (isLifetime) {
+      premUpdatePayload.is_lifetime = true;
+    }
+
     // 5. Upgrade user's premium validity in profiles table
     const { error: profileError } = await supabase
       .from('profiles')
-      .update({
-        premium_until: expiresAt.toISOString()
-      })
+      .update(premUpdatePayload)
       .eq('id', userId);
 
     if (profileError) {
@@ -263,6 +284,7 @@ export async function POST(req: Request) {
       status: 'success',
       message: 'Receipt validated and account upgraded successfully',
       premiumUntil: expiresAt.toISOString(),
+      isLifetime,
       type: 'premium'
     });
 
@@ -292,11 +314,18 @@ async function verifyWithApple(receiptData: string, url: string): Promise<Verify
  */
 function getPlanPriceUSD(planType: string): number {
   switch (planType) {
-    case '1m': return 15;
-    case '3m': return 39;
-    case '6m': return 69;
-    case '12m': return 120;
-    case 'lifetime': return 299;
-    default: return 15;
+    case '1m': return 7.99;
+    case '3m': return 19.99;
+    case '6m': return 33.99;
+    case '12m':
+    case '1y': return 49.99;
+    case 'lifetime': return 74.99;
+    case 'vip_1m': return 15.99;
+    case 'vip_3m': return 39.99;
+    case 'vip_6m': return 67.99;
+    case 'vip_12m':
+    case 'vip_1y': return 99.99;
+    case 'vip_lifetime': return 149.99;
+    default: return 7.99;
   }
 }

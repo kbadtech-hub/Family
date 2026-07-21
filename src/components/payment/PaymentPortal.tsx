@@ -57,7 +57,7 @@ export default function PaymentPortal({ profile, onPaymentStarted }: { profile: 
 
       const calculatePrice = (basePrice: number) => {
          if (discountValue > 0) {
-            return Math.round(basePrice * (1 - discountValue / 100));
+            return Number((basePrice * (1 - discountValue / 100)).toFixed(2));
          }
          return basePrice;
       };

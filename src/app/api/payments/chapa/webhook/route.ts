@@ -113,10 +113,11 @@ export async function POST(req: Request) {
     } else if (isVip) {
       let days = 30;
       const cleanPlan = planType.startsWith('vip_') ? planType.replace('vip_', '') : planType.replace(/^v_?/, '');
+      const isLifetime = cleanPlan === 'lifetime' || planType.endsWith('lifetime');
       if (cleanPlan === '3m') days = 90;
       if (cleanPlan === '6m') days = 180;
       if (cleanPlan === '12m' || cleanPlan === '1y') days = 365;
-      if (cleanPlan === 'lifetime') days = 36500;
+      if (isLifetime) days = 36500;
 
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + days);
@@ -130,12 +131,17 @@ export async function POST(req: Request) {
         receipt_url: `Chapa TX: ${tx_ref}`,
       });
 
+      const vipUpdatePayload: any = {
+        is_vip_member: true,
+        vip_expires_at: expiresAt.toISOString(),
+      };
+      if (isLifetime) {
+        vipUpdatePayload.is_lifetime = true;
+      }
+
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({
-          is_vip_member: true,
-          vip_expires_at: expiresAt.toISOString(),
-        })
+        .update(vipUpdatePayload)
         .eq('id', userId);
 
       if (profileError) {
@@ -146,7 +152,8 @@ export async function POST(req: Request) {
       console.log(`[Chapa Webhook] ✅ User ${userId} upgraded to VIP for ${days} days via Chapa.`);
       return NextResponse.json({ status: 'success', message: 'Payment recorded and VIP status upgraded' });
     } else {
-      const days = PLAN_DAYS[planType] ?? 30;
+      const isLifetime = planType === 'lifetime' || planType.endsWith('lifetime');
+      const days = PLAN_DAYS[planType] ?? (isLifetime ? 36500 : 30);
       const premiumUntil = new Date();
       premiumUntil.setDate(premiumUntil.getDate() + days);
 
@@ -159,9 +166,16 @@ export async function POST(req: Request) {
         receipt_url: `Chapa TX: ${tx_ref}`,
       });
 
+      const premUpdatePayload: any = {
+        premium_until: premiumUntil.toISOString()
+      };
+      if (isLifetime) {
+        premUpdatePayload.is_lifetime = true;
+      }
+
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({ premium_until: premiumUntil.toISOString() })
+        .update(premUpdatePayload)
         .eq('id', userId);
 
       if (profileError) {

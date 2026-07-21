@@ -69,10 +69,11 @@ export async function POST(req: Request) {
       } else if (creditType === 'vip') {
         let days = 30;
         const planStr = String(amountOrPlan).replace('vip_', '').replace(/^v_?/, '');
+        const isLifetime = planStr === 'lifetime';
         if (planStr === '3m') days = 90;
         if (planStr === '6m') days = 180;
         if (planStr === '12m' || planStr === '1y') days = 365;
-        if (planStr === 'lifetime') days = 36500;
+        if (isLifetime) days = 36500;
 
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + days);
@@ -86,26 +87,33 @@ export async function POST(req: Request) {
           receipt_url: `Admin Manual VIP: ${note || 'Customer Resolution'}`,
         });
 
-        await supabase.from('profiles').update({
+        const vipUpdatePayload: any = {
           is_vip_member: true,
           vip_expires_at: expiresAt.toISOString(),
-        }).eq('id', userId);
+        };
+        if (isLifetime) {
+          vipUpdatePayload.is_lifetime = true;
+        }
+
+        await supabase.from('profiles').update(vipUpdatePayload).eq('id', userId);
 
         return NextResponse.json({
           status: 'success',
-          message: `Successfully granted VIP status (${days} days) to ${targetUser.full_name}.`,
+          message: `Successfully granted VIP status (${isLifetime ? 'Lifetime' : `${days} days`}) to ${targetUser.full_name}.`,
           user: targetUser,
-          vipExpiresAt: expiresAt.toISOString()
+          vipExpiresAt: expiresAt.toISOString(),
+          isLifetime
         });
 
       } else {
         // Standard Premium
         let days = 30;
         const planStr = String(amountOrPlan);
+        const isLifetime = planStr === 'lifetime';
         if (planStr === '3m') days = 90;
         if (planStr === '6m') days = 180;
         if (planStr === '12m' || planStr === '1y') days = 365;
-        if (planStr === 'lifetime') days = 36500;
+        if (isLifetime) days = 36500;
 
         const premiumUntil = new Date();
         premiumUntil.setDate(premiumUntil.getDate() + days);
@@ -119,15 +127,21 @@ export async function POST(req: Request) {
           receipt_url: `Admin Manual Premium: ${note || 'Customer Resolution'}`,
         });
 
-        await supabase.from('profiles').update({
+        const premUpdatePayload: any = {
           premium_until: premiumUntil.toISOString(),
-        }).eq('id', userId);
+        };
+        if (isLifetime) {
+          premUpdatePayload.is_lifetime = true;
+        }
+
+        await supabase.from('profiles').update(premUpdatePayload).eq('id', userId);
 
         return NextResponse.json({
           status: 'success',
-          message: `Successfully granted Premium status (${days} days) to ${targetUser.full_name}.`,
+          message: `Successfully granted Premium status (${isLifetime ? 'Lifetime' : `${days} days`}) to ${targetUser.full_name}.`,
           user: targetUser,
-          premiumUntil: premiumUntil.toISOString()
+          premiumUntil: premiumUntil.toISOString(),
+          isLifetime
         });
       }
 
@@ -231,10 +245,11 @@ export async function POST(req: Request) {
         } else if (isVip) {
           let days = 30;
           const cleanPlan = planType.startsWith('vip_') ? planType.replace('vip_', '') : planType.replace(/^v_?/, '');
+          const isLifetime = cleanPlan === 'lifetime' || planType.endsWith('lifetime');
           if (cleanPlan === '3m') days = 90;
           if (cleanPlan === '6m') days = 180;
           if (cleanPlan === '12m' || cleanPlan === '1y') days = 365;
-          if (cleanPlan === 'lifetime') days = 36500;
+          if (isLifetime) days = 36500;
 
           const expiresAt = new Date();
           expiresAt.setDate(expiresAt.getDate() + days);
@@ -248,25 +263,32 @@ export async function POST(req: Request) {
             receipt_url: `Chapa TX: ${txRef} (Ref: ${tx.reference || chapaRef})`,
           });
 
-          await supabase.from('profiles').update({
+          const vipUpdatePayload: any = {
             is_vip_member: true,
             vip_expires_at: expiresAt.toISOString(),
-          }).eq('id', targetUser.id);
+          };
+          if (isLifetime) {
+            vipUpdatePayload.is_lifetime = true;
+          }
+
+          await supabase.from('profiles').update(vipUpdatePayload).eq('id', targetUser.id);
 
           return NextResponse.json({
             status: 'success',
             message: `Verified and upgraded VIP status for ${targetUser.full_name}.`,
             chapaData: tx,
             user: targetUser,
-            vipExpiresAt: expiresAt.toISOString()
+            vipExpiresAt: expiresAt.toISOString(),
+            isLifetime
           });
         } else {
           // Standard Premium
           let days = 30;
+          const isLifetime = planType === 'lifetime' || planType.endsWith('lifetime');
           if (planType === '3m') days = 90;
           if (planType === '6m') days = 180;
           if (planType === '12m' || planType === '1y') days = 365;
-          if (planType === 'lifetime') days = 36500;
+          if (isLifetime) days = 36500;
 
           const premiumUntil = new Date();
           premiumUntil.setDate(premiumUntil.getDate() + days);
@@ -280,16 +302,22 @@ export async function POST(req: Request) {
             receipt_url: `Chapa TX: ${txRef} (Ref: ${tx.reference || chapaRef})`,
           });
 
-          await supabase.from('profiles').update({
+          const premUpdatePayload: any = {
             premium_until: premiumUntil.toISOString(),
-          }).eq('id', targetUser.id);
+          };
+          if (isLifetime) {
+            premUpdatePayload.is_lifetime = true;
+          }
+
+          await supabase.from('profiles').update(premUpdatePayload).eq('id', targetUser.id);
 
           return NextResponse.json({
             status: 'success',
             message: `Verified and upgraded Premium status for ${targetUser.full_name}.`,
             chapaData: tx,
             user: targetUser,
-            premiumUntil: premiumUntil.toISOString()
+            premiumUntil: premiumUntil.toISOString(),
+            isLifetime
           });
         }
       }

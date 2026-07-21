@@ -20,12 +20,13 @@ export interface SubscriptionInfo {
   daysRemaining: number;
   premiumUntil: string | null;
   isVerified: boolean;
+  isLifetime: boolean;
 }
 
 export async function getUserSubscriptionInfo(userId: string): Promise<SubscriptionInfo | null> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('premium_until, is_locked, is_verified, verification_status')
+    .select('premium_until, is_locked, is_verified, verification_status, is_lifetime')
     .eq('id', userId)
     .single();
 
@@ -33,6 +34,7 @@ export async function getUserSubscriptionInfo(userId: string): Promise<Subscript
 
   const now = new Date();
   const premiumUntil = data.premium_until ? new Date(data.premium_until) : null;
+  const isLifetime = Boolean((data as any).is_lifetime);
 
   // Calculate status — NO trial logic
   let status: UserSubscriptionStatus = 'freemium';
@@ -41,6 +43,10 @@ export async function getUserSubscriptionInfo(userId: string): Promise<Subscript
   if (data.is_locked) {
     // Admin-suspended account
     status = 'locked';
+  } else if (isLifetime) {
+    // Lifetime subscription — bypasses expiration date checks
+    status = 'premium';
+    daysRemaining = 99999;
   } else if (premiumUntil && premiumUntil > now) {
     // Active Diamond subscription
     status = 'premium';
@@ -78,7 +84,8 @@ export async function getUserSubscriptionInfo(userId: string): Promise<Subscript
     status,
     daysRemaining,
     premiumUntil: data.premium_until,
-    isVerified: data.is_verified || data.verification_status === 'verified'
+    isVerified: data.is_verified || data.verification_status === 'verified',
+    isLifetime
   };
 }
 
@@ -101,18 +108,35 @@ export function isFreemiumUser(info: SubscriptionInfo | null): boolean {
 
 export const SUBSCRIPTION_PLANS = {
   ETB: [
-    { id: '1m',       name: '1 Month',    price: 500,   period: 'monthly'       },
-    { id: '3m',       name: '3 Months',   price: 1200,  period: 'quarterly'     },
-    { id: '6m',       name: '6 Months',   price: 2200,  period: 'semi-annually' },
-    { id: '1y',       name: '1 Year',     price: 3500,  period: 'yearly'        },
-    { id: 'lifetime', name: 'Lifetime',   price: 9999,  period: 'lifetime'      }
+    { id: '1m',       name: '1 Month',    price: 149.99,  period: 'monthly'       },
+    { id: '3m',       name: '3 Months',   price: 379.99,  period: 'quarterly'     },
+    { id: '6m',       name: '6 Months',   price: 649.99,  period: 'semi-annually' },
+    { id: '1y',       name: '1 Year',     price: 999.99,  period: 'yearly'        },
+    { id: 'lifetime', name: 'Lifetime',   price: 1499.99, period: 'lifetime'      }
   ],
   USD: [
-    { id: '1m',       name: '1 Month',    price: 15,    period: 'monthly'       },
-    { id: '3m',       name: '3 Months',   price: 39,    period: 'quarterly'     },
-    { id: '6m',       name: '6 Months',   price: 69,    period: 'semi-annually' },
-    { id: '1y',       name: '1 Year',     price: 120,   period: 'yearly'        },
-    { id: 'lifetime', name: 'Lifetime',   price: 299,   period: 'lifetime'      }
+    { id: '1m',       name: '1 Month',    price: 7.99,    period: 'monthly'       },
+    { id: '3m',       name: '3 Months',   price: 19.99,   period: 'quarterly'     },
+    { id: '6m',       name: '6 Months',   price: 33.99,   period: 'semi-annually' },
+    { id: '1y',       name: '1 Year',     price: 49.99,   period: 'yearly'        },
+    { id: 'lifetime', name: 'Lifetime',   price: 74.99,   period: 'lifetime'      }
+  ]
+};
+
+export const VIP_SUBSCRIPTION_PLANS = {
+  ETB: [
+    { id: 'vip_1m',       name: '1 Month VIP',    price: 299.99,  period: 'monthly'       },
+    { id: 'vip_3m',       name: '3 Months VIP',   price: 759.99,  period: 'quarterly'     },
+    { id: 'vip_6m',       name: '6 Months VIP',   price: 1299.99, period: 'semi-annually' },
+    { id: 'vip_1y',       name: '1 Year VIP',     price: 1999.99, period: 'yearly'        },
+    { id: 'vip_lifetime', name: 'Lifetime VIP',   price: 2999.99, period: 'lifetime'      }
+  ],
+  USD: [
+    { id: 'vip_1m',       name: '1 Month VIP',    price: 15.99,   period: 'monthly'       },
+    { id: 'vip_3m',       name: '3 Months VIP',   price: 39.99,   period: 'quarterly'     },
+    { id: 'vip_6m',       name: '6 Months VIP',   price: 67.99,   period: 'semi-annually' },
+    { id: 'vip_1y',       name: '1 Year VIP',     price: 99.99,   period: 'yearly'        },
+    { id: 'vip_lifetime', name: 'Lifetime VIP',   price: 149.99,  period: 'lifetime'      }
   ]
 };
 

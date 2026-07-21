@@ -101,39 +101,39 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
 
   const currentText = instructions[locale as keyof typeof instructions] || instructions.en;
 
-  // 1. Premium Pricing Packages
+  // 1. Premium Pricing Packages (Standard Tier)
   const premiumPlans = {
     ETB: [
-      { id: '1m', name: isAm ? '1 ወር' : '1 Month', price: 700, originalPrice: 700, period: isAm ? 'በወር' : 'monthly', discount: 0 },
-      { id: '3m', name: isAm ? '3 ወር (10% ቅናሽ)' : '3 Months (10% Off)', price: 1890, originalPrice: 2100, period: isAm ? 'በ3 ወር' : 'quarterly', discount: 10, popular: true },
-      { id: '6m', name: isAm ? '6 ወር (20% ቅናሽ)' : '6 Months (20% Off)', price: 3360, originalPrice: 4200, period: isAm ? 'በ6 ወር' : 'semi-annually', discount: 20 },
-      { id: '12m', name: isAm ? '1 ዓመት (35% ቅናሽ)' : '1 Year (35% Off)', price: 5460, originalPrice: 8400, period: isAm ? 'በዓመት' : 'yearly', discount: 35 },
-      { id: 'lifetime', name: isAm ? 'የዕድሜ ልክ (በ3 እጥፍ)' : 'Lifetime (3x 1yr)', price: 16380, originalPrice: 16380, period: isAm ? 'ቋሚ' : 'lifetime', discount: 0 }
+      { id: '1m', name: isAm ? '1 ወር' : '1 Month', price: 149.99, originalPrice: 149.99, period: isAm ? 'በወር' : 'monthly', discount: 0 },
+      { id: '3m', name: isAm ? '3 ወር (15% ቅናሽ)' : '3 Months (15% Off)', price: 379.99, originalPrice: 449.97, period: isAm ? 'በ3 ወር' : 'quarterly', discount: 15, popular: true },
+      { id: '6m', name: isAm ? '6 ወር (28% ቅናሽ)' : '6 Months (28% Off)', price: 649.99, originalPrice: 899.94, period: isAm ? 'በ6 ወር' : 'semi-annually', discount: 28 },
+      { id: '12m', name: isAm ? '1 ዓመት (44% ቅናሽ)' : '1 Year (44% Off)', price: 999.99, originalPrice: 1799.88, period: isAm ? 'በዓመት' : 'yearly', discount: 44 },
+      { id: 'lifetime', name: isAm ? 'የዕድሜ ልክ' : 'Lifetime Access', price: 1499.99, originalPrice: 1499.99, period: isAm ? 'ቋሚ' : 'lifetime', discount: 0 }
     ],
     USD: [
       { id: '1m', name: '1 Month', price: 7.99, originalPrice: 7.99, period: 'monthly', discount: 0 },
-      { id: '3m', name: '3 Months (10% Off)', price: 21.57, originalPrice: 23.97, period: 'quarterly', discount: 10, popular: true },
-      { id: '6m', name: '6 Months (20% Off)', price: 38.35, originalPrice: 47.94, period: 'semi-annually', discount: 20 },
-      { id: '12m', name: '1 Year (35% Off)', price: 62.32, originalPrice: 95.88, period: 'yearly', discount: 35 },
-      { id: 'lifetime', name: 'Lifetime (3x 1yr)', price: 186.95, originalPrice: 186.95, period: 'lifetime', discount: 0 }
+      { id: '3m', name: '3 Months (17% Off)', price: 19.99, originalPrice: 23.97, period: 'quarterly', discount: 17, popular: true },
+      { id: '6m', name: '6 Months (29% Off)', price: 33.99, originalPrice: 47.94, period: 'semi-annually', discount: 29 },
+      { id: '12m', name: '1 Year (48% Off)', price: 49.99, originalPrice: 95.88, period: 'yearly', discount: 48 },
+      { id: 'lifetime', name: 'Lifetime Access', price: 74.99, originalPrice: 74.99, period: 'lifetime', discount: 0 }
     ]
   };
 
-  // 2. VIP Pricing Packages
+  // 2. VIP Pricing Packages (2x Standard Tier)
   const vipPlans = {
     ETB: [
-      { id: 'vip_1m', name: isAm ? '1 ወር VIP' : '1 Month VIP', price: 1500, originalPrice: 1500, period: isAm ? 'በወር' : 'monthly', discount: 0 },
-      { id: 'vip_3m', name: isAm ? '3 ወር VIP (10% ቅናሽ)' : '3 Months VIP (10% Off)', price: 4050, originalPrice: 4500, period: isAm ? 'በ3 ወር' : 'quarterly', discount: 10, popular: true },
-      { id: 'vip_6m', name: isAm ? '6 ወር VIP (20% ቅናሽ)' : '6 Months VIP (20% Off)', price: 7200, originalPrice: 9000, period: isAm ? 'በ6 ወር' : 'semi-annually', discount: 20 },
-      { id: 'vip_12m', name: isAm ? '1 ዓመት VIP (35% ቅናሽ)' : '1 Year VIP (35% Off)', price: 11700, originalPrice: 18000, period: isAm ? 'በዓመት' : 'yearly', discount: 35 },
-      { id: 'vip_lifetime', name: isAm ? 'የዕድሜ ልክ VIP (በ3 እጥፍ)' : 'Lifetime VIP (3x 1yr)', price: 35100, originalPrice: 35100, period: isAm ? 'ቋሚ' : 'lifetime', discount: 0 }
+      { id: 'vip_1m', name: isAm ? '1 ወር VIP' : '1 Month VIP', price: 299.99, originalPrice: 299.99, period: isAm ? 'በወር' : 'monthly', discount: 0 },
+      { id: 'vip_3m', name: isAm ? '3 ወር VIP (15% ቅናሽ)' : '3 Months VIP (15% Off)', price: 759.99, originalPrice: 899.97, period: isAm ? 'በ3 ወር' : 'quarterly', discount: 15, popular: true },
+      { id: 'vip_6m', name: isAm ? '6 ወር VIP (28% ቅናሽ)' : '6 Months VIP (28% Off)', price: 1299.99, originalPrice: 1799.94, period: isAm ? 'በ6 ወር' : 'semi-annually', discount: 28 },
+      { id: 'vip_12m', name: isAm ? '1 ዓመት VIP (44% ቅናሽ)' : '1 Year VIP (44% Off)', price: 1999.99, originalPrice: 3599.88, period: isAm ? 'በዓመት' : 'yearly', discount: 44 },
+      { id: 'vip_lifetime', name: isAm ? 'የዕድሜ ልክ VIP' : 'Lifetime VIP', price: 2999.99, originalPrice: 2999.99, period: isAm ? 'ቋሚ' : 'lifetime', discount: 0 }
     ],
     USD: [
-      { id: 'vip_1m', name: '1 Month VIP', price: 12.99, originalPrice: 12.99, period: 'monthly', discount: 0 },
-      { id: 'vip_3m', name: '3 Months VIP (10% Off)', price: 35.07, originalPrice: 38.97, period: 'quarterly', discount: 10, popular: true },
-      { id: 'vip_6m', name: '6 Months VIP (20% Off)', price: 62.35, originalPrice: 77.94, period: 'semi-annually', discount: 20 },
-      { id: 'vip_12m', name: '1 Year VIP (35% Off)', price: 101.32, originalPrice: 155.88, period: 'yearly', discount: 35 },
-      { id: 'vip_lifetime', name: 'Lifetime VIP (3x 1yr)', price: 303.95, originalPrice: 303.95, period: 'lifetime', discount: 0 }
+      { id: 'vip_1m', name: '1 Month VIP', price: 15.99, originalPrice: 15.99, period: 'monthly', discount: 0 },
+      { id: 'vip_3m', name: '3 Months VIP (17% Off)', price: 39.99, originalPrice: 47.97, period: 'quarterly', discount: 17, popular: true },
+      { id: 'vip_6m', name: '6 Months VIP (29% Off)', price: 67.99, originalPrice: 95.94, period: 'semi-annually', discount: 29 },
+      { id: 'vip_12m', name: '1 Year VIP (48% Off)', price: 99.99, originalPrice: 191.88, period: 'yearly', discount: 48 },
+      { id: 'vip_lifetime', name: 'Lifetime VIP', price: 149.99, originalPrice: 149.99, period: 'lifetime', discount: 0 }
     ]
   };
 

@@ -37,13 +37,17 @@ export async function isActiveVip(userId: string): Promise<boolean> {
   try {
     const { data, error } = await supabase
       .from('profiles')
-      .select('is_vip_member, vip_expires_at')
+      .select('is_vip_member, vip_expires_at, is_lifetime')
       .eq('id', userId)
       .single();
 
     if (error || !data) return false;
 
     if (!data.is_vip_member) return false;
+
+    if ((data as any).is_lifetime) {
+      return true; // Lifetime VIP access bypasses expiration checks
+    }
 
     if (data.vip_expires_at) {
       const expiry = new Date(data.vip_expires_at);
