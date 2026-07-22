@@ -143,6 +143,14 @@ function DashboardContent() {
   });
 
   const handleTabClick = (tabId: string) => {
+    if (tabId === 'academy') {
+      router.push('/academy');
+      return;
+    }
+    if (tabId === 'counseling') {
+      router.push('/counseling');
+      return;
+    }
     const coreTabs = ['chat', 'community', 'workshops', 'wedding', 'gifts'];
     const currentTier = getUserTier(profile as any, hasVouchedRecords);
     if (coreTabs.includes(tabId) && currentTier === 'bronze') {
@@ -1311,6 +1319,8 @@ function DashboardContent() {
             { id: 'dashboard', icon: Home, label: n('dashboard') },
             { id: 'chat', icon: MessageCircle, label: n('chat') },
             { id: 'community', icon: Users, label: n('community') },
+            { id: 'academy', icon: GraduationCap, label: n('academy') },
+            { id: 'counseling', icon: ShieldCheck, label: n('counseling') },
             { id: 'workshops', icon: GraduationCap, label: n('workshops') },
             { id: 'wedding', icon: Sparkles, label: n('wedding') },
             { id: 'gifts', icon: Gift, label: n('gifts') },

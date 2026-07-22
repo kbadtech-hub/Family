@@ -23,6 +23,7 @@ import {
 import Image from 'next/image';
 import LocationGate from '@/components/dashboard/LocationGate';
 import SystemAlertModal from '@/components/ui/SystemAlertModal';
+import FeatureGate from '@/components/dashboard/FeatureGate';
 import { generateChapaTxRef } from '@/lib/subscription';
 
 interface GiftRecord {
@@ -383,7 +384,8 @@ export default function GiftsView({ locale }: { locale: string }) {
   const isEthiopia = isLocationVerified ? isEthiopiaVerified : false;
 
   return (
-    <div className="space-y-10">
+    <FeatureGate featureKey="gifts" featureTitle="Gifting Suite (የስጦታዎች አገልግሎት)" locale={locale}>
+      <div className="space-y-10">
       
       {/* Wallet Card */}
       <div className="bg-[#0F172A] text-white rounded-[2.5rem] p-8 md:p-10 border border-white/5 shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden">
@@ -804,6 +806,7 @@ export default function GiftsView({ locale }: { locale: string }) {
         onClose={() => setAlertModal(prev => ({ ...prev, isOpen: false }))} 
       />
     </div>
+    </FeatureGate>
   );
 }
 

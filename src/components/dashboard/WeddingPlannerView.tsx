@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useLocale, useTranslations } from 'next-intl';
+import FeatureGate from '@/components/dashboard/FeatureGate';
 import { 
   Heart, 
   Sparkles, 
@@ -288,7 +289,8 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-12 pb-24 animate-in fade-in duration-500">
+    <FeatureGate featureKey="wedding_planner" featureTitle="Wedding Planner (የሰርግ አዘጋጅ)" locale={locale}>
+      <div className="max-w-6xl mx-auto space-y-12 pb-24 animate-in fade-in duration-500">
       {/* Premium Banner */}
       <div className="bg-[#0F172A] rounded-[3.5rem] p-12 md:p-20 text-white relative overflow-hidden shadow-2xl">
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full -mr-32 -mt-32 blur-[80px]" />
@@ -657,5 +659,6 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
       </div>
 
     </div>
+    </FeatureGate>
   );
 }

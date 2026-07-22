@@ -77,7 +77,8 @@ export default function Header() {
           <nav className="flex items-center gap-10">
             <Link href="/" className="text-base font-bold uppercase tracking-widest hover:text-primary transition-colors">{t('home')}</Link>
             <Link href="/about" className="text-base font-bold uppercase tracking-widest hover:text-primary transition-colors">{t('about')}</Link>
-            <Link href="/classes" className="text-base font-bold uppercase tracking-widest hover:text-primary transition-colors">{t('classes')}</Link>
+            <Link href="/academy" className="text-base font-bold uppercase tracking-widest hover:text-primary transition-colors">{t('academy')}</Link>
+            <Link href="/counseling" className="text-base font-bold uppercase tracking-widest hover:text-primary transition-colors">{t('counseling')}</Link>
             <Link href="/community-hub" className="text-base font-bold uppercase tracking-widest hover:text-primary transition-colors">{t('community')}</Link>
             <Link href="/contact" className="text-base font-bold uppercase tracking-widest hover:text-primary transition-colors">{t('contact')}</Link>
           </nav>
@@ -160,7 +161,8 @@ export default function Header() {
         <div className="md:hidden absolute top-full left-0 w-full bg-white border-b border-border p-10 space-y-8 flex flex-col items-center animate-in slide-in-from-top-4 duration-300 shadow-2xl">
           <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="font-bold uppercase tracking-widest text-sm">{t('home')}</Link>
           <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="font-bold uppercase tracking-widest text-sm">{t('about')}</Link>
-          <Link href="/classes" onClick={() => setIsMobileMenuOpen(false)} className="font-bold uppercase tracking-widest text-sm">{t('classes')}</Link>
+          <Link href="/academy" onClick={() => setIsMobileMenuOpen(false)} className="font-bold uppercase tracking-widest text-sm">{t('academy')}</Link>
+          <Link href="/counseling" onClick={() => setIsMobileMenuOpen(false)} className="font-bold uppercase tracking-widest text-sm">{t('counseling')}</Link>
           <Link href="/community-hub" onClick={() => setIsMobileMenuOpen(false)} className="font-bold uppercase tracking-widest text-sm">{t('community')}</Link>
           <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)} className="font-bold uppercase tracking-widest text-sm">{t('contact')}</Link>
           <div className="flex flex-col gap-4 w-full">
