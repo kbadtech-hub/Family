@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin as supabase } from '@/lib/supabase-admin';
 import { resolveCoinAmount, COIN_PACKAGES } from '@/lib/coins';
 import crypto from 'crypto';
 
@@ -31,7 +31,7 @@ function verifySignature(rawBody: string, signature: string, secret: string): bo
 export async function POST(req: Request) {
   try {
     const rawBody = await req.text();
-    const signature = req.headers.get('x-chapa-signature') || '';
+    const signature = req.headers.get('chapa-signature') || req.headers.get('x-chapa-signature') || '';
     const webhookSecret = process.env.CHAPA_WEBHOOK_SECRET || '';
 
     // ── 1. Signature Verification ─────────────────────────────────────────────
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       }
     } else if (webhookSecret && !signature) {
       // Webhook secret is set but no signature header — reject in production
-      console.warn('[Chapa Webhook] Missing X-Chapa-Signature header.');
+      console.warn('[Chapa Webhook] Missing Chapa Signature header.');
       return NextResponse.json({ status: 'error', message: 'Missing webhook signature' }, { status: 401 });
     }
     // If CHAPA_WEBHOOK_SECRET is not set: allow (dev mode only)

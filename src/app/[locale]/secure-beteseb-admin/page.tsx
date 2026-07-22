@@ -343,6 +343,8 @@ export default function AdminPortal() {
   const [chapaLookupRef, setChapaLookupRef] = useState('');
   const [chapaLookupResult, setChapaLookupResult] = useState<any>(null);
   const [chapaLookupLoading, setChapaLookupLoading] = useState(false);
+  const [chapaSyncing, setChapaSyncing] = useState(false);
+  const [chapaSyncResult, setChapaSyncResult] = useState<any>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1081,6 +1083,37 @@ export default function AdminPortal() {
       alert('Error: ' + err.message);
     } finally {
       setChapaLookupLoading(false);
+    }
+  };
+
+  const handleChapaSync = async () => {
+    if (!confirm('Are you sure you want to sync all successful payments from Chapa dashboard? This will search and credit any missing transactions.')) {
+      return;
+    }
+    setChapaSyncing(true);
+    setChapaSyncResult(null);
+    try {
+      const res = await fetch('/api/admin/payments/manual', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'sync_chapa_transactions'
+        })
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        setChapaSyncResult(data);
+        alert(`✅ Chapa Sync Complete!\n${data.message}`);
+        // Refresh the payments list in the UI
+        const { data: payData } = await supabase.from('payments').select('*, profiles(full_name)').order('created_at', { ascending: false });
+        if (payData) setPayments(payData as any);
+      } else {
+        alert('❌ Error syncing transactions: ' + (data.message || 'Unknown error'));
+      }
+    } catch (err: any) {
+      alert('Error: ' + err.message);
+    } finally {
+      setChapaSyncing(false);
     }
   };
 
@@ -3311,6 +3344,43 @@ export default function AdminPortal() {
                              <div>Chapa Ref: <span className="font-mono text-[10px] text-gray-600">{chapaLookupResult.chapaData.reference}</span></div>
                           </div>
                        )}
+                        <hr className="border-gray-100 my-2" />
+                        <div>
+                           <label className="text-xs font-bold text-gray-400 uppercase block mb-1">Bulk Transactions Sync</label>
+                           <button
+                              onClick={handleChapaSync}
+                              disabled={chapaSyncing}
+                              className="w-full py-3 bg-primary text-white font-bold rounded-xl text-xs uppercase tracking-wider hover:opacity-90 disabled:opacity-50 transition-all shadow-sm flex items-center justify-center gap-2"
+                           >
+                              {chapaSyncing ? 'Syncing with Chapa...' : '🔄 Sync All Chapa Dashboard Payments'}
+                           </button>
+                        </div>
+                        {chapaSyncResult && (
+                           <div className="p-4 bg-primary/5 rounded-xl text-xs space-y-1.5 border border-primary/10 max-h-48 overflow-y-auto">
+                              <div className="font-bold text-primary">{chapaSyncResult.message}</div>
+                              {chapaSyncResult.synced && chapaSyncResult.synced.length > 0 && (
+                                 <div className="space-y-1 mt-1 font-sans">
+                                    <div className="font-semibold text-green-600 uppercase text-[10px]">Synced/Credited:</div>
+                                    {chapaSyncResult.synced.map((tx, idx) => (
+                                       <div key={idx} className="pl-2 border-l border-green-300">
+                                          User: <b>{tx.user}</b> ({tx.email})<br />
+                                          Details: <b>{tx.details}</b> | Ref: <code>{tx.ref_id}</code>
+                                       </div>
+                                    ))}
+                                 </div>
+                              )}
+                              {chapaSyncResult.failed && chapaSyncResult.failed.length > 0 && (
+                                 <div className="space-y-1 mt-1 font-sans">
+                                    <div className="font-semibold text-red-600 uppercase text-[10px]">Failed/Unmatched:</div>
+                                    {chapaSyncResult.failed.map((tx, idx) => (
+                                       <div key={idx} className="pl-2 border-l border-red-300 text-gray-500">
+                                          Ref: <code>{tx.ref_id}</code> - <span className="text-red-500">{tx.reason}</span>
+                                       </div>
+                                    ))}
+                                 </div>
+                              )}
+                           </div>
+                        )}
                     </div>
                  </div>
               </div>
