@@ -4,9 +4,10 @@ import React from 'react';
 
 interface YouTubeEmbedProps {
   url: string;
+  title?: string;
 }
 
-export default function YouTubeEmbed({ url }: YouTubeEmbedProps) {
+export default function YouTubeEmbed({ url, title }: YouTubeEmbedProps) {
   // Extract video ID from various YouTube URL formats
   const getID = (url: string) => {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -29,7 +30,7 @@ export default function YouTubeEmbed({ url }: YouTubeEmbedProps) {
       <iframe
         className="absolute top-0 left-0 w-full h-full border-0"
         src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`}
-        title="YouTube video player"
+        title={title || "YouTube video player"}
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
       ></iframe>
