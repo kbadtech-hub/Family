@@ -15,6 +15,7 @@ import {
   BarChart3, 
   Users, 
   ShieldCheck, 
+  Lock,
   Plus,
   Layout,
   Video,
@@ -405,6 +406,7 @@ export default function AdminPortal() {
       bank_transfer: boolean;
     };
     coin_packages: any[];
+    feature_locks?: Record<string, boolean>;
     ad_config: {
       enabled: boolean;
       test_mode: boolean;
@@ -2983,7 +2985,8 @@ export default function AdminPortal() {
                       { key: 'academy', name: 'Beteseb Academy (ቤተሰብ አካዳሚ)', desc: 'Academy learning hub' },
                       { key: 'gifts', name: 'Gifting Suite (የስጦታዎች አገልግሎት)', desc: 'Gifting & coin top-up' },
                     ].map((item) => {
-                      const isLocked = cmsForm.feature_locks?.[item.key] ?? false;
+                      const locksObj = (cmsForm.feature_locks || {}) as Record<string, boolean>;
+                      const isLocked = locksObj[item.key] ?? false;
                       return (
                         <div key={item.key} className={`p-5 rounded-2xl border transition-all flex items-center justify-between ${isLocked ? 'bg-red-500/10 border-red-500/30' : 'bg-background border-white/5'}`}>
                           <div className="space-y-1">
