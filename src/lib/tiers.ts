@@ -30,6 +30,8 @@ export interface ProfileData {
   role?: string;
   has_children?: string;
   is_lifetime?: boolean;
+  is_vip_member?: boolean;
+  vip_expires_at?: string | null;
 }
 
 /**
@@ -73,7 +75,7 @@ export function calculateCompletionRate(profile: ProfileData | null): number {
   return Math.min(score, 100);
 }
 
-export type TrustTier = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond';
+export type TrustTier = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond' | 'vip';
 
 /**
  * Resolves user trust tier
@@ -81,32 +83,35 @@ export type TrustTier = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond';
 export function getUserTier(profile: ProfileData | null, hasVouchedRecords: boolean): TrustTier {
   if (!profile) return 'bronze';
   
+  const isIdVerified = profile.verification_status === 'verified';
+  
+  // 1. Bronze and Silver checks (If NOT ID verified)
+  if (!isIdVerified) {
+    return profile.onboarding_completed ? 'silver' : 'bronze';
+  }
+  
+  // 2. VIP Tier check (Gold + VIP Membership active)
+  const isVip = Boolean(profile.is_vip_member) &&
+    (!profile.vip_expires_at || new Date(profile.vip_expires_at) > new Date() || Boolean(profile.is_lifetime));
+  if (isVip) {
+    return 'vip';
+  }
+
+  // 3. Diamond Tier check (Gold + Standard subscription active)
   const isPremium = Boolean(profile.is_lifetime) ||
                     (profile.premium_until && new Date(profile.premium_until) > new Date()) || 
                     ['admin', 'super_admin', 'expert'].includes(profile.role || '');
-  
   if (isPremium) {
     return 'diamond';
   }
   
-  const isIdVerified = profile.verification_status === 'verified';
-  
-  // Platinum Tier: Basic Verification + Legal ID Verification + Approved Community Vouched status
-  if (isIdVerified && hasVouchedRecords) {
+  // 4. Platinum Tier check (Gold + Peer Witness vouched)
+  if (hasVouchedRecords) {
     return 'platinum';
   }
   
-  // Gold Tier: Basic Verification + Complete Legal ID/Passport Verification approved
-  if (isIdVerified) {
-    return 'gold';
-  }
-  
-  // Silver Tier: Basic verified criteria satisfied via Google/Facebook/Apple ID or onboarding completed
-  if (profile.onboarding_completed) {
-    return 'silver';
-  }
-  
-  return 'bronze'; // Unverified / Bronze
+  // 5. Gold Tier (ID verified only)
+  return 'gold';
 }
 
 export interface TierLimits {
@@ -121,6 +126,7 @@ export interface TierLimits {
  */
 export function getTierLimits(tier: TrustTier): TierLimits {
   switch (tier) {
+    case 'vip':
     case 'diamond':
       return { maxTexts: Infinity, maxAudioCallMinutes: Infinity, maxVideoCallMinutes: Infinity, maxVoiceNoteSeconds: 60 };
     case 'platinum':
@@ -128,7 +134,6 @@ export function getTierLimits(tier: TrustTier): TierLimits {
     case 'gold':
       return { maxTexts: 5, maxAudioCallMinutes: 2, maxVideoCallMinutes: 2, maxVoiceNoteSeconds: 15 };
     case 'silver':
-      return { maxTexts: 3, maxAudioCallMinutes: 1, maxVideoCallMinutes: 1, maxVoiceNoteSeconds: 7 };
     case 'bronze':
     default:
       return { maxTexts: 0, maxAudioCallMinutes: 0, maxVideoCallMinutes: 0, maxVoiceNoteSeconds: 0 };

@@ -174,6 +174,7 @@ export default function SwipeCards({ userProfile, candidates, onLike, onPass, is
 
   const getTierBadge = (tier: string) => {
     switch (tier) {
+      case 'vip': return { label: 'VIP', color: 'bg-amber-50/20 text-amber-200 border-amber-500/30', emoji: '👑' };
       case 'diamond': return { label: 'Diamond', color: 'bg-cyan-500/20 text-cyan-200 border-cyan-500/30', emoji: '💎' };
       case 'platinum': return { label: 'Platinum', color: 'bg-indigo-500/20 text-indigo-200 border-indigo-500/30', emoji: '🌟' };
       case 'gold': return { label: 'Gold', color: 'bg-amber-500/20 text-amber-200 border-amber-500/30', emoji: '🥇' };

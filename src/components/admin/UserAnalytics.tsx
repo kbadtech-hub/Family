@@ -139,7 +139,7 @@ export default function UserAnalytics() {
       if (tier === 'gold') goldCount++;
       if (tier === 'platinum') platinumCount++;
       if (tier === 'diamond') diamondCount++;
-      if (p.is_vip_member) vipCount++;
+      if (tier === 'vip') vipCount++;
 
       // 2. Onboarding & KYC Funnel
       if (!p.onboarding_completed) {
@@ -207,7 +207,7 @@ export default function UserAnalytics() {
       const tier = getUserTier(p as any, Boolean(p.has_vouched));
       const matchesTier =
         tierFilter === 'all' ||
-        (tierFilter === 'vip' ? p.is_vip_member : tier === tierFilter);
+        tier === tierFilter;
 
       const matchesKyc =
         kycFilter === 'all' ||
@@ -233,10 +233,9 @@ export default function UserAnalytics() {
 
   const renderTierBadge = (profile: UserProfileAnalytics) => {
     const tier = getUserTier(profile as any, Boolean(profile.has_vouched));
-    if (profile.is_vip_member) {
-      return <span className="px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1">👑 VIP Tier</span>;
-    }
     switch (tier) {
+      case 'vip':
+        return <span className="px-3 py-1 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1">👑 VIP Tier</span>;
       case 'diamond':
         return <span className="px-3 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1">💎 Diamond</span>;
       case 'platinum':

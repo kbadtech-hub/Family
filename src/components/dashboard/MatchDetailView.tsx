@@ -35,6 +35,7 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
   const [profile, setProfile] = useState<any>(null);
   const tMatch = useTranslations('Dashboard.matchDetail');
   const tr = useTranslations('Dashboard.reports');
+  const locale = useLocale();
   const [photos, setPhotos] = useState<any[]>([]);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -64,7 +65,6 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
   const [reportDetails, setReportDetails] = useState('');
   const [guardianEndorsement, setGuardianEndorsement] = useState<any>(null);
   const t = useTranslations('Friendship');
-  const locale = useLocale();
 
   useEffect(() => {
     const fetchMatchDetails = async () => {
@@ -141,6 +141,12 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
   const prevPhoto = () => setCurrentPhotoIndex((prev) => (prev - 1 + allPhotos.length) % allPhotos.length);
 
   const handleAddFriend = async () => {
+    if (currentUserProfile?.verification_status !== 'verified') {
+      alert(locale === 'am' 
+        ? "የነሐስ ወይም የሲልቨር (Bronze/Silver Tier) አባላት የጓደኝነት ጥያቄ መላክ አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!" 
+        : "Bronze or Silver Tier members are blocked from sending friend requests. Please complete verification first!");
+      return;
+    }
     setIsProcessing(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -520,7 +526,15 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
 
                 {isPremium || friendshipStatus === 'accepted' ? (
                   <button 
-                    onClick={() => onStartChat(matchId)}
+                    onClick={() => {
+                      if (currentUserProfile?.verification_status !== 'verified') {
+                        alert(locale === 'am' 
+                          ? "የነሐስ ወይም የሲልቨር (Bronze/Silver Tier) አባላት ቻት መጀመር አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!" 
+                          : "Bronze or Silver Tier members are blocked from starting chats. Please complete verification first!");
+                        return;
+                      }
+                      onStartChat(matchId);
+                    }}
                     className="w-full bg-primary text-white py-6 rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4"
                   >
                      <MessageCircle size={24} />

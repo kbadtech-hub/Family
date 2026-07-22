@@ -48,7 +48,7 @@ const UPCOMING_WORKSHOPS: Workshop[] = [
   }
 ];
 
-export default function WorkshopsView({ currency }: { currency: 'ETB' | 'USD' }) {
+export default function WorkshopsView({ currency, userTier }: { currency: 'ETB' | 'USD'; userTier?: string }) {
   const [selectedWorkshop, setSelectedWorkshop] = useState<Workshop | null>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [expertName, setExpertName] = useState('Ato Abebe');
@@ -91,6 +91,10 @@ export default function WorkshopsView({ currency }: { currency: 'ETB' | 'USD' })
 
   const handleCreateBooking = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (userTier === 'bronze' || userTier === 'silver') {
+      alert('Bronze or Silver Tier members are blocked from booking counselor sessions. Please complete verification first!');
+      return;
+    }
     if (!userId) {
       alert('You must be logged in to book counselor services.');
       return;
@@ -279,7 +283,13 @@ export default function WorkshopsView({ currency }: { currency: 'ETB' | 'USD' })
             Prefer a private session? Speak directly with our senior family advisors for personalized guidance on your journey to marriage.
          </p>
          <button 
-           onClick={() => setShowBookingModal(true)}
+           onClick={() => {
+             if (userTier === 'bronze' || userTier === 'silver') {
+               alert('Bronze or Silver Tier members are blocked from booking counselor sessions. Please complete verification first!');
+               return;
+             }
+             setShowBookingModal(true);
+           }}
            className="px-12 py-5 bg-accent text-white rounded-full font-bold uppercase text-[10px] tracking-[0.2em] hover:bg-primary transition-colors shadow-xl shadow-accent/20"
          >
             Book a Provider

@@ -18,7 +18,8 @@ import {
   Sparkles,
   Coins,
   Lock,
-  LockOpen
+  LockOpen,
+  Crown
 } from 'lucide-react';
 import Image from 'next/image';
 import { getUserTier, calculateCompletionRate } from '@/lib/tiers';
@@ -327,27 +328,28 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
     (profile?.premium_until && new Date(profile.premium_until) > new Date()) ||
     ['admin', 'super_admin', 'expert'].includes(profile?.role || '');
 
-  const isDiamondUser = userTier === 'diamond' || isPaidPremium;
-  const isPlatinumUser = userTier === 'platinum';
+  const isVip = userTier === 'vip';
+  const isDiamond = userTier === 'diamond' || userTier === 'vip';
+  const isPlatinum = userTier === 'platinum' || userTier === 'diamond' || userTier === 'vip';
+  const isGold = userTier === 'gold' || userTier === 'platinum' || userTier === 'diamond' || userTier === 'vip';
 
-  // Basic privacy controls (Show Last Seen Status & Enable Read Receipts)
-  // Accessible to: Platinum Free, Diamond Paid, and VIP Paid
-  const canAccessBasicPrivacy = isPaidVip || isDiamondUser || isPlatinumUser;
-
-  // Full match privacy controls (Show Age on Matching Card, Show City, Allow Friend Requests)
-  // Accessible ONLY to: Diamond Paid and VIP Paid (NOT Platinum Free or Golden/unverified Free)
-  const canAccessFullPrivacy = isPaidVip || isDiamondUser;
-  const isPremiumUser = canAccessFullPrivacy;
-  const isVipUser = isPaidVip;
+  const canAccessAbuShakir = isGold;
+  const canAccessLastSeen = isPlatinum;
+  const canAccessReadReceipts = isDiamond;
+  const canAccessShowAge = isDiamond;
+  const canAccessShowCity = isDiamond;
+  const canAccessAllowFriendRequests = isDiamond;
+  const canAccessVipSettings = isVip;
 
   const getTierBadge = (tier: string) => {
     switch (tier) {
-      case 'diamond': return { label: 'Diamond', color: 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20', emoji: '💎' };
-      case 'platinum': return { label: 'Platinum', color: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20', emoji: '🌟' };
-      case 'gold': return { label: 'Gold', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', emoji: '🥇' };
-      case 'silver': return { label: 'Silver', color: 'bg-slate-400/10 text-slate-600 border-slate-400/20', emoji: '🥈' };
+      case 'vip': return { label: 'VIP', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', emoji: 'ðŸ‘‘' };
+      case 'diamond': return { label: 'Diamond', color: 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20', emoji: 'ðŸ’Ž' };
+      case 'platinum': return { label: 'Platinum', color: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20', emoji: 'ðŸŒŸ' };
+      case 'gold': return { label: 'Gold', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', emoji: 'ðŸ¥‡' };
+      case 'silver': return { label: 'Silver', color: 'bg-slate-400/10 text-slate-600 border-slate-400/20', emoji: 'ðŸ¥ˆ' };
       case 'bronze':
-      default: return { label: 'Unverified', color: 'bg-orange-500/10 text-orange-600 border-orange-500/20', emoji: '🥉' };
+      default: return { label: 'Unverified', color: 'bg-orange-500/10 text-orange-600 border-orange-500/20', emoji: 'ðŸ¥‰' };
     }
   };
   const badge = getTierBadge(userTier);
@@ -848,290 +850,253 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                </div>
             </div>
 
-            {formData.is_vip_member ? (
-                <div className="space-y-4 pt-6 col-span-full border-t-2 border-dashed border-amber-300 bg-amber-50/15 p-6 rounded-[2rem] border border-amber-200/50 mt-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">👑</span>
-                      <h4 className="text-sm font-black text-amber-800 uppercase tracking-widest bg-clip-text bg-gradient-to-r from-amber-600 to-yellow-600">
-                        VIP Privacy & Control Dashboard
-                      </h4>
-                    </div>
-                    <span className="px-3 py-1 bg-amber-500/20 text-amber-800 text-[9px] font-black uppercase tracking-wider rounded-full border border-amber-300/40">
-                      Unified VIP Controls
+            {/* Unified Privacy & Customization Settings Section */}
+            <div className="space-y-6 pt-6 col-span-full border-t border-gray-100">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                  <ShieldCheck size={16} className="text-primary" />
+                  {t('privacySettings')}
+                </h4>
+                {userTier !== 'vip' && userTier !== 'diamond' && (
+                  <span className="px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-700 text-[9px] font-black uppercase tracking-wider rounded-full flex items-center gap-1">
+                    <Lock size={10} /> {locale === 'am' ? 'á‹¨á•áˆªáˆšá‹¨áˆ áŠ áŒˆáˆáŒáˆŽá‰µ' : 'Premium Feature'}
+                  </span>
+                )}
+              </div>
+
+              {/* Standard Settings Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                {/* 1. Show Age */}
+                <label 
+                  onClick={(e) => {
+                    if (!canAccessShowAge) {
+                      e.preventDefault();
+                      setShowUpgradeModal(true);
+                    }
+                  }}
+                  className={`flex items-center gap-3 ${canAccessShowAge ? 'cursor-pointer' : 'cursor-pointer group'}`}
+                >
+                  <input 
+                    type="checkbox"
+                    checked={formData.show_age}
+                    disabled={!canAccessShowAge}
+                    onChange={(e) => canAccessShowAge && setFormData({...formData, show_age: e.target.checked})}
+                    className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary disabled:opacity-50"
+                  />
+                  <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
+                    {t('showAge')}
+                    {!canAccessShowAge && <Lock size={12} className="text-amber-500 group-hover:scale-110 transition-transform" />}
+                  </span>
+                </label>
+
+                {/* 2. Show City */}
+                <label 
+                  onClick={(e) => {
+                    if (!canAccessShowCity) {
+                      e.preventDefault();
+                      setShowUpgradeModal(true);
+                    }
+                  }}
+                  className={`flex items-center gap-3 ${canAccessShowCity ? 'cursor-pointer' : 'cursor-pointer group'}`}
+                >
+                  <input 
+                    type="checkbox"
+                    checked={formData.show_city}
+                    disabled={!canAccessShowCity}
+                    onChange={(e) => canAccessShowCity && setFormData({...formData, show_city: e.target.checked})}
+                    className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary disabled:opacity-50"
+                  />
+                  <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
+                    {t('showCity')}
+                    {!canAccessShowCity && <Lock size={12} className="text-amber-500 group-hover:scale-110 transition-transform" />}
+                  </span>
+                </label>
+
+                {/* 3. Allow Friend Requests */}
+                <label 
+                  onClick={(e) => {
+                    if (!canAccessAllowFriendRequests) {
+                      e.preventDefault();
+                      setShowUpgradeModal(true);
+                    }
+                  }}
+                  className={`flex items-center gap-3 ${canAccessAllowFriendRequests ? 'cursor-pointer' : 'cursor-pointer group'}`}
+                >
+                  <input 
+                    type="checkbox"
+                    checked={formData.allow_friend_requests}
+                    disabled={!canAccessAllowFriendRequests}
+                    onChange={(e) => canAccessAllowFriendRequests && setFormData({...formData, allow_friend_requests: e.target.checked})}
+                    className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary disabled:opacity-50"
+                  />
+                  <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
+                    {t('allowFriendRequests')}
+                    {!canAccessAllowFriendRequests && <Lock size={12} className="text-amber-500 group-hover:scale-110 transition-transform" />}
+                  </span>
+                </label>
+
+                {/* 4. Show Last Seen Status */}
+                <label 
+                  onClick={(e) => {
+                    if (!canAccessLastSeen) {
+                      e.preventDefault();
+                      setShowUpgradeModal(true);
+                    }
+                  }}
+                  className={`flex items-center gap-3 ${canAccessLastSeen ? 'cursor-pointer' : 'cursor-pointer group'}`}
+                >
+                  <input 
+                    type="checkbox"
+                    checked={formData.enable_last_seen}
+                    disabled={!canAccessLastSeen}
+                    onChange={(e) => canAccessLastSeen && setFormData({...formData, enable_last_seen: e.target.checked})}
+                    className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary disabled:opacity-50"
+                  />
+                  <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
+                    {locale === 'am' ? 'á‰£áˆˆá‰á‰µ á‹¨áˆ˜áˆµáˆ˜áˆ­ áˆ‹á‹­ áˆáŠ”á‰³ áŠ áˆ³á‹­ (Show Last Seen Status)' : 'Show Last Seen Status'}
+                    {!canAccessLastSeen && <Lock size={12} className="text-amber-500 group-hover:scale-110 transition-transform" />}
+                  </span>
+                </label>
+
+                {/* 5. Enable Read Receipts */}
+                <label 
+                  onClick={(e) => {
+                    if (!canAccessReadReceipts) {
+                      e.preventDefault();
+                      setShowUpgradeModal(true);
+                    }
+                  }}
+                  className={`flex items-center gap-3 ${canAccessReadReceipts ? 'cursor-pointer' : 'cursor-pointer group'}`}
+                >
+                  <input 
+                    type="checkbox"
+                    checked={formData.enable_read_receipts}
+                    disabled={!canAccessReadReceipts}
+                    onChange={(e) => canAccessReadReceipts && setFormData({...formData, enable_read_receipts: e.target.checked})}
+                    className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary disabled:opacity-50"
+                  />
+                  <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
+                    {locale === 'am' ? 'á‹¨áˆ˜áˆá‹•áŠ­á‰µ áŠ•á‰£á‰¥ áˆáˆáŠ­á‰¶á‰½ (Enable Read Receipts)' : 'Enable Read Receipts'}
+                    {!canAccessReadReceipts && <Lock size={12} className="text-amber-500 group-hover:scale-110 transition-transform" />}
+                  </span>
+                </label>
+
+                {/* 6. Enable Abu Shakr Star Sign */}
+                <label 
+                  onClick={(e) => {
+                    if (!canAccessAbuShakir) {
+                      e.preventDefault();
+                      setShowUpgradeModal(true);
+                    }
+                  }}
+                  className={`flex items-center gap-3 ${canAccessAbuShakir ? 'cursor-pointer' : 'cursor-pointer group'}`}
+                >
+                  <input 
+                    type="checkbox"
+                    checked={formData.enable_abushakir}
+                    disabled={!canAccessAbuShakir}
+                    onChange={(e) => canAccessAbuShakir && setFormData({...formData, enable_abushakir: e.target.checked})}
+                    className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary disabled:opacity-50"
+                  />
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
+                      {t('enableAbushakir')}
+                      {!canAccessAbuShakir && <Lock size={12} className="text-amber-500 group-hover:scale-110 transition-transform" />}
+                    </span>
+                    <span className="text-[9px] text-gray-400 font-semibold italic">
+                      {t('abushakirHint')}
                     </span>
                   </div>
-                  <p className="text-[10px] text-amber-700 font-bold uppercase tracking-wider">
-                    Exclusive Control Panel for active Beteseb VIP members
-                  </p>
-                  
-                  {/* VIP Exclusive Privacy Controls */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input 
-                        type="checkbox"
-                        checked={formData.is_ghost_mode_active}
-                        onChange={(e) => setFormData({...formData, is_ghost_mode_active: e.target.checked})}
-                        className="w-5 h-5 rounded-lg border-amber-400 text-amber-500 focus:ring-amber-500/20 accent-amber-500"
-                      />
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold text-slate-700">Activate Ghost Mode</span>
-                        <span className="text-[9px] text-slate-400 font-medium">Blurs your photo (blurRadius=25) and hides full name in feeds</span>
-                      </div>
-                    </label>
+                </label>
+              </div>
 
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input 
-                        type="checkbox"
-                        checked={formData.hide_online_status}
-                        onChange={(e) => setFormData({...formData, hide_online_status: e.target.checked})}
-                        className="w-5 h-5 rounded-lg border-amber-400 text-amber-500 focus:ring-amber-500/20 accent-amber-500"
-                      />
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold text-slate-700">Hide Online Status</span>
-                        <span className="text-[9px] text-slate-400 font-medium">Conceals active indicators and Last Seen information</span>
-                      </div>
-                    </label>
-
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input 
-                        type="checkbox"
-                        checked={formData.hide_read_receipts}
-                        onChange={(e) => setFormData({...formData, hide_read_receipts: e.target.checked})}
-                        className="w-5 h-5 rounded-lg border-amber-400 text-amber-500 focus:ring-amber-500/20 accent-amber-500"
-                      />
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold text-slate-700">Hide Read Receipts</span>
-                        <span className="text-[9px] text-slate-400 font-medium">Prevents typing indicators and read status triggers</span>
-                      </div>
-                    </label>
-
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input 
-                        type="checkbox"
-                        checked={formData.strict_incognito}
-                        onChange={(e) => setFormData({...formData, strict_incognito: e.target.checked})}
-                        className="w-5 h-5 rounded-lg border-amber-400 text-amber-500 focus:ring-amber-500/20 accent-amber-500"
-                      />
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold text-slate-700">Strict Incognito</span>
-                        <span className="text-[9px] text-slate-400 font-medium">Removes your profile from recommendation discovery pools</span>
-                      </div>
-                    </label>
-                  </div>
-
-                  {/* Standard Privacy Controls integrated for VIP */}
-                  <div className="border-t border-amber-200/60 pt-4 mt-2">
-                    <h5 className="text-[11px] font-black text-amber-800 uppercase tracking-wider mb-3">
-                      Standard Match Privacy Settings
-                    </h5>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input 
-                          type="checkbox"
-                          checked={formData.show_age}
-                          onChange={(e) => setFormData({...formData, show_age: e.target.checked})}
-                          className="w-5 h-5 rounded-lg border-amber-400 text-amber-500 focus:ring-amber-500/20 accent-amber-500"
-                        />
-                        <span className="text-xs font-bold text-slate-700">
-                          {t('showAge')}
-                        </span>
-                      </label>
-
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input 
-                          type="checkbox"
-                          checked={formData.show_city}
-                          onChange={(e) => setFormData({...formData, show_city: e.target.checked})}
-                          className="w-5 h-5 rounded-lg border-amber-400 text-amber-500 focus:ring-amber-500/20 accent-amber-500"
-                        />
-                        <span className="text-xs font-bold text-slate-700">
-                          {t('showCity')}
-                        </span>
-                      </label>
-
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input 
-                          type="checkbox"
-                          checked={formData.allow_friend_requests}
-                          onChange={(e) => setFormData({...formData, allow_friend_requests: e.target.checked})}
-                          className="w-5 h-5 rounded-lg border-amber-400 text-amber-500 focus:ring-amber-500/20 accent-amber-500"
-                        />
-                        <span className="text-xs font-bold text-slate-700">
-                          {t('allowFriendRequests')}
-                        </span>
-                      </label>
-
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input 
-                          type="checkbox"
-                          checked={formData.enable_last_seen}
-                          onChange={(e) => setFormData({...formData, enable_last_seen: e.target.checked})}
-                          className="w-5 h-5 rounded-lg border-amber-400 text-amber-500 focus:ring-amber-500/20 accent-amber-500"
-                        />
-                        <span className="text-xs font-bold text-slate-700">
-                          {locale === 'am' ? 'ባለፉት የመስመር ላይ ሁኔታ አሳይ (Show Last Seen Status)' : 'Show Last Seen Status'}
-                        </span>
-                      </label>
-
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input 
-                          type="checkbox"
-                          checked={formData.enable_read_receipts}
-                          onChange={(e) => setFormData({...formData, enable_read_receipts: e.target.checked})}
-                          className="w-5 h-5 rounded-lg border-amber-400 text-amber-500 focus:ring-amber-500/20 accent-amber-500"
-                        />
-                        <span className="text-xs font-bold text-slate-700">
-                          {locale === 'am' ? 'የመልዕክት ንባብ ምልክቶች (Enable Read Receipts)' : 'Enable Read Receipts'}
-                        </span>
-                      </label>
+              {/* VIP Exclusive Privacy Controls Dashboard - Rendered for ALL, but locked for non-VIPs */}
+              <div className="space-y-4 pt-6 col-span-full border-t-2 border-dashed border-amber-300 bg-amber-50/15 p-6 rounded-[2rem] border border-amber-200/50 mt-4 relative">
+                {!canAccessVipSettings && (
+                  <div className="absolute inset-0 bg-white/40 backdrop-blur-[0.5px] z-10 rounded-[2rem] flex flex-col items-center justify-center p-4">
+                    <div className="bg-amber-500/10 text-amber-700 px-4 py-2 rounded-xl flex items-center gap-2 border border-amber-500/20 font-bold text-xs uppercase tracking-wider shadow-sm">
+                      <Crown size={16} className="text-amber-600 fill-amber-600" />
+                      {locale === 'am' ? 'á‹¨á‰ªáŠ á‹­á’ áˆá‹© áˆ´á‰²áŠ•áŒŽá‰½ (VIP Access Only)' : 'VIP Access Only'}
                     </div>
                   </div>
-                </div>
-              ) : (
-                /* Standard Privacy Settings for non-VIP Users (Tier-Gated for Free vs Premium) */
-                <div className="space-y-4 pt-4 col-span-full border-t border-gray-100">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-2">
-                      {t('privacySettings')}
+                )}
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">ðŸ‘‘</span>
+                    <h4 className="text-sm font-black text-amber-800 uppercase tracking-widest bg-clip-text bg-gradient-to-r from-amber-600 to-yellow-600">
+                      VIP Privacy & Control Dashboard
                     </h4>
-                    {(!canAccessFullPrivacy || !canAccessBasicPrivacy) && (
-                      <span className="px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-700 text-[9px] font-black uppercase tracking-wider rounded-full flex items-center gap-1">
-                        <Lock size={10} /> {locale === 'am' ? 'የፕሪሚየም አገልግሎት' : 'Premium Feature'}
-                      </span>
-                    )}
                   </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                    <label 
-                      onClick={(e) => {
-                        if (!canAccessFullPrivacy) {
-                          e.preventDefault();
-                          setShowUpgradeModal(true);
-                        }
-                      }}
-                      className={`flex items-center gap-3 ${canAccessFullPrivacy ? 'cursor-pointer' : 'cursor-pointer group'}`}
-                    >
-                      <input 
-                        type="checkbox"
-                        checked={formData.show_age}
-                        disabled={!canAccessFullPrivacy}
-                        onChange={(e) => canAccessFullPrivacy && setFormData({...formData, show_age: e.target.checked})}
-                        className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary disabled:opacity-50"
-                      />
-                      <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
-                        {t('showAge')}
-                        {!canAccessFullPrivacy && <Lock size={12} className="text-amber-500 group-hover:scale-110 transition-transform" />}
-                      </span>
-                    </label>
-
-                    <label 
-                      onClick={(e) => {
-                        if (!canAccessFullPrivacy) {
-                          e.preventDefault();
-                          setShowUpgradeModal(true);
-                        }
-                      }}
-                      className={`flex items-center gap-3 ${canAccessFullPrivacy ? 'cursor-pointer' : 'cursor-pointer group'}`}
-                    >
-                      <input 
-                        type="checkbox"
-                        checked={formData.show_city}
-                        disabled={!canAccessFullPrivacy}
-                        onChange={(e) => canAccessFullPrivacy && setFormData({...formData, show_city: e.target.checked})}
-                        className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary disabled:opacity-50"
-                      />
-                      <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
-                        {t('showCity')}
-                        {!canAccessFullPrivacy && <Lock size={12} className="text-amber-500 group-hover:scale-110 transition-transform" />}
-                      </span>
-                    </label>
-
-                    <label 
-                      onClick={(e) => {
-                        if (!canAccessFullPrivacy) {
-                          e.preventDefault();
-                          setShowUpgradeModal(true);
-                        }
-                      }}
-                      className={`flex items-center gap-3 ${canAccessFullPrivacy ? 'cursor-pointer' : 'cursor-pointer group'}`}
-                    >
-                      <input 
-                        type="checkbox"
-                        checked={formData.allow_friend_requests}
-                        disabled={!canAccessFullPrivacy}
-                        onChange={(e) => canAccessFullPrivacy && setFormData({...formData, allow_friend_requests: e.target.checked})}
-                        className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary disabled:opacity-50"
-                      />
-                      <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
-                        {t('allowFriendRequests')}
-                        {!canAccessFullPrivacy && <Lock size={12} className="text-amber-500 group-hover:scale-110 transition-transform" />}
-                      </span>
-                    </label>
-
-                    <label 
-                      onClick={(e) => {
-                        if (!canAccessBasicPrivacy) {
-                          e.preventDefault();
-                          setShowUpgradeModal(true);
-                        }
-                      }}
-                      className={`flex items-center gap-3 ${canAccessBasicPrivacy ? 'cursor-pointer' : 'cursor-pointer group'}`}
-                    >
-                      <input 
-                        type="checkbox"
-                        checked={formData.enable_last_seen}
-                        disabled={!canAccessBasicPrivacy}
-                        onChange={(e) => canAccessBasicPrivacy && setFormData({...formData, enable_last_seen: e.target.checked})}
-                        className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary disabled:opacity-50"
-                      />
-                      <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
-                        {locale === 'am' ? 'ባለፉት የመስመር ላይ ሁኔታ አሳይ (Show Last Seen Status)' : 'Show Last Seen Status'}
-                        {!canAccessBasicPrivacy && <Lock size={12} className="text-amber-500 group-hover:scale-110 transition-transform" />}
-                      </span>
-                    </label>
-
-                    <label 
-                      onClick={(e) => {
-                        if (!canAccessBasicPrivacy) {
-                          e.preventDefault();
-                          setShowUpgradeModal(true);
-                        }
-                      }}
-                      className={`flex items-center gap-3 ${canAccessBasicPrivacy ? 'cursor-pointer' : 'cursor-pointer group'}`}
-                    >
-                      <input 
-                        type="checkbox"
-                        checked={formData.enable_read_receipts}
-                        disabled={!canAccessBasicPrivacy}
-                        onChange={(e) => canAccessBasicPrivacy && setFormData({...formData, enable_read_receipts: e.target.checked})}
-                        className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary disabled:opacity-50"
-                      />
-                      <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
-                        {locale === 'am' ? 'የመልዕክት ንባብ ምልክቶች (Enable Read Receipts)' : 'Enable Read Receipts'}
-                        {!canAccessBasicPrivacy && <Lock size={12} className="text-amber-500 group-hover:scale-110 transition-transform" />}
-                      </span>
-                    </label>
-                  </div>
+                  <span className="px-3 py-1 bg-amber-500/20 text-amber-800 text-[9px] font-black uppercase tracking-wider rounded-full border border-amber-300/40">
+                    VIP Features
+                  </span>
                 </div>
-              )}
+                <p className="text-[10px] text-amber-700 font-bold uppercase tracking-wider">
+                  Exclusive Control Panel for active Beteseb VIP members
+                </p>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input 
+                      type="checkbox"
+                      checked={formData.is_ghost_mode_active}
+                      disabled={!canAccessVipSettings}
+                      onChange={(e) => canAccessVipSettings && setFormData({...formData, is_ghost_mode_active: e.target.checked})}
+                      className="w-5 h-5 rounded-lg border-amber-400 text-amber-500 focus:ring-amber-500/20 accent-amber-500 disabled:opacity-50"
+                    />
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-slate-700">Activate Ghost Mode</span>
+                      <span className="text-[9px] text-slate-400 font-medium">Blurs your photo (blurRadius=25) and hides full name in feeds</span>
+                    </div>
+                  </label>
 
-            <div className="space-y-4 pt-2 col-span-full">
-               <label className="flex items-center gap-3 cursor-pointer">
-                 <input 
-                   type="checkbox"
-                   checked={formData.enable_abushakir}
-                   onChange={(e) => setFormData({...formData, enable_abushakir: e.target.checked})}
-                   className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary"
-                 />
-                 <span className="text-xs font-bold text-slate-600">
-                   {t('enableAbushakir')}
-                 </span>
-               </label>
-               <p className="text-[10px] text-gray-400 font-semibold italic pl-8">
-                 {t('abushakirHint')}
-               </p>
-             </div>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input 
+                      type="checkbox"
+                      checked={formData.hide_online_status}
+                      disabled={!canAccessVipSettings}
+                      onChange={(e) => canAccessVipSettings && setFormData({...formData, hide_online_status: e.target.checked})}
+                      className="w-5 h-5 rounded-lg border-amber-400 text-amber-500 focus:ring-amber-500/20 accent-amber-500 disabled:opacity-50"
+                    />
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-slate-700">Hide Online Status</span>
+                      <span className="text-[9px] text-slate-400 font-medium">Conceals active indicators and Last Seen information</span>
+                    </div>
+                  </label>
+
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input 
+                      type="checkbox"
+                      checked={formData.hide_read_receipts}
+                      disabled={!canAccessVipSettings}
+                      onChange={(e) => canAccessVipSettings && setFormData({...formData, hide_read_receipts: e.target.checked})}
+                      className="w-5 h-5 rounded-lg border-amber-400 text-amber-500 focus:ring-amber-500/20 accent-amber-500 disabled:opacity-50"
+                    />
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-slate-700">Hide Read Receipts</span>
+                      <span className="text-[9px] text-slate-400 font-medium">Prevents typing indicators and read status triggers</span>
+                    </div>
+                  </label>
+
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input 
+                      type="checkbox"
+                      checked={formData.strict_incognito}
+                      disabled={!canAccessVipSettings}
+                      onChange={(e) => canAccessVipSettings && setFormData({...formData, strict_incognito: e.target.checked})}
+                      className="w-5 h-5 rounded-lg border-amber-400 text-amber-500 focus:ring-amber-500/20 accent-amber-500 disabled:opacity-50"
+                    />
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-slate-700">Strict Incognito</span>
+                      <span className="text-[9px] text-slate-400 font-medium">Removes your profile from recommendation discovery pools</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            
 
 
               {/* App Lock — strictly optional, stored locally on device */}

@@ -522,6 +522,12 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
 
   const handleOpenWaliRoom = async () => {
     if (!currentUser || !selectedMatch) return;
+    if (userTier === 'bronze' || userTier === 'silver') {
+      alert(locale === 'am' 
+        ? "የነሐስ ወይም የሲልቨር (Bronze/Silver Tier) አባላት የWali Room መጠቀም አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!" 
+        : "Bronze or Silver Tier members are blocked from using the Wali Room. Please complete verification first!");
+      return;
+    }
     setIsWaliLoading(true);
     try {
       // 1. Check if room exists
@@ -696,10 +702,10 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
     const limits = getTierLimits(userTier);
     let currentSentCount = 0;
 
-    if (userTier === 'bronze' && !isVipActive) {
+    if ((userTier === 'bronze' || userTier === 'silver') && !isVipActive) {
       alert(locale === 'am'
-        ? "ያልተረጋገጠ (Bronze Tier) አባላት መልእክት መላክ አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!"
-        : "Unverified (Bronze Tier) members are blocked from sending text or audio messages. Please complete verification first!");
+        ? "የነሐስ ወይም የሲልቨር (Bronze/Silver Tier) አባላት መልእክት መላክ አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!"
+        : "Bronze or Silver Tier members are blocked from sending messages. Please complete verification first!");
       return;
     }
 
@@ -1277,40 +1283,62 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                   <span className="hidden md:inline">Wali Room</span>
                 </button>
                 <button 
-                  onClick={() => setShowGiftModal(true)}
+                  onClick={() => {
+                    if (userTier === 'bronze' || userTier === 'silver') {
+                      alert(locale === 'am' 
+                        ? "የነሐስ ወይም የሲልቨር (Bronze/Silver Tier) አባላት ስጦታ መላክ አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!" 
+                        : "Bronze or Silver Tier members are blocked from sending gifts. Please complete verification first!");
+                      return;
+                    }
+                    setShowGiftModal(true);
+                  }}
                   aria-label="Send a gift" 
                   className="hover:text-primary transition-colors text-primary/80"
                 >
                   <Gift size={20} />
                 </button>
-                 <button 
-                   onClick={() => {
-                     setPendingCallVideo(false);
-                     setShowConsentModal(true);
-                   }}
-                   aria-label="Start phone call" 
-                   className="hover:text-primary transition-colors"
-                 >
-                   <Phone size={20} />
-                 </button>
-                 <button 
-                   onClick={() => {
-                     if (limits.maxVideoCallMinutes === 0) {
-                       alert(locale === 'am' 
-                         ? "ያልተረጋገጠ (Bronze Tier) አባላት የቪዲዮ ጥሪ ማድረግ አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!" 
-                         : "Unverified (Bronze Tier) members are blocked from making video calls. Please complete verification first!");
-                       return;
-                     }
-                     setPendingCallVideo(true);
-                     setShowConsentModal(true);
-                   }}
-                   aria-label="Start video call" 
-                   className="hover:text-primary transition-colors"
-                 >
-                   <Video size={20} />
-                 </button>
                 <button 
-                  onClick={handleSendCoins}
+                  onClick={() => {
+                    if (limits.maxAudioCallMinutes === 0) {
+                      alert(locale === 'am' 
+                        ? "የነሐስ ወይም የሲልቨር (Bronze/Silver Tier) አባላት የስልክ ጥሪ ማድረግ አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!" 
+                        : "Bronze or Silver Tier members are blocked from making audio calls. Please complete verification first!");
+                      return;
+                    }
+                    setPendingCallVideo(false);
+                    setShowConsentModal(true);
+                  }}
+                  aria-label="Start phone call" 
+                  className="hover:text-primary transition-colors"
+                >
+                  <Phone size={20} />
+                </button>
+                <button 
+                  onClick={() => {
+                    if (limits.maxVideoCallMinutes === 0) {
+                      alert(locale === 'am' 
+                        ? "የነሐስ ወይም የሲልቨር (Bronze/Silver Tier) አባላት የቪዲዮ ጥሪ ማድረግ አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!" 
+                        : "Bronze or Silver Tier members are blocked from making video calls. Please complete verification first!");
+                      return;
+                    }
+                    setPendingCallVideo(true);
+                    setShowConsentModal(true);
+                  }}
+                  aria-label="Start video call" 
+                  className="hover:text-primary transition-colors"
+                >
+                  <Video size={20} />
+                </button>
+                <button 
+                  onClick={() => {
+                    if (userTier === 'bronze' || userTier === 'silver') {
+                      alert(locale === 'am' 
+                        ? "የነሐስ ወይም የሲልቨር (Bronze/Silver Tier) አባላት ሳንቲም መላክ አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!" 
+                        : "Bronze or Silver Tier members are blocked from sending coins. Please complete verification first!");
+                      return;
+                    }
+                    handleSendCoins();
+                  }}
                   aria-label="Send coins" 
                   className="hover:text-primary transition-colors text-amber-500"
                   title={locale === 'am' ? 'ኮይን ላክ' : 'Send Coins'}

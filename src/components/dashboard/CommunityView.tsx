@@ -15,6 +15,7 @@ import {
   Image as ImageIcon,
   Link as LinkIcon,
   X,
+  Crown,
   Camera,
   Heart,
   ThumbsDown,
@@ -180,6 +181,13 @@ export default function CommunityView({
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    if (!isVerified) {
+      alert(locale === 'am' 
+        ? "ያልተረጋገጠ (Bronze/Silver Tier) አባላት ላይክ ወይም ሪአክት ማድረግ አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!" 
+        : "Unverified (Bronze/Silver Tier) members are blocked from reacting. Please complete verification first!");
+      return;
+    }
+
     const currentReaction = userReactions[postId];
     
     if (currentReaction === type) {
@@ -207,6 +215,13 @@ export default function CommunityView({
     if (!commentContent.trim()) return;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+
+    if (!isVerified) {
+      alert(locale === 'am' 
+        ? "ያልተረጋገጠ (Bronze/Silver Tier) አባላት አስተያየት መጻፍ አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!" 
+        : "Unverified (Bronze/Silver Tier) members are blocked from commenting. Please complete verification first!");
+      return;
+    }
 
     const { error } = await supabase.from('post_comments').insert({
       post_id: postId,
@@ -264,18 +279,12 @@ export default function CommunityView({
     e.preventDefault();
     if (!newPostContent.trim()) return;
 
-    // Subscription check: allow premium, admin, or 20-coin payment
+    // Subscription check: only Diamond (isPremium), VIP, or Admin can post
     if (!isPremium && !isAdmin) {
-      if (userCoins < COIN_PER_POST) {
-        alert(locale === 'am' 
-          ? `ለማስጠቀም ${COIN_PER_POST} ቤተሰብ ኮይን ያስፈልጋቸዋል። ሰብስክሪፕሽን ወይም ኮይን ይግዙ።`
-          : `You need ${COIN_PER_POST} Beteseb Coins to post. Please subscribe or buy coins.`);
-        return;
-      }
-      if (!coinPostConfirm) {
-        setCoinPostConfirm(true);
-        return; // Wait for user to confirm coin spend
-      }
+      alert(locale === 'am' 
+        ? "የዳይመንድ (Diamond) ወይም የቪአይፒ (VIP) አባላት ብቻ በማህበረሰቡ ሰሌዳ ላይ መለጠፍ ይችላሉ። እባክዎ አካውንትዎን ያሻሽሉ!"
+        : "Only Diamond or VIP members can create posts on the community board. Please upgrade your account!");
+      return;
     }
 
     // Link Restriction Check
@@ -455,6 +464,33 @@ export default function CommunityView({
                         className="bg-primary text-white px-8 py-3 rounded-2xl font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20"
                       >
                         {t('completeProfile')}
+                      </button>
+                   </div>
+                </div>
+              )}
+              {isVerified && !isPremium && !isAdmin && (
+                <div className="absolute inset-0 z-20 bg-white/70 backdrop-blur-[1px] flex items-center justify-center p-6 text-center">
+                   <div className="space-y-4 max-w-sm">
+                      <div className="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto text-amber-600 border border-amber-500/20">
+                         <Crown size={32} className="fill-amber-600" />
+                      </div>
+                      <h4 className="font-black text-lg text-amber-800 italic">
+                        {locale === 'am' ? 'የዳይመንድ ወይም የቪአይፒ አባልነት ይፈልጋል' : 'Diamond or VIP Member Required'}
+                      </h4>
+                      <p className="text-xs text-gray-500 font-semibold leading-relaxed">
+                        {locale === 'am' 
+                          ? 'በማህበረሰብ ሰሌዳ ላይ አዲስ ፖስት ለመለጠፍ የዳይመንድ (Diamond) ወይም የቪአይፒ (VIP) ደረጃ ሊኖርዎት ይገባል።'
+                          : 'You need to be a Diamond or VIP member to write new posts on the community board.'}
+                      </p>
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          const event = new CustomEvent('openUpgradeModal');
+                          window.dispatchEvent(event);
+                        }}
+                        className="bg-gradient-to-r from-amber-500 to-yellow-600 text-white px-8 py-3.5 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-amber-500/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 mx-auto animate-pulse"
+                      >
+                         👑 {locale === 'am' ? 'ደረጃዎን ያሳድጉ (Upgrade)' : 'Upgrade to Diamond / VIP'}
                       </button>
                    </div>
                 </div>

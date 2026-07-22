@@ -141,7 +141,8 @@ function DashboardContent() {
 
   const handleTabClick = (tabId: string) => {
     const coreTabs = ['chat', 'community', 'workshops', 'wedding', 'gifts'];
-    if (coreTabs.includes(tabId) && verificationStatus !== 'verified') {
+    const currentTier = getUserTier(profile as any, hasVouchedRecords);
+    if (coreTabs.includes(tabId) && currentTier === 'bronze') {
       setShowVerificationBlockModal(true);
       return;
     }
@@ -868,16 +869,12 @@ function DashboardContent() {
   }, []);
 
 
-  const isVipActive = (profile as any)?.is_vip_member &&
-    (!(profile as any)?.vip_expires_at || new Date((profile as any).vip_expires_at) > new Date());
-  const isPremium = isVipActive ||
-                    ((profile as any)?.premium_until && new Date((profile as any).premium_until) > new Date()) ||
-                    paymentStatus === 'approved' ||
-                    ['admin', 'super_admin', 'expert'].includes((profile as any)?.role);
-  const isAdmin = ['admin', 'super_admin'].includes((profile as any)?.role);
-
   const completionRate = calculateCompletionRate(profile as any);
   const userTier = getUserTier(profile as any, hasVouchedRecords);
+
+  const isVipActive = userTier === 'vip';
+  const isPremium = userTier === 'diamond' || userTier === 'vip';
+  const isAdmin = ['admin', 'super_admin'].includes((profile as any)?.role || '');
 
   const handlePostSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1089,6 +1086,13 @@ function DashboardContent() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user || !profile) return;
 
+    if (userTier === 'bronze' || userTier === 'silver') {
+      alert(locale === 'am'
+        ? "የነሐስ ወይም የሲልቨር (Bronze/Silver Tier) አባላት ላይክ ማድረግ ወይም የጓደኝነት ጥያቄ መላክ አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!"
+        : "Bronze or Silver Tier members are blocked from liking or sending friend requests. Please complete verification first!");
+      return;
+    }
+
     // Check for incoming friend request from candidate to current user
     const { data: incoming } = await supabase
       .from('friendships')
@@ -1175,6 +1179,13 @@ function DashboardContent() {
   const handleSendFriendRequest = async (targetId: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user || !profile) return;
+
+    if (userTier === 'bronze' || userTier === 'silver') {
+      alert(locale === 'am'
+        ? "የነሐስ ወይም የሲልቨር (Bronze/Silver Tier) አባላት የጓደኝነት ጥያቄ መላክ አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!"
+        : "Bronze or Silver Tier members are blocked from sending friend requests. Please complete verification first!");
+      return;
+    }
 
     const { error } = await supabase.from('friendships').insert({
       sender_id: user.id,
@@ -1647,7 +1658,15 @@ function DashboardContent() {
                       onLike={handleLike}
                       onDislike={handleDislike}
                       onSendFriendRequest={handleSendFriendRequest}
-                      onSendGift={(c) => setActiveGiftCandidate(c)}
+                      onSendGift={(c) => {
+                        if (userTier === 'bronze' || userTier === 'silver') {
+                          alert(locale === 'am'
+                            ? "የነሐስ ወይም የሲልቨር (Bronze/Silver Tier) አባላት ስጦታ መላክ አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!"
+                            : "Bronze or Silver Tier members are blocked from sending gifts. Please complete verification first!");
+                          return;
+                        }
+                        setActiveGiftCandidate(c);
+                      }}
                       onCardClick={() => handleCardClick(match.profile || match)}
                       friendshipStatus={friendshipStatuses[match.id] || null}
                     />
@@ -1787,7 +1806,7 @@ function DashboardContent() {
                  <AcademyView isPremium={isPremium} userCoins={profile?.coins || 0} />
               </SubscriptionGate>
               <SubscriptionGate allowVerifiedView={true}>
-                 <WorkshopsView currency={profile?.currency_locked || 'ETB'} />
+                 <WorkshopsView currency={profile?.currency_locked || 'ETB'} userTier={userTier} />
               </SubscriptionGate>
            </div>
         )}

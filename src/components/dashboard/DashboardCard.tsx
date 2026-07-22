@@ -52,6 +52,8 @@ export default function DashboardCard({
 
   const getTierLabel = (tier: string) => {
     switch (tier) {
+      case 'vip':
+        return { label: 'VIP Label', color: 'bg-amber-500/20 text-amber-200 border-amber-500/30', emoji: '👑' };
       case 'diamond':
         return { label: 'Diamond Label', color: 'bg-cyan-500/20 text-cyan-200 border-cyan-500/30', emoji: '💎' };
       case 'platinum':
