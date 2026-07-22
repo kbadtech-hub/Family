@@ -41,7 +41,7 @@ export default function FeatureLockModal({
       badge: 'Dhiyoo Dhiyaata',
       title: 'Dhiyotti Eegaa! (Coming Soon)',
       message: 'Tajaajilli kun dhiyotti waan eegaluuf maaloo obsaan nu eegaa.',
-      toggleLabel: 'Tajaajilli kun yeroo eegalu beeksisni (Notification) akka isin ga'u ni barbaaduu?',
+      toggleLabel: "Tajaajilli kun yeroo eegalu beeksisni (Notification) akka isin ga'u ni barbaaduu?",
       closeBtn: 'Tole / Cufaa',
       successNotice: 'Galatoomaa! Tajaajilli yeroo eegalu beeksisni isiniif ni ergama.'
     },
