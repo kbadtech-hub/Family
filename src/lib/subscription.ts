@@ -125,18 +125,18 @@ export const SUBSCRIPTION_PLANS = {
 
 export const VIP_SUBSCRIPTION_PLANS = {
   ETB: [
-    { id: 'vip_1m',       name: '1 Month VIP',    price: 299.99,  period: 'monthly'       },
-    { id: 'vip_3m',       name: '3 Months VIP',   price: 759.99,  period: 'quarterly'     },
-    { id: 'vip_6m',       name: '6 Months VIP',   price: 1299.99, period: 'semi-annually' },
-    { id: 'vip_1y',       name: '1 Year VIP',     price: 1999.99, period: 'yearly'        },
-    { id: 'vip_lifetime', name: 'Lifetime VIP',   price: 2999.99, period: 'lifetime'      }
+    { id: 'vip_1m',       name: '1 Month VIP',    price: 299.98,  period: 'monthly'       },
+    { id: 'vip_3m',       name: '3 Months VIP',   price: 759.98,  period: 'quarterly'     },
+    { id: 'vip_6m',       name: '6 Months VIP',   price: 1299.98, period: 'semi-annually' },
+    { id: 'vip_1y',       name: '1 Year VIP',     price: 1999.98, period: 'yearly'        },
+    { id: 'vip_lifetime', name: 'Lifetime VIP',   price: 2999.98, period: 'lifetime'      }
   ],
   USD: [
-    { id: 'vip_1m',       name: '1 Month VIP',    price: 15.99,   period: 'monthly'       },
-    { id: 'vip_3m',       name: '3 Months VIP',   price: 39.99,   period: 'quarterly'     },
-    { id: 'vip_6m',       name: '6 Months VIP',   price: 67.99,   period: 'semi-annually' },
-    { id: 'vip_1y',       name: '1 Year VIP',     price: 99.99,   period: 'yearly'        },
-    { id: 'vip_lifetime', name: 'Lifetime VIP',   price: 149.99,  period: 'lifetime'      }
+    { id: 'vip_1m',       name: '1 Month VIP',    price: 15.98,   period: 'monthly'       },
+    { id: 'vip_3m',       name: '3 Months VIP',   price: 39.98,   period: 'quarterly'     },
+    { id: 'vip_6m',       name: '6 Months VIP',   price: 67.98,   period: 'semi-annually' },
+    { id: 'vip_1y',       name: '1 Year VIP',     price: 99.98,   period: 'yearly'        },
+    { id: 'vip_lifetime', name: 'Lifetime VIP',   price: 149.98,  period: 'lifetime'      }
   ]
 };
 
