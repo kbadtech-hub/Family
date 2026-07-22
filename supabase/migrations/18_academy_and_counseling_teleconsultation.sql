@@ -126,7 +126,7 @@ CREATE TABLE IF NOT EXISTS public.counseling_messages (
 );
 
 -- -------------------------------------------------------------------------
--- 3. ROW LEVEL SECURITY (RLS) & POLICIES
+-- 3. ROW LEVEL SECURITY (RLS) & POLICIES (IDEMPOTENT SAFE DROPS)
 -- -------------------------------------------------------------------------
 
 ALTER TABLE public.academy_courses            ENABLE ROW LEVEL SECURITY;
@@ -141,6 +141,30 @@ ALTER TABLE public.counselors                 ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.counselor_availability     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.counseling_appointments    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.counseling_messages        ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if re-running
+DROP POLICY IF EXISTS "Public read academy courses"            ON public.academy_courses;
+DROP POLICY IF EXISTS "Public read academy modules"            ON public.academy_modules;
+DROP POLICY IF EXISTS "Public read academy lessons"            ON public.academy_lessons;
+DROP POLICY IF EXISTS "Public read academy exams"              ON public.academy_exams;
+DROP POLICY IF EXISTS "Public read academy questions"          ON public.academy_questions;
+DROP POLICY IF EXISTS "Public read counselors"                 ON public.counselors;
+DROP POLICY IF EXISTS "Public read counselor availability"     ON public.counselor_availability;
+DROP POLICY IF EXISTS "Public read academy discussions"        ON public.academy_lesson_discussions;
+
+DROP POLICY IF EXISTS "Users read own academy progress"         ON public.academy_student_progress;
+DROP POLICY IF EXISTS "Users insert/update own academy progress" ON public.academy_student_progress;
+DROP POLICY IF EXISTS "Users insert academy discussions"        ON public.academy_lesson_discussions;
+DROP POLICY IF EXISTS "Users access own counseling appointments" ON public.counseling_appointments;
+DROP POLICY IF EXISTS "Participants access counseling messages"  ON public.counseling_messages;
+
+DROP POLICY IF EXISTS "Admin full access academy_courses"        ON public.academy_courses;
+DROP POLICY IF EXISTS "Admin full access academy_modules"        ON public.academy_modules;
+DROP POLICY IF EXISTS "Admin full access academy_lessons"        ON public.academy_lessons;
+DROP POLICY IF EXISTS "Admin full access academy_exams"          ON public.academy_exams;
+DROP POLICY IF EXISTS "Admin full access academy_questions"      ON public.academy_questions;
+DROP POLICY IF EXISTS "Admin full access counselors"             ON public.counselors;
+DROP POLICY IF EXISTS "Admin full access counselor_availability" ON public.counselor_availability;
 
 -- Public read for courses, modules, lessons, exams, questions, counselors, availability
 CREATE POLICY "Public read academy courses"            ON public.academy_courses            FOR SELECT USING (true);
