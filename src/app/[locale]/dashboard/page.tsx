@@ -53,6 +53,8 @@ import GiftModal from '@/components/dashboard/GiftModal';
 import AcademyView from '@/components/dashboard/AcademyView';
 import WorkshopsView from '@/components/dashboard/WorkshopsView';
 import ReferralWalletView from '@/components/dashboard/ReferralWalletView';
+import AcademyDashboardView from '@/components/dashboard/AcademyDashboardView';
+import CounselingDashboardView from '@/components/dashboard/CounselingDashboardView';
 import SubscriptionGate from '@/components/SubscriptionGate';
 import FeatureGate from '@/components/dashboard/FeatureGate';
 import AppStoreBadges from '@/components/AppStoreBadges';
@@ -143,15 +145,7 @@ function DashboardContent() {
   });
 
   const handleTabClick = (tabId: string) => {
-    if (tabId === 'academy') {
-      router.push('/academy');
-      return;
-    }
-    if (tabId === 'counseling') {
-      router.push('/counseling');
-      return;
-    }
-    const coreTabs = ['chat', 'community', 'workshops', 'wedding', 'gifts'];
+    const coreTabs = ['chat', 'community', 'workshops', 'wedding', 'gifts', 'academy', 'counseling'];
     const currentTier = getUserTier(profile as any, hasVouchedRecords);
     if (coreTabs.includes(tabId) && currentTier === 'bronze') {
       setShowVerificationBlockModal(true);
@@ -1866,6 +1860,18 @@ function DashboardContent() {
               </SubscriptionGate>
             </div>
           </FeatureGate>
+        )}
+
+        {activeTab === 'academy' && (
+          <div className="mt-10">
+            <AcademyDashboardView />
+          </div>
+        )}
+
+        {activeTab === 'counseling' && (
+          <div className="mt-10">
+            <CounselingDashboardView />
+          </div>
         )}
 
         {activeTab === 'wedding' && (
