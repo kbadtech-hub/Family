@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useUI } from '@/context/UIContext';
 import { supabase } from '@/lib/supabase';
 import { 
   Heart, 
@@ -32,6 +33,7 @@ interface MatchDetailProps {
 }
 
 export default function MatchDetailView({ matchId, currentUserProfile, isPremium = false, onClose, onStartChat }: MatchDetailProps) {
+  const { showConfirm, showPrompt, showToast, showAlert } = useUI();
   const [profile, setProfile] = useState<any>(null);
   const tMatch = useTranslations('Dashboard.matchDetail');
   const tr = useTranslations('Dashboard.reports');
@@ -237,7 +239,7 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
   };
 
   const handleBlockUser = async () => {
-    const confirmBlock = confirm(tMatch('blockConfirm'));
+    const confirmBlock = await showConfirm(tMatch('blockConfirm'));
     if (!confirmBlock) return;
 
     const { data: { user } } = await supabase.auth.getUser();

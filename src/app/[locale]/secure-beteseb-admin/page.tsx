@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useUI } from '@/context/UIContext';
 import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { queueSMS } from '@/lib/sms';
@@ -233,6 +234,7 @@ const ADMIN_HUBS = [
 ];
 
 export default function AdminPortal() {
+  const { showAlert, showConfirm, showPrompt, showToast } = useUI();
   const params = useParams();
   const locale = params?.locale as string || 'en';
   const [activeTab, setActiveTab] = useState('financial_tracker');
@@ -461,7 +463,7 @@ export default function AdminPortal() {
     try {
       const results = await translator.translateAll(text);
       console.log(`Translated ${field} for all languages:`, results);
-      alert(`Successfully generated translations for ${field} in all 6 languages! (Stored in system cache)`);
+      showToast(`Successfully generated translations for ${field} in all 6 languages! (Stored in system cache)`, 'success');
       // In a real scenario, we would store these in the state or directly in the translations field.
     } catch (error) {
       console.error("Translation error:", error);
@@ -807,9 +809,11 @@ export default function AdminPortal() {
   const handleSavePost = async () => {
     setIsSaving(true);
     try {
+      const userRes = await supabase.auth.getUser();
+      const author_id = userRes.data.user?.id || null;
       const payload = { 
         ...currentPost, 
-        author_id: (await supabase.auth.getUser()).data.user?.id 
+        author_id 
       };
       
       let error;
@@ -823,55 +827,42 @@ export default function AdminPortal() {
 
       if (error) throw error;
       
-      alert('Post saved successfully!');
+      showToast('Post saved successfully!', 'success');
       setIsEditingPost(false);
-      // Refresh posts
       const { data } = await supabase.from('site_posts').select('*').order('created_at', { ascending: false });
       if (data) setPosts(data);
-    } catch (err: unknown) {
-      alert('Error saving post: ' + (err instanceof Error ? err.message : String(err)));
+    } catch (err) {
+      const msg = err?.message || err?.details || JSON.stringify(err);
+      showAlert('Error saving post: ' + msg, 'Save Error', 'error');
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDeletePost = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this post?')) return;
+    if (!await showConfirm('Are you sure you want to delete this post?')) return;
     const { error } = await supabase.from('site_posts').delete().eq('id', id);
-    if (error) alert('Error deleting post: ' + error.message);
+    if (error) showAlert('Error deleting post: ' + error.message, 'Delete Error', 'error');
     else setPosts(prev => prev.filter(p => p.id !== id));
   };
 
-  const handleSaveCMS = async () => {
+  const handleSaveCMS = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsSaving(true);
     try {
-      let targetId = settings?.id;
-      if (!targetId) {
-        const { data: existingSettings } = await supabase.from('settings').select('*').limit(1).maybeSingle();
-        if (existingSettings) {
-          targetId = existingSettings.id;
-          setSettings(existingSettings);
-        } else {
-          const { data: newSettings, error: initErr } = await supabase.from('settings').insert([{
-            created_at: new Date().toISOString()
-          }]).select().single();
-          if (!initErr && newSettings) {
-            targetId = newSettings.id;
-            setSettings(newSettings);
-          }
-        }
-      }
+      const targetId = settings?.id;
+      if (!targetId) throw new Error("Settings record ID missing");
 
-      if (!targetId) {
-        throw new Error('Unable to resolve system settings row ID.');
-      }
-
-      const updatePayload: Record<string, any> = {
+      const updatePayload = {
         cms_content: {
           logo_url: cmsForm.logo_url,
           hero_title: cmsForm.hero_title,
           hero_subtitle: cmsForm.hero_subtitle,
-          footer_description: cmsForm.footer_description
+          footer_description: cmsForm.footer_description,
+          email: cmsForm.email,
+          phone: cmsForm.phone,
+          address: cmsForm.address,
+          website_url: cmsForm.website_url,
         },
         contact_info: {
           email: cmsForm.email,
@@ -913,31 +904,29 @@ export default function AdminPortal() {
         .single();
 
       if (error) {
-        if (error.code === '42703') {
-          const { play_store_url: _p, app_store_url: _a, ...safePayload } = updatePayload;
-          const { data: fallbackData, error: fallbackError } = await supabase
-            .from('settings')
-            .update(safePayload)
-            .eq('id', targetId)
-            .select()
-            .single();
+        const { updated_at: _u, play_store_url: _p, app_store_url: _a, ...safePayload } = updatePayload;
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('settings')
+          .update(safePayload)
+          .eq('id', targetId)
+          .select()
+          .single();
 
-          if (fallbackError) throw fallbackError;
-          if (fallbackData) setSettings(fallbackData);
-        } else {
-          throw error;
-        }
+        if (fallbackError) throw fallbackError;
+        if (fallbackData) setSettings(fallbackData);
       } else if (updatedData) {
         setSettings(updatedData);
       }
 
-      alert(locale === 'am' 
-        ? '🚀 የሲስተም ይዘቶች በተሳካ ሁኔታ በዳታቤዝ፣ በዌብሳይት እና በሞባይል አፕሊኬሽኑ ላይ ቀጥታ (Live) ተተግበዋል! (CMS & Social Links Deployed Successfully!)' 
-        : '🚀 CMS Content & Social Links Deployed Live to Website & Mobile App Successfully!'
+      showToast(locale === 'am' 
+        ? '🚀 የሲስተም ይዘቶች በተሳካ ሁኔታ በዳታቤዝ፣ በዌብሳይት እና በሞባይል አፕሊኬሽኑ ላይ ቀጥታ (Live) ተተግበዋል!' 
+        : '🚀 CMS Content & Social Links Deployed Live Successfully!',
+        'success'
       );
-    } catch (err: any) {
+    } catch (err) {
       console.error('[handleSaveCMS] Error:', err);
-      alert('Error deploying CMS: ' + err.message);
+      const msg = err?.message || err?.details || JSON.stringify(err);
+      showAlert('Error deploying CMS: ' + msg, 'Deployment Error', 'error');
     } finally {
       setIsSaving(false);
     }
@@ -948,7 +937,7 @@ export default function AdminPortal() {
     let reason = '';
     
     if (status === 'rejected') {
-      const input = prompt(locale === 'am' ? 'እባክዎ ውድቅ የተደረገበትን ምክንያት ያስገቡ (ለምሳሌ፦ ያስገቡት ስም ከመታወቂያው ጋር አይመሳሰልም)፦' : 'Please enter the rejection reason (e.g. name mismatch):');
+      const input = await showPrompt(locale === 'am' ? 'እባክዎ ውድቅ የተደረገበትን ምክንያት ያስገቡ (ለምሳሌ፦ ያስገቡት ስም ከመታወቂያው ጋር አይመሳሰልም)፦' : 'Please enter the rejection reason (e.g. name mismatch):');
       if (input === null) {
         setIsSaving(false);
         return;
@@ -967,7 +956,7 @@ export default function AdminPortal() {
       const result = await res.json();
 
       if (!res.ok) {
-        alert('Error: ' + (result.error || 'Failed to update verification'));
+        showAlert('Error: ' + (result.error || 'Failed to update verification'), 'Verification Error', 'error');
         setIsSaving(false);
         return;
       }
@@ -982,13 +971,14 @@ export default function AdminPortal() {
       // Close detail modal if open
       setSelectedVerification(null);
 
-      alert(status === 'verified'
+      showToast(status === 'verified'
         ? (locale === 'am' ? '✅ ማረጋገጫ ጸድቋል! ተጠቃሚው ማሳወቂያ ይደርሰዋል።' : '✅ Verification approved!')
-        : (locale === 'am' ? '❌ ማረጋገጫ ውድቅ ተደርጓል!' : '❌ Verification rejected!')
+        : (locale === 'am' ? '❌ ማረጋገጫ ውድቅ ተደርጓል!' : '❌ Verification rejected!'),
+        'success'
       );
     } catch (err: any) {
       console.error('[handleUpdateVerification] Error:', err);
-      alert('Network error: ' + err.message);
+      showAlert('Network error: ' + err.message, 'Network Error', 'error');
     }
     
     setIsSaving(false);
@@ -1050,7 +1040,7 @@ export default function AdminPortal() {
 
   const handleManualCreditSubmit = async () => {
     if (!manualEmailOrId || !manualAmountOrPlan) {
-      alert('Please fill in user email/ID and amount/plan');
+      showToast('Please fill in user email/ID and amount/plan', 'warning');
       return;
     }
     setManualProcessing(true);
@@ -1068,16 +1058,16 @@ export default function AdminPortal() {
       });
       const data = await res.json();
       if (data.status === 'success') {
-        alert('✅ Success: ' + data.message);
+        showToast(data.message, 'success');
         setManualEmailOrId('');
         setManualNote('');
         const { data: payData } = await supabase.from('payments').select('*, profiles(full_name)').order('created_at', { ascending: false });
         if (payData) setPayments(payData as any);
       } else {
-        alert('❌ Error: ' + (data.message || 'Manual credit failed'));
+        showAlert(data.message || 'Manual credit failed', 'Manual Credit Error', 'error');
       }
     } catch (err: any) {
-      alert('Error: ' + err.message);
+      showAlert(err.message, 'Error', 'error');
     } finally {
       setManualProcessing(false);
     }
@@ -1085,7 +1075,7 @@ export default function AdminPortal() {
 
   const handleChapaLookupSubmit = async (autoProcess = false) => {
     if (!chapaLookupRef) {
-      alert('Please enter a Chapa reference or tx_ref');
+      showToast('Please enter a Chapa reference or tx_ref', 'warning');
       return;
     }
     setChapaLookupLoading(true);
@@ -1102,24 +1092,24 @@ export default function AdminPortal() {
       const data = await res.json();
       if (data.status === 'success') {
         setChapaLookupResult(data);
-        alert('✅ Chapa Result:\n' + (data.message || 'Transaction retrieved'));
+        showAlert(data.message || 'Transaction retrieved', 'Chapa Result', 'success');
         if (autoProcess) {
           const { data: payData } = await supabase.from('payments').select('*, profiles(full_name)').order('created_at', { ascending: false });
           if (payData) setPayments(payData as any);
         }
       } else {
-        alert('❌ Error: ' + (data.message || 'Chapa lookup failed'));
+        showAlert(data.message || 'Chapa lookup failed', 'Chapa Error', 'error');
         setChapaLookupResult(null);
       }
     } catch (err: any) {
-      alert('Error: ' + err.message);
+      showAlert('Error: ' + err.message, 'Lookup Error', 'error');
     } finally {
       setChapaLookupLoading(false);
     }
   };
 
   const handleChapaSync = async () => {
-    if (!confirm('Are you sure you want to sync all successful payments from Chapa dashboard? This will search and credit any missing transactions.')) {
+    if (!await showConfirm('Are you sure you want to sync all successful payments from Chapa dashboard? This will search and credit any missing transactions.')) {
       return;
     }
     setChapaSyncing(true);
@@ -1135,15 +1125,15 @@ export default function AdminPortal() {
       const data = await res.json();
       if (data.status === 'success') {
         setChapaSyncResult(data);
-        alert(`✅ Chapa Sync Complete!\n${data.message}`);
+        showAlert(data.message, 'Chapa Sync Complete', 'success');
         // Refresh the payments list in the UI
         const { data: payData } = await supabase.from('payments').select('*, profiles(full_name)').order('created_at', { ascending: false });
         if (payData) setPayments(payData as any);
       } else {
-        alert('❌ Error syncing transactions: ' + (data.message || 'Unknown error'));
+        showAlert(data.message || 'Unknown error', 'Sync Error', 'error');
       }
     } catch (err: any) {
-      alert('Error: ' + err.message);
+      showAlert('Error: ' + err.message, 'Sync Error', 'error');
     } finally {
       setChapaSyncing(false);
     }
@@ -1163,22 +1153,22 @@ export default function AdminPortal() {
 
       if (error) throw error;
       
-      alert('Lesson saved successfully!');
+      showToast('Lesson saved successfully!', 'success');
       setIsEditingLesson(false);
       // Refresh lessons
       const { data } = await supabase.from('lessons').select('*').order('created_at', { ascending: false });
       if (data) setLessons(data);
     } catch (err: unknown) {
-      alert('Error saving lesson: ' + (err instanceof Error ? err.message : String(err)));
+      showAlert('Error saving lesson: ' + (err instanceof Error ? err.message : String(err)), 'Save Error', 'error');
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDeleteLesson = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this lesson?')) return;
+    if (!await showConfirm('Are you sure you want to delete this lesson?')) return;
     const { error } = await supabase.from('lessons').delete().eq('id', id);
-    if (error) alert('Error deleting lesson: ' + error.message);
+    if (error) showAlert('Error deleting lesson: ' + error.message, 'Delete Error', 'error');
     else setLessons(prev => prev.filter(l => l.id !== id));
   };
 
@@ -1194,21 +1184,21 @@ export default function AdminPortal() {
         error = err;
       }
       if (error) throw error;
-      alert('Video saved successfully!');
+      showToast('Video saved successfully!', 'success');
       setIsEditingVideo(false);
       const { data } = await supabase.from('academy_videos').select('*').order('order_index', { ascending: true });
       if (data) setAcademyVideos(data);
     } catch (err: any) {
-      alert('Error saving video: ' + err.message);
+      showAlert('Error saving video: ' + err.message, 'Save Error', 'error');
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDeleteVideo = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this video?')) return;
+    if (!await showConfirm('Are you sure you want to delete this video?')) return;
     const { error } = await supabase.from('academy_videos').delete().eq('id', id);
-    if (error) alert('Error deleting video: ' + error.message);
+    if (error) showAlert('Error deleting video: ' + error.message, 'Delete Error', 'error');
     else setAcademyVideos(prev => prev.filter(v => v.id !== id));
   };
 
@@ -1224,26 +1214,26 @@ export default function AdminPortal() {
         error = err;
       }
       if (error) throw error;
-      alert('Vendor saved successfully!');
+      showToast('Vendor saved successfully!', 'success');
       setIsEditingVendor(false);
       const { data } = await supabase.from('wedding_vendors').select('*').order('name', { ascending: true });
       if (data) setWeddingVendors(data);
     } catch (err: any) {
-      alert('Error saving vendor: ' + err.message);
+      showAlert('Error saving vendor: ' + err.message, 'Save Error', 'error');
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDeleteVendor = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this vendor?')) return;
+    if (!await showConfirm('Are you sure you want to delete this vendor?')) return;
     const { error } = await supabase.from('wedding_vendors').delete().eq('id', id);
-    if (error) alert('Error deleting vendor: ' + error.message);
+    if (error) showAlert('Error deleting vendor: ' + error.message, 'Delete Error', 'error');
     else setWeddingVendors(prev => prev.filter(v => v.id !== id));
   };
 
   const handleProcessRefund = async (userId: string, paymentId: string, amount: number) => {
-    if (!confirm(`Are you sure you want to refund $${amount} to the user?`)) return;
+    if (!await showConfirm(`Are you sure you want to refund ${amount} to the user?`)) return;
     setIsSaving(true);
     try {
       const { error: paymentErr } = await supabase.from('payments').update({ status: 'rejected' }).eq('id', paymentId);
@@ -1266,11 +1256,11 @@ export default function AdminPortal() {
         note: `Refund processing for Payment ID ${paymentId}`
       });
 
-      alert(`Refund processed successfully. Deducted ${refundCoins} coins from user's wallet.`);
+      showToast(`Refund processed successfully. Deducted ${refundCoins} coins from user's wallet.`, 'success');
       const { data: payData } = await supabase.from('payments').select('*, profiles(*)').order('created_at', { ascending: false });
       if (payData) setPayments(payData as any);
     } catch (err: any) {
-      alert('Refund failed: ' + err.message);
+      showAlert('Refund failed: ' + err.message, 'Refund Error', 'error');
     } finally {
       setIsSaving(false);
     }
@@ -1308,9 +1298,9 @@ export default function AdminPortal() {
       }
 
       setSupportTickets(prev => prev.map(t => t.id === id ? { ...t, status: 'resolved' } : t));
-      alert('Response sent successfully!');
+      showToast('Response sent successfully!', 'success');
     } catch (err: any) {
-      alert(err.message);
+      showAlert(err.message, 'Error', 'error');
     } finally {
       setIsSaving(false);
     }
@@ -1328,11 +1318,11 @@ export default function AdminPortal() {
   const handleApprovePaymentClaim = async (ticket: any) => {
     const claim = parseClaim(ticket.message);
     if (!claim.txRef || !claim.type) {
-      alert("Invalid payment claim formatting.");
+      showToast("Invalid payment claim formatting.", 'warning');
       return;
     }
 
-    if (!confirm(`Are you sure you want to approve this claim and manually grant access for ${claim.type}?`)) return;
+    if (!await showConfirm(`Are you sure you want to approve this claim and manually grant access for ${claim.type}?`)) return;
 
     setIsSaving(true);
     try {
@@ -1475,40 +1465,40 @@ export default function AdminPortal() {
       }]);
 
       setSupportTickets(prev => prev.map(t => t.id === ticket.id ? { ...t, status: 'resolved' } : t));
-      alert(`Claim approved successfully! Access/Resource granted.`);
+      showToast(`Claim approved successfully! Access/Resource granted.`, 'success');
     } catch (err: any) {
-      alert(`Error approving claim: ${err.message}`);
+      showAlert(`Error approving claim: ${err.message}`, 'Approval Error', 'error');
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDeleteReportedUser = async (profileId: string, reportId: string) => {
-    const confirmDelete = confirm("Are you sure you want to permanently delete this reported user profile? This cascades to delete their account data.");
+    const confirmDelete = await showConfirm("Are you sure you want to permanently delete this reported user profile? This cascades to delete their account data.");
     if (!confirmDelete) return;
 
     setIsSaving(true);
     const { error } = await supabase.from('profiles').delete().eq('id', profileId);
     if (!error) {
-      alert("User profile deleted successfully.");
+      showToast("User profile deleted successfully.", 'success');
       setReports(prev => prev.filter(r => r.id !== reportId));
     } else {
-      alert("Failed to delete user: " + error.message);
+      showAlert("Failed to delete user: " + error.message, 'Error', 'error');
     }
     setIsSaving(false);
   };
 
   const handleDismissReport = async (reportId: string) => {
-    const confirmDismiss = confirm("Are you sure you want to dismiss this report?");
+    const confirmDismiss = await showConfirm("Are you sure you want to dismiss this report?");
     if (!confirmDismiss) return;
 
     setIsSaving(true);
     const { error } = await supabase.from('reports').delete().eq('id', reportId);
     if (!error) {
-      alert("Report dismissed successfully.");
+      showToast("Report dismissed successfully.", 'success');
       setReports(prev => prev.filter(r => r.id !== reportId));
     } else {
-      alert("Failed to dismiss report: " + error.message);
+      showAlert("Failed to dismiss report: " + error.message, 'Error', 'error');
     }
     setIsSaving(false);
   };
@@ -1532,9 +1522,9 @@ export default function AdminPortal() {
       }));
       
       const { error } = await supabase.from('messages').insert(messages);
-      if (error) alert('Error broadcasting: ' + error.message);
+      if (error) showAlert('Error broadcasting: ' + error.message, 'Broadcast Error', 'error');
       else {
-        alert('Broadcast Sent Successfully!');
+        showToast('Broadcast Sent Successfully!', 'success');
         setBroadcastMessage('');
       }
     }
@@ -1551,7 +1541,7 @@ export default function AdminPortal() {
   const handleCreateStaff = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newStaffForm.email || !newStaffForm.password) {
-      alert('Email and password are required');
+      showToast('Email and password are required', 'warning');
       return;
     }
     setIsSaving(true);
@@ -1582,7 +1572,7 @@ export default function AdminPortal() {
         });
       }
 
-      alert('Staff account created successfully!');
+      showToast('Staff account created successfully!', 'success');
       setShowStaffModal(false);
       setNewStaffForm({
         full_name: '',
@@ -1602,7 +1592,7 @@ export default function AdminPortal() {
       const { data: updatedUsers } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
       if (updatedUsers) setUsers(updatedUsers);
     } catch (err: any) {
-      alert('Error creating staff account: ' + err.message);
+      showAlert('Error creating staff account: ' + err.message, 'Error', 'error');
     } finally {
       setIsSaving(false);
     }
@@ -1610,7 +1600,7 @@ export default function AdminPortal() {
 
   const handleResetStaffPassword = async (userId: string) => {
     if (!newStaffPasswordInput || newStaffPasswordInput.length < 6) {
-      alert('Password must be at least 6 characters');
+      showToast('Password must be at least 6 characters', 'warning');
       return;
     }
     try {
@@ -1619,27 +1609,27 @@ export default function AdminPortal() {
         updated_at: new Date().toISOString()
       }).eq('id', userId);
       if (error) throw error;
-      alert('Staff password reset token updated successfully!');
+      showToast('Staff password reset token updated successfully!', 'success');
       setStaffResetModalUser(null);
       setNewStaffPasswordInput('');
     } catch (err: any) {
-      alert('Error resetting password: ' + err.message);
+      showAlert('Error resetting password: ' + err.message, 'Error', 'error');
     }
   };
 
   const handleToggleStaffLock = async (user: UserProfile) => {
     const isCurrentlyLocked = (user as any).is_locked || false;
     const action = isCurrentlyLocked ? 'Unlock / Restore' : 'Lock / Suspend';
-    if (!confirm(`Are you sure you want to ${action} ${user.full_name || 'this staff account'}?`)) return;
+    if (!await showConfirm(`Are you sure you want to ${action} ${user.full_name || 'this staff account'}?`)) return;
     try {
       const { error } = await supabase.from('profiles').update({
         is_locked: !isCurrentlyLocked
       }).eq('id', user.id);
       if (error) throw error;
       setUsers(prev => prev.map(u => u.id === user.id ? { ...u, is_locked: !isCurrentlyLocked } : u));
-      alert(`Account ${isCurrentlyLocked ? 'Unlocked' : 'Suspended'} successfully!`);
+      showToast(`Account ${isCurrentlyLocked ? 'Unlocked' : 'Suspended'} successfully!`, 'success');
     } catch (err: any) {
-      alert('Error updating account status: ' + err.message);
+      showAlert('Error updating account status: ' + err.message, 'Error', 'error');
     }
   };
 
@@ -1666,9 +1656,10 @@ export default function AdminPortal() {
         image_url: 'sini_coffee',
         coin_price: 20
       });
-      alert('Gift Catalog Item Added Successfully!');
-    } catch (err: any) {
-      alert('Error adding catalog item: ' + err.message);
+      showToast('Gift Catalog Item Added Successfully!', 'success');
+    } catch (err) {
+      const msg = err?.message || err?.details || JSON.stringify(err);
+      showAlert('Error adding catalog item: ' + msg, 'Catalog Error', 'error');
     }
   };
 
@@ -1682,7 +1673,7 @@ export default function AdminPortal() {
       if (error) throw error;
       setAdminCatalog(prev => prev.map(item => item.id === itemId ? { ...item, is_active: !currentStatus } : item));
     } catch (err: any) {
-      alert('Error updating catalog status: ' + err.message);
+      showAlert('Error updating catalog status: ' + err.message, 'Error', 'error');
     }
   };
 
@@ -1690,11 +1681,11 @@ export default function AdminPortal() {
     const confirmMsg = `Are you sure you want to update delivery status to "${newStatus}"?` + 
       (newStatus === 'failed' ? ' This will automatically refund the coins back to the sender.' : '');
     
-    if (!confirm(confirmMsg)) return;
+    if (!await showConfirm(confirmMsg)) return;
 
     let proofUrl = '';
     if (newStatus === 'delivered') {
-      const inputUrl = prompt("Enter Proof of Delivery Screenshot URL (optional) or leave blank:");
+      const inputUrl = await showPrompt("Enter Proof of Delivery Screenshot URL (optional) or leave blank:");
       if (inputUrl) {
         proofUrl = inputUrl;
       }
@@ -1726,7 +1717,7 @@ export default function AdminPortal() {
             type: 'admin_adjustment'
           });
         if (refundError) throw refundError;
-        alert('Delivery marked as failed. Coins refunded to sender.');
+        showToast('Delivery marked as failed. Coins refunded to sender.', 'info');
       }
 
       setAdminGifts(prev => prev.map(g => g.id === gift.id ? { 
@@ -1735,7 +1726,7 @@ export default function AdminPortal() {
         delivery_details: details
       } : g));
     } catch (err: any) {
-      alert('Error updating delivery status: ' + err.message);
+      showAlert('Error updating delivery status: ' + err.message, 'Error', 'error');
     }
   };
 
@@ -1745,9 +1736,9 @@ export default function AdminPortal() {
       const { error } = await supabase.from('vouch_records').update({ vouch_status: status }).eq('id', id);
       if (error) throw error;
       setVouchRecords(prev => prev.map(v => v.id === id ? { ...v, vouch_status: status } : v));
-      alert(`Vouch request marked as ${status}`);
+      showToast(`Vouch request marked as ${status}`, 'success');
     } catch (err: any) {
-      alert('Error updating vouch status: ' + err.message);
+      showAlert('Error updating vouch status: ' + err.message, 'Error', 'error');
     } finally {
       setIsSaving(false);
     }
@@ -1770,9 +1761,9 @@ export default function AdminPortal() {
       }
 
       setCounselorBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b));
-      alert(`Booking status updated to ${status}`);
+      showToast(`Booking status updated to ${status}`, 'success');
     } catch (err: any) {
-      alert('Error updating booking status: ' + err.message);
+      showAlert('Error updating booking status: ' + err.message, 'Error', 'error');
     } finally {
       setIsSaving(false);
     }
@@ -1781,14 +1772,14 @@ export default function AdminPortal() {
   const handleUpdateAdminPassword = async () => {
     if (!settings) return;
     if (newAdminPassword.length < 8) {
-      alert('Password must be at least 8 characters');
+      showToast('Password must be at least 8 characters', 'warning');
       return;
     }
     setIsSaving(true);
     const { error } = await supabase.from('settings').update({ system_access_key: newAdminPassword }).eq('id', settings.id);
-    if (error) alert('Error updating key: ' + error.message);
+    if (error) showAlert('Error updating key: ' + error.message, 'Error', 'error');
     else {
-      alert('System Access Key Updated!');
+      showToast('System Access Key Updated!', 'success');
       setNewAdminPassword('');
     }
     setIsSaving(false);
@@ -3743,7 +3734,7 @@ export default function AdminPortal() {
                         author_id: user?.id
                      });
                      setIsGeneratingAI(false);
-                     alert("AI Topic Generated Successfully!");
+                     showToast("AI Topic Generated Successfully!", 'success');
                   }}
                   disabled={isGeneratingAI}
                   className="btn-primary flex items-center gap-2"
@@ -3824,13 +3815,13 @@ export default function AdminPortal() {
                                  <td className="py-4 text-right space-x-2">
                                     <button 
                                        onClick={async () => {
-                                         if (!confirm('Are you sure you want to delete this community post?')) return;
+                                         if (!await showConfirm('Are you sure you want to delete this community post?')) return;
                                          const { error } = await supabase.from('community_posts').delete().eq('id', post.id);
                                          if (!error) {
                                            setCommunityPosts(prev => prev.filter(p => p.id !== post.id));
-                                           alert('Post deleted successfully.');
+                                           showToast('Post deleted successfully.', 'success');
                                          } else {
-                                           alert('Failed to delete post: ' + error.message);
+                                           showAlert('Failed to delete post: ' + error.message, 'Error', 'error');
                                          }
                                        }}
                                        className="p-2 hover:bg-red-50 text-red-500 rounded-xl transition-all"
@@ -3840,13 +3831,13 @@ export default function AdminPortal() {
                                     </button>
                                     <button 
                                        onClick={async () => {
-                                         if (!confirm('Are you sure you want to suspend this user?')) return;
+                                         if (!await showConfirm('Are you sure you want to suspend this user?')) return;
                                          const { error } = await supabase.from('profiles').update({ role: 'suspended' }).eq('id', post.author_id);
                                          if (!error) {
-                                           alert('User suspended successfully.');
+                                           showToast('User suspended successfully.', 'success');
                                            setCommunityPosts(prev => prev.map(p => p.author_id === post.author_id ? { ...p, profiles: { ...p.profiles, role: 'suspended' } } : p));
                                          } else {
-                                           alert('Failed to suspend user: ' + error.message);
+                                           showAlert('Failed to suspend user: ' + error.message, 'Error', 'error');
                                          }
                                        }}
                                        disabled={post.profiles?.role === 'suspended'}
@@ -4992,10 +4983,10 @@ export default function AdminPortal() {
                             <div className="flex gap-2 justify-end">
                               <button 
                                 onClick={async () => {
-                                  if (!confirm('Are you sure you want to suspend this candidate?')) return;
+                                  if (!await showConfirm('Are you sure you want to suspend this candidate?')) return;
                                   const { error } = await supabase.from('profiles').update({ is_locked: true }).eq('id', user.id);
-                                  if (error) alert('Error: ' + error.message);
-                                  else alert('User account suspended successfully.');
+                                  if (error) showAlert('Error: ' + error.message, 'Error', 'error');
+                                  else showToast('User account suspended successfully.', 'success');
                                 }} 
                                 className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[10px] font-bold"
                               >
@@ -5003,18 +4994,18 @@ export default function AdminPortal() {
                               </button>
                               <button 
                                 onClick={async () => {
-                                  const msg = prompt('Enter the warning message to display to this user:');
+                                  const msg = await showPrompt('Enter the warning message to display to this user:');
                                   if (!msg) return;
                                   const { error } = await supabase.from('profiles').update({ warning_message: msg }).eq('id', user.id);
-                                  if (error) alert('Error: ' + error.message);
-                                  else alert('Warning alert sent to user dashboard.');
+                                  if (error) showAlert('Error: ' + error.message, 'Error', 'error');
+                                  else showToast('Warning alert sent to user dashboard.', 'success');
                                 }} 
                                 className="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-[10px] font-bold"
                               >
                                 Warn
                               </button>
                               <button 
-                                onClick={() => alert('Risk flag cleared for user.')} 
+                                onClick={() => showToast('Risk flag cleared for user.', 'success')} 
                                 className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-[10px] font-bold"
                               >
                                 Clear Risk
@@ -5364,7 +5355,7 @@ export default function AdminPortal() {
                   </button>
                   <button 
                     onClick={async () => {
-                      if (confirm('Approve this verification request?')) {
+                      if (await showConfirm('Approve this verification request?')) {
                         await handleUpdateVerification(selectedVerification.id, 'verified', selectedVerification.user_id);
                         setSelectedVerification(null);
                       }

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useUI } from '@/context/UIContext';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from '@/i18n/routing';
 import { useTranslations, useLocale } from 'next-intl';
@@ -70,6 +71,7 @@ interface Profile {
 }
 
 export default function ChatView({ isPremium = false }: { isPremium?: boolean }) {
+  const { showConfirm, showPrompt, showToast, showAlert } = useUI();
   const t = useTranslations('Chat');
   const locale = useLocale();
   const [matches, setMatches] = useState<Profile[]>([]);
@@ -821,7 +823,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
 
   const handleSendCoins = async () => {
     if (!currentUser || !selectedMatch) return;
-    const amountStr = prompt(locale === 'am' 
+    const amountStr = await showPrompt(locale === 'am' 
       ? "ለመላክ የሚፈልጉትን የሳንቲም (Coins) መጠን ያስገቡ፦" 
       : "Enter the number of coins you want to send:");
     if (!amountStr) return;
@@ -945,7 +947,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
 
   const handleBlockUser = async () => {
     if (!selectedMatch || !currentUser) return;
-    const confirmBlock = confirm(
+    const confirmBlock = await showConfirm(
       locale === 'am' 
         ? 'በእርግጥ ይህንን ተጠቃሚ ማገድ ይፈልጋሉ? ከእንግዲህ መገናኘት አይችሉም።' 
         : 'Are you sure you want to block this user? You will no longer be able to communicate.'

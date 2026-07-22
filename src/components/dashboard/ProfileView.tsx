@@ -261,6 +261,7 @@ function AppLockToggle({ locale }: { locale: string }) {
 }
 
 export default function ProfileView({ profile, onUpdate }: { profile: any, onUpdate: () => void }) {
+  const { showConfirm, showPrompt, showToast, showAlert } = useUI();
   const t = useTranslations('Dashboard.profile');
   const locale = useLocale();
   const router = useRouter();
@@ -555,7 +556,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
       ? 'Suuraa kana guutummaatti haquu kee mirkaneeffattaa?'
       : 'Are you sure you want to delete this photo permanently from your profile and cloud storage?';
 
-    if (!window.confirm(confirmMsg)) return;
+    if (!await showConfirm(confirmMsg)) return;
 
     setIsUploading(true);
     try {
@@ -641,7 +642,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
       ? 'እርግጠኛ ነዎት የመገለጫ ፎቶዎን ማጥፋት ይፈልጋሉ?'
       : 'Are you sure you want to remove your profile picture?';
 
-    if (!window.confirm(confirmMsg)) return;
+    if (!await showConfirm(confirmMsg)) return;
 
     setIsUploading(true);
     try {

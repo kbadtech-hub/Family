@@ -29,6 +29,7 @@ interface SwipeCardsProps {
 }
 
 export default function SwipeCards({ userProfile, candidates, onLike, onPass, isPremium = false }: SwipeCardsProps) {
+  const { showConfirm, showPrompt, showToast, showAlert } = useUI();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
   const [swipeOffset, setSwipeOffset] = useState({ x: 0, y: 0 });
@@ -325,9 +326,9 @@ export default function SwipeCards({ userProfile, candidates, onLike, onPass, is
                   <button
                     onClick={async (e) => {
                       e.stopPropagation();
-                      const reason = prompt("Report User - Enter reason (abuse, explicit content, scam, other):", "abuse");
+                      const reason = await showPrompt("Report User - Enter reason (abuse, explicit content, scam, other):", "abuse");
                       if (!reason) return;
-                      const details = prompt("Enter report details:") || "";
+                      const details = await showPrompt("Enter report details:") || "";
                       const { error } = await supabase.from('reports').insert({
                         reporter_id: userProfile.id,
                         reported_id: activeCandidate.id,
@@ -346,7 +347,7 @@ export default function SwipeCards({ userProfile, candidates, onLike, onPass, is
                   <button
                     onClick={async (e) => {
                       e.stopPropagation();
-                      if (confirm("Block User - Are you sure? They will disappear from your feed.")) {
+                      if (await showConfirm("Block User - Are you sure? They will disappear from your feed.")) {
                         const { error } = await supabase.from('blocks').insert({
                           blocker_id: userProfile.id,
                           blocked_id: activeCandidate.id
