@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { resolveCoinAmount } from '@/lib/coins';
+import { resolveCoinAmount, COIN_PACKAGES } from '@/lib/coins';
 
 /**
  * BETESEB — Chapa Payment Verification Endpoint
@@ -85,17 +85,41 @@ export async function POST(req: Request) {
       const isCoins = planType.startsWith('coins_') || planType.startsWith('c');
       const isVip = planType.startsWith('vip_') || planType.startsWith('v');
 
+      const { data: profileData } = await supabase.from('profiles').select('full_name, email').eq('id', userId).maybeSingle();
+      const userName = profileData?.full_name || profileData?.email || 'Beteseb User';
+      const userEmail = profileData?.email || null;
+
       if (isCoins) {
         const amountCoins = resolveCoinAmount(planType, 0, 'ETB');
+
+        const pack = COIN_PACKAGES.find(p => p.id === planType || p.id === `coins_${planType.replace(/^c_?/, '')}`);
+        const simulatedPrice = pack ? pack.priceEtb : 30;
+        const simulatedFee = Math.round(simulatedPrice * 0.035 * 100) / 100;
 
         await supabase.from('payments').insert({
           user_id: userId,
           plan_type: `coins_${amountCoins}`,
-          amount: 0,
+          amount: simulatedPrice,
           currency: 'ETB',
           status: 'approved',
           receipt_url: `Chapa TX (Simulated): ${tx_ref}`,
         });
+
+        try {
+          await supabase.from('financial_transactions').insert({
+            tx_ref: tx_ref,
+            user_id: userId,
+            user_name_snapshot: userName,
+            user_email_snapshot: userEmail,
+            revenue_source: 'coin_sale',
+            payment_gateway: 'chapa',
+            currency: 'ETB',
+            gross_amount: simulatedPrice,
+            gateway_fee: simulatedFee,
+            net_amount: Math.max(0, simulatedPrice - simulatedFee),
+            payment_status: 'completed'
+          });
+        } catch (err) {}
 
         await supabase.from('coin_transactions').insert({
           user_id: userId,
@@ -122,17 +146,41 @@ export async function POST(req: Request) {
         if (cleanPlan === '12m' || cleanPlan === '1y') days = 365;
         if (isLifetime) days = 36500;
 
+        let simulatedPrice = 299.98;
+        if (cleanPlan === '3m') simulatedPrice = 759.98;
+        if (cleanPlan === '6m') simulatedPrice = 1299.98;
+        if (cleanPlan === '12m' || cleanPlan === '1y') simulatedPrice = 1999.98;
+        if (isLifetime) simulatedPrice = 2999.98;
+
+        const simulatedFee = Math.round(simulatedPrice * 0.035 * 100) / 100;
+
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + days);
 
         await supabase.from('payments').insert({
           user_id: userId,
           plan_type: planType,
-          amount: 0,
+          amount: simulatedPrice,
           currency: 'ETB',
           status: 'approved',
           receipt_url: `Chapa TX (Simulated): ${tx_ref}`,
         });
+
+        try {
+          await supabase.from('financial_transactions').insert({
+            tx_ref: tx_ref,
+            user_id: userId,
+            user_name_snapshot: userName,
+            user_email_snapshot: userEmail,
+            revenue_source: 'subscription_vip',
+            payment_gateway: 'chapa',
+            currency: 'ETB',
+            gross_amount: simulatedPrice,
+            gateway_fee: simulatedFee,
+            net_amount: Math.max(0, simulatedPrice - simulatedFee),
+            payment_status: 'completed'
+          });
+        } catch (err) {}
 
         const updatePayload: any = {
           is_vip_member: true,
@@ -157,14 +205,38 @@ export async function POST(req: Request) {
         const premiumUntil = new Date();
         premiumUntil.setDate(premiumUntil.getDate() + days);
 
+        let simulatedPrice = 149.99;
+        if (planType === '3m') simulatedPrice = 379.99;
+        if (planType === '6m') simulatedPrice = 649.99;
+        if (planType === '12m' || planType === '1y') simulatedPrice = 999.99;
+        if (isLifetime) simulatedPrice = 1499.99;
+
+        const simulatedFee = Math.round(simulatedPrice * 0.035 * 100) / 100;
+
         await supabase.from('payments').insert({
           user_id: userId,
           plan_type: planType,
-          amount: 0,
+          amount: simulatedPrice,
           currency: 'ETB',
           status: 'approved',
           receipt_url: `Chapa TX (Simulated): ${tx_ref}`,
         });
+
+        try {
+          await supabase.from('financial_transactions').insert({
+            tx_ref: tx_ref,
+            user_id: userId,
+            user_name_snapshot: userName,
+            user_email_snapshot: userEmail,
+            revenue_source: 'subscription_premium',
+            payment_gateway: 'chapa',
+            currency: 'ETB',
+            gross_amount: simulatedPrice,
+            gateway_fee: simulatedFee,
+            net_amount: Math.max(0, simulatedPrice - simulatedFee),
+            payment_status: 'completed'
+          });
+        } catch (err) {}
 
         const updatePayload: any = {
           premium_until: premiumUntil.toISOString(),

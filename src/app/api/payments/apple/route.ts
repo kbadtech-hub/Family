@@ -326,12 +326,12 @@ function getPlanPriceUSD(planType: string): number {
     case '12m':
     case '1y': return 49.99;
     case 'lifetime': return 74.99;
-    case 'vip_1m': return 15.99;
-    case 'vip_3m': return 39.99;
-    case 'vip_6m': return 67.99;
+    case 'vip_1m': return 15.98;
+    case 'vip_3m': return 39.98;
+    case 'vip_6m': return 67.98;
     case 'vip_12m':
-    case 'vip_1y': return 99.99;
-    case 'vip_lifetime': return 149.99;
+    case 'vip_1y': return 99.98;
+    case 'vip_lifetime': return 149.98;
     default: return 7.99;
   }
 }

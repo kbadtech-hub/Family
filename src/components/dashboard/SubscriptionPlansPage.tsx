@@ -13,7 +13,8 @@ import {
   Crown,
   EyeOff,
   UserCheck,
-  Award
+  Award,
+  X
 } from 'lucide-react';
 import { useLocale } from 'next-intl';
 import LocationGate from '@/components/dashboard/LocationGate';
@@ -52,6 +53,54 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
   const isEthiopia = isLocationVerified ? isEthiopiaVerified : false;
   const currency = isEthiopia ? 'ETB' : 'USD';
   const isNative = typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.();
+
+  // Payment Claim States
+  const [showClaimModal, setShowClaimModal] = useState(false);
+  const [claimTxRef, setClaimTxRef] = useState('');
+  const [claimType, setClaimType] = useState('subscription_vip');
+  const [claimExplanation, setClaimExplanation] = useState('');
+  const [claimError, setClaimError] = useState('');
+  const [submittingClaim, setSubmittingClaim] = useState(false);
+
+  const handleSubmitClaim = async () => {
+    if (!claimTxRef.trim()) {
+      setClaimError(isAm ? 'እባክዎ የትራንዛክሽን ቁጥር ያስገቡ።' : 'Please enter a transaction reference.');
+      return;
+    }
+    setSubmittingClaim(true);
+    setClaimError('');
+
+    try {
+      const ticketNumber = `BTS-CLAIM-${Math.floor(10000 + Math.random() * 90000)}`;
+      const formattedMessage = `[PAYMENT_CLAIM]\nTx Ref: ${claimTxRef.trim()}\nType: ${claimType}\nPackage: Manual Claim\nExplanation: ${claimExplanation.trim()}`;
+
+      const { error } = await supabase
+        .from('support_tickets')
+        .insert({
+          user_id: profile?.id || null,
+          message: formattedMessage,
+          status: 'pending',
+          ticket_number: ticketNumber
+        });
+
+      if (error) throw error;
+
+      showAlert(
+        isAm 
+          ? `የክፍያ ቅሬታዎ በትኬት ቁጥር ${ticketNumber} በተሳካ ሁኔታ ተመዝግቧል። አድሚኑ መርምሮ ወዲያውኑ አገልግሎቱን ያነቃቃል።` 
+          : `Your payment claim has been submitted successfully under ticket ${ticketNumber}. Admins will verify it shortly.`,
+        'success',
+        isAm ? 'ቅሬታው ቀርቧል' : 'Claim Submitted'
+      );
+      setShowClaimModal(false);
+      setClaimTxRef('');
+      setClaimExplanation('');
+    } catch (err: any) {
+      setClaimError(err.message);
+    } finally {
+      setSubmittingClaim(false);
+    }
+  };
 
   // Multi-lingual instructions for Google Play Policy compliance (Web-to-App upgrade)
   const instructions = {
@@ -122,18 +171,18 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
   // 2. VIP Pricing Packages (2x Standard Tier)
   const vipPlans = {
     ETB: [
-      { id: 'vip_1m', name: isAm ? '1 ወር VIP' : '1 Month VIP', price: 299.99, originalPrice: 299.99, period: isAm ? 'በወር' : 'monthly', discount: 0 },
-      { id: 'vip_3m', name: isAm ? '3 ወር VIP (15% ቅናሽ)' : '3 Months VIP (15% Off)', price: 759.99, originalPrice: 899.97, period: isAm ? 'በ3 ወር' : 'quarterly', discount: 15, popular: true },
-      { id: 'vip_6m', name: isAm ? '6 ወር VIP (28% ቅናሽ)' : '6 Months VIP (28% Off)', price: 1299.99, originalPrice: 1799.94, period: isAm ? 'በ6 ወር' : 'semi-annually', discount: 28 },
-      { id: 'vip_12m', name: isAm ? '1 ዓመት VIP (44% ቅናሽ)' : '1 Year VIP (44% Off)', price: 1999.99, originalPrice: 3599.88, period: isAm ? 'በዓመት' : 'yearly', discount: 44 },
-      { id: 'vip_lifetime', name: isAm ? 'የዕድሜ ልክ VIP' : 'Lifetime VIP', price: 2999.99, originalPrice: 2999.99, period: isAm ? 'ቋሚ' : 'lifetime', discount: 0 }
+      { id: 'vip_1m', name: isAm ? '1 ወር VIP' : '1 Month VIP', price: 299.98, originalPrice: 299.98, period: isAm ? 'በወር' : 'monthly', discount: 0 },
+      { id: 'vip_3m', name: isAm ? '3 ወር VIP (15% ቅናሽ)' : '3 Months VIP (15% Off)', price: 759.98, originalPrice: 899.94, period: isAm ? 'በ3 ወር' : 'quarterly', discount: 15, popular: true },
+      { id: 'vip_6m', name: isAm ? '6 ወር VIP (28% ቅናሽ)' : '6 Months VIP (28% Off)', price: 1299.98, originalPrice: 1799.88, period: isAm ? 'በ6 ወር' : 'semi-annually', discount: 28 },
+      { id: 'vip_12m', name: isAm ? '1 ዓመት VIP (44% ቅናሽ)' : '1 Year VIP (44% Off)', price: 1999.98, originalPrice: 3599.76, period: isAm ? 'በዓመት' : 'yearly', discount: 44 },
+      { id: 'vip_lifetime', name: isAm ? 'የዕድሜ ልክ VIP' : 'Lifetime VIP', price: 2999.98, originalPrice: 2999.98, period: isAm ? 'ቋሚ' : 'lifetime', discount: 0 }
     ],
     USD: [
-      { id: 'vip_1m', name: '1 Month VIP', price: 15.99, originalPrice: 15.99, period: 'monthly', discount: 0 },
-      { id: 'vip_3m', name: '3 Months VIP (17% Off)', price: 39.99, originalPrice: 47.97, period: 'quarterly', discount: 17, popular: true },
-      { id: 'vip_6m', name: '6 Months VIP (29% Off)', price: 67.99, originalPrice: 95.94, period: 'semi-annually', discount: 29 },
-      { id: 'vip_12m', name: '1 Year VIP (48% Off)', price: 99.99, originalPrice: 191.88, period: 'yearly', discount: 48 },
-      { id: 'vip_lifetime', name: 'Lifetime VIP', price: 149.99, originalPrice: 149.99, period: 'lifetime', discount: 0 }
+      { id: 'vip_1m', name: '1 Month VIP', price: 15.98, originalPrice: 15.98, period: 'monthly', discount: 0 },
+      { id: 'vip_3m', name: '3 Months VIP (17% Off)', price: 39.98, originalPrice: 47.94, period: 'quarterly', discount: 17, popular: true },
+      { id: 'vip_6m', name: '6 Months VIP (29% Off)', price: 67.98, originalPrice: 95.88, period: 'semi-annually', discount: 29 },
+      { id: 'vip_12m', name: '1 Year VIP (48% Off)', price: 99.98, originalPrice: 191.76, period: 'yearly', discount: 48 },
+      { id: 'vip_lifetime', name: 'Lifetime VIP', price: 149.98, originalPrice: 149.98, period: 'lifetime', discount: 0 }
     ]
   };
 
@@ -544,7 +593,69 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
         ))}
       </div>
 
+      {/* Payment Claim Link */}
+      <div className="pt-8 text-center">
+        <button
+          onClick={() => setShowClaimModal(true)}
+          className="text-[10px] md:text-xs font-black text-primary uppercase tracking-widest underline decoration-primary/20 hover:text-accent transition-colors"
+        >
+          {isAm ? 'ክፍያ ፈጽመው አልሰራልዎትም? ቅሬታ ያቅርቡ (Claim Payment Issue)' : 'Paid but service not activated? Submit a claim'}
+        </button>
+      </div>
 
+      {/* Payment Claim Modal */}
+      {showClaimModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-accent/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl border border-primary/10 flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-muted flex justify-between items-center bg-accent text-white">
+              <h3 className="font-bold text-sm tracking-tight uppercase">{isAm ? 'የክፍያ ቅሬታ ማቅረቢያ' : 'Submit Payment Claim'}</h3>
+              <button onClick={() => setShowClaimModal(false)} className="text-white/60 hover:text-white transition-colors"><X size={20} /></button>
+            </div>
+            <div className="p-6 space-y-4 overflow-y-auto">
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{isAm ? 'የትራንዛክሽን ቁጥር (Transaction ID / Reference)' : 'Transaction ID / Reference'}</label>
+                <input
+                  type="text"
+                  value={claimTxRef}
+                  onChange={(e) => setClaimTxRef(e.target.value)}
+                  placeholder="e.g. CHAPA-xxxx, STRIPE-xxxx, or Bank Receipt Ref"
+                  className="w-full p-4 bg-muted rounded-2xl border-transparent focus:ring-primary focus:bg-white focus:border-primary transition-all text-sm font-semibold"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{isAm ? 'የክፍያ ዓይነት' : 'Payment Type'}</label>
+                <select
+                  value={claimType}
+                  onChange={(e) => setClaimType(e.target.value)}
+                  className="w-full p-4 bg-muted rounded-2xl border-transparent focus:ring-primary focus:bg-white focus:border-primary transition-all text-sm font-semibold"
+                >
+                  <option value="subscription_vip">VIP Upgrade</option>
+                  <option value="subscription_premium">Diamond Upgrade</option>
+                  <option value="coins">Coins Package (100-10000 Coins)</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{isAm ? 'ማብራሪያ' : 'Explanation'}</label>
+                <textarea
+                  value={claimExplanation}
+                  onChange={(e) => setClaimExplanation(e.target.value)}
+                  placeholder={isAm ? 'የተፈጠረውን ችግር እዚህ ያብራሩ...' : 'Describe what happened (amount paid, method, etc.)...'}
+                  className="w-full p-4 bg-muted rounded-2xl border-transparent focus:ring-primary focus:bg-white focus:border-primary transition-all text-sm font-semibold h-24 resize-none"
+                />
+              </div>
+              {claimError && <p className="text-xs font-bold text-red-500">{claimError}</p>}
+              <button
+                onClick={handleSubmitClaim}
+                disabled={submittingClaim}
+                className="w-full py-4 bg-primary text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg hover:bg-primary-hover active:scale-95 transition-all flex items-center justify-center gap-2"
+              >
+                {submittingClaim ? <Loader2 className="animate-spin" size={14} /> : null}
+                {isAm ? 'ቅሬታውን አቅርብ' : 'Submit Claim'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <SystemAlertModal 
         isOpen={alertModal.isOpen} 

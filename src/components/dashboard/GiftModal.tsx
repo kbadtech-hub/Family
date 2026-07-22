@@ -205,6 +205,32 @@ export default function GiftModal({ recipientId, recipientName, locale, onClose,
 
       if (giftError) throw giftError;
 
+      // ── Mirror Gift Send to Master Ledger ──────────────────────────────────
+      try {
+        const txRef = `GIFT-SEND-${userId.substring(0, 8)}-${selectedGift.id.substring(0, 8)}-${Date.now()}`;
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('full_name, email')
+          .eq('id', userId)
+          .single();
+
+        await supabase.from('financial_transactions').insert({
+          tx_ref: txRef,
+          user_id: userId,
+          user_name_snapshot: prof?.full_name || prof?.email || 'Beteseb User',
+          user_email_snapshot: prof?.email || null,
+          revenue_source: 'gift_purchase',
+          payment_gateway: 'coin_balance',
+          currency: 'COINS',
+          gross_amount: selectedGift.coin_price,
+          gateway_fee: 0,
+          net_amount: selectedGift.coin_price,
+          payment_status: 'completed'
+        });
+      } catch (logErr) {
+        console.error('Failed to log gift transaction:', logErr);
+      }
+
       // 3. Deduct locally
       setCoinBalance(prev => prev - selectedGift.coin_price);
       setSuccessMsg(locale === 'am'

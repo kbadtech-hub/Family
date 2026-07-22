@@ -161,6 +161,37 @@ export default function WorkshopsView({ currency, userTier }: { currency: 'ETB' 
       });
 
       if (error) throw error;
+
+      // ── Mirror Counseling Payment to Master Ledger ─────────────────────────
+      try {
+        const txRef = `COUNSEL-${userId ? userId.substring(0, 8) : 'ANON'}-${Date.now()}`;
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('full_name, email')
+          .eq('id', userId)
+          .single();
+
+        const gateway = paymentMethod === 'coins' ? 'coin_balance' : (paymentMethod === 'chapa' ? 'chapa' : 'stripe');
+        const curr = paymentMethod === 'coins' ? 'COINS' : finalCurrency;
+        const fee = paymentMethod === 'coins' ? 0 : Math.round(finalAmount * 0.035 * 100) / 100;
+
+        await supabase.from('financial_transactions').insert({
+          tx_ref: txRef,
+          user_id: userId,
+          user_name_snapshot: prof?.full_name || prof?.email || 'Beteseb User',
+          user_email_snapshot: prof?.email || null,
+          revenue_source: 'counseling_sale',
+          payment_gateway: gateway as any,
+          currency: curr as any,
+          gross_amount: finalAmount,
+          gateway_fee: fee,
+          net_amount: Math.max(0, finalAmount - fee),
+          payment_status: 'completed'
+        });
+      } catch (logErr) {
+        console.error('Failed to log counseling transaction:', logErr);
+      }
+
       alert('Your booking request has been submitted successfully! Check back later for approval status.');
       setShowBookingModal(false);
     } catch (err: any) {

@@ -83,26 +83,26 @@ export type TrustTier = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond' | 
 export function getUserTier(profile: ProfileData | null, hasVouchedRecords: boolean): TrustTier {
   if (!profile) return 'bronze';
   
-  const isIdVerified = profile.verification_status === 'verified';
-  
-  // 1. Bronze and Silver checks (If NOT ID verified)
-  if (!isIdVerified) {
-    return profile.onboarding_completed ? 'silver' : 'bronze';
-  }
-  
-  // 2. VIP Tier check (Gold + VIP Membership active)
+  // 1. VIP Tier check (Active VIP Membership overrides verification status)
   const isVip = Boolean(profile.is_vip_member) &&
     (!profile.vip_expires_at || new Date(profile.vip_expires_at) > new Date() || Boolean(profile.is_lifetime));
   if (isVip) {
     return 'vip';
   }
 
-  // 3. Diamond Tier check (Gold + Standard subscription active)
-  const isPremium = Boolean(profile.is_lifetime) ||
-                    (profile.premium_until && new Date(profile.premium_until) > new Date()) || 
-                    ['admin', 'super_admin', 'expert'].includes(profile.role || '');
-  if (isPremium) {
+  // 2. Diamond Tier check (Active Standard subscription overrides verification status)
+  const isDiamond = Boolean(profile.is_lifetime) || 
+    (profile.premium_until && new Date(profile.premium_until) > new Date()) ||
+    ['admin', 'super_admin', 'expert'].includes(profile.role || '');
+  if (isDiamond) {
     return 'diamond';
+  }
+  
+  const isIdVerified = profile.verification_status === 'verified';
+  
+  // 3. Bronze and Silver checks (If NOT ID verified and not paid)
+  if (!isIdVerified) {
+    return profile.onboarding_completed ? 'silver' : 'bronze';
   }
   
   // 4. Platinum Tier check (Gold + Peer Witness vouched)

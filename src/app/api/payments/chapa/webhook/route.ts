@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { resolveCoinAmount } from '@/lib/coins';
+import { resolveCoinAmount, COIN_PACKAGES } from '@/lib/coins';
 import crypto from 'crypto';
 
 /** Maps premium plan type strings to their duration in days */
@@ -85,21 +85,42 @@ export async function POST(req: Request) {
       return NextResponse.json({ status: 'success', message: 'Already processed' });
     }
 
+    const { data: profileData } = await supabase.from('profiles').select('full_name, email').eq('id', userId).maybeSingle();
+    const userName = profileData?.full_name || profileData?.email || 'Beteseb User';
+    const userEmail = profileData?.email || null;
+
     const isCoins = planType.startsWith('coins_') || planType.startsWith('c');
     const isVip = planType.startsWith('vip_') || planType.startsWith('v');
 
     if (isCoins) {
-      const paidAmt = parseFloat(String(amount || 0));
-      const amountCoins = resolveCoinAmount(planType, paidAmt, 'ETB');
+      const coinAmt = parseFloat(String(amount || 0));
+      const amountCoins = resolveCoinAmount(planType, coinAmt, 'ETB');
 
       await supabase.from('payments').insert({
         user_id: userId,
         plan_type: `coins_${amountCoins}`,
-        amount: parseFloat(String(amount || 0)),
+        amount: coinAmt,
         currency: 'ETB',
         status: 'approved',
         receipt_url: `Chapa TX: ${tx_ref}`,
       });
+
+      const coinFee = Math.round(coinAmt * 0.035 * 100) / 100;
+      try {
+        await supabase.from('financial_transactions').insert({
+          tx_ref: tx_ref,
+          user_id: userId,
+          user_name_snapshot: userName,
+          user_email_snapshot: userEmail,
+          revenue_source: 'coin_sale',
+          payment_gateway: 'chapa',
+          currency: 'ETB',
+          gross_amount: coinAmt,
+          gateway_fee: coinFee,
+          net_amount: Math.max(0, coinAmt - coinFee),
+          payment_status: 'completed'
+        });
+      } catch (err) {}
 
       await supabase.from('coin_transactions').insert({
         user_id: userId,
@@ -122,14 +143,32 @@ export async function POST(req: Request) {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + days);
 
+      const vipAmt = parseFloat(String(amount || 0));
       await supabase.from('payments').insert({
         user_id: userId,
         plan_type: planType,
-        amount: parseFloat(String(amount || 0)),
+        amount: vipAmt,
         currency: 'ETB',
         status: 'approved',
         receipt_url: `Chapa TX: ${tx_ref}`,
       });
+
+      const vipFee = Math.round(vipAmt * 0.035 * 100) / 100;
+      try {
+        await supabase.from('financial_transactions').insert({
+          tx_ref: tx_ref,
+          user_id: userId,
+          user_name_snapshot: userName,
+          user_email_snapshot: userEmail,
+          revenue_source: 'subscription_vip',
+          payment_gateway: 'chapa',
+          currency: 'ETB',
+          gross_amount: vipAmt,
+          gateway_fee: vipFee,
+          net_amount: Math.max(0, vipAmt - vipFee),
+          payment_status: 'completed'
+        });
+      } catch (err) {}
 
       const vipUpdatePayload: any = {
         is_vip_member: true,
@@ -157,14 +196,32 @@ export async function POST(req: Request) {
       const premiumUntil = new Date();
       premiumUntil.setDate(premiumUntil.getDate() + days);
 
+      const premAmt = parseFloat(String(amount || 0));
       await supabase.from('payments').insert({
         user_id: userId,
         plan_type: planType,
-        amount: parseFloat(String(amount || 0)),
+        amount: premAmt,
         currency: 'ETB',
         status: 'approved',
         receipt_url: `Chapa TX: ${tx_ref}`,
       });
+
+      const premFee = Math.round(premAmt * 0.035 * 100) / 100;
+      try {
+        await supabase.from('financial_transactions').insert({
+          tx_ref: tx_ref,
+          user_id: userId,
+          user_name_snapshot: userName,
+          user_email_snapshot: userEmail,
+          revenue_source: 'subscription_premium',
+          payment_gateway: 'chapa',
+          currency: 'ETB',
+          gross_amount: premAmt,
+          gateway_fee: premFee,
+          net_amount: Math.max(0, premAmt - premFee),
+          payment_status: 'completed'
+        });
+      } catch (err) {}
 
       const premUpdatePayload: any = {
         premium_until: premiumUntil.toISOString()

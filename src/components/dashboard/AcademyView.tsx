@@ -166,6 +166,32 @@ export default function AcademyView({
       note: `unlock_video_${mod.id}`
     });
 
+    // 3. Mirror Course Unlock Payment to Master Ledger ───────────────────────
+    try {
+      const txRef = `COURSE-UNLOCK-${user.id.substring(0, 8)}-${mod.id.substring(0, 8)}-${Date.now()}`;
+      const { data: prof } = await supabase
+        .from('profiles')
+        .select('full_name, email')
+        .eq('id', user.id)
+        .single();
+
+      await supabase.from('financial_transactions').insert({
+        tx_ref: txRef,
+        user_id: user.id,
+        user_name_snapshot: prof?.full_name || prof?.email || 'Beteseb User',
+        user_email_snapshot: prof?.email || null,
+        revenue_source: 'course_sale',
+        payment_gateway: 'coin_balance',
+        currency: 'COINS',
+        gross_amount: mod.coin_price,
+        gateway_fee: 0,
+        net_amount: mod.coin_price,
+        payment_status: 'completed'
+      });
+    } catch (logErr) {
+      console.error('Failed to log course transaction:', logErr);
+    }
+
     setUnlockedIds(prev => new Set([...prev, mod.id]));
     setUnlocking(null);
   };

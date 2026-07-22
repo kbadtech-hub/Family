@@ -1251,6 +1251,173 @@ export default function AdminPortal() {
     }
   };
 
+  const parseClaim = (message: string) => {
+    const lines = message.split('\n');
+    const txRef = lines.find(l => l.includes('Tx Ref:'))?.split('Tx Ref:')[1]?.trim() || '';
+    const type = lines.find(l => l.includes('Type:'))?.split('Type:')[1]?.trim() || '';
+    const pkg = lines.find(l => l.includes('Package:'))?.split('Package:')[1]?.trim() || '';
+    const explanation = lines.find(l => l.includes('Explanation:'))?.split('Explanation:')[1]?.trim() || '';
+    return { txRef, type, pkg, explanation };
+  };
+
+  const handleApprovePaymentClaim = async (ticket: any) => {
+    const claim = parseClaim(ticket.message);
+    if (!claim.txRef || !claim.type) {
+      alert("Invalid payment claim formatting.");
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to approve this claim and manually grant access for ${claim.type}?`)) return;
+
+    setIsSaving(true);
+    try {
+      const { user_id } = ticket;
+      if (!user_id) throw new Error("No user ID associated with this support ticket.");
+
+      const { data: profileData } = await supabase.from('profiles').select('full_name, email').eq('id', user_id).maybeSingle();
+      const userName = profileData?.full_name || profileData?.email || 'Beteseb User';
+      const userEmail = profileData?.email || null;
+
+      // 1. Grant resource based on claim type
+      if (claim.type === 'subscription_vip') {
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 30); // Grant 30 days VIP status
+
+        const { error: profileErr } = await supabase
+          .from('profiles')
+          .update({
+            is_vip_member: true,
+            vip_expires_at: expiresAt.toISOString(),
+          })
+          .eq('id', user_id);
+
+        if (profileErr) throw profileErr;
+
+        // Insert into payments
+        await supabase.from('payments').insert({
+          user_id,
+          plan_type: 'vip_1m',
+          amount: 299.98,
+          currency: 'ETB',
+          status: 'approved',
+          receipt_url: `Manual Claim Approval: ${claim.txRef}`,
+        });
+
+        // Insert into financial_transactions
+        await supabase.from('financial_transactions').insert({
+          tx_ref: claim.txRef,
+          user_id,
+          user_name_snapshot: userName,
+          user_email_snapshot: userEmail,
+          revenue_source: 'subscription_vip',
+          payment_gateway: 'manual_admin',
+          currency: 'ETB',
+          gross_amount: 299.98,
+          gateway_fee: 0,
+          net_amount: 299.98,
+          payment_status: 'completed'
+        });
+
+      } else if (claim.type === 'subscription_premium') {
+        const premiumUntil = new Date();
+        premiumUntil.setDate(premiumUntil.getDate() + 30); // Grant 30 days Diamond status
+
+        const { error: profileErr } = await supabase
+          .from('profiles')
+          .update({
+            premium_until: premiumUntil.toISOString()
+          })
+          .eq('id', user_id);
+
+        if (profileErr) throw profileErr;
+
+        // Insert into payments
+        await supabase.from('payments').insert({
+          user_id,
+          plan_type: '1m',
+          amount: 149.99,
+          currency: 'ETB',
+          status: 'approved',
+          receipt_url: `Manual Claim Approval: ${claim.txRef}`,
+        });
+
+        // Insert into financial_transactions
+        await supabase.from('financial_transactions').insert({
+          tx_ref: claim.txRef,
+          user_id,
+          user_name_snapshot: userName,
+          user_email_snapshot: userEmail,
+          revenue_source: 'subscription_premium',
+          payment_gateway: 'manual_admin',
+          currency: 'ETB',
+          gross_amount: 149.99,
+          gateway_fee: 0,
+          net_amount: 149.99,
+          payment_status: 'completed'
+        });
+
+      } else if (claim.type === 'coins') {
+        const coinAmount = 1000; // Default grant 1000 coins for claims
+
+        // Insert coin transaction
+        const { error: coinErr } = await supabase.from('coin_transactions').insert({
+          user_id,
+          amount: coinAmount,
+          type: 'purchase',
+          note: `Manual Claim Approval: ${claim.txRef}`
+        });
+
+        if (coinErr) throw coinErr;
+
+        // Insert into payments
+        await supabase.from('payments').insert({
+          user_id,
+          plan_type: `coins_${coinAmount}`,
+          amount: 300,
+          currency: 'ETB',
+          status: 'approved',
+          receipt_url: `Manual Claim Approval: ${claim.txRef}`,
+        });
+
+        // Insert into financial_transactions
+        await supabase.from('financial_transactions').insert({
+          tx_ref: claim.txRef,
+          user_id,
+          user_name_snapshot: userName,
+          user_email_snapshot: userEmail,
+          revenue_source: 'coin_sale',
+          payment_gateway: 'manual_admin',
+          currency: 'ETB',
+          gross_amount: 300,
+          gateway_fee: 0,
+          net_amount: 300,
+          payment_status: 'completed'
+        });
+      }
+
+      // 2. Reply to the ticket and mark resolved
+      const { error: ticketErr } = await supabase.from('support_tickets').update({ 
+         status: 'resolved' 
+      }).eq('id', ticket.id);
+      
+      if (ticketErr) throw ticketErr;
+
+      const { data: { user: adminUser } } = await supabase.auth.getUser();
+      await supabase.from('support_replies').insert([{
+         ticket_id: ticket.id,
+         admin_id: adminUser?.id,
+         message: `Payment Claim approved and access granted manually. Reference: ${claim.txRef}`
+      }]);
+
+      setSupportTickets(prev => prev.map(t => t.id === ticket.id ? { ...t, status: 'resolved' } : t));
+      alert(`Claim approved successfully! Access/Resource granted.`);
+    } catch (err: any) {
+      alert(`Error approving claim: ${err.message}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleDeleteReportedUser = async (profileId: string, reportId: string) => {
     const confirmDelete = confirm("Are you sure you want to permanently delete this reported user profile? This cascades to delete their account data.");
     if (!confirmDelete) return;
@@ -3696,6 +3863,34 @@ export default function AdminPortal() {
                          <div className="p-6 bg-muted/30 rounded-2xl border border-muted italic text-sm text-accent leading-relaxed">
                             &quot;{ticket.message}&quot;
                          </div>
+                         {ticket.message.includes('[PAYMENT_CLAIM]') && (() => {
+                            const claim = parseClaim(ticket.message);
+                            return (
+                              <div className="p-5 bg-amber-50/50 border border-amber-200 rounded-2xl space-y-3 mt-4 text-left">
+                                <h5 className="font-black text-[10px] text-amber-800 uppercase tracking-widest flex items-center gap-1.5">
+                                  <ShieldAlert size={14} /> Payment Claim Details
+                                </h5>
+                                <div className="grid grid-cols-2 gap-4 text-xs">
+                                  <div>
+                                    <span className="text-gray-400 font-medium">Tx Ref / ID:</span>
+                                    <p className="font-bold text-accent font-mono">{claim.txRef || 'N/A'}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-400 font-medium">Claim Type:</span>
+                                    <p className="font-bold text-accent uppercase tracking-wider">{claim.type || 'N/A'}</p>
+                                  </div>
+                                </div>
+                                {ticket.status === 'pending' && (
+                                  <button
+                                    onClick={() => handleApprovePaymentClaim(ticket)}
+                                    className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-sm"
+                                  >
+                                    <CheckCircle2 size={14} /> Verify & Approve Claim
+                                  </button>
+                                )}
+                              </div>
+                            );
+                         })()}
 
                          {ticket.status === 'pending' ? (
                             <div className="space-y-4">
