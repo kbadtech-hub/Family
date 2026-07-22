@@ -3361,7 +3361,7 @@ export default function AdminPortal() {
                               {chapaSyncResult.synced && chapaSyncResult.synced.length > 0 && (
                                  <div className="space-y-1 mt-1 font-sans">
                                     <div className="font-semibold text-green-600 uppercase text-[10px]">Synced/Credited:</div>
-                                    {chapaSyncResult.synced.map((tx, idx) => (
+                                    {chapaSyncResult.synced.map((tx: any, idx: number) => (
                                        <div key={idx} className="pl-2 border-l border-green-300">
                                           User: <b>{tx.user}</b> ({tx.email})<br />
                                           Details: <b>{tx.details}</b> | Ref: <code>{tx.ref_id}</code>
@@ -3372,7 +3372,7 @@ export default function AdminPortal() {
                               {chapaSyncResult.failed && chapaSyncResult.failed.length > 0 && (
                                  <div className="space-y-1 mt-1 font-sans">
                                     <div className="font-semibold text-red-600 uppercase text-[10px]">Failed/Unmatched:</div>
-                                    {chapaSyncResult.failed.map((tx, idx) => (
+                                    {chapaSyncResult.failed.map((tx: any, idx: number) => (
                                        <div key={idx} className="pl-2 border-l border-red-300 text-gray-500">
                                           Ref: <code>{tx.ref_id}</code> - <span className="text-red-500">{tx.reason}</span>
                                        </div>
