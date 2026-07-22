@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 
 /**
- * BETESEB — Secure Admin Financial Transaction Logger
+ * BETESEB - Secure Admin Financial Transaction Logger
  *
  * Allows admin to manually log a financial transaction via server-side
  * service-role access. Prevents direct client-side Supabase writes.
