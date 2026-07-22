@@ -450,6 +450,14 @@ export default function AdminPortal() {
       bank_transfer: true
     },
     coin_packages: COIN_PACKAGES,
+    feature_locks: {
+      community_hub: false,
+      workshops: false,
+      wedding_planner: false,
+      counseling: false,
+      academy: false,
+      gifts: false
+    },
     ad_config: {
       enabled: true,
       test_mode: true,
@@ -700,6 +708,7 @@ export default function AdminPortal() {
               bank_transfer: true
             },
             coin_packages: (data.coin_packages && Array.isArray(data.coin_packages) && data.coin_packages.length > 0) ? data.coin_packages : COIN_PACKAGES,
+            feature_locks: data.cms_content?.feature_locks || { community_hub: false, workshops: false, wedding_planner: false, counseling: false, academy: false, gifts: false },
             ad_config: data.ad_config || {
               enabled: true,
               test_mode: true,
@@ -724,6 +733,7 @@ export default function AdminPortal() {
               bank_transfer: true
             },
             coin_packages: (data.coin_packages && Array.isArray(data.coin_packages) && data.coin_packages.length > 0) ? data.coin_packages : COIN_PACKAGES,
+            feature_locks: data.cms_content?.feature_locks || { community_hub: false, workshops: false, wedding_planner: false, counseling: false, academy: false, gifts: false },
             ad_config: data.ad_config || {
               enabled: true,
               test_mode: true,
@@ -856,6 +866,14 @@ export default function AdminPortal() {
           phone: cmsForm.phone,
           address: cmsForm.address,
           website_url: cmsForm.website_url,
+          feature_locks: cmsForm.feature_locks || {
+            community_hub: false,
+            workshops: false,
+            wedding_planner: false,
+            counseling: false,
+            academy: false,
+            gifts: false
+          }
         },
         contact_info: {
           email: cmsForm.email,
@@ -2940,6 +2958,57 @@ export default function AdminPortal() {
                            />
                         </label>
                      ))}
+                  </div>
+                </div>
+
+                {/* Dynamic Feature & Page Lock Control (የገጾችና አገልግሎቶች መቆጣጠሪያ) */}
+                <div className="bg-card p-10 rounded-[3rem] shadow-2xl border border-white/5 space-y-6 lg:col-span-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] flex items-center gap-2">
+                        <Lock size={16} /> Dynamic Page & Feature Locks (የገጾችና አገልግሎቶች መቆጣጠሪያ)
+                      </h3>
+                      <p className="text-[11px] text-foreground/50 italic mt-1">
+                        Toggle switches ON (Locked) to display "Coming Soon" branded popup to users, or OFF (Unlocked) for normal access.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {[
+                      { key: 'community_hub', name: 'Community Hub (የማህበረሰብ ጓዳ)', desc: '/community-hub page' },
+                      { key: 'workshops', name: 'Workshops & Classes (ወርክሾፖችና ትምህርቶች)', desc: '/classes page & workshop tab' },
+                      { key: 'wedding_planner', name: 'Wedding Planner (የሰርግ አዘጋጅ)', desc: 'Wedding planning suite' },
+                      { key: 'counseling', name: 'Counseling Sessions (የጋብቻ ካውንስሊንግ)', desc: '/counseling-session booking' },
+                      { key: 'academy', name: 'Beteseb Academy (ቤተሰብ አካዳሚ)', desc: 'Academy learning hub' },
+                      { key: 'gifts', name: 'Gifting Suite (የስጦታዎች አገልግሎት)', desc: 'Gifting & coin top-up' },
+                    ].map((item) => {
+                      const isLocked = cmsForm.feature_locks?.[item.key] ?? false;
+                      return (
+                        <div key={item.key} className={`p-5 rounded-2xl border transition-all flex items-center justify-between ${isLocked ? 'bg-red-500/10 border-red-500/30' : 'bg-background border-white/5'}`}>
+                          <div className="space-y-1">
+                            <span className="text-xs font-bold text-foreground block">{item.name}</span>
+                            <span className="text-[10px] font-medium text-foreground/40 block">{item.desc}</span>
+                            <span className={`text-[9px] font-black uppercase tracking-wider inline-block px-2 py-0.5 rounded-full ${isLocked ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                              {isLocked ? '🔒 Locked (ይቆለፋል)' : '🔓 Unlocked (ክፍት ነው)'}
+                            </span>
+                          </div>
+
+                          <label className="relative shrink-0 cursor-pointer">
+                            <input 
+                              type="checkbox"
+                              checked={isLocked}
+                              onChange={(e) => {
+                                const updatedLocks = { ...cmsForm.feature_locks, [item.key]: e.target.checked };
+                                setCmsForm({ ...cmsForm, feature_locks: updatedLocks });
+                              }}
+                              className="sr-only peer"
+                            />
+                            <div className="w-12 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500" />
+                          </label>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 

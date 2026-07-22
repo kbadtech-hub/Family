@@ -5,6 +5,7 @@ import { Calendar, Heart, Star, Sparkles, ArrowRight, BookOpen, ShieldCheck, Gra
 import { Link } from '@/i18n/routing';
 import { useTranslations, useLocale } from 'next-intl';
 import { supabase } from '@/lib/supabase';
+import FeatureGate from '@/components/dashboard/FeatureGate';
 
 export default function ClassesPage() {
   const t = useTranslations('Classes');
@@ -20,7 +21,8 @@ export default function ClassesPage() {
   }, []);
 
   return (
-    <div className="bg-[#FDFBF9] min-h-screen" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+    <FeatureGate featureKey="workshops" featureTitle="Workshops & Classes (ወርክሾፖችና ትምህርቶች)" locale={locale}>
+      <div className="bg-[#FDFBF9] min-h-screen" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       {/* Hero */}
       <section className="py-20 md:py-32 px-6 flex flex-col items-center text-center space-y-6 md:space-y-8 bg-[radial-gradient(circle_at_bottom_right,_var(--primary)_0%,_transparent_40%)] bg-opacity-5">
         <div className="inline-flex items-center gap-2 px-6 py-2 bg-primary/10 rounded-full text-primary font-black text-[10px] md:text-xs tracking-widest uppercase">
@@ -148,6 +150,7 @@ export default function ClassesPage() {
             {t('footerCTA')} <ArrowRight className={`group-hover:translate-x-3 transition-transform duration-300 ${locale === 'ar' ? 'rotate-180' : ''}`} size={20} />
          </Link>
       </section>
-    </div>
+      </div>
+    </FeatureGate>
   );
 }

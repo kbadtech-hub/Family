@@ -5,13 +5,15 @@ import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { Users, Heart, Sparkles, MessageCircle, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
+import FeatureGate from '@/components/dashboard/FeatureGate';
 
 export default function CommunityHubPage() {
   const t = useTranslations('CommunityHub');
   const locale = useLocale();
 
   return (
-    <div className="bg-[#FDFBF9] min-h-screen" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+    <FeatureGate featureKey="community_hub" featureTitle="Community Hub (የማህበረሰብ ጓዳ)" locale={locale}>
+      <div className="bg-[#FDFBF9] min-h-screen" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
 
       {/* Hero Section */}
       <section className="relative pt-20 pb-32 overflow-hidden">
@@ -120,6 +122,7 @@ export default function CommunityHubPage() {
            </Link>
         </div>
       </section>
-    </div>
+      </div>
+    </FeatureGate>
   );
 }

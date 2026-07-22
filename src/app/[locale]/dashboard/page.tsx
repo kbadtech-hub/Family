@@ -54,6 +54,7 @@ import AcademyView from '@/components/dashboard/AcademyView';
 import WorkshopsView from '@/components/dashboard/WorkshopsView';
 import ReferralWalletView from '@/components/dashboard/ReferralWalletView';
 import SubscriptionGate from '@/components/SubscriptionGate';
+import FeatureGate from '@/components/dashboard/FeatureGate';
 import AppStoreBadges from '@/components/AppStoreBadges';
 import { getUserTier, calculateCompletionRate } from '@/lib/tiers';
 import { unregisterPushNotifications } from '@/lib/push-notifications';
@@ -1827,39 +1828,47 @@ function DashboardContent() {
         )}
 
         {activeTab === 'workshops' && (
-           <div className="mt-10 space-y-16">
-              <SubscriptionGate allowVerifiedView={true}>
-                 <AcademyView isPremium={isPremium} userCoins={profile?.coins || 0} />
-              </SubscriptionGate>
-              <SubscriptionGate allowVerifiedView={true}>
-                 <WorkshopsView currency={profile?.currency_locked || 'ETB'} userTier={userTier} />
-              </SubscriptionGate>
-           </div>
+           <FeatureGate featureKey="workshops" featureTitle="Workshops & Classes (ወርክሾፖችና ትምህርቶች)" locale={locale}>
+             <div className="mt-10 space-y-16">
+                <SubscriptionGate allowVerifiedView={true}>
+                   <AcademyView isPremium={isPremium} userCoins={profile?.coins || 0} />
+                </SubscriptionGate>
+                <SubscriptionGate allowVerifiedView={true}>
+                   <WorkshopsView currency={profile?.currency_locked || 'ETB'} userTier={userTier} />
+                </SubscriptionGate>
+             </div>
+           </FeatureGate>
         )}
 
         {activeTab === 'community' && (
-          <div className="mt-10">
-            <SubscriptionGate allowVerifiedView={true}>
-              <CommunityView 
-                isVerified={verificationStatus === 'verified'} 
-                isPremium={isPremium} 
-                isAdmin={isAdmin} 
-                userCoins={profile?.coins || 0} 
-              />
-            </SubscriptionGate>
-          </div>
+          <FeatureGate featureKey="community_hub" featureTitle="Community Hub (የማህበረሰብ ጓዳ)" locale={locale}>
+            <div className="mt-10">
+              <SubscriptionGate allowVerifiedView={true}>
+                <CommunityView 
+                  isVerified={verificationStatus === 'verified'} 
+                  isPremium={isPremium} 
+                  isAdmin={isAdmin} 
+                  userCoins={profile?.coins || 0} 
+                />
+              </SubscriptionGate>
+            </div>
+          </FeatureGate>
         )}
 
         {activeTab === 'wedding' && (
-          <div className="mt-10">
-             <WeddingPlannerView currency={profile?.currency_locked || 'ETB'} />
-          </div>
+          <FeatureGate featureKey="wedding_planner" featureTitle="Wedding Planner (የሰርግ አዘጋጅ)" locale={locale}>
+            <div className="mt-10">
+               <WeddingPlannerView currency={profile?.currency_locked || 'ETB'} />
+            </div>
+          </FeatureGate>
         )}
 
         {activeTab === 'gifts' && (
-          <div className="mt-10">
-             <GiftsView locale={locale} />
-          </div>
+          <FeatureGate featureKey="gifts" featureTitle="Gifting Suite (የስጦታዎች አገልግሎት)" locale={locale}>
+            <div className="mt-10">
+               <GiftsView locale={locale} />
+            </div>
+          </FeatureGate>
         )}
 
         {activeTab === 'referral' && profile && (

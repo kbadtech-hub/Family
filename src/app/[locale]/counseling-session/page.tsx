@@ -360,14 +360,19 @@ function CounselingSessionContent() {
   );
 }
 
+import FeatureGate from '@/components/dashboard/FeatureGate';
+
 export default function CounselingSessionPage() {
+  const locale = useLocale();
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <Loader2 size={36} className="animate-spin text-primary" />
-      </div>
-    }>
-      <CounselingSessionContent />
-    </Suspense>
+    <FeatureGate featureKey="counseling" featureTitle="Counseling Sessions (የጋብቻ ካውንስሊንግ)" locale={locale}>
+      <Suspense fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center p-6">
+          <Loader2 size={36} className="animate-spin text-primary" />
+        </div>
+      }>
+        <CounselingSessionContent />
+      </Suspense>
+    </FeatureGate>
   );
 }
