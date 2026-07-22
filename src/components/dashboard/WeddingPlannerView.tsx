@@ -93,22 +93,19 @@ const BEAUTY_PACKAGES: PlannerPackage[] = [
 
 export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'ETB' | 'USD' }) {
   const locale = useLocale();
-  const t = useTranslations('Dashboard.planner');
+  let t: any;
+  try {
+    t = useTranslations('Dashboard.planner');
+  } catch (e) {
+    t = (key: string) => key;
+  }
 
-  const getPkgName = (pkgId: string, defaultName: string) => {
-    try {
-      return t(`packages.${pkgId}.name`);
-    } catch (e) {
-      return defaultName;
-    }
+  const getPkgName = (pkg: PlannerPackage) => {
+    return (locale === 'am' || locale === 'ti' || locale === 'om') ? (pkg.nameAm || pkg.name) : pkg.name;
   };
 
-  const getPkgDesc = (pkgId: string, defaultDesc: string) => {
-    try {
-      return t(`packages.${pkgId}.desc`);
-    } catch (e) {
-      return defaultDesc;
-    }
+  const getPkgDesc = (pkg: PlannerPackage) => {
+    return (locale === 'am' || locale === 'ti' || locale === 'om') ? (pkg.descriptionAm || pkg.description) : pkg.description;
   };
   const [selectedHall, setSelectedHall] = useState<string>('hall-basic');
   const [selectedPhoto, setSelectedPhoto] = useState<string>('photo-basic');
@@ -358,12 +355,12 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
                   onChange={() => setSelectedHall(pkg.id)}
                   className="absolute top-5 right-5 accent-primary" 
                 />
-                <h4 className="font-bold text-sm text-accent pr-6">{getPkgName(pkg.id, pkg.name)}</h4>
+                <h4 className="font-bold text-sm text-accent pr-6">{getPkgName(pkg)}</h4>
                 <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wider">
                   {currency === 'USD' ? '$' : 'Br'} {currency === 'USD' ? pkg.priceUsd.toLocaleString() : pkg.priceEtb.toLocaleString()}
                 </p>
                 <p className="text-[10px] text-gray-500 font-medium mt-3 leading-relaxed">
-                  {getPkgDesc(pkg.id, pkg.description)}
+                  {getPkgDesc(pkg)}
                 </p>
               </label>
             ))}
@@ -399,12 +396,12 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
                   onChange={() => setSelectedPhoto(pkg.id)}
                   className="absolute top-5 right-5 accent-primary" 
                 />
-                <h4 className="font-bold text-sm text-accent pr-6">{getPkgName(pkg.id, pkg.name)}</h4>
+                <h4 className="font-bold text-sm text-accent pr-6">{getPkgName(pkg)}</h4>
                 <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wider">
                   {currency === 'USD' ? '$' : 'Br'} {currency === 'USD' ? pkg.priceUsd.toLocaleString() : pkg.priceEtb.toLocaleString()}
                 </p>
                 <p className="text-[10px] text-gray-500 font-medium mt-3 leading-relaxed">
-                  {getPkgDesc(pkg.id, pkg.description)}
+                  {getPkgDesc(pkg)}
                 </p>
               </label>
             ))}
@@ -440,12 +437,12 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
                   onChange={() => setSelectedBeauty(pkg.id)}
                   className="absolute top-5 right-5 accent-primary" 
                 />
-                <h4 className="font-bold text-sm text-accent pr-6">{getPkgName(pkg.id, pkg.name)}</h4>
+                <h4 className="font-bold text-sm text-accent pr-6">{getPkgName(pkg)}</h4>
                 <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wider">
                   {currency === 'USD' ? '$' : 'Br'} {currency === 'USD' ? pkg.priceUsd.toLocaleString() : pkg.priceEtb.toLocaleString()}
                 </p>
                 <p className="text-[10px] text-gray-500 font-medium mt-3 leading-relaxed">
-                  {getPkgDesc(pkg.id, pkg.description)}
+                  {getPkgDesc(pkg)}
                 </p>
               </label>
             ))}

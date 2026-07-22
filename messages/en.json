@@ -93,6 +93,18 @@
   "Dashboard": {
     "welcome": "Welcome back!",
     "subtitle": "Find your perfect match within the Beteseb family.",
+    "planner": {
+      "title": "Beteseb Royal Wedding Planning",
+      "subtitle": "Crafting Unforgettable Habesha Weddings",
+      "introText": "Select your ideal venue, photo/cinema team, and royal styling packages below to calculate your estimated wedding budget and book an expert consultation.",
+      "gourmetBuffet": "Gourmet Buffet",
+      "cinemaPhotos": "Cinema Photos",
+      "royalAttire": "Royal Attire",
+      "perfectMemories": "Perfect Memories",
+      "hallCatering": "Halls & Catering",
+      "photoCinema": "Photo & Video",
+      "beautyAttire": "Beauty & Attire"
+    },
     "premium": {
       "active": "Premium Active",
       "pending": "Review Pending",

@@ -91,8 +91,20 @@
     "gifts": "ስጦታዎች"
   },
   "Dashboard": {
-    "welcome": "እንኳን ደህና መጡ",
-    "subtitle": "የህይወት አጋርዎን ያግኙ",
+    "welcome": "እንኳን ደህና መጡ!",
+    "subtitle": "በቤተሰብ ማህበረሰብ ውስጥ ተስማሚ አጋርዎን ያግኙ።",
+    "planner": {
+      "title": "የቤተሰብ ሰርግ አዘጋጅ እና እቅድ",
+      "subtitle": "የማይረሳ የሀበሻ ሰርግ በከፍተኛ ጥራት ያዘጋጁ",
+      "introText": "የሰርግ አዳራሽ፣ ፎቶና ቪዲዮ እንዲሁም የሙሽሮች ስታይሊንግ ፓኬጆችን በመምረጥ የሰርግ ወጪዎን ያሰሉ እና የባለሙያ አማካሪ ይመድቡ።",
+      "gourmetBuffet": "ጣፋጭ የቡፌ ምግብ",
+      "cinemaPhotos": "ሲኒማቲክ ፎቶዎች",
+      "royalAttire": "ሮያል አልባሳት",
+      "perfectMemories": "የማይረሱ ትዝታዎች",
+      "hallCatering": "አዳራሽ እና ምግብ",
+      "photoCinema": "ፎቶ እና ቪዲዮ",
+      "beautyAttire": "ውበት እና ስታይሊንግ"
+    },
     "premium": {
       "active": "ፕሪሚየም ነቅቷል",
       "pending": "ግምገማ ላይ",

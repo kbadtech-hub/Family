@@ -1366,7 +1366,8 @@ function DashboardContent() {
           { id: 'dashboard', icon: Home, label: n('dashboard') },
           { id: 'chat', icon: MessageCircle, label: n('chat') },
           { id: 'community', icon: Users, label: n('community') },
-          { id: 'workshops', icon: GraduationCap, label: n('workshops') },
+          { id: 'academy', icon: GraduationCap, label: n('academy') },
+          { id: 'counseling', icon: ShieldCheck, label: n('counseling') },
           { id: 'gifts', icon: Gift, label: n('gifts') }
         ].map((item) => (
           <button
@@ -1461,6 +1462,8 @@ function DashboardContent() {
                       { id: 'dashboard', icon: Home, label: n('dashboard') },
                       { id: 'chat', icon: MessageCircle, label: n('chat') },
                       { id: 'community', icon: Users, label: n('community') },
+                      { id: 'academy', icon: GraduationCap, label: n('academy') },
+                      { id: 'counseling', icon: ShieldCheck, label: n('counseling') },
                       { id: 'workshops', icon: GraduationCap, label: n('workshops') },
                       { id: 'wedding', icon: Sparkles, label: n('wedding') },
                       { id: 'gifts', icon: Gift, label: n('gifts') },
@@ -1866,19 +1869,15 @@ function DashboardContent() {
         )}
 
         {activeTab === 'wedding' && (
-          <FeatureGate featureKey="wedding_planner" featureTitle="Wedding Planner (የሰርግ አዘጋጅ)" locale={locale}>
-            <div className="mt-10">
-               <WeddingPlannerView currency={profile?.currency_locked || 'ETB'} />
-            </div>
-          </FeatureGate>
+          <div className="mt-10">
+             <WeddingPlannerView currency={profile?.currency_locked || 'ETB'} />
+          </div>
         )}
 
         {activeTab === 'gifts' && (
-          <FeatureGate featureKey="gifts" featureTitle="Gifting Suite (የስጦታዎች አገልግሎት)" locale={locale}>
-            <div className="mt-10">
-               <GiftsView locale={locale} />
-            </div>
-          </FeatureGate>
+          <div className="mt-10">
+             <GiftsView locale={locale} />
+          </div>
         )}
 
         {activeTab === 'referral' && profile && (
