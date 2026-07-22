@@ -82,8 +82,7 @@ export function getUserTier(profile: ProfileData | null, hasVouchedRecords: bool
   if (!profile) return 'bronze';
   
   const isPremium = Boolean(profile.is_lifetime) ||
-                    (profile.premium_until && new Date(profile.premium_until) > new Date()) || 
-                    ['admin', 'super_admin', 'expert'].includes(profile.role || '');
+                    (profile.premium_until && new Date(profile.premium_until) > new Date());
   
   if (isPremium) {
     return 'diamond';
