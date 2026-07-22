@@ -72,19 +72,21 @@
   },
   "Nav": {
     "home": "Hoyga",
-    "about": "Ku saabsan",
-    "classes": "Xiisado",
-    "signIn": "Soo gal",
-    "signUp": "Isdiiwaangeli",
-    "login": "Gidhibka / Isdiiwaangelinta",
-    "logout": "Ka bax",
-    "settings": "Settings",
-    "dashboard": "Dashboard",
-    "chat": "Sheeko",
-    "community": "Xarunta Bulshada",
+    "about": "Nagaa Ragaa",
+    "classes": "Fasallada",
+    "signIn": "Soo Gal",
+    "signUp": "Isqor",
+    "login": "Gal ama Samayso Account",
+    "logout": "Ka Bax",
+    "settings": "Tayo-goynta",
+    "dashboard": "Dashboard-ka",
+    "chat": "Wada-hadal",
+    "community": "Bulshada",
     "contact": "Nala soo xiriir",
-    "workshops": "Aqoon isweydaarsiyo",
-    "profile": "Profile-ka"
+    "workshops": "Seminaarrada",
+    "profile": "Profile-ka",
+    "wedding": "Qorsheynta Arooska",
+    "gifts": "Hadyadaha"
   },
   "Dashboard": {
     "welcome": "Soo dhowow",
@@ -142,7 +144,35 @@
       "deleteConfirm": "Ma hubtaa inaad tirtirto akoonkaaga? Tani dib uma noqonayso!",
       "deleteSuccess": "Akoonkaaga si badbaado leh ayaa loo tirtiray.",
       "generatingCode": "Koodhka ayaa la abuurayaa...",
-      "sendingInvitation": "Martiqaadka ayaa la dirayaa..."
+      "sendingInvitation": "Martiqaadka ayaa la dirayaa...",
+      "settings": "Dhabarka Profile-ka",
+      "fullName": "Magaca Buuxa",
+      "username": "Magaca Isticmaalaha",
+      "usernamePlaceholder": "magacaaga",
+      "systemLanguage": "Luuqada Nidaamka",
+      "gallery": "Sawirro Badan",
+      "gallerySub": "La wadaag ilaa 5 sawir oo dheeraad ah ({count}/5)",
+      "addPhoto": "Kudar Sawir",
+      "emptySlot": "Meel Faali ah",
+      "aboutInterests": "Naga Saabsan & Danta",
+      "bio": "Nolosheyda / Igu Saabsan",
+      "bioPlaceholder": "U sheeg kuwa kale wax ku saabsan noloshaada...",
+      "interests": "Danta & Hiwaayadaha",
+      "interestsPlaceholder": "Dhaqanka, Qoyska, Safarka, Cunto karinta...",
+      "saveChanges": "Save Changes",
+      "defaultCity": "Addis Ababa",
+      "roles": {
+        "user": "Habesha Member",
+        "admin": "Beteseb Admin"
+      },
+      "alerts": {
+        "avatarFailed": "Avatar upload failed",
+        "uploadFailed": "Upload failed",
+        "deleteFailed": "Delete failed",
+        "usernameTaken": "Username already taken. Please choose another.",
+        "updateSuccess": "Profile updated successfully!",
+        "updateFailed": "Update failed"
+      }
     },
     "planner": {
       "title": "Qorsheeyaha Arooska (Wedding Planner)",
@@ -291,6 +321,24 @@
       "familyValuesPrompt": "Maadaama aad labadiinuba wadaagtaan qiyamka qoyska ee {value}, ka wada hadla dhaqamada qoyskaaga.",
       "translate": "Turjum",
       "match": "Kullan"
+    },
+    "actionRequired": "Tallaabo Lagama Maarmaan Ah",
+    "searching": "Waxaa lagu jiro raadinta lammaanahaaga saxda ah...",
+    "reviewPending": "Dib u eegis ku jirta",
+    "reviewNote": "Rasiidhka lacag bixintaada waa lagu jiraa dib u eegis.",
+    "trialStatus": "Xaaladda Tijaabada",
+    "daysLeft": "{count} Maalmood Baa Hadhay",
+    "paymentSuccess": {
+      "coinsTitle": "Coins Purchased!",
+      "coinsBody": "Your coins have been credited to your account. Enjoy sending gifts and unlocking features!",
+      "vipTitle": "VIP Access Activated!",
+      "vipBody": "Your VIP membership is now active. Enjoy exclusive access and premium features!",
+      "premiumTitle": "Premium Activated!",
+      "premiumBody": "Your premium subscription is now active. Explore all the exclusive features!"
+    },
+    "paymentError": {
+      "title": "Payment Verification Failed",
+      "body": "We could not verify your payment. Please contact support with your transaction reference."
     }
   },
   "Footer": {
@@ -633,7 +681,9 @@
         "t3": "Adkeysiga & Dhismaha Qoyska",
         "t4": "Bakhaarka Xigmadda"
       }
-    }
+    },
+    "general": "General Wisdom",
+    "premiumOnly": "Special Membership Only"
   },
   "Constants": {
     "Religions": {
@@ -730,7 +780,8 @@
       "Wants Children": "Wuxuu rabaa caruur",
       "Travel Lover": "Jecel Socdaalka",
       "Education Priority": "Ahmiyadda Waxbarashada",
-      "Financial Stability": "Deganaanshaha Maaliyadda"
+      "Financial Stability": "Deganaanshaha Maaliyadda",
+      "Traditional Values": "Traditional Values"
     },
     "Countries": {
       "Ethiopia": "Itoobiya",
@@ -810,5 +861,48 @@
       "title": "Macluumaadkaagu wuxuu ku jiraa Gacmo la aamini karo",
       "content": "Sirtaadu waa noo muhiimad weyn. Macluumaadka shakhsi ahaaneed, sawirrada, iyo dukumentiyada aad geliso nidaamka 'Beteseb' waxay ku xidhan yihiin ilaalin tignoolajiyadeed oo casri ah oo la isku halayn karo. Macluumaadkaagu waligiis uma gudbi doono dhinac saddexaad ogolaanshahaaga la'aanteed. Aqoonsiyada aan u isticmaalno si aan u xaqiijinno aqoonsigaaga waxaa loo isticmaalaa oo kaliya baaritaanka amniga waxaana loo hayaa si qarsoodi ah. Annaga naloo joogo, kaliya aqoonsigaagu ma ahan mid la ilaaliyo, laakiin sidoo kale badbaadadaada."
     }
+  },
+  "Chat": {
+    "loading": "Loading family chat...",
+    "title": "Matches",
+    "searchPlaceholder": "Search matches...",
+    "noMatches": "No matches yet. Keep exploring!",
+    "premiumTitle": "Premium Feature",
+    "premiumSub": "Direct messaging with your matches is a premium feature. Upgrade now to start your journey.",
+    "upgradeNow": "Upgrade Now",
+    "activeNow": "Active Now",
+    "compatibilityTitle": "Your Abushakir Compatibility is High!",
+    "compatibilitySub": "Start a conversation with traditional values.",
+    "translate": "Translate to {lang}",
+    "original": "Show Original",
+    "iceBreaker": "Suggest AI Ice-Breaker",
+    "typePlaceholder": "Type a message with respect...",
+    "selectMatchTitle": "Select a Match",
+    "selectMatchSub": "Connect with your potential partner within the Beteseb family. Secure, real-time, and privacy-focused messaging.",
+    "encrypted": "Encrypted",
+    "private": "Private"
+  },
+  "Friendship": {
+    "addFriend": "Add Friend",
+    "requestSent": "Request Sent",
+    "pending": "Pending Approval",
+    "accept": "Accept Request",
+    "decline": "Decline Request",
+    "friends": "Friends",
+    "alreadyFriends": "You are already friends!",
+    "notification": "New Friend Request from {name}",
+    "noRequests": "No pending friend requests.",
+    "about": "About",
+    "interests": "Interests",
+    "contactInfo": "Contact Info",
+    "directEmail": "Direct Email",
+    "premiumOnly": "Premium Only",
+    "openChat": "Open Chat",
+    "startConnection": "Start Connection",
+    "upgradeToRead": "Upgrade to Premium to read full bio",
+    "noBio": "No bio available yet.",
+    "premiumFriendsOnly": "Premium or Friends Only",
+    "upgradeOrFriendSub": "Upgrade to Premium or be accepted as a friend to start a conversation.",
+    "upgradeNow": "Upgrade Now"
   }
 }

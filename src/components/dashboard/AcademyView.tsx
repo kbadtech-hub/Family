@@ -110,7 +110,7 @@ export default function AcademyView({
   const [unlocking, setUnlocking] = useState<string | null>(null);
   const [unlockedIds, setUnlockedIds] = useState<Set<string>>(new Set());
 
-  /* Fetch video URLs from database if available */
+  /* Fetch video URLs from database if available & subscribe to real-time changes */
   useEffect(() => {
     const load = async () => {
       const { data } = await supabase
@@ -120,11 +120,22 @@ export default function AcademyView({
       
       if (data && data.length > 0) {
         setModules(data);
-        setActiveModule(data[0]);
+        setActiveModule(prev => data.find(m => m.id === prev.id) || data[0]);
       }
       setLoading(false);
     };
     load();
+
+    const channel = supabase
+      .channel('academy-videos-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'academy_videos' }, () => {
+        load();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   /* Fetch user unlocked modules */

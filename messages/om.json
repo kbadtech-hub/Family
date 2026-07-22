@@ -71,22 +71,22 @@
     }
   },
   "Nav": {
-    "home": "Mana",
-    "about": "Waa'ee keenya",
-    "classes": "Kilaasota",
+    "home": "Dhaaba",
+    "about": "Waa'ee Keenya",
+    "classes": "Barnoota",
     "signIn": "Seenaa",
-    "signUp": "Galmaa'aa",
-    "login": "Seenaa / Galmaa'aa",
+    "signUp": "Galfamaa",
+    "login": "Seensawwan / Akkauntii Uumaa",
     "logout": "Ba'aa",
-    "settings": "Sajantii",
+    "settings": "Sajjooma",
     "dashboard": "Daashboordii",
-    "chat": "Chaat",
-    "community": "Bakka Hawwaasaa",
+    "chat": "Haasaa",
+    "community": "Hawaasa",
     "contact": "Nu Qunnamu",
-    "workshops": "Warkishooppii",
-    "profile": "Piroofayila",
-    "wedding": "Karoora Cidha",
-    "gifts": "Kennaalee"
+    "workshops": "Seminaaroota",
+    "profile": "Piroofaayilii",
+    "wedding": "Karoora Gaa'elaa",
+    "gifts": "Kennaawwan"
   },
   "Dashboard": {
     "welcome": "Baga nagaan dhuftan",
@@ -144,7 +144,35 @@
       "deleteConfirm": "Dhuguma lakkoofsa kee haquu barbaaddaa? Kun boodatti hin deebi'u!",
       "deleteSuccess": "Lakkoofsi kee nageenyaan haqameera.",
       "generatingCode": "Koodii uumaa jira...",
-      "sendingInvitation": "Afeerraa ergaa jira..."
+      "sendingInvitation": "Afeerraa ergaa jira...",
+      "settings": "Sajjooma Piroofaayilii",
+      "fullName": "Maqaa Guutuu",
+      "username": "Maqaa Fayyadamaa (Kallattii)",
+      "usernamePlaceholder": "maqaa_keessan",
+      "systemLanguage": "Afaan Sirnaa",
+      "gallery": "Suuraawwan Baay'ee",
+      "gallerySub": "Suuraawwan dabalataa hanga 5 qooddaddhaa ({count}/5)",
+      "addPhoto": "Suuraa Dabalaa",
+      "emptySlot": "Bakka Duudaa",
+      "aboutInterests": "Waa'ee Keenya & Fedhii",
+      "bio": "Waa'ee Koo",
+      "bioPlaceholder": "Waa'ee keessan namoota biroof ibsaa...",
+      "interests": "Fedhiifi Bashannana",
+      "interestsPlaceholder": "Aadaa, Maatii, Imala, Bilcheessuu...",
+      "saveChanges": "Save Changes",
+      "defaultCity": "Addis Ababa",
+      "roles": {
+        "user": "Habesha Member",
+        "admin": "Beteseb Admin"
+      },
+      "alerts": {
+        "avatarFailed": "Avatar upload failed",
+        "uploadFailed": "Upload failed",
+        "deleteFailed": "Delete failed",
+        "usernameTaken": "Username already taken. Please choose another.",
+        "updateSuccess": "Profile updated successfully!",
+        "updateFailed": "Update failed"
+      }
     },
     "planner": {
       "title": "Qopheessaa Cidhaa (Wedding Planner)",
@@ -305,7 +333,13 @@
     "paymentError": {
       "title": "Mirkaneessaan Kafaltii Hin Milkoofne",
       "body": "Kafaltii kee mirkaneessuu hin dandeenye. Maaloo deeggarsa faayidaa transaction kee waliin quunnamii."
-    }
+    },
+    "actionRequired": "Gocha Barbaachisaa",
+    "searching": "Hiriyaa keessan isa gaarii barbaadaa jira...",
+    "reviewPending": "Gamaggama Iraa Jira",
+    "reviewNote": "Nagaheen kafaltii keessan gamaggamamaa jira.",
+    "trialStatus": "Haala Yaalii",
+    "daysLeft": "Guyyoota {count} Hasa'an"
   },
   "Footer": {
     "tagline": "ቤተሰብ | Beteseb - Wal-argisiisuu Maatii Habesha Addunyaa",
@@ -785,7 +819,9 @@
         "t3": "Ijaarsa fi Jabinna Maatii",
         "t4": "Kuusaa Ogummaa"
       }
-    }
+    },
+    "general": "General Wisdom",
+    "premiumOnly": "Special Membership Only"
   },
   "TopHeader": {
     "email": "betesebhub@gmail.com",
@@ -824,5 +860,48 @@
       "title": "Odeeffannoon Keessan Harka Amanamaa Irra Jira",
       "content": "Dhuunfaan keessan nuuf wanta hunda caalaa gatii guddaa qaba. Sirna 'Maatii' keessatti odeeffannoon dhuunfaa, fakkiiwwan fi sanadoonni galchitan teeknoolojii ammayyaa fi amanamaa keessa jiru. Hayyama keessan malee odeeffannoon keessan qaama sadaffaatti hin dabarru. Eenyummaa keessan mirkaneessuuf waraqaalee eenyummaa nuti fayyadamnu sakatta'iinsa nageenyaaf qofa kan tajaajilan fi icciitiin kan ka'amanidha. Nu biratti eenyummaa keessan qofa osoo hin taane nageenyi keessanis eegamaadha."
     }
+  },
+  "Chat": {
+    "loading": "Loading family chat...",
+    "title": "Matches",
+    "searchPlaceholder": "Search matches...",
+    "noMatches": "No matches yet. Keep exploring!",
+    "premiumTitle": "Premium Feature",
+    "premiumSub": "Direct messaging with your matches is a premium feature. Upgrade now to start your journey.",
+    "upgradeNow": "Upgrade Now",
+    "activeNow": "Active Now",
+    "compatibilityTitle": "Your Abushakir Compatibility is High!",
+    "compatibilitySub": "Start a conversation with traditional values.",
+    "translate": "Translate to {lang}",
+    "original": "Show Original",
+    "iceBreaker": "Suggest AI Ice-Breaker",
+    "typePlaceholder": "Type a message with respect...",
+    "selectMatchTitle": "Select a Match",
+    "selectMatchSub": "Connect with your potential partner within the Beteseb family. Secure, real-time, and privacy-focused messaging.",
+    "encrypted": "Encrypted",
+    "private": "Private"
+  },
+  "Friendship": {
+    "addFriend": "Add Friend",
+    "requestSent": "Request Sent",
+    "pending": "Pending Approval",
+    "accept": "Accept Request",
+    "decline": "Decline Request",
+    "friends": "Friends",
+    "alreadyFriends": "You are already friends!",
+    "notification": "New Friend Request from {name}",
+    "noRequests": "No pending friend requests.",
+    "about": "About",
+    "interests": "Interests",
+    "contactInfo": "Contact Info",
+    "directEmail": "Direct Email",
+    "premiumOnly": "Premium Only",
+    "openChat": "Open Chat",
+    "startConnection": "Start Connection",
+    "upgradeToRead": "Upgrade to Premium to read full bio",
+    "noBio": "No bio available yet.",
+    "premiumFriendsOnly": "Premium or Friends Only",
+    "upgradeOrFriendSub": "Upgrade to Premium or be accepted as a friend to start a conversation.",
+    "upgradeNow": "Upgrade Now"
   }
 }

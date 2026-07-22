@@ -109,7 +109,10 @@ export default function FinancialTracker() {
         }
         if (json.payments && Array.isArray(json.payments)) {
           json.payments.forEach((p: any) => {
-            const txRef = p.receipt_url?.replace(/^Chapa TX: /, '') || p.id;
+            const txRef = (p.receipt_url || '')
+              .replace(/^Chapa TX (\(Simulated\))?: /, '')
+              .replace(/^Chapa TX: /, '')
+              .trim() || p.id;
             if (!unifiedMap.has(txRef) && !unifiedMap.has(p.id)) {
               const isVip = p.plan_type?.startsWith('vip');
               const isCoins = p.plan_type?.startsWith('coins');
@@ -196,7 +199,10 @@ export default function FinancialTracker() {
 
       if (payData) {
         payData.forEach((p: any) => {
-          const txRef = p.receipt_url?.replace(/^Chapa TX: /, '') || p.id;
+          const txRef = (p.receipt_url || '')
+            .replace(/^Chapa TX (\(Simulated\))?: /, '')
+            .replace(/^Chapa TX: /, '')
+            .trim() || p.id;
           if (!unifiedMap.has(txRef) && !unifiedMap.has(p.id)) {
             const isVip = p.plan_type?.startsWith('vip');
             const isCoins = p.plan_type?.startsWith('coins');

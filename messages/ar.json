@@ -81,10 +81,12 @@
     "settings": "الإعدادات",
     "dashboard": "لوحة التحكم",
     "chat": "المحادثة",
-    "community": "منتدى العائلة",
+    "community": "المجتمع",
     "contact": "اتصل بنا",
     "workshops": "ورش العمل",
-    "profile": "الملف الشخصي"
+    "profile": "الملف الشخصي",
+    "wedding": "مخطط الزفاف",
+    "gifts": "الهدايا"
   },
   "Dashboard": {
     "welcome": "مرحباً بعودتك!",
@@ -142,7 +144,35 @@
       "deleteConfirm": "هل أنت متأكد تماماً من رغبتك في حذف حسابك نهائياً؟ هذا الإجراء لا يمكن التراجع عنه!",
       "deleteSuccess": "تم حذف حسابك وجميع البيانات المرتبطة به بأمان.",
       "generatingCode": "جاري إنشاء الرمز...",
-      "sendingInvitation": "جاري إرسال الدعوة..."
+      "sendingInvitation": "جاري إرسال الدعوة...",
+      "settings": "إعدادات الملف الشخصي",
+      "fullName": "الاسم الكامل",
+      "username": "اسم المستخدم (فريد)",
+      "usernamePlaceholder": "اسمك",
+      "systemLanguage": "لغة النظام",
+      "gallery": "معرض الصور",
+      "gallerySub": "شارك حتى 5 صور إضافية ({count}/5)",
+      "addPhoto": "إضافة صورة",
+      "emptySlot": "مساحة فارغة",
+      "aboutInterests": "عني والاهتمامات",
+      "bio": "نبذة عني",
+      "bioPlaceholder": "أخبر الآخرين عن نفسك...",
+      "interests": "الاهتمامات والهوايات",
+      "interestsPlaceholder": "التقاليد، العائلة، السفر، الطبخ...",
+      "saveChanges": "Save Changes",
+      "defaultCity": "Addis Ababa",
+      "roles": {
+        "user": "Habesha Member",
+        "admin": "Beteseb Admin"
+      },
+      "alerts": {
+        "avatarFailed": "Avatar upload failed",
+        "uploadFailed": "Upload failed",
+        "deleteFailed": "Delete failed",
+        "usernameTaken": "Username already taken. Please choose another.",
+        "updateSuccess": "Profile updated successfully!",
+        "updateFailed": "Update failed"
+      }
     },
     "planner": {
       "title": "مخطط الزفاف الملكي (Wedding Planner)",
@@ -291,6 +321,24 @@
       "familyValuesPrompt": "بما أنكما تشتركان في نفس القيم العائلية {value}، ناقشا التقاليد العائلية الثقافية المفضلة لديكما وكيفية الحفاظ عليها.",
       "translate": "ترجم",
       "match": "تطابق"
+    },
+    "actionRequired": "إجراء مطلوب",
+    "searching": "جاري البحث عن شريك حياتك المناسب...",
+    "reviewPending": "قيد المراجعة",
+    "reviewNote": "جاري مراجعة إيصال الدفع الخاص بك.",
+    "trialStatus": "حالة التجربة",
+    "daysLeft": "متبقي {count} أيام",
+    "paymentSuccess": {
+      "coinsTitle": "Coins Purchased!",
+      "coinsBody": "Your coins have been credited to your account. Enjoy sending gifts and unlocking features!",
+      "vipTitle": "VIP Access Activated!",
+      "vipBody": "Your VIP membership is now active. Enjoy exclusive access and premium features!",
+      "premiumTitle": "Premium Activated!",
+      "premiumBody": "Your premium subscription is now active. Explore all the exclusive features!"
+    },
+    "paymentError": {
+      "title": "Payment Verification Failed",
+      "body": "We could not verify your payment. Please contact support with your transaction reference."
     }
   },
   "Footer": {
@@ -771,7 +819,9 @@
         "t3": "صمود وبناء الأسرة",
         "t4": "مستودع الحكمة"
       }
-    }
+    },
+    "general": "General Wisdom",
+    "premiumOnly": "Special Membership Only"
   },
   "TopHeader": {
     "email": "betesebhub@gmail.com",
@@ -810,5 +860,48 @@
       "title": "معلوماتك في أيدٍ أمينة",
       "content": "خصوصيتك لها قيمة قصوى بالنسبة لنا. المعلومات الشخصية والصور والمستندات التي تدخلها في نظام 'بيتسيب' مشفرة بحماية تكنولوجية حديثة وموثوقة. لن تمر معلوماتك إلى طرف ثالث أبداً دون إذنك. الهويات التي نستخدمها للتحقق من هويتك تُستخدم فقط للفحص الأمني وتُحفظ سراً. معنا، ليست هويتك هي المحمية فحسب، بل أمنك أيضاً."
     }
+  },
+  "Chat": {
+    "loading": "Loading family chat...",
+    "title": "Matches",
+    "searchPlaceholder": "Search matches...",
+    "noMatches": "No matches yet. Keep exploring!",
+    "premiumTitle": "Premium Feature",
+    "premiumSub": "Direct messaging with your matches is a premium feature. Upgrade now to start your journey.",
+    "upgradeNow": "Upgrade Now",
+    "activeNow": "Active Now",
+    "compatibilityTitle": "Your Abushakir Compatibility is High!",
+    "compatibilitySub": "Start a conversation with traditional values.",
+    "translate": "Translate to {lang}",
+    "original": "Show Original",
+    "iceBreaker": "Suggest AI Ice-Breaker",
+    "typePlaceholder": "Type a message with respect...",
+    "selectMatchTitle": "Select a Match",
+    "selectMatchSub": "Connect with your potential partner within the Beteseb family. Secure, real-time, and privacy-focused messaging.",
+    "encrypted": "Encrypted",
+    "private": "Private"
+  },
+  "Friendship": {
+    "addFriend": "Add Friend",
+    "requestSent": "Request Sent",
+    "pending": "Pending Approval",
+    "accept": "Accept Request",
+    "decline": "Decline Request",
+    "friends": "Friends",
+    "alreadyFriends": "You are already friends!",
+    "notification": "New Friend Request from {name}",
+    "noRequests": "No pending friend requests.",
+    "about": "About",
+    "interests": "Interests",
+    "contactInfo": "Contact Info",
+    "directEmail": "Direct Email",
+    "premiumOnly": "Premium Only",
+    "openChat": "Open Chat",
+    "startConnection": "Start Connection",
+    "upgradeToRead": "Upgrade to Premium to read full bio",
+    "noBio": "No bio available yet.",
+    "premiumFriendsOnly": "Premium or Friends Only",
+    "upgradeOrFriendSub": "Upgrade to Premium or be accepted as a friend to start a conversation.",
+    "upgradeNow": "Upgrade Now"
   }
 }

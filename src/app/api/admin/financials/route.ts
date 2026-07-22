@@ -38,9 +38,33 @@ export async function GET() {
       console.warn('[Admin Financials API] Error fetching coin_transactions:', coinError);
     }
 
+    // Server-side deduplication for financial transactions
+    const uniqueTxMap = new Map<string, any>();
+    if (transactions) {
+      transactions.forEach((tx: any) => {
+        const ref = tx.tx_ref || tx.id;
+        if (!uniqueTxMap.has(ref)) {
+          uniqueTxMap.set(ref, tx);
+        }
+      });
+    }
+
+    const uniquePaymentsMap = new Map<string, any>();
+    if (payments) {
+      payments.forEach((p: any) => {
+        const ref = (p.receipt_url || '')
+          .replace(/^Chapa TX (\(Simulated\))?: /, '')
+          .replace(/^Chapa TX: /, '')
+          .trim() || p.id;
+        if (!uniquePaymentsMap.has(ref) && !uniqueTxMap.has(ref)) {
+          uniquePaymentsMap.set(ref, p);
+        }
+      });
+    }
+
     return NextResponse.json({
-      transactions: transactions || [],
-      payments: payments || [],
+      transactions: Array.from(uniqueTxMap.values()),
+      payments: Array.from(uniquePaymentsMap.values()),
       coinTransactions: coins || []
     });
   } catch (err: any) {

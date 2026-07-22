@@ -71,20 +71,22 @@
     }
   },
   "Nav": {
-    "home": "መበገሲ",
+    "home": "መእተዊ",
     "about": "ብዛዕባና",
-    "classes": "ክፍልታት",
-    "signIn": "እተዉ",
-    "signUp": "ተመዝገቡ",
-    "login": "ምእታው / ምምዝጋብ",
-    "logout": "ውጽኡ",
-    "settings": "ቅንብራት",
+    "classes": "ትምህርቲ",
+    "signIn": "እተው",
+    "signUp": "ተመዝገብ",
+    "login": "ምእታው / ኣካውንት ምፍጣር",
+    "logout": "ውጻእ",
+    "settings": "ቀንዲ ሰቲንግ",
     "dashboard": "ዳሽቦርድ",
-    "chat": "ዕላል",
-    "community": "ናይ ስድራቤት ዓውዲ",
+    "chat": "ዕልል",
+    "community": "ማሕበረሰብ",
     "contact": "ርኸቡና",
-    "workshops": "ስልጠናታት",
-    "profile": "መገለጺ"
+    "workshops": "ዎርክሾፓት",
+    "profile": "ፕሮፋይል",
+    "wedding": "መደብ መርዓ",
+    "gifts": "ወሃብቲ ህያብ"
   },
   "Dashboard": {
     "welcome": "እንቋዕ ብደሓን መጻእኩም",
@@ -142,7 +144,35 @@
       "deleteConfirm": "ብሓቂ ኣካውንትኩም ክትድምስሱ ትደልዩ? እዚ ድርጊት ተመላሲ የብሉን!",
       "deleteSuccess": "ኣካውንትኩም ብሰላም ተደምሲሱ ኣሎ።",
       "generatingCode": "ኮድ ይፈጥር ኣሎ...",
-      "sendingInvitation": "ዕድመ ይሰድድ ኣሎ..."
+      "sendingInvitation": "ዕድመ ይሰድድ ኣሎ...",
+      "settings": "ሰቲንግ ፕሮፋይል",
+      "fullName": "ምሉእ ስም",
+      "username": "መታወቂ ስም (ፍሉይ)",
+      "usernamePlaceholder": "ስምካ",
+      "systemLanguage": "ቋንቋ ሲስተም",
+      "gallery": "ብዙሕ ፎቶታት",
+      "gallerySub": "ክሳብ 5 ተወሳኺ ፎቶታት ኣካፍሉ ({count}/5)",
+      "addPhoto": "ፎቶ ወስኽ",
+      "emptySlot": "ባዶ ቦታ",
+      "aboutInterests": "ብዛዕባይን ብዛዕባ ፈላጣትን",
+      "bio": "ብዛዕባይ",
+      "bioPlaceholder": "ብዛዕባ ርእስኻ ንኻልኦት ንገሮም...",
+      "interests": "ተገዳስነትን ሓጎስን",
+      "interestsPlaceholder": "ባህሊ፣ ሓዳር፣ ጉዕዞ፣ ምብሳል...",
+      "saveChanges": "Save Changes",
+      "defaultCity": "Addis Ababa",
+      "roles": {
+        "user": "Habesha Member",
+        "admin": "Beteseb Admin"
+      },
+      "alerts": {
+        "avatarFailed": "Avatar upload failed",
+        "uploadFailed": "Upload failed",
+        "deleteFailed": "Delete failed",
+        "usernameTaken": "Username already taken. Please choose another.",
+        "updateSuccess": "Profile updated successfully!",
+        "updateFailed": "Update failed"
+      }
     },
     "planner": {
       "title": "ምድላው መርዓ (Wedding Planner)",
@@ -291,6 +321,24 @@
       "familyValuesPrompt": "ክልቴኹም ናይ {value} ክብርታት ስለ እትድግፉ፥ ኣብ ባህላዊ ምስረታ ስድራቤት ዘለዎም መሰረታት ተመያየጡ።",
       "translate": "ተርጉም",
       "match": "ምስምማዕ"
+    },
+    "actionRequired": "ዝድለ ስጉምቲ",
+    "searching": "ተማሳሳሊ ሓጋዚ ይድለ ኣሎ...",
+    "reviewPending": "ምርመራ ኣብ መስርሕ ኣሎ",
+    "reviewNote": "ናይ ክፍሊት ጽ dateFormat ይምረመር ኣሎ።",
+    "trialStatus": "ኩነታት ፈተነ",
+    "daysLeft": "{count} መዓልትታት ተሪፎም",
+    "paymentSuccess": {
+      "coinsTitle": "Coins Purchased!",
+      "coinsBody": "Your coins have been credited to your account. Enjoy sending gifts and unlocking features!",
+      "vipTitle": "VIP Access Activated!",
+      "vipBody": "Your VIP membership is now active. Enjoy exclusive access and premium features!",
+      "premiumTitle": "Premium Activated!",
+      "premiumBody": "Your premium subscription is now active. Explore all the exclusive features!"
+    },
+    "paymentError": {
+      "title": "Payment Verification Failed",
+      "body": "We could not verify your payment. Please contact support with your transaction reference."
     }
   },
   "Footer": {
@@ -634,7 +682,9 @@
         "t3": "ጽንዓትን ህንጸትን ስድራቤት",
         "t4": "መኽዘን ጥበብ"
       }
-    }
+    },
+    "general": "General Wisdom",
+    "premiumOnly": "Special Membership Only"
   },
   "TopHeader": {
     "email": "betesebhub@gmail.com",
@@ -739,7 +789,8 @@
       "Hawassa": "ሃዋሳ",
       "Jimma": "ጅማ",
       "Jijiga": "ጅጅጋ",
-      "Other (International)": "ካብ ሃገር ወጻኢ"
+      "Other (International)": "ካብ ሃገር ወጻኢ",
+      "Dire Dawa": "Dire Dawa"
     },
     "Jobs": {
       "Technology & IT": "ተክኖሎጂን አይቲን",
@@ -817,5 +868,48 @@
       "title": "መረዳእታኹም ኣብ እሙን ኢድ እዩ ዘሎ",
       "content": "ግላዊነትኩም ንዓና ካብ ዝኾነ ንላዕሊ ዋጋ ኣለዎ። ኣብ 'ቤተሰብ' ሲስተም እተእትውዎም ግላዊ መረዳእታታት፡ ስእልታትን ሰነዳትን ብዘመናዊን እሙንን ናይ ቴክኖሎጂ ሓለዋ ዝተዓሸጉ እዮም። ብዘይ ፍቓድኩም መረዳእታኹም ንሳልሳይ ወገን ፈጺሙ ኣይሓልፍን። መንነትኩም ንምርግጋጽ እንጥቀመሎም መንነታት ንደህንነት ምርመራ ጥራይ ዘገልግሉን ብሚስጢር ዝተሓዙን እዮም። ምሳና መንነትኩም ጥራይ ዘይኮነስ ደህንነትኩም እውን ዝተሓለወ እዩ።"
     }
+  },
+  "Chat": {
+    "loading": "Loading family chat...",
+    "title": "Matches",
+    "searchPlaceholder": "Search matches...",
+    "noMatches": "No matches yet. Keep exploring!",
+    "premiumTitle": "Premium Feature",
+    "premiumSub": "Direct messaging with your matches is a premium feature. Upgrade now to start your journey.",
+    "upgradeNow": "Upgrade Now",
+    "activeNow": "Active Now",
+    "compatibilityTitle": "Your Abushakir Compatibility is High!",
+    "compatibilitySub": "Start a conversation with traditional values.",
+    "translate": "Translate to {lang}",
+    "original": "Show Original",
+    "iceBreaker": "Suggest AI Ice-Breaker",
+    "typePlaceholder": "Type a message with respect...",
+    "selectMatchTitle": "Select a Match",
+    "selectMatchSub": "Connect with your potential partner within the Beteseb family. Secure, real-time, and privacy-focused messaging.",
+    "encrypted": "Encrypted",
+    "private": "Private"
+  },
+  "Friendship": {
+    "addFriend": "Add Friend",
+    "requestSent": "Request Sent",
+    "pending": "Pending Approval",
+    "accept": "Accept Request",
+    "decline": "Decline Request",
+    "friends": "Friends",
+    "alreadyFriends": "You are already friends!",
+    "notification": "New Friend Request from {name}",
+    "noRequests": "No pending friend requests.",
+    "about": "About",
+    "interests": "Interests",
+    "contactInfo": "Contact Info",
+    "directEmail": "Direct Email",
+    "premiumOnly": "Premium Only",
+    "openChat": "Open Chat",
+    "startConnection": "Start Connection",
+    "upgradeToRead": "Upgrade to Premium to read full bio",
+    "noBio": "No bio available yet.",
+    "premiumFriendsOnly": "Premium or Friends Only",
+    "upgradeOrFriendSub": "Upgrade to Premium or be accepted as a friend to start a conversation.",
+    "upgradeNow": "Upgrade Now"
   }
 }

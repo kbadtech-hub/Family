@@ -102,14 +102,56 @@ export async function POST(req: Request) {
         );
       }
 
-      const isCoins = planType.startsWith('coins_') || planType.startsWith('c');
-      const isVip = planType.startsWith('vip_') || planType.startsWith('v');
+      const isCoins = planType.startsWith('coins_') || /^c\d+/.test(planType) || planType.startsWith('c_');
+      const isCourse = planType.startsWith('course_') || planType.startsWith('video_');
+      const isVip = planType.startsWith('vip_') || /^v_?\d+/.test(planType) || planType.endsWith('vip');
 
       const { data: profileData } = await supabase.from('profiles').select('full_name, email').eq('id', userId).maybeSingle();
       const userName = profileData?.full_name || profileData?.email || 'Beteseb User';
       const userEmail = profileData?.email || null;
 
-      if (isCoins) {
+      if (isCourse) {
+        const videoId = planType.replace(/^(course_|video_)/, '');
+        const simulatedPrice = 30;
+        const simulatedFee = Math.round(simulatedPrice * 0.035 * 100) / 100;
+
+        await supabase.from('payments').insert({
+          user_id: userId,
+          plan_type: planType,
+          amount: simulatedPrice,
+          currency: 'ETB',
+          status: 'approved',
+          receipt_url: `Chapa TX (Simulated): ${tx_ref}`,
+        });
+
+        await supabase.from('financial_transactions').upsert({
+          tx_ref: tx_ref,
+          user_id: userId,
+          user_name_snapshot: userName,
+          user_email_snapshot: userEmail,
+          revenue_source: 'course_sale',
+          payment_gateway: 'chapa',
+          currency: 'ETB',
+          gross_amount: simulatedPrice,
+          gateway_fee: simulatedFee,
+          net_amount: Math.max(0, simulatedPrice - simulatedFee),
+          payment_status: 'completed'
+        }, { onConflict: 'tx_ref', ignoreDuplicates: true });
+
+        if (videoId) {
+          await supabase.from('user_unlocked_videos').insert({
+            user_id: userId,
+            video_id: videoId
+          });
+        }
+
+        return NextResponse.json({
+          status: 'success',
+          message: 'Demo: Course purchase verified and unlocked successfully.',
+          videoId,
+          type: 'course',
+        });
+      } else if (isCoins) {
         const amountCoins = resolveCoinAmount(planType, 0, 'ETB');
 
         const pack = COIN_PACKAGES.find(p => p.id === planType || p.id === `coins_${planType.replace(/^c_?/, '')}`);
@@ -338,12 +380,55 @@ export async function POST(req: Request) {
       );
     }
 
-    const isCoins = planType.startsWith('coins_') || planType.startsWith('c');
-    const isVip = planType.startsWith('vip_') || planType.startsWith('v');
+    const isCoins = planType.startsWith('coins_') || /^c\d+/.test(planType) || planType.startsWith('c_');
+    const isCourse = planType.startsWith('course_') || planType.startsWith('video_');
+    const isVip = planType.startsWith('vip_') || /^v_?\d+/.test(planType) || planType.endsWith('vip');
 
     const { data: profileData } = await supabase.from('profiles').select('full_name, email').eq('id', userId).maybeSingle();
 
-    if (isCoins) {
+    if (isCourse) {
+      const videoId = planType.replace(/^(course_|video_)/, '');
+      const courseAmt = parseFloat(String(txData?.amount || 0));
+
+      await supabase.from('payments').insert({
+        user_id: userId,
+        plan_type: planType,
+        amount: courseAmt,
+        currency: txData?.currency || 'ETB',
+        status: 'approved',
+        receipt_url: `Chapa TX: ${tx_ref}`,
+      });
+
+      const courseFee = Math.round(courseAmt * 0.035 * 100) / 100;
+      const { error: ftCourseErr } = await supabase.from('financial_transactions').upsert({
+        tx_ref: tx_ref,
+        user_id: userId,
+        user_name_snapshot: profileData?.full_name || profileData?.email || 'Beteseb User',
+        user_email_snapshot: profileData?.email || null,
+        revenue_source: 'course_sale',
+        payment_gateway: 'chapa',
+        currency: txData?.currency || 'ETB',
+        gross_amount: courseAmt,
+        gateway_fee: courseFee,
+        net_amount: Math.max(0, courseAmt - courseFee),
+        payment_status: 'completed'
+      }, { onConflict: 'tx_ref', ignoreDuplicates: true });
+      if (ftCourseErr) console.error('[Chapa Verify] Failed to upsert financial_transaction (course):', ftCourseErr.message);
+
+      if (videoId) {
+        await supabase.from('user_unlocked_videos').insert({
+          user_id: userId,
+          video_id: videoId
+        });
+      }
+
+      return NextResponse.json({
+        status: 'success',
+        message: 'Chapa course purchase verified and course unlocked successfully.',
+        videoId,
+        type: 'course',
+      });
+    } else if (isCoins) {
       const coinAmt = parseFloat(String(txData?.amount || 0));
       const amountCoins = resolveCoinAmount(planType, coinAmt, 'ETB');
 
