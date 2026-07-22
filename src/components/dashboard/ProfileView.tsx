@@ -468,6 +468,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
 
     setIsUploading(true);
     try {
+      const oldAvatarUrl = profile?.avatar_url;
       const fileExt = file.name.split('.').pop();
       const fileName = `${profile.id}/avatar-${Date.now()}.${fileExt}`;
       
@@ -487,6 +488,15 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
         .eq('id', profile.id);
 
       if (dbError) throw dbError;
+
+      // Delete old avatar file from storage bucket if present
+      if (oldAvatarUrl) {
+        const oldStoragePath = oldAvatarUrl.split('/user_photos/').pop();
+        if (oldStoragePath) {
+          await supabase.storage.from('user_photos').remove([decodeURIComponent(oldStoragePath)]);
+        }
+      }
+
       onUpdate();
     } catch (error: any) {
       alert(t('alerts.avatarFailed') + ': ' + error.message);
