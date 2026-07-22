@@ -9,6 +9,7 @@ import { translator } from '../../../lib/translator';
 import Image from 'next/image';
 import FinancialTracker from '@/components/admin/FinancialTracker';
 import UserAnalytics from '@/components/admin/UserAnalytics';
+import ReferralWithdrawalManagement from '@/components/admin/ReferralWithdrawalManagement';
 import { 
   BarChart3, 
   Users, 
@@ -183,6 +184,7 @@ const ADMIN_HUBS = [
     icon: Heart,
     subTabs: [
       { id: 'payments', label: '💳 Payment Approvals' },
+      { id: 'referral_mgmt', label: '🎁 Referral & Withdrawals' },
       { id: 'pricing', label: '🪙 Pricing & Packages' },
       { id: 'banks', label: '🏦 Bank Accounts' },
     ]
@@ -3494,6 +3496,10 @@ export default function AdminPortal() {
               </div>
            </div>
         )}
+
+         {activeTab === 'referral_mgmt' && (
+           <ReferralWithdrawalManagement />
+         )}
 
          {activeTab === 'messaging' && (
            <div className="space-y-8 animate-in fade-in duration-500">

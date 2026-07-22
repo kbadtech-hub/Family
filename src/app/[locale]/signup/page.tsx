@@ -285,6 +285,25 @@ function SignupContent() {
           onboarding_completed: false,
         }, { onConflict: 'id' }).select();
 
+        // Handle referral link tracking
+        const refCode = searchParams?.get('ref');
+        if (refCode) {
+          const { data: referrerProfile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('referral_code', refCode.trim())
+            .single();
+
+          if (referrerProfile && referrerProfile.id !== data.user.id) {
+            await supabase.from('profiles').update({ referred_by: referrerProfile.id }).eq('id', data.user.id);
+            await supabase.from('referrals').insert({
+              referrer_id: referrerProfile.id,
+              referee_id: data.user.id,
+              referral_code: refCode.trim()
+            });
+          }
+        }
+
         router.push('/dashboard');
 
       } else if (view === 'phone') {
@@ -316,6 +335,25 @@ function SignupContent() {
           onboarding_step: 1,
           onboarding_completed: false,
         }, { onConflict: 'id' }).select();
+
+        // Handle referral link tracking
+        const refCodePhone = searchParams?.get('ref');
+        if (refCodePhone) {
+          const { data: referrerProfile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('referral_code', refCodePhone.trim())
+            .single();
+
+          if (referrerProfile && referrerProfile.id !== data.user.id) {
+            await supabase.from('profiles').update({ referred_by: referrerProfile.id }).eq('id', data.user.id);
+            await supabase.from('referrals').insert({
+              referrer_id: referrerProfile.id,
+              referee_id: data.user.id,
+              referral_code: refCodePhone.trim()
+            });
+          }
+        }
 
         router.push('/dashboard');
       }

@@ -33,7 +33,8 @@ import {
   BarChart2,
   User,
   Crown,
-  Loader2
+  Loader2,
+  Wallet
 } from 'lucide-react';
 import CommunityView from '@/components/dashboard/CommunityView';
 import PostCard from '@/components/dashboard/PostCard';
@@ -51,6 +52,7 @@ import LockOverlay from '@/components/dashboard/LockOverlay';
 import GiftModal from '@/components/dashboard/GiftModal';
 import AcademyView from '@/components/dashboard/AcademyView';
 import WorkshopsView from '@/components/dashboard/WorkshopsView';
+import ReferralWalletView from '@/components/dashboard/ReferralWalletView';
 import SubscriptionGate from '@/components/SubscriptionGate';
 import AppStoreBadges from '@/components/AppStoreBadges';
 import { getUserTier, calculateCompletionRate } from '@/lib/tiers';
@@ -638,8 +640,14 @@ function DashboardContent() {
       //       expression resolve to 'verified', which is incorrect.
       const profileVerifyStatus = (profileData?.verification_status === 'verified' || profileData?.is_verified === true) ? 'verified' : null;
       
+      // Evaluate real-time referral reward triggers
       if (profileVerifyStatus === 'verified') {
         setVerificationStatus('verified');
+        fetch('/api/referrals/trigger', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refereeId: user.id, triggerType: 'gold_verification' })
+        }).catch(() => {});
       } else {
         // Fallback: check verifications table for latest submission status
         const { data: verifyData } = await supabase.from('verifications')
@@ -664,6 +672,23 @@ function DashboardContent() {
             verification_status: 'verified',
             is_verified: true
           }).eq('id', user.id);
+          fetch('/api/referrals/trigger', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refereeId: user.id, triggerType: 'gold_verification' })
+          }).catch(() => {});
+        }
+      }
+
+      // Check Mobile App Client Login (Trigger 3)
+      if (typeof window !== 'undefined') {
+        const isMobileClient = (window as any).Capacitor?.isNativePlatform?.() || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+        if (isMobileClient) {
+          fetch('/api/referrals/trigger', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refereeId: user.id, triggerType: 'mobile_app_login' })
+          }).catch(() => {});
         }
       }
 
@@ -1428,6 +1453,7 @@ function DashboardContent() {
                       { id: 'workshops', icon: GraduationCap, label: n('workshops') },
                       { id: 'wedding', icon: Sparkles, label: n('wedding') },
                       { id: 'gifts', icon: Gift, label: n('gifts') },
+                      { id: 'referral', icon: Wallet, label: locale === 'am' ? 'ሪፈራል እና ወሌት' : 'Referral & Wallet' },
                       { id: 'profile', icon: UserCircle, label: n('profile') }
                     ].map((item) => (
                       <button
@@ -1833,6 +1859,12 @@ function DashboardContent() {
         {activeTab === 'gifts' && (
           <div className="mt-10">
              <GiftsView locale={locale} />
+          </div>
+        )}
+
+        {activeTab === 'referral' && profile && (
+          <div className="mt-10">
+            <ReferralWalletView profile={profile} locale={locale} />
           </div>
         )}
 
