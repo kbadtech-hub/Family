@@ -48,6 +48,13 @@ export async function POST(req: Request) {
     }
 
     const reqCurrency = (currency || 'ETB').toUpperCase();
+    const usdToEtbExchangeRate = 125;
+
+    // Chapa processes transactions in ETB. Convert USD amounts to ETB for Chapa API.
+    const finalCurrency = 'ETB';
+    const finalAmount = reqCurrency === 'USD' 
+      ? Math.round(Number(amount) * usdToEtbExchangeRate) 
+      : Number(amount);
 
     let response = await fetch('https://api.chapa.co/v1/transaction/initialize', {
       method: 'POST',
@@ -56,8 +63,8 @@ export async function POST(req: Request) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        amount,
-        currency: reqCurrency,
+        amount: finalAmount,
+        currency: finalCurrency,
         email: validEmail,
         first_name: (first_name || 'Beteseb').slice(0, 30),
         last_name: (last_name || 'Member').slice(0, 30),
@@ -67,18 +74,16 @@ export async function POST(req: Request) {
         ...(chapaSubAccountId ? { subaccount_id: chapaSubAccountId } : {}),
         customization: {
           title: "Beteseb Match", // 13 chars <= 16 chars
-          description: "Beteseb Payment"
+          description: reqCurrency === 'USD' ? "Beteseb Payment (USD Card)" : "Beteseb Payment"
         }
       })
     });
 
     let data = await response.json();
 
-    // Fallback: If USD request failed because Chapa merchant account is ETB-only, convert USD to ETB and retry
-    if ((data.status === 'failed' || !data.data?.checkout_url) && reqCurrency === 'USD') {
-      console.warn("Chapa USD initialization failed. Retrying with converted ETB amount...", data.message);
-      const usdToEtbExchangeRate = 125;
-      const convertedEtb = Math.round(Number(amount) * usdToEtbExchangeRate);
+    // Secondary fallback retry if needed
+    if (data.status === 'failed' || !data.data?.checkout_url) {
+      console.warn("Chapa initial attempt failed. Retrying initialization...", data.message);
 
       response = await fetch('https://api.chapa.co/v1/transaction/initialize', {
         method: 'POST',
@@ -87,7 +92,7 @@ export async function POST(req: Request) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          amount: convertedEtb,
+          amount: finalAmount,
           currency: 'ETB',
           email: validEmail,
           first_name: (first_name || 'Beteseb').slice(0, 30),
@@ -98,7 +103,7 @@ export async function POST(req: Request) {
           ...(chapaSubAccountId ? { subaccount_id: chapaSubAccountId } : {}),
           customization: {
             title: "Beteseb Match",
-            description: "Beteseb Payment (USD Card)"
+            description: "Beteseb Payment"
           }
         })
       });

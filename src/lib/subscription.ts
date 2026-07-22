@@ -149,8 +149,7 @@ export const BANK_DETAILS = {
     { bank: 'TeleBirr',                          account: '+251946414018', name: 'Beteseb PLC' }
   ],
   USD: [
-    { method: 'PayPal',      link: 'https://paypal.me/beteseb', account: 'betesebhub@gmail.com' },
-    { method: 'Bank (SWIFT)', details: 'Contact support for SWIFT/IBAN details', name: 'Beteseb Global' }
+    { method: 'Chapa International Gateway', details: 'Pay securely using any International Visa/Mastercard via Chapa', name: 'Beteseb Online' }
   ]
 };
 

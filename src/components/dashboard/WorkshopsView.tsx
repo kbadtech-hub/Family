@@ -60,7 +60,7 @@ export default function WorkshopsView({ currency, userTier }: { currency: 'ETB' 
 
   // Phase 4 Monetization & Platform Compliance State
   const [isMobileApp, setIsMobileApp] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'coins' | 'chapa' | 'stripe'>('coins');
+  const [paymentMethod, setPaymentMethod] = useState<'coins' | 'chapa'>('chapa');
 
   const [dbLessons, setDbLessons] = useState<any[]>([]);
 
@@ -136,15 +136,37 @@ export default function WorkshopsView({ currency, userTier }: { currency: 'ETB' 
         finalPaymentStatus = 'paid';
         finalAmount = 50;
       } else if (paymentMethod === 'chapa') {
-        // Simulate Chapa checkout success
-        finalPaymentStatus = 'paid';
-        finalAmount = 600;
-        finalCurrency = 'ETB';
-      } else {
-        // Simulate Stripe checkout success
-        finalPaymentStatus = 'paid';
-        finalAmount = 15;
-        finalCurrency = 'USD';
+        const { data: prof } = await supabase.from('profiles').select('email, full_name').eq('id', userId).single();
+        const email = prof?.email || '';
+        const nameParts = (prof?.full_name || 'Beteseb User').split(' ');
+        const firstName = nameParts[0] || 'Beteseb';
+        const lastName = nameParts.slice(1).join(' ') || 'User';
+
+        const rawPrice = currency === 'ETB' ? 600 : 15;
+        const txRef = `cnsl_${userId.slice(0, 8)}_${Date.now().toString(36).slice(-6)}`;
+
+        const response = await fetch('/api/payments/chapa/initialize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: rawPrice,
+            currency: currency,
+            email,
+            first_name: firstName,
+            last_name: lastName,
+            tx_ref: txRef,
+            callback_url: window.location.origin + '/api/payments/chapa/webhook',
+            return_url: window.location.origin + `/dashboard?tab=workshops&status=success`
+          })
+        });
+
+        const data = await response.json();
+        if (data.status === 'success' && data.data?.checkout_url) {
+          window.location.href = data.data.checkout_url;
+          return;
+        } else {
+          throw new Error(data.message || 'Failed to initialize Chapa payment.');
+        }
       }
 
       const { error } = await supabase.from('counselor_bookings').insert({
@@ -415,7 +437,7 @@ export default function WorkshopsView({ currency, userTier }: { currency: 'ETB' 
               ) : (
                 <div>
                   <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Payment Method</span>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     <button 
                       type="button"
                       onClick={() => setPaymentMethod('coins')}
@@ -432,16 +454,7 @@ export default function WorkshopsView({ currency, userTier }: { currency: 'ETB' 
                         paymentMethod === 'chapa' ? 'bg-primary/10 border-primary text-primary' : 'bg-muted/30 border-muted text-gray-500'
                       }`}
                     >
-                      Chapa (600 ETB)
-                    </button>
-                    <button 
-                      type="button"
-                      onClick={() => setPaymentMethod('stripe')}
-                      className={`p-3 rounded-xl border text-[10px] font-bold uppercase transition-all ${
-                        paymentMethod === 'stripe' ? 'bg-primary/10 border-primary text-primary' : 'bg-muted/30 border-muted text-gray-500'
-                      }`}
-                    >
-                      Card ($15 USD)
+                      Chapa Gateway ({currency === 'ETB' ? '600 ETB' : '$15 USD'})
                     </button>
                   </div>
                 </div>

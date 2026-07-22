@@ -316,29 +316,6 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
         return;
       }
 
-      if (currency === 'USD') {
-        // Fallback to Stripe if configured
-        const stripeRes = await fetch('/api/payments/stripe/initialize', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            amount: plan.price,
-            email,
-            planType: selectedDuration,
-            userId: profile.id,
-            successUrl: window.location.origin + `/${locale}/dashboard?status=success`,
-            cancelUrl: window.location.origin + `/${locale}/dashboard?status=cancel`
-          })
-        });
-
-        const stripeData = await stripeRes.json();
-        if (stripeData.url) {
-          if (onPaymentStarted) onPaymentStarted();
-          window.location.href = stripeData.url;
-          return;
-        }
-      }
-
       const errStr = typeof data.message === 'string' ? data.message : (data.message ? JSON.stringify(data.message) : 'Chapa initialization failed');
       throw new Error(errStr);
     } catch (err: any) {
