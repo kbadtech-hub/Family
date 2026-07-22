@@ -400,8 +400,8 @@ export default function PaymentTab() {
   return (
     <div className="max-w-4xl mx-auto space-y-12 animate-in fade-in duration-500">
       <div className="text-center space-y-4">
-        <h2 className="text-4xl font-black text-accent italic uppercase tracking-tighter leading-none">Upgrade to Premium</h2>
-        <p className="text-gray-500 font-medium italic">Select a plan and unlock all features including private chat and matching.</p>
+        <h2 className="text-4xl font-black text-accent italic uppercase tracking-tighter leading-none">{locale === 'am' ? 'ወደ ዳይመንድ ያሳድጉ' : 'Upgrade to Diamond'}</h2>
+        <p className="text-gray-500 font-medium italic">{locale === 'am' ? 'እቅድ ይምረጡ እና የግል ቻት እና ማዛመድን ጨምሮ ሁሉንም ባህሪዎች ይክፈቱ።' : 'Select a plan and unlock all features including private chat and matching.'}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">

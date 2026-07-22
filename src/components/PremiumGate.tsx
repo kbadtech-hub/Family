@@ -30,15 +30,15 @@ export default function PremiumGate({ isPremium, children }: PremiumGateProps) {
       <div className="space-y-4 max-w-md mx-auto">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-secondary/10 rounded-full text-secondary font-black text-[10px] tracking-widest uppercase">
            <Sparkles size={12} className="fill-secondary" />
-           PREMIUM ACCESS
+           DIAMOND ACCESS
         </div>
         <h2 className="text-3xl font-black text-accent italic tracking-tighter uppercase leading-none">
-          {locale === 'am' ? 'ፕሪሚየም አገልግሎት' : 'Unlock Premium'}
+          {locale === 'am' ? 'የዳይመንድ አገልግሎት' : 'Unlock Diamond'}
         </h2>
         <p className="text-gray-500 font-medium leading-relaxed italic">
           {locale === 'am' 
-            ? 'ይህንን አገልግሎት ለመጠቀም ፕሪሚየም አባል መሆን ይኖርብዎታል። ዛሬውኑ ይቀላቀሉንና ሁሉንም ጥቅማጥቅሞች ያግኙ።' 
-            : 'Upgrade to premium to access this exclusive feature, including private chats, match contacts, and expert classes.'}
+            ? 'ይህንን አገልግሎት ለመጠቀም የዳይመንድ አባል መሆን ይኖርብዎታል። ዛሬውኑ ይቀላቀሉንና ሁሉንም ጥቅማጥቅሞች ያግኙ።' 
+            : 'Upgrade to Diamond to access this exclusive feature, including private chats, match contacts, and expert classes.'}
         </p>
       </div>
 
@@ -47,7 +47,7 @@ export default function PremiumGate({ isPremium, children }: PremiumGateProps) {
           onClick={() => router.push('/dashboard?tab=payments')}
           className="btn-primary w-full max-w-xs py-5 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all font-black uppercase tracking-widest text-xs"
         >
-          {locale === 'am' ? 'ፕሪሚየም ይሁኑ' : 'Upgrade to Premium'} <ArrowRight size={18} />
+          {locale === 'am' ? 'የዳይመንድ አባል ይሁኑ' : 'Upgrade to Diamond'} <ArrowRight size={18} />
         </button>
         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Secure Payment • Immediate Access</p>
       </div>

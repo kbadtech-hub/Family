@@ -104,7 +104,7 @@ export default function LockOverlay({
           >
             <span className="flex items-center gap-2">
               <Sparkles size={16} className="fill-white animate-spin-slow" />
-              {isAm ? 'ፕሪሚየም ይክፈቱ (ያልተገደበ)' : 'Upgrade to Premium'}
+              {isAm ? 'የዳይመንድ አባልነት ይክፈቱ (ያልተገደበ)' : 'Upgrade to Diamond (Premium)'}
             </span>
             <span className="flex items-center gap-1 font-bold text-[9px] bg-white/20 px-2.5 py-1 rounded-full uppercase">
               {isAm ? 'ምርጥ' : 'Unlimited'} <ArrowRight size={12} />

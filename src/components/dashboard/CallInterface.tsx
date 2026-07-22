@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
@@ -218,8 +218,8 @@ export default function CallInterface({
            if ((callerLimits?.calls_duration_seconds || 0) >= allowed) {
               alert(
                 navigator.language.startsWith('am')
-                  ? 'Ã¡â€¹Â¨Ã¡â€¹â€¢Ã¡Ë†Ë†Ã¡â€°Â³Ã¡â€¹Å  Ã¡â€¹Â¨Ã¡Å’Â¥Ã¡Ë†Âª Ã¡Å’Å Ã¡â€¹Å“ Ã¡Å’Ë†Ã¡â€¹Â°Ã¡â€°Â¥Ã¡â€¹Å½ Ã¡Å Â Ã¡Ë†ÂÃ¡â€°â€¹Ã¡Ë†ÂÃ¡ÂÂ¢ Ã¡Å Â¥Ã¡â€°Â£Ã¡Å Â­Ã¡â€¹Å½ Ã¡Ë†ËœÃ¡Ë†Ë†Ã¡â€¹Â«Ã¡â€¹Å½Ã¡Å â€¢ Ã¡â€¹Â«Ã¡Ë†Â³Ã¡â€¹ÂµÃ¡Å’â€°!' 
-                  : 'Your daily call duration limit has been reached. Please upgrade to premium!'
+                  ? 'የዕለታዊ የጥሪ ጊዜ ገደብዎ ላይ ደርሰዋል። እባክዎ ወደ ዳይመንድ ያሳድጉ!'
+                  : 'Your daily call duration limit has been reached. Please upgrade to Diamond!'
               );
               setCallState('ended');
               setTimeout(onEndCall, 1500);
@@ -541,8 +541,8 @@ export default function CallInterface({
             if (todayUsed >= allowed) {
               alert(
                 navigator.language.startsWith('am')
-                  ? 'Ã¡â€¹Â¨Ã¡â€¹â€¢Ã¡Ë†Ë†Ã¡â€°Â³Ã¡â€¹Å  Ã¡â€¹Â¨Ã¡Å’Â¥Ã¡Ë†Âª Ã¡Å’Å Ã¡â€¹Å“ Ã¡Å’Ë†Ã¡â€¹Â°Ã¡â€°Â¥Ã¡â€¹Å½ Ã¡Å Â Ã¡Ë†ÂÃ¡â€°â€¹Ã¡Ë†ÂÃ¡ÂÂ¢ Ã¡Å Â¥Ã¡â€°Â£Ã¡Å Â­Ã¡â€¹Å½ Ã¡Ë†ËœÃ¡Ë†Ë†Ã¡â€¹Â«Ã¡â€¹Å½Ã¡Å â€¢ Ã¡â€¹Â«Ã¡Ë†Â³Ã¡â€¹ÂµÃ¡Å’â€°!' 
-                  : 'Your daily call duration limit has been reached. Please upgrade to premium!'
+                  ? 'የዕለታዊ የጥሪ ጊዜ ገደብዎ ላይ ደርሰዋል። እባክዎ ወደ ዳይመንድ ያሳድጉ!'
+                  : 'Your daily call duration limit has been reached. Please upgrade to Diamond!'
               );
               handleEndCall();
               return prev;
@@ -898,3 +898,4 @@ export default function CallInterface({
     </div>
   );
 }
+

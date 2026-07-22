@@ -1673,7 +1673,7 @@ function DashboardContent() {
                         {/* Top Row: Title spanning edge-to-edge with Price */}
                         <div className="flex justify-between items-center w-full border-b border-white/15 pb-4">
                           <span className="text-sm font-black uppercase tracking-wider text-white">
-                            {locale === 'am' ? 'የፕሪሚየም አባልነት' : 'Premium Membership'}
+                            {locale === 'am' ? 'የዳይመንድ (ፕሪሚየም) አባልነት' : 'Diamond (Premium) Membership'}
                           </span>
                           <div className="text-white/95 font-black text-right">
                             <span className="text-lg leading-none">{isEthiopiaUser ? 'ብር 700' : '$7.99'}</span>
@@ -1694,7 +1694,7 @@ function DashboardContent() {
                         {/* Bottom Row: Centered Upgrade Button */}
                         <div className="flex justify-center w-full mt-1">
                           <div className="w-full text-center bg-white text-primary text-xs font-black uppercase tracking-[0.15em] py-4.5 rounded-2xl shadow-lg group-hover:bg-orange-50 transition-colors">
-                            {locale === 'am' ? 'ወደ ፕሪሚየም ያሳድጉ' : 'Upgrade to Premium'}
+                            {locale === 'am' ? 'ወደ ዳይመንድ ያሳድጉ' : 'Upgrade to Diamond'}
                           </div>
                         </div>
                       </div>
@@ -1916,7 +1916,7 @@ function DashboardContent() {
                     <h2 className="text-2xl font-black italic tracking-tighter text-white">
                       {showBenefitsModal === 'vip'
                         ? (locale === 'am' ? 'ቪ.አይ.ፒ አባልነት 👑' : 'VIP Status 👑')
-                        : (locale === 'am' ? 'ፕሪሚየም አባልነት' : 'Premium Membership')}
+                        : (locale === 'am' ? 'የዳይመንድ (ፕሪሚየም) አባልነት 💎' : 'Diamond (Premium) Membership 💎')}
                     </h2>
                     <div className="flex items-baseline gap-1 mt-0.5">
                       <span className="text-white font-black text-lg">
@@ -1987,7 +1987,7 @@ function DashboardContent() {
                   {showBenefitsModal === 'vip' ? <Crown size={16} className="fill-amber-900/30" /> : <Sparkles size={16} />}
                   {showBenefitsModal === 'vip'
                     ? (locale === 'am' ? 'ወደ ቪ.አይ.ፒ አሳድግ →' : 'Upgrade to VIP →')
-                    : (locale === 'am' ? 'ወደ ፕሪሚየም አሳድግ →' : 'Upgrade to Premium →')}
+                    : (locale === 'am' ? 'ወደ ዳይመንድ አሳድግ →' : 'Upgrade to Diamond →')}
                 </button>
                 {showBenefitsModal === 'premium' && (
                   <button
@@ -2002,7 +2002,7 @@ function DashboardContent() {
                     onClick={() => setShowBenefitsModal('premium')}
                     className="w-full py-3.5 rounded-2xl font-black uppercase tracking-widest text-[10px] border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-all"
                   >
-                    {locale === 'am' ? '⚡ ፕሪሚየም ጥቅሞችን ይመልከቱ' : '⚡ View Premium Benefits Instead'}
+                    {locale === 'am' ? '💎 የዳይመንድ ጥቅሞችን ይመልከቱ' : '💎 View Diamond Benefits Instead'}
                   </button>
                 )}
               </div>
