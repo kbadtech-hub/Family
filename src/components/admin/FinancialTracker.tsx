@@ -448,36 +448,33 @@ export default function FinancialTracker() {
 
     setIsSubmitting(true);
     try {
-      const gross = parseFloat(manualForm.gross_amount) || 0;
-      const fee = parseFloat(manualForm.gateway_fee) || 0;
-      const net = Math.max(0, gross - fee);
       const generatedRef = manualForm.tx_ref || `MTX-${Date.now()}`;
 
-      const newTx: Partial<FinancialTransaction> = {
-        tx_ref: generatedRef,
-        user_name_snapshot: manualForm.user_name,
-        user_email_snapshot: manualForm.user_email || null,
-        revenue_source: manualForm.revenue_source as any,
-        payment_gateway: manualForm.payment_gateway as any,
-        currency: manualForm.currency as any,
-        gross_amount: gross,
-        gateway_fee: fee,
-        net_amount: net,
-        payment_status: manualForm.payment_status as any,
-        created_at: new Date().toISOString()
-      };
+      // Use secure server-side API endpoint (service-role, duplicate-safe)
+      const res = await fetch('/api/admin/financials/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tx_ref: generatedRef,
+          user_name: manualForm.user_name,
+          user_email: manualForm.user_email || null,
+          revenue_source: manualForm.revenue_source,
+          payment_gateway: manualForm.payment_gateway,
+          currency: manualForm.currency,
+          gross_amount: parseFloat(manualForm.gross_amount) || 0,
+        }),
+      });
 
-      const { data, error } = await supabase
-        .from('financial_transactions')
-        .insert([newTx])
-        .select()
-        .single();
+      const result = await res.json();
 
-      if (error) {
-        // Local state append fallback if table doesn't exist yet
-        setTransactions(prev => [{ ...newTx, id: `manual-${Date.now()}` } as FinancialTransaction, ...prev]);
-      } else if (data) {
-        setTransactions(prev => [data as FinancialTransaction, ...prev]);
+      if (!res.ok || result.status !== 'success') {
+        alert(`Failed to log transaction: ${result.message || 'Unknown error'}`);
+        return;
+      }
+
+      // Add the persisted record to local state
+      if (result.transaction) {
+        setTransactions(prev => [result.transaction as FinancialTransaction, ...prev]);
       }
 
       setShowManualModal(false);

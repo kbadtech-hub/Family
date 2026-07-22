@@ -34,15 +34,15 @@ export async function POST(req: Request) {
     }
 
     // ── 1. Idempotency — prevent double-processing the same tx_ref ────────────
+    // Check payments table (covers both real and demo modes)
     const { data: existing } = await supabase
       .from('payments')
       .select('id, status, plan_type')
-      .eq('receipt_url', `Chapa TX: ${tx_ref}`)
+      .or(`receipt_url.eq.Chapa TX: ${tx_ref},receipt_url.eq.Chapa TX (Simulated): ${tx_ref}`)
       .maybeSingle();
 
     if (existing) {
-      console.log(`[Chapa Verify] tx_ref ${tx_ref} already processed — skipping.`);
-      // Extract type so the client can correctly route the user
+      console.log(`[Chapa Verify] tx_ref ${tx_ref} already processed in payments table — skipping.`);
       const existingPlanType = existing.plan_type || tx_ref.split('-')[1] || '';
       const existingType = existingPlanType.startsWith('coins_') ? 'coins'
         : existingPlanType.startsWith('vip_') ? 'vip'
@@ -52,6 +52,26 @@ export async function POST(req: Request) {
         message: 'Payment already verified and processed',
         alreadyProcessed: true,
         type: existingType,
+      });
+    }
+
+    // Secondary idempotency check on financial_transactions (catches any race conditions)
+    const { data: existingFt } = await supabase
+      .from('financial_transactions')
+      .select('id, revenue_source')
+      .eq('tx_ref', tx_ref)
+      .maybeSingle();
+
+    if (existingFt) {
+      console.log(`[Chapa Verify] tx_ref ${tx_ref} already exists in financial_transactions — skipping.`);
+      const ftType = existingFt.revenue_source === 'coin_sale' ? 'coins'
+        : existingFt.revenue_source === 'subscription_vip' ? 'vip'
+        : 'premium';
+      return NextResponse.json({
+        status: 'success',
+        message: 'Payment already recorded in ledger',
+        alreadyProcessed: true,
+        type: ftType,
       });
     }
 
@@ -96,7 +116,8 @@ export async function POST(req: Request) {
         const simulatedPrice = pack ? pack.priceEtb : 30;
         const simulatedFee = Math.round(simulatedPrice * 0.035 * 100) / 100;
 
-        await supabase.from('payments').insert({
+        // Demo mode: guard against duplicate payments insert
+        const { error: paymentsInsertErr } = await supabase.from('payments').insert({
           user_id: userId,
           plan_type: `coins_${amountCoins}`,
           amount: simulatedPrice,
@@ -104,22 +125,22 @@ export async function POST(req: Request) {
           status: 'approved',
           receipt_url: `Chapa TX (Simulated): ${tx_ref}`,
         });
+        if (paymentsInsertErr) console.error('[Chapa Verify Demo] Failed to insert payment record:', paymentsInsertErr.message);
 
-        try {
-          await supabase.from('financial_transactions').insert({
-            tx_ref: tx_ref,
-            user_id: userId,
-            user_name_snapshot: userName,
-            user_email_snapshot: userEmail,
-            revenue_source: 'coin_sale',
-            payment_gateway: 'chapa',
-            currency: 'ETB',
-            gross_amount: simulatedPrice,
-            gateway_fee: simulatedFee,
-            net_amount: Math.max(0, simulatedPrice - simulatedFee),
-            payment_status: 'completed'
-          });
-        } catch (err) {}
+        const { error: ftCoinsSimErr } = await supabase.from('financial_transactions').upsert({
+          tx_ref: tx_ref,
+          user_id: userId,
+          user_name_snapshot: userName,
+          user_email_snapshot: userEmail,
+          revenue_source: 'coin_sale',
+          payment_gateway: 'chapa',
+          currency: 'ETB',
+          gross_amount: simulatedPrice,
+          gateway_fee: simulatedFee,
+          net_amount: Math.max(0, simulatedPrice - simulatedFee),
+          payment_status: 'completed'
+        }, { onConflict: 'tx_ref', ignoreDuplicates: true });
+        if (ftCoinsSimErr) console.error('[Chapa Verify Demo] Failed to upsert financial_transaction (coins):', ftCoinsSimErr.message);
 
         await supabase.from('coin_transactions').insert({
           user_id: userId,
@@ -157,7 +178,7 @@ export async function POST(req: Request) {
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + days);
 
-        await supabase.from('payments').insert({
+        const { error: vipPaymentsSimErr } = await supabase.from('payments').insert({
           user_id: userId,
           plan_type: planType,
           amount: simulatedPrice,
@@ -165,22 +186,22 @@ export async function POST(req: Request) {
           status: 'approved',
           receipt_url: `Chapa TX (Simulated): ${tx_ref}`,
         });
+        if (vipPaymentsSimErr) console.error('[Chapa Verify Demo] Failed to insert VIP payment record:', vipPaymentsSimErr.message);
 
-        try {
-          await supabase.from('financial_transactions').insert({
-            tx_ref: tx_ref,
-            user_id: userId,
-            user_name_snapshot: userName,
-            user_email_snapshot: userEmail,
-            revenue_source: 'subscription_vip',
-            payment_gateway: 'chapa',
-            currency: 'ETB',
-            gross_amount: simulatedPrice,
-            gateway_fee: simulatedFee,
-            net_amount: Math.max(0, simulatedPrice - simulatedFee),
-            payment_status: 'completed'
-          });
-        } catch (err) {}
+        const { error: ftVipSimErr } = await supabase.from('financial_transactions').upsert({
+          tx_ref: tx_ref,
+          user_id: userId,
+          user_name_snapshot: userName,
+          user_email_snapshot: userEmail,
+          revenue_source: 'subscription_vip',
+          payment_gateway: 'chapa',
+          currency: 'ETB',
+          gross_amount: simulatedPrice,
+          gateway_fee: simulatedFee,
+          net_amount: Math.max(0, simulatedPrice - simulatedFee),
+          payment_status: 'completed'
+        }, { onConflict: 'tx_ref', ignoreDuplicates: true });
+        if (ftVipSimErr) console.error('[Chapa Verify Demo] Failed to upsert financial_transaction (VIP):', ftVipSimErr.message);
 
         const updatePayload: any = {
           is_vip_member: true,
@@ -213,7 +234,7 @@ export async function POST(req: Request) {
 
         const simulatedFee = Math.round(simulatedPrice * 0.035 * 100) / 100;
 
-        await supabase.from('payments').insert({
+        const { error: premPaymentsSimErr } = await supabase.from('payments').insert({
           user_id: userId,
           plan_type: planType,
           amount: simulatedPrice,
@@ -221,22 +242,22 @@ export async function POST(req: Request) {
           status: 'approved',
           receipt_url: `Chapa TX (Simulated): ${tx_ref}`,
         });
+        if (premPaymentsSimErr) console.error('[Chapa Verify Demo] Failed to insert Premium payment record:', premPaymentsSimErr.message);
 
-        try {
-          await supabase.from('financial_transactions').insert({
-            tx_ref: tx_ref,
-            user_id: userId,
-            user_name_snapshot: userName,
-            user_email_snapshot: userEmail,
-            revenue_source: 'subscription_premium',
-            payment_gateway: 'chapa',
-            currency: 'ETB',
-            gross_amount: simulatedPrice,
-            gateway_fee: simulatedFee,
-            net_amount: Math.max(0, simulatedPrice - simulatedFee),
-            payment_status: 'completed'
-          });
-        } catch (err) {}
+        const { error: ftPremSimErr } = await supabase.from('financial_transactions').upsert({
+          tx_ref: tx_ref,
+          user_id: userId,
+          user_name_snapshot: userName,
+          user_email_snapshot: userEmail,
+          revenue_source: 'subscription_premium',
+          payment_gateway: 'chapa',
+          currency: 'ETB',
+          gross_amount: simulatedPrice,
+          gateway_fee: simulatedFee,
+          net_amount: Math.max(0, simulatedPrice - simulatedFee),
+          payment_status: 'completed'
+        }, { onConflict: 'tx_ref', ignoreDuplicates: true });
+        if (ftPremSimErr) console.error('[Chapa Verify Demo] Failed to upsert financial_transaction (Premium):', ftPremSimErr.message);
 
         const updatePayload: any = {
           premium_until: premiumUntil.toISOString(),
@@ -335,23 +356,22 @@ export async function POST(req: Request) {
         receipt_url: `Chapa TX: ${tx_ref}`,
       });
 
-      // Mirror into financial_transactions master ledger
+      // Mirror into financial_transactions master ledger (upsert to prevent duplicates)
       const coinFee = Math.round(coinAmt * 0.035 * 100) / 100;
-      try {
-        await supabase.from('financial_transactions').insert({
-          tx_ref: tx_ref,
-          user_id: userId,
-          user_name_snapshot: profileData?.full_name || profileData?.email || 'Beteseb User',
-          user_email_snapshot: profileData?.email || null,
-          revenue_source: 'coin_sale',
-          payment_gateway: 'chapa',
-          currency: txData?.currency || 'ETB',
-          gross_amount: coinAmt,
-          gateway_fee: coinFee,
-          net_amount: Math.max(0, coinAmt - coinFee),
-          payment_status: 'completed'
-        });
-      } catch (err) {}
+      const { error: ftCoinsErr } = await supabase.from('financial_transactions').upsert({
+        tx_ref: tx_ref,
+        user_id: userId,
+        user_name_snapshot: profileData?.full_name || profileData?.email || 'Beteseb User',
+        user_email_snapshot: profileData?.email || null,
+        revenue_source: 'coin_sale',
+        payment_gateway: 'chapa',
+        currency: txData?.currency || 'ETB',
+        gross_amount: coinAmt,
+        gateway_fee: coinFee,
+        net_amount: Math.max(0, coinAmt - coinFee),
+        payment_status: 'completed'
+      }, { onConflict: 'tx_ref', ignoreDuplicates: true });
+      if (ftCoinsErr) console.error('[Chapa Verify] Failed to upsert financial_transaction (coins):', ftCoinsErr.message);
 
       await supabase.from('coin_transactions').insert({
         user_id: userId,
@@ -391,23 +411,22 @@ export async function POST(req: Request) {
         receipt_url: `Chapa TX: ${tx_ref}`,
       });
 
-      // Mirror into financial_transactions master ledger
+      // Mirror into financial_transactions master ledger (upsert to prevent duplicates)
       const vipFee = Math.round(vipAmt * 0.035 * 100) / 100;
-      try {
-        await supabase.from('financial_transactions').insert({
-          tx_ref: tx_ref,
-          user_id: userId,
-          user_name_snapshot: profileData?.full_name || profileData?.email || 'Beteseb User',
-          user_email_snapshot: profileData?.email || null,
-          revenue_source: 'subscription_vip',
-          payment_gateway: 'chapa',
-          currency: txData?.currency || 'ETB',
-          gross_amount: vipAmt,
-          gateway_fee: vipFee,
-          net_amount: Math.max(0, vipAmt - vipFee),
-          payment_status: 'completed'
-        });
-      } catch (err) {}
+      const { error: ftVipErr } = await supabase.from('financial_transactions').upsert({
+        tx_ref: tx_ref,
+        user_id: userId,
+        user_name_snapshot: profileData?.full_name || profileData?.email || 'Beteseb User',
+        user_email_snapshot: profileData?.email || null,
+        revenue_source: 'subscription_vip',
+        payment_gateway: 'chapa',
+        currency: txData?.currency || 'ETB',
+        gross_amount: vipAmt,
+        gateway_fee: vipFee,
+        net_amount: Math.max(0, vipAmt - vipFee),
+        payment_status: 'completed'
+      }, { onConflict: 'tx_ref', ignoreDuplicates: true });
+      if (ftVipErr) console.error('[Chapa Verify] Failed to upsert financial_transaction (VIP):', ftVipErr.message);
 
       const vipUpdatePayload: any = {
         is_vip_member: true,
@@ -449,23 +468,22 @@ export async function POST(req: Request) {
         receipt_url: `Chapa TX: ${tx_ref}`,
       });
 
-      // Mirror into financial_transactions master ledger
+      // Mirror into financial_transactions master ledger (upsert to prevent duplicates)
       const premFee = Math.round(premAmt * 0.035 * 100) / 100;
-      try {
-        await supabase.from('financial_transactions').insert({
-          tx_ref: tx_ref,
-          user_id: userId,
-          user_name_snapshot: profileData?.full_name || profileData?.email || 'Beteseb User',
-          user_email_snapshot: profileData?.email || null,
-          revenue_source: 'subscription_premium',
-          payment_gateway: 'chapa',
-          currency: txData?.currency || 'ETB',
-          gross_amount: premAmt,
-          gateway_fee: premFee,
-          net_amount: Math.max(0, premAmt - premFee),
-          payment_status: 'completed'
-        });
-      } catch (err) {}
+      const { error: ftPremErr } = await supabase.from('financial_transactions').upsert({
+        tx_ref: tx_ref,
+        user_id: userId,
+        user_name_snapshot: profileData?.full_name || profileData?.email || 'Beteseb User',
+        user_email_snapshot: profileData?.email || null,
+        revenue_source: 'subscription_premium',
+        payment_gateway: 'chapa',
+        currency: txData?.currency || 'ETB',
+        gross_amount: premAmt,
+        gateway_fee: premFee,
+        net_amount: Math.max(0, premAmt - premFee),
+        payment_status: 'completed'
+      }, { onConflict: 'tx_ref', ignoreDuplicates: true });
+      if (ftPremErr) console.error('[Chapa Verify] Failed to upsert financial_transaction (Premium):', ftPremErr.message);
 
       const premUpdatePayload: any = {
         premium_until: premiumUntil.toISOString()

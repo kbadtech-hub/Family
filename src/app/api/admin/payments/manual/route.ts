@@ -465,6 +465,18 @@ export async function POST(req: Request) {
           continue;
         }
 
+        // Secondary: check financial_transactions to catch any race-condition duplicates
+        const { data: existingFt } = await supabase
+          .from('financial_transactions')
+          .select('id')
+          .ilike('tx_ref', `%${chapaRef}%`)
+          .maybeSingle();
+
+        if (existingFt) {
+          skippedList.push({ ref_id: chapaRef, reason: 'Already recorded in financial ledger' });
+          continue;
+        }
+
         // Fetch full details to get the actual user ID and plan type
         const verifyRes = await fetch(`https://api.chapa.co/v1/transaction/verify/${chapaRef}`, {
           headers: {
@@ -531,7 +543,7 @@ export async function POST(req: Request) {
             created_at: tx.created_at || new Date().toISOString()
           });
 
-          await supabase.from('financial_transactions').insert({
+          const { error: ftCoinsSyncErr } = await supabase.from('financial_transactions').upsert({
             tx_ref: txRef,
             user_id: targetUser.id,
             user_name_snapshot: targetUser.full_name || 'Beteseb User',
@@ -544,7 +556,8 @@ export async function POST(req: Request) {
             net_amount: Math.max(0, amount - fee),
             payment_status: 'completed',
             created_at: tx.created_at || new Date().toISOString()
-          });
+          }, { onConflict: 'tx_ref', ignoreDuplicates: true });
+          if (ftCoinsSyncErr) console.error('[Sync] Failed to upsert financial_transaction (coins):', ftCoinsSyncErr.message);
 
           await supabase.from('coin_transactions').insert({
             user_id: targetUser.id,
@@ -584,7 +597,7 @@ export async function POST(req: Request) {
             created_at: tx.created_at || new Date().toISOString()
           });
 
-          await supabase.from('financial_transactions').insert({
+          const { error: ftVipSyncErr } = await supabase.from('financial_transactions').upsert({
             tx_ref: txRef,
             user_id: targetUser.id,
             user_name_snapshot: targetUser.full_name || 'Beteseb User',
@@ -597,7 +610,8 @@ export async function POST(req: Request) {
             net_amount: Math.max(0, amount - fee),
             payment_status: 'completed',
             created_at: tx.created_at || new Date().toISOString()
-          });
+          }, { onConflict: 'tx_ref', ignoreDuplicates: true });
+          if (ftVipSyncErr) console.error('[Sync] Failed to upsert financial_transaction (VIP):', ftVipSyncErr.message);
 
           const vipUpdatePayload: any = {
             is_vip_member: true,
@@ -639,7 +653,7 @@ export async function POST(req: Request) {
             created_at: tx.created_at || new Date().toISOString()
           });
 
-          await supabase.from('financial_transactions').insert({
+          const { error: ftPremSyncErr } = await supabase.from('financial_transactions').upsert({
             tx_ref: txRef,
             user_id: targetUser.id,
             user_name_snapshot: targetUser.full_name || 'Beteseb User',
@@ -652,7 +666,8 @@ export async function POST(req: Request) {
             net_amount: Math.max(0, amount - fee),
             payment_status: 'completed',
             created_at: tx.created_at || new Date().toISOString()
-          });
+          }, { onConflict: 'tx_ref', ignoreDuplicates: true });
+          if (ftPremSyncErr) console.error('[Sync] Failed to upsert financial_transaction (premium):', ftPremSyncErr.message);
 
           const premUpdatePayload: any = {
             premium_until: premiumUntil.toISOString(),

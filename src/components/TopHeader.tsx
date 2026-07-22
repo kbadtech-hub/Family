@@ -31,6 +31,17 @@ export default function TopHeader() {
       if (data) setSettings(data);
     };
     fetchSettings();
+
+    const channel = supabase
+      .channel('topheader-settings-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, (payload) => {
+        if (payload.new) setSettings(payload.new);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {

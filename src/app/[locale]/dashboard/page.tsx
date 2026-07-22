@@ -461,10 +461,10 @@ function DashboardContent() {
             setPaymentNoticeModal({
               isOpen: true,
               type: 'coins',
-              titleAm: 'ክፍያዎ ተጠናቋል! 🪙',
-              titleEn: 'Payment Received! 🪙',
-              messageAm: `ኮይኖችዎ ገቢ ሆነዋል። የኮይን ሂሳብዎ ወደ ${result.coinBalance || 0} አድጓል።`,
-              messageEn: `Payment received! Your wallet has been credited with ${result.coinBalance || 0} coins.`
+              titleEn: t('paymentSuccess.coinsTitle'),
+              titleAm: t('paymentSuccess.coinsTitle'),
+              messageEn: t('paymentSuccess.coinsBody'),
+              messageAm: t('paymentSuccess.coinsBody'),
             });
             setActiveTab('gifts');
           } else if (result.type === 'vip') {
@@ -488,10 +488,10 @@ function DashboardContent() {
             setPaymentNoticeModal({
               isOpen: true,
               type: 'vip',
-              titleAm: 'የቪ.አይ.ፒ አባልነት ተረጋግጧል! 👑',
-              titleEn: 'VIP Status Activated! 👑',
-              messageAm: `እንኳን ደስ አለዎት! የቪ.አይ.ፒ ልዩ አባልነትዎ እስከ ${expiresDate} ድረስ በስኬት ገቢ ሆኗል።`,
-              messageEn: `VIP membership activated! Valid until ${expiresDate}.`
+              titleEn: t('paymentSuccess.vipTitle'),
+              titleAm: t('paymentSuccess.vipTitle'),
+              messageEn: t('paymentSuccess.vipBody'),
+              messageAm: t('paymentSuccess.vipBody'),
             });
             setActiveTab('profile');
           } else {
@@ -511,10 +511,10 @@ function DashboardContent() {
             setPaymentNoticeModal({
               isOpen: true,
               type: 'premium',
-              titleAm: 'ፕሪሚየም አባልነት ተረጋግጧል! ⭐',
-              titleEn: 'Premium Profile Upgraded! ⭐',
-              messageAm: 'ክፍያዎ ተረጋግጦ የፕሪሚየም አባልነትዎ በስኬት ገቢ ሆኗል።',
-              messageEn: 'Payment verified and premium profile upgraded successfully!'
+              titleEn: t('paymentSuccess.premiumTitle'),
+              titleAm: t('paymentSuccess.premiumTitle'),
+              messageEn: t('paymentSuccess.premiumBody'),
+              messageAm: t('paymentSuccess.premiumBody'),
             });
             // Navigate to payments tab so the user sees their new status
             setActiveTab('payments');
@@ -529,10 +529,10 @@ function DashboardContent() {
           setPaymentNoticeModal({
             isOpen: true,
             type: 'error',
-            titleAm: 'ክፍያው አልተሳካም',
-            titleEn: 'Payment Failed or Cancelled',
-            messageAm: 'ክፍያው አልተሳካም ወይም ተሰርዟል። እባክዎ እንደገና ይሞክሩ።',
-            messageEn: 'Payment failed or was cancelled. Please try again.'
+            titleEn: t('paymentError.title'),
+            titleAm: t('paymentError.title'),
+            messageEn: t('paymentError.body'),
+            messageAm: t('paymentError.body'),
           });
         }
       } catch (err) {
@@ -545,10 +545,10 @@ function DashboardContent() {
         setPaymentNoticeModal({
           isOpen: true,
           type: 'error',
-          titleAm: 'ክፍያው አልተሳካም',
-          titleEn: 'Payment Failed or Cancelled',
-          messageAm: 'ክፍያው አልተሳካም ወይም ተሰርዟል። እባክዎ እንደገና ይሞክሩ።',
-          messageEn: 'Payment failed or was cancelled. Please try again.'
+          titleEn: t('paymentError.title'),
+          titleAm: t('paymentError.title'),
+          messageEn: t('paymentError.body'),
+          messageAm: t('paymentError.body'),
         });
       } finally {
         // Clean tx_ref from URL to prevent re-triggering on page refresh
@@ -1286,8 +1286,8 @@ function DashboardContent() {
             { id: 'chat', icon: MessageCircle, label: n('chat') },
             { id: 'community', icon: Users, label: n('community') },
             { id: 'workshops', icon: GraduationCap, label: n('workshops') },
-            { id: 'wedding', icon: Sparkles, label: locale === 'am' ? 'የሰርግ እቅድ' : 'Wedding Planner' },
-            { id: 'gifts', icon: Gift, label: locale === 'am' ? 'ስጦታዎች' : 'Gifts' },
+            { id: 'wedding', icon: Sparkles, label: n('wedding') },
+            { id: 'gifts', icon: Gift, label: n('gifts') },
             { id: 'profile', icon: UserCircle, label: n('profile') }
           ].map((item) => (
             <button
@@ -1331,7 +1331,7 @@ function DashboardContent() {
           { id: 'chat', icon: MessageCircle, label: n('chat') },
           { id: 'community', icon: Users, label: n('community') },
           { id: 'workshops', icon: GraduationCap, label: n('workshops') },
-          { id: 'gifts', icon: Gift, label: locale === 'am' ? 'ስጦታዎች' : 'Gifts' }
+          { id: 'gifts', icon: Gift, label: n('gifts') }
         ].map((item) => (
           <button
             key={item.id}
@@ -1426,8 +1426,8 @@ function DashboardContent() {
                       { id: 'chat', icon: MessageCircle, label: n('chat') },
                       { id: 'community', icon: Users, label: n('community') },
                       { id: 'workshops', icon: GraduationCap, label: n('workshops') },
-                      { id: 'wedding', icon: Sparkles, label: locale === 'am' ? 'የሰርግ እቅድ' : 'Wedding Planner' },
-                      { id: 'gifts', icon: Gift, label: locale === 'am' ? 'ስጦታዎች' : 'Gifts' },
+                      { id: 'wedding', icon: Sparkles, label: n('wedding') },
+                      { id: 'gifts', icon: Gift, label: n('gifts') },
                       { id: 'profile', icon: UserCircle, label: n('profile') }
                     ].map((item) => (
                       <button
@@ -2067,10 +2067,10 @@ function DashboardContent() {
             </div>
             <div className="space-y-2">
               <h3 className="text-xl font-black italic text-accent">
-                {locale === 'am' ? paymentNoticeModal.titleAm : paymentNoticeModal.titleEn}
+                {paymentNoticeModal.titleEn}
               </h3>
               <p className="text-xs text-gray-500 font-semibold leading-relaxed">
-                {locale === 'am' ? paymentNoticeModal.messageAm : paymentNoticeModal.messageEn}
+                {paymentNoticeModal.messageEn}
               </p>
             </div>
             <button
@@ -2079,7 +2079,7 @@ function DashboardContent() {
                 paymentNoticeModal.type === 'error' ? 'bg-accent hover:bg-black' : 'bg-primary shadow-primary/20 hover:bg-primary/90'
               }`}
             >
-              {locale === 'am' ? 'እሺ (ተቀብያለሁ)' : 'OK (Got it)'}
+              {paymentNoticeModal.type === 'error' ? (locale === 'am' ? 'ዝጋ' : locale === 'om' ? 'Cufii' : 'Close') : (locale === 'am' ? 'እሺ (ተቀብያለሁ)' : locale === 'om' ? 'Tole (Argadhe)' : 'OK (Got it)')}
             </button>
           </div>
         </div>

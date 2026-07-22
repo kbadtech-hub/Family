@@ -84,7 +84,9 @@
     "community": "Community Hub",
     "contact": "Contact Us",
     "workshops": "Workshops",
-    "profile": "Profile"
+    "profile": "Profile",
+    "wedding": "Wedding Planner",
+    "gifts": "Gifts"
   },
   "Dashboard": {
     "welcome": "Welcome back!",
@@ -325,6 +327,18 @@
       "familyValuesPrompt": "Since you both share {value} family values, share your favorite cultural family traditions and how you want to preserve them.",
       "translate": "Translate",
       "match": "Match"
+    },
+    "paymentSuccess": {
+      "coinsTitle": "Coins Purchased!",
+      "coinsBody": "Your coins have been credited to your account. Enjoy sending gifts and unlocking features!",
+      "vipTitle": "VIP Access Activated!",
+      "vipBody": "Your VIP membership is now active. Enjoy exclusive access and premium features!",
+      "premiumTitle": "Premium Activated!",
+      "premiumBody": "Your premium subscription is now active. Explore all the exclusive features!"
+    },
+    "paymentError": {
+      "title": "Payment Verification Failed",
+      "body": "We could not verify your payment. Please contact support with your transaction reference."
     }
   },
   "Community": {

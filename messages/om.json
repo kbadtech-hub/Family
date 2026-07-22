@@ -84,7 +84,9 @@
     "community": "Bakka Hawwaasaa",
     "contact": "Nu Qunnamu",
     "workshops": "Warkishooppii",
-    "profile": "Piroofayila"
+    "profile": "Piroofayila",
+    "wedding": "Karoora Cidha",
+    "gifts": "Kennaalee"
   },
   "Dashboard": {
     "welcome": "Baga nagaan dhuftan",
@@ -291,6 +293,18 @@
       "familyValuesPrompt": "Lachanuu qabeenya maatii {value} waan deeggartaniif, wahee aadaa maatii irratti mari'adhaa.",
       "translate": "Hiikki",
       "match": "Wal-dorgommii"
+    },
+    "paymentSuccess": {
+      "coinsTitle": "Kooyinoonni Galanii!",
+      "coinsBody": "Kooyinoonni akkaawuntii kee keessatti galanii jiru. Kennaa erguu fi meeshaalee saaquu irratti fayyadami!",
+      "vipTitle": "Miseensummaa VIP Argatte!",
+      "vipBody": "Miseensummaan VIP kee amma hojjechaa jira. Fayyadamaa qulqulluu guutuu taatee jirta!",
+      "premiumTitle": "Premium Argatte!",
+      "premiumBody": "Miseensummaan premium kee amma hojjechaa jira. Meeshaalee mara sakatta'i!"
+    },
+    "paymentError": {
+      "title": "Mirkaneessaan Kafaltii Hin Milkoofne",
+      "body": "Kafaltii kee mirkaneessuu hin dandeenye. Maaloo deeggarsa faayidaa transaction kee waliin quunnamii."
     }
   },
   "Footer": {

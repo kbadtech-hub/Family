@@ -46,6 +46,18 @@ export default function Footer() {
       if (data) setSettings(data);
     };
     fetchSettings();
+
+    // Real-time subscription to settings changes
+    const channel = supabase
+      .channel('footer-settings-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, (payload) => {
+        if (payload.new) setSettings(payload.new as SystemSettings);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const socialLinks: SocialLinks = (settings?.social_links as SocialLinks) || {};
