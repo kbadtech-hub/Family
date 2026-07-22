@@ -871,9 +871,9 @@ function DashboardContent() {
   const isVipActive = (profile as any)?.is_vip_member &&
     (!(profile as any)?.vip_expires_at || new Date((profile as any).vip_expires_at) > new Date());
   const isPremium = isVipActive ||
-                    Boolean((profile as any)?.is_lifetime) ||
                     ((profile as any)?.premium_until && new Date((profile as any).premium_until) > new Date()) ||
-                    paymentStatus === 'approved';
+                    paymentStatus === 'approved' ||
+                    ['admin', 'super_admin', 'expert'].includes((profile as any)?.role);
   const isAdmin = ['admin', 'super_admin'].includes((profile as any)?.role);
 
   const completionRate = calculateCompletionRate(profile as any);
@@ -1676,7 +1676,7 @@ function DashboardContent() {
                             {locale === 'am' ? 'የዳይመንድ (ፕሪሚየም) አባልነት' : 'Diamond (Premium) Membership'}
                           </span>
                           <div className="text-white/95 font-black text-right">
-                            <span className="text-lg leading-none">{isEthiopiaUser ? '149.99 ብር' : '$7.99'}</span>
+                            <span className="text-lg leading-none">{isEthiopiaUser ? 'ብር 700' : '$7.99'}</span>
                             <span className="text-[9px] text-white/60 block font-bold leading-none mt-0.5">{isEthiopiaUser ? 'ከወር' : '/month'}</span>
                           </div>
                         </div>
@@ -1717,7 +1717,7 @@ function DashboardContent() {
                           {locale === 'am' ? 'የቪ.አይ.ፒ ልዩ አባልነት' : 'VIP Elite Membership'} 👑
                         </span>
                         <div className="text-white/95 font-black text-right">
-                          <span className="text-lg leading-none">{isEthiopiaUser ? '299.99 ብር' : '$15.99'}</span>
+                          <span className="text-lg leading-none">{isEthiopiaUser ? 'ብር 1,500' : '$12.99'}</span>
                           <span className="text-[9px] text-white/60 block font-bold leading-none mt-0.5">{isEthiopiaUser ? 'ከወር' : '/month'}</span>
                         </div>
                       </div>
@@ -1921,8 +1921,8 @@ function DashboardContent() {
                     <div className="flex items-baseline gap-1 mt-0.5">
                       <span className="text-white font-black text-lg">
                         {showBenefitsModal === 'vip'
-                          ? (isEthiopiaUser ? '299.99 ብር' : '$15.99')
-                          : (isEthiopiaUser ? '149.99 ብር' : '$7.99')}
+                          ? (isEthiopiaUser ? 'ብር 1,500' : '$12.99')
+                          : (isEthiopiaUser ? 'ብር 700' : '$7.99')}
                       </span>
                       <span className="text-white/50 text-[9px] font-bold">{locale === 'am' ? '/ ወር' : '/ month'}</span>
                     </div>

@@ -324,7 +324,8 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
     (!profile?.vip_expires_at || new Date(profile.vip_expires_at) > new Date() || Boolean(profile?.is_lifetime));
   const isPaidPremium = Boolean(profile?.is_lifetime) ||
     Boolean(profile?.is_premium) ||
-    (profile?.premium_until && new Date(profile.premium_until) > new Date());
+    (profile?.premium_until && new Date(profile.premium_until) > new Date()) ||
+    ['admin', 'super_admin', 'expert'].includes(profile?.role || '');
 
   const isDiamondUser = userTier === 'diamond' || isPaidPremium;
   const isPlatinumUser = userTier === 'platinum';
