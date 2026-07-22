@@ -70,6 +70,11 @@ export default async function LocaleLayout({
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
         <meta name="theme-color" content="#FF6B6B" />
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4519221650297297"
+          crossOrigin="anonymous"
+        ></script>
       </head>
       <body className={`min-h-screen bg-white dark:bg-accent ${locale === 'ar' ? 'font-arabic' : 'font-sans'} flex flex-col transition-colors duration-500`}>
         <NextIntlClientProvider messages={messages}>
