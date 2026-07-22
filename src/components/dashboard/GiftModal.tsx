@@ -59,9 +59,9 @@ export default function GiftModal({ recipientId, recipientName, locale, onClose,
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'cultural' | 'pets' | 'flowers' | 'coupons'>('all');
 
   // Coin packs to buy (Imported from $1 USD = 200 ETB parity matrix)
-  const coinPacks = COIN_PACKAGES;
+  const [coinPacks, setCoinPacks] = useState<any[]>(COIN_PACKAGES);
 
-  const [selectedPack, setSelectedPack] = useState<any>(coinPacks[2]);
+  const [selectedPack, setSelectedPack] = useState<any>(COIN_PACKAGES[2]);
   const [isMobileNative, setIsMobileNative] = useState(false);
 
   useEffect(() => {
@@ -93,6 +93,15 @@ export default function GiftModal({ recipientId, recipientName, locale, onClose,
         if (wallet) {
           setCoinBalance(Number(wallet.coin_balance));
         }
+
+        // Fetch settings coin_packages
+        try {
+          const { data: settings } = await supabase.from('settings').select('coin_packages').limit(1).single();
+          if (settings && settings.coin_packages && Array.isArray(settings.coin_packages) && settings.coin_packages.length > 0) {
+            setCoinPacks(settings.coin_packages);
+            setSelectedPack(settings.coin_packages[2] || settings.coin_packages[0]);
+          }
+        } catch (err) {}
 
         // Fetch message count interaction score
         const { count } = await supabase

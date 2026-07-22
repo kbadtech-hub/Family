@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useUI } from '@/context/UIContext';
 import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { COIN_PACKAGES } from '@/lib/coins';
 import { queueSMS } from '@/lib/sms';
 import { translator } from '../../../lib/translator';
 import Image from 'next/image';
@@ -448,7 +449,7 @@ export default function AdminPortal() {
       paypal: true,
       bank_transfer: true
     },
-    coin_packages: [],
+    coin_packages: COIN_PACKAGES,
     ad_config: {
       enabled: true,
       test_mode: true,
@@ -698,12 +699,7 @@ export default function AdminPortal() {
               paypal: true,
               bank_transfer: true
             },
-            coin_packages: data.coin_packages || [
-              { id: 'coins_50', coins: 50, priceEtb: 50, priceUsd: 1.0 },
-              { id: 'coins_100', coins: 100, priceEtb: 100, priceUsd: 2.0 },
-              { id: 'coins_500', coins: 500, priceEtb: 450, priceUsd: 8.0, discount: '10% OFF' },
-              { id: 'coins_1000', coins: 1000, priceEtb: 800, priceUsd: 15.0, discount: '20% OFF' }
-            ],
+            coin_packages: (data.coin_packages && Array.isArray(data.coin_packages) && data.coin_packages.length > 0) ? data.coin_packages : COIN_PACKAGES,
             ad_config: data.ad_config || {
               enabled: true,
               test_mode: true,
@@ -727,12 +723,7 @@ export default function AdminPortal() {
               paypal: true,
               bank_transfer: true
             },
-            coin_packages: data.coin_packages || [
-              { id: 'coins_50', coins: 50, priceEtb: 50, priceUsd: 1.0 },
-              { id: 'coins_100', coins: 100, priceEtb: 100, priceUsd: 2.0 },
-              { id: 'coins_500', coins: 500, priceEtb: 450, priceUsd: 8.0, discount: '10% OFF' },
-              { id: 'coins_1000', coins: 1000, priceEtb: 800, priceUsd: 15.0, discount: '20% OFF' }
-            ],
+            coin_packages: (data.coin_packages && Array.isArray(data.coin_packages) && data.coin_packages.length > 0) ? data.coin_packages : COIN_PACKAGES,
             ad_config: data.ad_config || {
               enabled: true,
               test_mode: true,

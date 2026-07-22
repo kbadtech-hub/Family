@@ -118,14 +118,16 @@ export default function GiftsView({ locale }: { locale: string }) {
         .limit(1)
         .single();
       
-      if (settings && settings.coin_packages && Array.isArray(settings.coin_packages)) {
+      if (settings && settings.coin_packages && Array.isArray(settings.coin_packages) && settings.coin_packages.length > 0) {
         setCoinPacks(settings.coin_packages);
         setSelectedPack(settings.coin_packages[1] || settings.coin_packages[0]);
       } else {
-        setSelectedPack(coinPacks[1]);
+        setCoinPacks(COIN_PACKAGES);
+        setSelectedPack(COIN_PACKAGES[1] || COIN_PACKAGES[0]);
       }
     } catch (e) {
-      setSelectedPack(coinPacks[1]);
+      setCoinPacks(COIN_PACKAGES);
+      setSelectedPack(COIN_PACKAGES[1] || COIN_PACKAGES[0]);
     }
 
     // 1. Fetch wallet balance
