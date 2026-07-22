@@ -246,32 +246,32 @@ export default function GiftsView({ locale }: { locale: string }) {
       // Use the IP-verified result from LocationGate (user must pass it before reaching this button)
       const isEthiopia = isEthiopiaVerified;
       const currency = isEthiopia ? 'ETB' : 'USD';
+      const packPrice = currency === 'ETB' ? selectedPack.priceEtb : selectedPack.priceUsd;
 
-      if (currency === 'ETB') {
-        const txRef = generateChapaTxRef(userId, selectedPack.id);
-        const response = await fetch('/api/payments/chapa/initialize', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            amount: selectedPack.priceEtb,
-            email: profile?.email || '',
-            first_name: (profile?.full_name || 'Beteseb User').split(' ')[0] || 'Beteseb',
-            last_name: (profile?.full_name || 'Beteseb User').split(' ')[1] || 'User',
-            tx_ref: txRef,
-            callback_url: window.location.origin + '/api/payments/chapa/webhook',
-            return_url: window.location.origin + `/${locale}/dashboard?tab=gifts&tx_ref=${txRef}`
-          })
-        });
+      const txRef = generateChapaTxRef(userId, selectedPack.id);
+      const response = await fetch('/api/payments/chapa/initialize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: packPrice,
+          currency: currency,
+          email: profile?.email || '',
+          first_name: (profile?.full_name || 'Beteseb User').split(' ')[0] || 'Beteseb',
+          last_name: (profile?.full_name || 'Beteseb User').split(' ')[1] || 'User',
+          tx_ref: txRef,
+          callback_url: window.location.origin + '/api/payments/chapa/webhook',
+          return_url: window.location.origin + `/${locale}/dashboard?tab=gifts&tx_ref=${txRef}`
+        })
+      });
 
-        const data = await response.json();
-        if (data.status === 'success' && data.data?.checkout_url) {
-          window.location.href = data.data.checkout_url;
-        } else {
-          const errStr = typeof data.message === 'string' ? data.message : (data.message ? JSON.stringify(data.message) : 'Chapa initialization failed');
-          throw new Error(errStr);
-        }
-      } else {
-        const response = await fetch('/api/payments/stripe/initialize', {
+      const data = await response.json();
+      if (data.status === 'success' && data.data?.checkout_url) {
+        window.location.href = data.data.checkout_url;
+        return;
+      }
+
+      if (currency === 'USD') {
+        const stripeRes = await fetch('/api/payments/stripe/initialize', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -284,14 +284,15 @@ export default function GiftsView({ locale }: { locale: string }) {
           })
         });
 
-        const data = await response.json();
-        if (data.url) {
-          window.location.href = data.url;
-        } else {
-          const errStr = typeof data.error === 'string' ? data.error : (data.error ? JSON.stringify(data.error) : 'Stripe initialization failed');
-          throw new Error(errStr);
+        const stripeData = await stripeRes.json();
+        if (stripeData.url) {
+          window.location.href = stripeData.url;
+          return;
         }
       }
+
+      const errStr = typeof data.message === 'string' ? data.message : (data.message ? JSON.stringify(data.message) : 'Chapa initialization failed');
+      throw new Error(errStr);
     } catch (err: any) {
       const rawMsg = err?.message || err;
       const displayMsg = typeof rawMsg === 'string' ? rawMsg : JSON.stringify(rawMsg);
