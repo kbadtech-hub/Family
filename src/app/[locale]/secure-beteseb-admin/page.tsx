@@ -831,7 +831,7 @@ export default function AdminPortal() {
       setIsEditingPost(false);
       const { data } = await supabase.from('site_posts').select('*').order('created_at', { ascending: false });
       if (data) setPosts(data);
-    } catch (err) {
+    } catch (err: any) {
       const msg = err?.message || err?.details || JSON.stringify(err);
       showAlert('Error saving post: ' + msg, 'Save Error', 'error');
     } finally {
@@ -1657,7 +1657,7 @@ export default function AdminPortal() {
         coin_price: 20
       });
       showToast('Gift Catalog Item Added Successfully!', 'success');
-    } catch (err) {
+    } catch (err: any) {
       const msg = err?.message || err?.details || JSON.stringify(err);
       showAlert('Error adding catalog item: ' + msg, 'Catalog Error', 'error');
     }
