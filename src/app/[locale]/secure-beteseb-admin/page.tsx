@@ -843,72 +843,104 @@ export default function AdminPortal() {
   };
 
   const handleSaveCMS = async () => {
-    if (!settings) return;
     setIsSaving(true);
+    try {
+      let targetId = settings?.id;
+      if (!targetId) {
+        const { data: existingSettings } = await supabase.from('settings').select('*').limit(1).maybeSingle();
+        if (existingSettings) {
+          targetId = existingSettings.id;
+          setSettings(existingSettings);
+        } else {
+          const { data: newSettings, error: initErr } = await supabase.from('settings').insert([{
+            created_at: new Date().toISOString()
+          }]).select().single();
+          if (!initErr && newSettings) {
+            targetId = newSettings.id;
+            setSettings(newSettings);
+          }
+        }
+      }
 
-    // Primary update payload — includes direct columns if migration was applied
-    const updatePayload: Record<string, any> = {
-      cms_content: {
-        logo_url: cmsForm.logo_url,
-        hero_title: cmsForm.hero_title,
-        hero_subtitle: cmsForm.hero_subtitle,
-        footer_description: cmsForm.footer_description
-      },
-      contact_info: {
-        email: cmsForm.email,
-        phone: cmsForm.phone,
-        address: cmsForm.address,
-        website_url: cmsForm.website_url
-      },
-      social_links: {
-        tiktok: cmsForm.tiktok,
-        telegram: cmsForm.telegram,
-        youtube: cmsForm.youtube,
-        facebook: cmsForm.facebook,
-        whatsapp: cmsForm.whatsapp,
-        instagram: cmsForm.instagram,
-        linkedin: cmsForm.linkedin,
-        twitter: cmsForm.twitter,
-        // Fallback: store app links inside social_links JSONB until migration is run
+      if (!targetId) {
+        throw new Error('Unable to resolve system settings row ID.');
+      }
+
+      const updatePayload: Record<string, any> = {
+        cms_content: {
+          logo_url: cmsForm.logo_url,
+          hero_title: cmsForm.hero_title,
+          hero_subtitle: cmsForm.hero_subtitle,
+          footer_description: cmsForm.footer_description
+        },
+        contact_info: {
+          email: cmsForm.email,
+          phone: cmsForm.phone,
+          address: cmsForm.address,
+          website_url: cmsForm.website_url
+        },
+        social_links: {
+          tiktok: cmsForm.tiktok,
+          telegram: cmsForm.telegram,
+          youtube: cmsForm.youtube,
+          facebook: cmsForm.facebook,
+          whatsapp: cmsForm.whatsapp,
+          instagram: cmsForm.instagram,
+          linkedin: cmsForm.linkedin,
+          twitter: cmsForm.twitter,
+          play_store_url: cmsForm.play_store_url,
+          app_store_url: cmsForm.app_store_url,
+        },
+        bank_details: {
+          etb: cmsForm.banks_etb,
+          usd: cmsForm.banks_usd
+        },
+        pricing_usd: cmsForm.pricing_usd,
+        pricing_etb: cmsForm.pricing_etb,
+        payment_gateways: cmsForm.payment_gateways,
+        coin_packages: cmsForm.coin_packages,
+        ad_config: cmsForm.ad_config,
         play_store_url: cmsForm.play_store_url,
         app_store_url: cmsForm.app_store_url,
-      },
-      bank_details: {
-        etb: cmsForm.banks_etb,
-        usd: cmsForm.banks_usd
-      },
-      pricing_usd: cmsForm.pricing_usd,
-      pricing_etb: cmsForm.pricing_etb,
-      payment_gateways: cmsForm.payment_gateways,
-      coin_packages: cmsForm.coin_packages,
-      ad_config: cmsForm.ad_config,
-      // Direct columns (available after running supabase/migrations/20260719000000_add_app_links.sql)
-      play_store_url: cmsForm.play_store_url,
-      app_store_url: cmsForm.app_store_url,
-    };
+        updated_at: new Date().toISOString()
+      };
 
-    const { error } = await supabase
-      .from('settings')
-      .update(updatePayload)
-      .eq('id', settings.id);
+      const { data: updatedData, error } = await supabase
+        .from('settings')
+        .update(updatePayload)
+        .eq('id', targetId)
+        .select()
+        .single();
 
-    if (error) {
-      if (error.code === '42703') {
-        // Column not yet created — retry without direct columns (JSONB fallback only)
-        const { play_store_url: _p, app_store_url: _a, ...safePayload } = updatePayload;
-        const { error: fallbackError } = await supabase
-          .from('settings')
-          .update(safePayload)
-          .eq('id', settings.id);
-        if (fallbackError) alert('Error saving: ' + fallbackError.message);
-        else alert('CMS Content Deployed! (Tip: run the migration SQL to enable dedicated app link columns).');
-      } else {
-        alert('Error saving: ' + error.message);
+      if (error) {
+        if (error.code === '42703') {
+          const { play_store_url: _p, app_store_url: _a, ...safePayload } = updatePayload;
+          const { data: fallbackData, error: fallbackError } = await supabase
+            .from('settings')
+            .update(safePayload)
+            .eq('id', targetId)
+            .select()
+            .single();
+
+          if (fallbackError) throw fallbackError;
+          if (fallbackData) setSettings(fallbackData);
+        } else {
+          throw error;
+        }
+      } else if (updatedData) {
+        setSettings(updatedData);
       }
-    } else {
-      alert('CMS Content Deployed Successfully!');
+
+      alert(locale === 'am' 
+        ? '🚀 የሲስተም ይዘቶች በተሳካ ሁኔታ በዳታቤዝ፣ በዌብሳይት እና በሞባይል አፕሊኬሽኑ ላይ ቀጥታ (Live) ተተግበዋል! (CMS & Social Links Deployed Successfully!)' 
+        : '🚀 CMS Content & Social Links Deployed Live to Website & Mobile App Successfully!'
+      );
+    } catch (err: any) {
+      console.error('[handleSaveCMS] Error:', err);
+      alert('Error deploying CMS: ' + err.message);
+    } finally {
+      setIsSaving(false);
     }
-    setIsSaving(false);
   };
 
   const handleUpdateVerification = async (id: string, status: 'verified' | 'rejected', userId?: string) => {

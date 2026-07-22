@@ -98,19 +98,19 @@ export default function TopHeader() {
       {/* Social Links / Mini Nav */}
       <div className="flex items-center gap-4 md:gap-6 opacity-80">
          <div className="flex items-center gap-4 border-r border-white/10 pr-6 mr-2 hidden md:flex">
-            <a href="https://www.youtube.com/@betesebhub" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-1.5 group">
+            <a href={settings?.social_links?.youtube || "https://www.youtube.com/@betesebhub"} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-1.5 group">
                <span className="text-[9px] group-hover:underline">YOUTUBE</span>
             </a>
-            <a href="https://wa.me/447347663254" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-1.5 group">
+            <a href={settings?.social_links?.whatsapp || "https://wa.me/447347663254"} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-1.5 group">
                <span className="text-[9px] group-hover:underline">WHATSAPP</span>
             </a>
-            <a href="https://facebook.com/betesebhub" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-1.5 group">
+            <a href={settings?.social_links?.facebook || "https://facebook.com/betesebhub"} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-1.5 group">
                <span className="text-[9px] group-hover:underline">FACEBOOK</span>
             </a>
-            <a href="https://tiktok.com/@betesebhub" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-1.5 group">
+            <a href={settings?.social_links?.tiktok || "https://tiktok.com/@betesebhub"} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-1.5 group">
                <span className="text-[9px] group-hover:underline">TIKTOK</span>
             </a>
-            <a href="https://t.me/betesebhub" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-1.5 group">
+            <a href={settings?.social_links?.telegram || "https://t.me/betesebhub"} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-1.5 group">
                <span className="text-[9px] group-hover:underline">TELEGRAM</span>
             </a>
          </div>
