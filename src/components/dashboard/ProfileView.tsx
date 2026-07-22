@@ -469,12 +469,12 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
     setIsUploading(true);
     try {
       const oldAvatarUrl = profile?.avatar_url;
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split('.').pop() || 'jpg';
       const fileName = `${profile.id}/avatar-${Date.now()}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
         .from('user_photos')
-        .upload(fileName, file);
+        .upload(fileName, file, { upsert: true });
 
       if (uploadError) throw uploadError;
 
@@ -489,17 +489,21 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
 
       if (dbError) throw dbError;
 
-      // Delete old avatar file from storage bucket if present
-      if (oldAvatarUrl) {
-        const oldStoragePath = oldAvatarUrl.split('/user_photos/').pop();
-        if (oldStoragePath) {
-          await supabase.storage.from('user_photos').remove([decodeURIComponent(oldStoragePath)]);
+      // Safely attempt deleting old avatar from storage bucket without blocking
+      if (oldAvatarUrl && oldAvatarUrl.includes('/user_photos/')) {
+        try {
+          const oldPath = oldAvatarUrl.split('/user_photos/').pop()?.split('?')[0];
+          if (oldPath) {
+            await supabase.storage.from('user_photos').remove([decodeURIComponent(oldPath)]);
+          }
+        } catch (e) {
+          console.warn("Storage avatar deletion ignored:", e);
         }
       }
 
       onUpdate();
     } catch (error: any) {
-      alert(t('alerts.avatarFailed') + ': ' + error.message);
+      alert((t('alerts.avatarFailed') || 'Avatar upload failed') + ': ' + (error.message || String(error)));
     } finally {
       setIsUploading(false);
     }
@@ -511,12 +515,12 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
 
     setIsUploading(true);
     try {
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split('.').pop() || 'jpg';
       const fileName = `${profile.id}/gallery-${Date.now()}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
         .from('user_photos')
-        .upload(fileName, file);
+        .upload(fileName, file, { upsert: true });
 
       if (uploadError) throw uploadError;
 
@@ -534,8 +538,9 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
       if (dbError) throw dbError;
 
       setPhotos(newPhotos);
+      onUpdate();
     } catch (error: any) {
-      alert(t('alerts.uploadFailed') + ': ' + error.message);
+      alert((t('alerts.uploadFailed') || 'Upload failed') + ': ' + (error.message || String(error)));
     } finally {
       setIsUploading(false);
     }
@@ -554,13 +559,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
 
     setIsUploading(true);
     try {
-      // 1. Delete file from Supabase Storage
-      const storagePath = photoUrl.split('/user_photos/').pop();
-      if (storagePath) {
-        await supabase.storage.from('user_photos').remove([decodeURIComponent(storagePath)]);
-      }
-
-      // 2. Remove URL from profiles table gallery_urls
+      // 1. Remove URL from profiles table gallery_urls FIRST
       const newPhotos = photos.filter(p => p !== photoUrl);
       const { error: dbError } = await supabase
         .from('profiles')
@@ -570,8 +569,22 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
       if (dbError) throw dbError;
 
       setPhotos(newPhotos);
+
+      // 2. Safely attempt removing file from Supabase Storage without failing user flow
+      if (photoUrl && photoUrl.includes('/user_photos/')) {
+        try {
+          const storagePath = photoUrl.split('/user_photos/').pop()?.split('?')[0];
+          if (storagePath) {
+            await supabase.storage.from('user_photos').remove([decodeURIComponent(storagePath)]);
+          }
+        } catch (e) {
+          console.warn("Storage deletion warning:", e);
+        }
+      }
+
+      onUpdate();
     } catch (error: any) {
-      alert(t('alerts.deleteFailed') + ': ' + error.message);
+      alert((t('alerts.deleteFailed') || 'Delete photo failed') + ': ' + (error.message || String(error)));
     } finally {
       setIsUploading(false);
     }
@@ -583,9 +596,9 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
     try {
       const oldUrl = photos[index];
       // 1. Upload new file to Supabase storage
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split('.').pop() || 'jpg';
       const fileName = `${profile.id}/gallery-${Date.now()}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage.from('user_photos').upload(fileName, file);
+      const { error: uploadError } = await supabase.storage.from('user_photos').upload(fileName, file, { upsert: true });
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(fileName);
@@ -601,17 +614,23 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
 
       if (dbError) throw dbError;
 
-      // 3. Delete old photo file from storage bucket if it exists
-      if (oldUrl) {
-        const oldStoragePath = oldUrl.split('/user_photos/').pop();
-        if (oldStoragePath) {
-          await supabase.storage.from('user_photos').remove([decodeURIComponent(oldStoragePath)]);
+      setPhotos(updatedPhotos);
+
+      // 3. Safely attempt deleting old photo file from storage bucket if present
+      if (oldUrl && oldUrl.includes('/user_photos/')) {
+        try {
+          const oldStoragePath = oldUrl.split('/user_photos/').pop()?.split('?')[0];
+          if (oldStoragePath) {
+            await supabase.storage.from('user_photos').remove([decodeURIComponent(oldStoragePath)]);
+          }
+        } catch (e) {
+          console.warn("Storage old photo deletion ignored:", e);
         }
       }
 
-      setPhotos(updatedPhotos);
+      onUpdate();
     } catch (error: any) {
-      alert('Replace photo failed: ' + error.message);
+      alert('Replace photo failed: ' + (error.message || String(error)));
     } finally {
       setIsUploading(false);
     }
@@ -626,17 +645,23 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
 
     setIsUploading(true);
     try {
-      if (profile.avatar_url) {
-        const storagePath = profile.avatar_url.split('/user_photos/').pop();
-        if (storagePath) {
-          await supabase.storage.from('user_photos').remove([decodeURIComponent(storagePath)]);
-        }
-      }
+      const oldAvatarUrl = profile.avatar_url;
       const { error } = await supabase.from('profiles').update({ avatar_url: '' }).eq('id', profile.id);
       if (error) throw error;
+
+      if (oldAvatarUrl && oldAvatarUrl.includes('/user_photos/')) {
+        try {
+          const storagePath = oldAvatarUrl.split('/user_photos/').pop()?.split('?')[0];
+          if (storagePath) {
+            await supabase.storage.from('user_photos').remove([decodeURIComponent(storagePath)]);
+          }
+        } catch (e) {
+          console.warn("Storage avatar delete ignored:", e);
+        }
+      }
       onUpdate();
     } catch (err: any) {
-      alert('Failed to remove avatar: ' + err.message);
+      alert('Failed to remove avatar: ' + (err.message || String(err)));
     } finally {
       setIsUploading(false);
     }
