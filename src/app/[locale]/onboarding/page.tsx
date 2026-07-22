@@ -844,44 +844,73 @@ function OnboardingContent() {
             
             <div className="bg-white p-8 md:p-10 rounded-[3rem] border border-primary/10 shadow-2xl space-y-6">
               
-              {/* Profile Picture Uploader */}
+              {/* Profile Picture Uploader with Preview, Delete & Replace Controls */}
               <div className="space-y-3">
                 <label className="block text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
                   {locale === 'am' ? 'የመገለጫ ፎቶ' : 'Profile Picture'}
                 </label>
                 <div className="flex items-center gap-6">
-                  <div className="w-24 h-24 bg-muted border-2 border-primary/20 rounded-[2rem] overflow-hidden relative flex items-center justify-center shadow-inner">
+                  <div className="w-24 h-24 bg-muted border-2 border-primary/20 rounded-[2rem] overflow-hidden relative flex items-center justify-center shadow-inner group">
                     {formData.avatar_url ? (
-                      <img src={formData.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                      <>
+                        <img src={formData.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-2">
+                          <button
+                            type="button"
+                            title={locale === 'am' ? 'ፎቶውን አስወግድ' : 'Delete Photo'}
+                            onClick={() => updateField('avatar_url', '')}
+                            className="w-7 h-7 bg-red-600 hover:bg-red-700 text-white rounded-lg flex items-center justify-center shadow-md active:scale-95"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      </>
                     ) : (
                       <Camera size={32} className="text-gray-300" />
                     )}
                   </div>
-                  <label className="cursor-pointer bg-primary/10 hover:bg-primary/20 text-primary px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all">
-                    {locale === 'am' ? 'ፎቶ ይጫኑ' : 'Upload Photo'}
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      className="hidden" 
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (!file || !userId) return;
-                        setIsSubmitting(true);
-                        try {
-                          const fileExt = file.name.split('.').pop();
-                          const fileName = `avatar-${userId}-${Date.now()}.${fileExt}`;
-                          const { error } = await supabase.storage.from('user_photos').upload(fileName, file);
-                          if (error) throw error;
-                          const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(fileName);
-                          updateField('avatar_url', publicUrl);
-                        } catch (err) {
-                          alert("Upload failed: " + (err instanceof Error ? err.message : String(err)));
-                        } finally {
-                          setIsSubmitting(false);
-                        }
-                      }}
-                    />
-                  </label>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="cursor-pointer bg-primary/10 hover:bg-primary/20 text-primary px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-2">
+                      {formData.avatar_url ? (
+                        <span>🔄 {locale === 'am' ? 'ፎቶውን ይቀይሩ' : 'Replace Photo'}</span>
+                      ) : (
+                        <span>📷 {locale === 'am' ? 'ፎቶ ይጫኑ' : 'Upload Photo'}</span>
+                      )}
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file || !userId) return;
+                          setIsSubmitting(true);
+                          try {
+                            const fileExt = file.name.split('.').pop();
+                            const fileName = `avatar-${userId}-${Date.now()}.${fileExt}`;
+                            const { error } = await supabase.storage.from('user_photos').upload(fileName, file);
+                            if (error) throw error;
+                            const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(fileName);
+                            updateField('avatar_url', publicUrl);
+                          } catch (err) {
+                            alert("Upload failed: " + (err instanceof Error ? err.message : String(err)));
+                          } finally {
+                            setIsSubmitting(false);
+                          }
+                        }}
+                      />
+                    </label>
+
+                    {formData.avatar_url && (
+                      <button
+                        type="button"
+                        onClick={() => updateField('avatar_url', '')}
+                        className="text-[10px] text-red-500 font-bold hover:underline self-start ml-2 flex items-center gap-1"
+                      >
+                        🗑️ {locale === 'am' ? 'ፎቶውን አጥፋ' : 'Remove Avatar'}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -1549,9 +1578,56 @@ function OnboardingContent() {
              </div>
              <div className="grid grid-cols-3 gap-3">
                 {formData.gallery_photos.map((url, i) => (
-                   <div key={i} className="relative aspect-[3/4] rounded-2xl overflow-hidden group">
+                   <div key={i} className="relative aspect-[3/4] rounded-2xl overflow-hidden group border border-gray-200 shadow-sm">
                       <Image src={url} fill className="object-cover" alt="Gallery" />
-                      <button type="button" aria-label={t('Nav.about')} onClick={() => updateField('gallery_photos', formData.gallery_photos.filter((_, idx) => idx !== i))} className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"><X size={12} /></button>
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-2 p-2">
+                         <button 
+                            type="button" 
+                            title={locale === 'am' ? 'ፎቶውን አስወግድ (Delete)' : 'Delete Photo'} 
+                            onClick={() => updateField('gallery_photos', formData.gallery_photos.filter((_, idx) => idx !== i))} 
+                            className="w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-xl flex items-center justify-center shadow-lg transition-transform active:scale-95"
+                         >
+                            <X size={16} />
+                         </button>
+                         <label 
+                            title={locale === 'am' ? 'ፎቶውን ይቀይሩ (Replace)' : 'Replace Photo'}
+                            className="w-8 h-8 bg-primary hover:bg-primary/90 text-white rounded-xl flex items-center justify-center shadow-lg cursor-pointer transition-transform active:scale-95"
+                         >
+                            <span className="text-xs">🔄</span>
+                            <input 
+                               type="file" 
+                               accept="image/*" 
+                               className="hidden" 
+                               onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file || !userId) return;
+                                  setIsSubmitting(true);
+                                  setErrorMsg('');
+                                  try {
+                                     const fileName = `${userId}/gallery-${Date.now()}-${Math.random()}.jpg`;
+                                     const { error } = await supabase.storage.from('user_photos').upload(fileName, file);
+                                     if (!error) {
+                                        const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(fileName);
+                                        const moderationResult = await moderateImage(publicUrl).catch(() => ({ approved: true, reason: '' }));
+                                        if (moderationResult.approved) {
+                                           const updatedPhotos = [...formData.gallery_photos];
+                                           updatedPhotos[i] = publicUrl;
+                                           updateField('gallery_photos', updatedPhotos);
+                                        } else {
+                                           setErrorMsg(locale === 'am' 
+                                              ? `ምስሉ ውድቅ ተደርጓል፡ ${moderationResult.reason || 'የካርቱን፣ ተፈጥሮ ወይም የታዋቂ ሰዎች ምስሎች አይፈቀዱም።'}` 
+                                              : `Image rejected: ${moderationResult.reason || 'Cartoons, landscapes, or celebrity photos are not allowed.'}`);
+                                        }
+                                     }
+                                  } catch (err: any) {
+                                     setErrorMsg('Replace failed: ' + err.message);
+                                  } finally {
+                                     setIsSubmitting(false);
+                                  }
+                               }} 
+                            />
+                         </label>
+                      </div>
                    </div>
                 ))}
                 {formData.gallery_photos.length < 5 && (

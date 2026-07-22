@@ -532,9 +532,26 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
   };
 
   const deletePhoto = async (photoUrl: string) => {
+    const confirmMsg = locale === 'am'
+      ? 'እርግጠኛ ነዎት ይህንን ፎቶ ከካውንትዎ እና ከሰርቨር ማጥፋት ይፈልጋሉ?'
+      : locale === 'ti'
+      ? 'እዚ ፎቶ እዚ ካብ መለያኹም ሙሉእ ብሙሉእ ክትድምስስዎ እርግጸኛ ዲኹም?'
+      : locale === 'om'
+      ? 'Suuraa kana guutummaatti haquu kee mirkaneeffattaa?'
+      : 'Are you sure you want to delete this photo permanently from your profile and cloud storage?';
+
+    if (!window.confirm(confirmMsg)) return;
+
+    setIsUploading(true);
     try {
+      // 1. Delete file from Supabase Storage
+      const storagePath = photoUrl.split('/user_photos/').pop();
+      if (storagePath) {
+        await supabase.storage.from('user_photos').remove([decodeURIComponent(storagePath)]);
+      }
+
+      // 2. Remove URL from profiles table gallery_urls
       const newPhotos = photos.filter(p => p !== photoUrl);
-      
       const { error: dbError } = await supabase
         .from('profiles')
         .update({ gallery_urls: newPhotos })
@@ -545,6 +562,73 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
       setPhotos(newPhotos);
     } catch (error: any) {
       alert(t('alerts.deleteFailed') + ': ' + error.message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleReplacePhoto = async (index: number, file: File) => {
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const oldUrl = photos[index];
+      // 1. Upload new file to Supabase storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${profile.id}/gallery-${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage.from('user_photos').upload(fileName, file);
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(fileName);
+
+      // 2. Replace photo URL at specific index slot
+      const updatedPhotos = [...photos];
+      updatedPhotos[index] = publicUrl;
+
+      const { error: dbError } = await supabase
+        .from('profiles')
+        .update({ gallery_urls: updatedPhotos })
+        .eq('id', profile.id);
+
+      if (dbError) throw dbError;
+
+      // 3. Delete old photo file from storage bucket if it exists
+      if (oldUrl) {
+        const oldStoragePath = oldUrl.split('/user_photos/').pop();
+        if (oldStoragePath) {
+          await supabase.storage.from('user_photos').remove([decodeURIComponent(oldStoragePath)]);
+        }
+      }
+
+      setPhotos(updatedPhotos);
+    } catch (error: any) {
+      alert('Replace photo failed: ' + error.message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDeleteAvatar = async () => {
+    const confirmMsg = locale === 'am'
+      ? 'እርግጠኛ ነዎት የመገለጫ ፎቶዎን ማጥፋት ይፈልጋሉ?'
+      : 'Are you sure you want to remove your profile picture?';
+
+    if (!window.confirm(confirmMsg)) return;
+
+    setIsUploading(true);
+    try {
+      if (profile.avatar_url) {
+        const storagePath = profile.avatar_url.split('/user_photos/').pop();
+        if (storagePath) {
+          await supabase.storage.from('user_photos').remove([decodeURIComponent(storagePath)]);
+        }
+      }
+      const { error } = await supabase.from('profiles').update({ avatar_url: '' }).eq('id', profile.id);
+      if (error) throw error;
+      onUpdate();
+    } catch (err: any) {
+      alert('Failed to remove avatar: ' + err.message);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -653,13 +737,28 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                 className="w-full h-full object-cover"
                />
             </div>
-            <button 
-              onClick={() => avatarInputRef.current?.click()}
-              disabled={isUploading}
-              className="absolute -bottom-1 -right-1 md:-bottom-2 md:-right-2 w-10 h-10 md:w-12 md:h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-xl hover:scale-110 transition-transform"
-            >
-               {isUploading ? <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" /> : <Camera className="w-4 h-4 md:w-5 md:h-5" />}
-            </button>
+            <div className="absolute -bottom-1 -right-1 md:-bottom-2 md:-right-2 flex items-center gap-1.5 z-20">
+              {profile?.avatar_url && (
+                <button 
+                  type="button"
+                  title={locale === 'am' ? 'መገለጫ ፎቶ አጥፋ' : 'Delete Avatar'}
+                  onClick={handleDeleteAvatar}
+                  disabled={isUploading}
+                  className="w-9 h-9 md:w-10 md:h-10 bg-red-600 hover:bg-red-700 text-white rounded-2xl flex items-center justify-center shadow-xl hover:scale-110 transition-transform active:scale-95 disabled:opacity-50"
+                >
+                  <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                </button>
+              )}
+              <button 
+                type="button"
+                title={locale === 'am' ? 'መገለጫ ፎቶ ይቀይሩ' : 'Replace Avatar'}
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={isUploading}
+                className="w-10 h-10 md:w-12 md:h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-xl hover:scale-110 transition-transform active:scale-95"
+              >
+                {isUploading ? <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" /> : <Camera className="w-4 h-4 md:w-5 md:h-5" />}
+              </button>
+            </div>
             <input type="file" ref={avatarInputRef} className="hidden" onChange={handleAvatarUpload} accept="image/*" />
           </div>
  
@@ -1140,14 +1239,38 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4">
            {photos.map((photoUrl, index) => (
-             <div key={index} className="relative aspect-[3/4] group rounded-xl md:rounded-2xl overflow-hidden border border-border">
+             <div key={index} className="relative aspect-[3/4] group rounded-xl md:rounded-2xl overflow-hidden border border-border shadow-sm">
                 <Image src={photoUrl} alt="Gallery" fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
-                <button 
-                  onClick={() => deletePhoto(photoUrl)}
-                  className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-lg md:rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                >
-                   <Trash2 size={14} />
-                </button>
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-2 p-2">
+                   <button 
+                     type="button"
+                     title={locale === 'am' ? 'ፎቶውን አስወግድ (Delete)' : 'Delete Photo'}
+                     onClick={() => deletePhoto(photoUrl)}
+                     disabled={isUploading}
+                     className="w-9 h-9 bg-red-600 hover:bg-red-700 text-white rounded-xl flex items-center justify-center shadow-lg transition-transform active:scale-95 disabled:opacity-50"
+                   >
+                      <Trash2 size={16} />
+                   </button>
+                   <label 
+                     title={locale === 'am' ? 'ፎቶውን ይቀይሩ (Replace)' : 'Replace Photo'}
+                     className="w-9 h-9 bg-primary hover:bg-primary/90 text-white rounded-xl flex items-center justify-center shadow-lg cursor-pointer transition-transform active:scale-95"
+                   >
+                      <span className="text-xs">🔄</span>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        disabled={isUploading}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleReplacePhoto(index, file);
+                        }} 
+                      />
+                   </label>
+                </div>
+                <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-md text-[8px] font-bold text-white uppercase tracking-wider">
+                  Photo #{index + 1}
+                </div>
              </div>
            ))}
            {Array.from({ length: 5 - photos.length }).map((_, i) => (
