@@ -923,7 +923,7 @@ export default function AdminPortal() {
         : '🚀 CMS Content & Social Links Deployed Live Successfully!',
         'success'
       );
-    } catch (err) {
+    } catch (err: any) {
       console.error('[handleSaveCMS] Error:', err);
       const msg = err?.message || err?.details || JSON.stringify(err);
       showAlert('Error deploying CMS: ' + msg, 'Deployment Error', 'error');

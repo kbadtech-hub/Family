@@ -1,5 +1,6 @@
 'use client';
 
+import { useUI } from '@/context/UIContext';
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useTranslations, useLocale } from 'next-intl';

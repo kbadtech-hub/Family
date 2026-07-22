@@ -1,5 +1,6 @@
 'use client';
 
+import { useUI } from '@/context/UIContext';
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { 
