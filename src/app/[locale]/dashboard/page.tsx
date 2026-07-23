@@ -61,6 +61,7 @@ import AppStoreBadges from '@/components/AppStoreBadges';
 import { getUserTier, calculateCompletionRate } from '@/lib/tiers';
 import { unregisterPushNotifications } from '@/lib/push-notifications';
 import { moderateText } from '@/lib/moderation';
+import RewardTierPopupModal from '@/components/RewardTierPopupModal';
 
 function DashboardContent() {
   const t = useTranslations('Dashboard');
@@ -126,6 +127,26 @@ function DashboardContent() {
   const [appLinks, setAppLinks] = useState<{ play_store_url?: string; app_store_url?: string }>({});
   // IP-based Ethiopia detection — drives currency display, fully independent of UI language
   const [isEthiopiaUser, setIsEthiopiaUser] = useState<boolean | null>(null);
+
+  // Automated Reward System Popups State
+  const [unseenRewardPopups, setUnseenRewardPopups] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (profile?.id) {
+      fetch('/api/rewards/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: profile.id })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.unseen_popups && data.unseen_popups.length > 0) {
+            setUnseenRewardPopups(data.unseen_popups);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [profile?.id]);
 
   // Custom Beteseb Branded Modal Notice (Replaces raw browser alert popups)
   const [paymentNoticeModal, setPaymentNoticeModal] = useState<{
@@ -2229,6 +2250,16 @@ function DashboardContent() {
             </button>
           </div>
         </div>
+      {/* Automated Reward System Pop-up Modal */}
+      {profile?.id && unseenRewardPopups.length > 0 && (
+        <RewardTierPopupModal
+          userId={profile.id}
+          unseenPopups={unseenRewardPopups}
+          onNavigateToOnboarding={() => router.push('/onboarding')}
+          onNavigateToVerification={() => setShowVerificationBlockModal(true)}
+          onNavigateToSubscriptions={() => setShowPayment(true)}
+          onCloseAll={() => setUnseenRewardPopups([])}
+        />
       )}
     </div>
   );

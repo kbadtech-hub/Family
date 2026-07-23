@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { COIN_PACKAGES } from '@/lib/coins';
+import { canUserSpendCoins } from '@/lib/rewards';
 import { 
   Gift, 
   Coins, 
@@ -172,6 +173,19 @@ export default function GiftModal({ recipientId, recipientName, locale, onClose,
   const handleSendGift = async () => {
     if (!userId || !selectedGift) return;
     
+    // Check Gold-tier coin gating rule
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('verification_status, is_verified, is_vip_member, is_lifetime, role')
+      .eq('id', userId)
+      .single();
+
+    const gateCheck = canUserSpendCoins(userProfile);
+    if (!gateCheck.allowed) {
+      setErrorMsg(gateCheck.message);
+      return;
+    }
+
     if (coinBalance < selectedGift.coin_price) {
       setErrorMsg(locale === 'am' 
         ? 'በቂ ሳንቲም የሎትም። እባክዎ መጀመሪያ ሳንቲም ይግዙ!' 

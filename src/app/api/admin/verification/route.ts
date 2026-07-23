@@ -91,6 +91,17 @@ export async function POST(req: Request) {
       // Non-fatal — still return success since verification was updated
     }
 
+    // ── 3b. Trigger Automated Reward Evaluation (Gold Tier) ────────────────────
+    if (status === 'verified') {
+      try {
+        await supabaseAdmin.rpc('evaluate_and_award_user_rewards', {
+          p_user_id: userId
+        });
+      } catch (rewardErr) {
+        console.error('[Admin Verify] Automated reward evaluation error:', rewardErr);
+      }
+    }
+
     // ── 4. Fetch user phone for SMS (optional, non-fatal) ─────────────────────
     const { data: profile } = await supabaseAdmin
       .from('profiles')

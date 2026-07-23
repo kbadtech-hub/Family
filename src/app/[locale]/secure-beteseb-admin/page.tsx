@@ -11,6 +11,7 @@ import Image from 'next/image';
 import FinancialTracker from '@/components/admin/FinancialTracker';
 import UserAnalytics from '@/components/admin/UserAnalytics';
 import ReferralWithdrawalManagement from '@/components/admin/ReferralWithdrawalManagement';
+import RewardManagement from '@/components/admin/RewardManagement';
 import { 
   BarChart3, 
   Users, 
@@ -186,6 +187,7 @@ const ADMIN_HUBS = [
     icon: Heart,
     subTabs: [
       { id: 'payments', label: '💳 Payment Approvals' },
+      { id: 'welcome_rewards', label: '🎁 Welcoming & Rewards' },
       { id: 'referral_mgmt', label: '🎁 Referral & Withdrawals' },
       { id: 'pricing', label: '🪙 Pricing & Packages' },
       { id: 'banks', label: '🏦 Bank Accounts' },
@@ -2084,6 +2086,7 @@ export default function AdminPortal() {
 
         {activeTab === 'financial_tracker' && <FinancialTracker />}
         {activeTab === 'user_analytics' && <UserAnalytics />}
+        {activeTab === 'welcome_rewards' && <RewardManagement />}
 
         {activeTab === 'stats' && (
           <div className="space-y-8 animate-in fade-in duration-500">
