@@ -33,9 +33,7 @@ export default function EulaGate({ onAccept, forceShow = false }: EulaGateProps 
     }
   }, [forceShow]);
 
-  console.log("EulaGate rendering. isVisible:", isVisible);
   if (!isVisible) {
-    console.log("EulaGate is NOT visible, returning null");
     return null;
   }
 

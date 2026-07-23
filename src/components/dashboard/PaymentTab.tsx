@@ -195,122 +195,19 @@ export default function PaymentTab() {
     setIsSubmitting(false);
   };
 
-  const handleNativeIAP = async () => {
-    if (!userId || !selectedPlan) return;
-    setIsSubmitting(true);
-
-    const plan = plans.find(p => p.id === selectedPlan);
-    if (!plan) {
-      setIsSubmitting(false);
-      return;
-    }
-
-    const productId = `com.beteseb.app.${selectedPlan}`;
-
-    // Check if running inside native shell (Capacitor)
-    if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.()) {
-      try {
-        const { NativePurchases, PURCHASE_TYPE } = await import('@capgo/native-purchases');
-        
-        // Trigger native purchases billing sheet
-        const transaction = await NativePurchases.purchaseProduct({
-          productIdentifier: productId,
-          productType: selectedPlan === 'lifetime' ? PURCHASE_TYPE.INAPP : PURCHASE_TYPE.SUBS,
-          quantity: 1
-        });
-
-        if (!transaction || !transaction.transactionId) {
-          throw new Error("No transaction ID returned from native purchase.");
-        }
-
-        const isAndroid = (window as any).Capacitor.getPlatform() === 'android';
-        
-        if (isAndroid) {
-          // Verify with Google Play Developer backend API
-          const verifyResponse = await fetch('/api/payments/google', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              purchaseToken: transaction.transactionId,
-              productId: productId,
-              userId: userId,
-              planType: selectedPlan
-            })
-          });
-
-          const verifyData = await verifyResponse.json();
-          if (verifyData.status === 'success') {
-            showAlert(t('upgradePlaySuccess'), 'success');
-            setTimeout(() => window.location.reload(), 1500);
-          } else {
-            const errStr = typeof verifyData.message === 'string' ? verifyData.message : JSON.stringify(verifyData.message || 'Google Play validation failed');
-            throw new Error(errStr);
-          }
-        } else {
-          // Verify with Apple App Store backend API
-          const verifyResponse = await fetch('/api/payments/apple', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              receiptData: transaction.transactionId,
-              userId: userId,
-              planType: selectedPlan
-            })
-          });
-
-          const verifyData = await verifyResponse.json();
-          if (verifyData.status === 'success') {
-            showAlert(t('upgradeAppSuccess'), 'success');
-            setTimeout(() => window.location.reload(), 1500);
-          } else {
-            const errStr = typeof verifyData.message === 'string' ? verifyData.message : JSON.stringify(verifyData.message || 'Apple receipt validation failed');
-            throw new Error(errStr);
-          }
-        }
-      } catch (err: any) {
-        console.error("Native Purchase error details:", err);
-        const errMsg = typeof err?.message === 'string' ? err.message : JSON.stringify(err);
-        showAlert(t('purchaseFailed', { error: errMsg }), 'error');
-      } finally {
-        setIsSubmitting(false);
-      }
-    } else {
-      // ── Web Fallback (Simulated Mode) ──────────────────────────────────────
-      console.warn("Not on native device. Falling back to simulated Apple/Google Billing.");
-      setTimeout(async () => {
-        const { error } = await supabase.from('payments').insert({
-          user_id: userId,
-          amount: plan.price,
-          currency: currency,
-          plan_type: selectedPlan,
-          receipt_url: `In-App Purchase (Web Simulator Mock: sandbox_mock_${Date.now()})`,
-          status: 'approved'
-        });
-
-        if (!error) {
-          // Upgrade profile premium validity
-          let days = 30;
-          if (selectedPlan === '3m') days = 90;
-          if (selectedPlan === '6m') days = 180;
-          if (selectedPlan === '12m') days = 365;
-          if (selectedPlan === 'lifetime') days = 36500;
-
-          const premiumUntil = new Date();
-          premiumUntil.setDate(premiumUntil.getDate() + days);
-
-          await supabase.from('profiles').update({
-            premium_until: premiumUntil.toISOString()
-          }).eq('id', userId);
-
-          showAlert(t('upgradeSimSuccess'), 'success');
-          setTimeout(() => window.location.reload(), 1500);
-        } else {
-          showAlert("Payment trigger failed: " + error.message, 'error');
-        }
-        setIsSubmitting(false);
-      }, 1500);
+  /**
+   * On native app: redirect to website for payment.
+   * This avoids Google Play Billing policy entirely.
+   * Users pay via Chapa / bank transfer on the website.
+   */
+  const handleNativeWebsiteRedirect = () => {
+    const locale_param = locale || 'am';
+    const url = `https://beteseb1.online/${locale_param}/dashboard?tab=payments`;
+    if (typeof window !== 'undefined') {
+      window.open(url, '_blank');
     }
   };
+
 
   const handleOnlineCheckout = async () => {
     if (!userId || !selectedPlan) return;
@@ -406,29 +303,37 @@ export default function PaymentTab() {
 
       {selectedPlan && (
         (isMobileNative && currency !== 'ETB') ? (
-          <div className="max-w-md mx-auto bg-white p-10 rounded-[3rem] border border-primary/10 shadow-2xl text-center space-y-8 animate-in slide-in-from-bottom-8 duration-500">
-             <div className="w-20 h-20 bg-primary/10 rounded-[2rem] flex items-center justify-center mx-auto text-primary">
-                <CreditCard size={36} />
-             </div>
-             <div className="space-y-3">
-                <h3 className="font-black text-accent uppercase tracking-tight text-lg italic">Complete Upgrade Natively</h3>
-                <p className="text-xs text-gray-500 italic max-w-xs mx-auto leading-relaxed">
-                  {t('nativeCheckoutDesc')}
-                </p>
-             </div>
-             <button 
-               disabled={isSubmitting}
-               onClick={handleNativeIAP}
-               className="btn-primary w-full py-4.5 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2"
-             >
-               {isSubmitting ? <Loader2 className="animate-spin" /> : (t('payNatively'))} <ArrowRight size={16} />
-             </button>
-             <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 space-y-1">
-                <div className="flex items-center justify-center gap-2 text-primary font-bold text-[9px] uppercase tracking-widest">
-                   <ShieldCheck size={12} /> App Store Verified Checkout
-                </div>
-             </div>
-          </div>
+        <div className="max-w-md mx-auto bg-white p-10 rounded-[3rem] border border-primary/10 shadow-2xl text-center space-y-8 animate-in slide-in-from-bottom-8 duration-500">
+            <div className="w-20 h-20 bg-primary/10 rounded-[2rem] flex items-center justify-center mx-auto text-primary">
+               <Globe size={36} />
+            </div>
+            <div className="space-y-3">
+               <h3 className="font-black text-accent uppercase tracking-tight text-lg italic">
+                 {locale === 'am' ? 'ክፍያ ለማጠናቀቅ ድህረ ገጹን ይጎብኙ' : 'Complete Payment on Website'}
+               </h3>
+               <p className="text-xs text-gray-500 italic max-w-xs mx-auto leading-relaxed">
+                 {locale === 'am'
+                   ? 'ሞባይል አፕ ላይ ቀጥተኛ ክፍያ ለፖሊሲ ምክንያቶች አልተቻለም። ደህንነቱ የተጠበቀ ክፍያ ለማጠናቀቅ የBeteseb ድህረ ገጽ ይጎብኙ — ቻፓ፣ ቴሌብር ወይም ባንክ ዝውውር ይጠቀሙ።'
+                   : 'Direct in-app billing is unavailable for policy reasons. Please visit the Beteseb website to complete your payment securely via Chapa, Telebirr, or bank transfer.'}
+               </p>
+            </div>
+            <button
+              onClick={handleNativeWebsiteRedirect}
+              className="btn-primary w-full py-4 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2"
+            >
+              <Globe size={16} />
+              {locale === 'am' ? 'ድህረ ገጽ ይክፈቱ' : 'Open Payment Page'}
+              <ArrowRight size={16} />
+            </button>
+            <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 space-y-1">
+               <div className="flex items-center justify-center gap-2 text-primary font-bold text-[9px] uppercase tracking-widest">
+                  <ShieldCheck size={12} /> beteseb1.online — Secure & Encrypted
+               </div>
+               <p className="text-[9px] text-gray-400 italic">
+                 {locale === 'am' ? 'ወደ ድህረ ገጹ ከሄዱ በኋላ ወደ አፕ ተመልሰው ሲኦን መለያዎ ሚዛን ይዘምናል።' : 'After completing payment on the website, return to the app and your subscription will be active.'}
+               </p>
+            </div>
+         </div>
         ) : (
           <div className="space-y-8 animate-in slide-in-from-bottom-8 duration-500">
              {loadingConfig ? (

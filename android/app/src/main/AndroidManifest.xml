@@ -47,5 +47,6 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="com.android.vending.BILLING" />
+    <!-- BILLING permission removed: Payments are handled via external website (beteseb1.online),
+         not through Google Play Billing API, to comply with Play Store policy for Ethiopian market. -->
 </manifest>

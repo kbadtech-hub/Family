@@ -215,74 +215,12 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
       return;
     }
 
-    // Check if running inside native shell (Capacitor)
+    // On native app: redirect to website for payment (avoids Google Play Billing policy)
     if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.()) {
-      try {
-        const { NativePurchases, PURCHASE_TYPE } = await import('@capgo/native-purchases');
-        const productId = `com.beteseb.app.${selectedDuration}`;
-        
-        // Trigger native purchases billing sheet
-        const transaction = await NativePurchases.purchaseProduct({
-          productIdentifier: productId,
-          productType: selectedDuration.endsWith('lifetime') ? PURCHASE_TYPE.INAPP : PURCHASE_TYPE.SUBS,
-          quantity: 1
-        });
-
-        if (!transaction || !transaction.transactionId) {
-          throw new Error("No transaction ID returned from native purchase.");
-        }
-
-        const isAndroid = (window as any).Capacitor.getPlatform() === 'android';
-        
-        if (isAndroid) {
-          // Verify with Google Play Developer backend API
-          const verifyResponse = await fetch('/api/payments/google', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              purchaseToken: transaction.transactionId,
-              productId: productId,
-              userId: profile.id,
-              planType: selectedDuration
-            })
-          });
-
-          const verifyData = await verifyResponse.json();
-          if (verifyData.status === 'success') {
-            showAlert(locale === 'am' ? 'የፕሌይ ስቶር ክፍያ በተሳካ ሁኔታ ተጠናቋል!' : 'Upgrade via Play Store completed successfully!', 'success');
-            setTimeout(() => window.location.reload(), 1500);
-          } else {
-            const errStr = typeof verifyData.message === 'string' ? verifyData.message : JSON.stringify(verifyData.message || 'Google Play validation failed');
-            throw new Error(errStr);
-          }
-        } else {
-          // Verify with Apple App Store backend API
-          const verifyResponse = await fetch('/api/payments/apple', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              receiptData: transaction.transactionId,
-              userId: profile.id,
-              planType: selectedDuration
-            })
-          });
-
-          const verifyData = await verifyResponse.json();
-          if (verifyData.status === 'success') {
-            showAlert(locale === 'am' ? 'የአፕል ስቶር ክፍያ በተሳካ ሁኔታ ተጠናቋል!' : 'Upgrade via App Store completed successfully!', 'success');
-            setTimeout(() => window.location.reload(), 1500);
-          } else {
-            const errStr = typeof verifyData.message === 'string' ? verifyData.message : JSON.stringify(verifyData.message || 'Apple receipt validation failed');
-            throw new Error(errStr);
-          }
-        }
-      } catch (err: any) {
-        console.error("Native Purchase error details:", err);
-        const errMsg = typeof err?.message === 'string' ? err.message : (typeof err === 'string' ? err : JSON.stringify(err));
-        showAlert(locale === 'am' ? `ክፍያው አልተሳካም፦ ${errMsg}` : `Purchase failed: ${errMsg}`, 'error');
-      } finally {
-        setIsProcessing(false);
-      }
+      const locale_param = locale || 'am';
+      const url = `https://beteseb1.online/${locale_param}/dashboard?tab=payments`;
+      window.open(url, '_blank');
+      setIsProcessing(false);
       return;
     }
 
