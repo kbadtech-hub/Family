@@ -104,6 +104,29 @@ function LoginContent() {
     setIsLoading(true);
 
     try {
+      const cap = (window as any).Capacitor;
+      const isNative = !!cap?.isNativePlatform?.();
+
+      if (isNative) {
+        // Direct Supabase OAuth for native platforms to avoid Firebase storage-partitioning issues
+        const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
+          provider: provider,
+          options: {
+            redirectTo: 'com.beteseb.app://auth-callback',
+          }
+        });
+
+        if (oauthError) {
+          throw oauthError;
+        }
+
+        if (data?.url) {
+          window.open(data.url, '_system');
+          setIsLoading(false);
+        }
+        return;
+      }
+
       // Use Firebase Auth popup — no page redirect, no loop risk
       const result = provider === 'google'
         ? await signInWithGoogle()

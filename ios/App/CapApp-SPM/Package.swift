@@ -17,6 +17,7 @@ let package = Package(
         .package(name: "CapacitorFirebaseApp", path: "..\..\..\node_modules\@capacitor-firebase\app"),
         .package(name: "CapacitorFirebaseCrashlytics", path: "..\..\..\node_modules\@capacitor-firebase\crashlytics"),
         .package(name: "CapacitorFirebaseMessaging", path: "..\..\..\node_modules\@capacitor-firebase\messaging"),
+        .package(name: "CapacitorApp", path: "..\..\..\node_modules\@capacitor\app"),
         .package(name: "CapacitorDevice", path: "..\..\..\node_modules\@capacitor\device"),
         .package(name: "CapacitorPushNotifications", path: "..\..\..\node_modules\@capacitor\push-notifications"),
         .package(name: "CapgoNativePurchases", path: "..\..\..\node_modules\@capgo\native-purchases")
@@ -32,6 +33,7 @@ let package = Package(
                 .product(name: "CapacitorFirebaseApp", package: "CapacitorFirebaseApp"),
                 .product(name: "CapacitorFirebaseCrashlytics", package: "CapacitorFirebaseCrashlytics"),
                 .product(name: "CapacitorFirebaseMessaging", package: "CapacitorFirebaseMessaging"),
+                .product(name: "CapacitorApp", package: "CapacitorApp"),
                 .product(name: "CapacitorDevice", package: "CapacitorDevice"),
                 .product(name: "CapacitorPushNotifications", package: "CapacitorPushNotifications"),
                 .product(name: "CapgoNativePurchases", package: "CapgoNativePurchases")
