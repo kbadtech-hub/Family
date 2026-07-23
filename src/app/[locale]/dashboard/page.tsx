@@ -1581,12 +1581,12 @@ function DashboardContent() {
               </div>
               <div className="space-y-2">
                 <h4 className="text-sm font-black uppercase tracking-wider text-red-600">
-                  {locale === 'am' ? 'ማረጋገጫው ውድቅ ተደርጓል' : 'Verification Rejected'}
+                  {locale === 'am' ? 'የቪሪፊኬሽን መረጃዎ ውድቅ ተደርጓል!' : 'Verification Rejected'}
                 </h4>
-                <p className="text-xs font-semibold text-gray-500 max-w-xl leading-relaxed">
+                <p className="text-xs font-semibold text-gray-500 max-w-xl leading-relaxed whitespace-pre-line">
                   {locale === 'am' 
-                    ? `ያስገቡት ዶክመንት ውድቅ ተደርጓል። ምክንያት፦ ${rejectionReason}። እባክዎ በትክክል አስተካክለው ድጋሚ ይሞክሩ።`
-                    : `Your verification request has been rejected. Reason: ${rejectionReason}. Please correct it and try again.`}
+                    ? `ምክንያት፡ ${rejectionReason}\nእባክዎን መረጃዎን አስተካክለው እንደገና ያስገቡ።`
+                    : `Reason: ${rejectionReason}\nPlease correct your information and try again.`}
                 </p>
               </div>
             </div>
@@ -1594,7 +1594,7 @@ function DashboardContent() {
               onClick={() => router.push('/onboarding?step=4')}
               className="bg-red-500 hover:bg-red-600 text-white px-10 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs shadow-xl shadow-red-500/10 hover:scale-105 active:scale-95 transition-all shrink-0 flex items-center gap-2"
             >
-              🔄 {locale === 'am' ? 'ድጋሚ አስገባ' : 'Try Again'}
+              🔄 {locale === 'am' ? 'እንደገና አስገባ (Retry Verification)' : 'Retry Verification'}
             </button>
           </div>
         )}

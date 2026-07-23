@@ -243,8 +243,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ isMatch: false, reason: 'Missing userId for verification' });
     }
 
-    if (!idPhotoUrl || !selfiePhotoUrl) {
-      return NextResponse.json({ isMatch: false, reason: 'Missing images for verification' });
+    if (!idPhotoUrl) {
+      return NextResponse.json({ isMatch: false, reason: 'Missing ID photo for verification' });
     }
 
     // Fetch original registered profile data from database (trusted source)
@@ -277,38 +277,28 @@ export async function POST(req: Request) {
       console.warn("GOOGLE_VISION_API_KEY is not defined. Falling back to simulated verification.");
       
       const lowerIdUrl = idPhotoUrl.toLowerCase();
-      const isTriggeredFake = lowerIdUrl.includes('fake') || lowerIdUrl.includes('test') || lowerIdUrl.includes('dummy') || lowerIdUrl.includes('cartoon');
-      const isMismatchTrigger = lowerIdUrl.includes('mismatch') || lowerIdUrl.includes('wrong') || lowerIdUrl.includes('rejected');
+      const isTriggeredFake = lowerIdUrl.includes('fake') || lowerIdUrl.includes('test') || lowerIdUrl.includes('dummy') || lowerIdUrl.includes('cartoon') || lowerIdUrl.includes('atm') || lowerIdUrl.includes('card');
+      const isNameMismatch = lowerIdUrl.includes('name_mismatch') || lowerIdUrl.includes('mismatch') || lowerIdUrl.includes('wrong') || lowerIdUrl.includes('rejected');
+      const isDobMismatch = lowerIdUrl.includes('dob_mismatch');
 
       if (isTriggeredFake) {
         return NextResponse.json({
           isMatch: false,
-          reason: 'Simulation Verification: Only official Passport or Digital ID is accepted. Cartoon, fake, or non-standard documents are rejected.'
+          reason: 'የተያያዘው ምስል ትክክለኛ መታወቂያ አይደለም። እባክዎን ህጋዊ መታወቂያ፣ ፓስፖርት ወይም መንጃ ፍቃድ ብቻ ያያይዙ።'
         });
       }
 
-      // Determine simulated OCR text based on payload inputs or trigger keywords
-      let simulatedOcrText = `${dbFullName} ${dbBirthDate}`;
-      if (mockOcrData) {
-        simulatedOcrText = `${mockOcrData.full_name || ''} ${mockOcrData.birth_date || ''}`;
-      } else if (isMismatchTrigger) {
-        simulatedOcrText = `Kalid Seid 1990-05-15`; // Simulate a complete mismatch
-      }
-
-      // Enforce the exact same database matching rules on simulated text
-      const nameCheck = await verifyNameMatch(dbFullName, simulatedOcrText);
-      if (!nameCheck.matches) {
+      if (isNameMismatch) {
         return NextResponse.json({
           isMatch: false,
-          reason: `Simulation Match Error: ${nameCheck.reason}`
+          reason: 'ያስገቡት የመዝገብ ስም እና መታወቂያው ላይ ያለው ስም አልተመሳሰለም። እባክዎን ትክክለኛ መታወቂያዎን ያያይዙ።'
         });
       }
 
-      const dobCheck = verifyBirthDateMatch(dbBirthDate, simulatedOcrText);
-      if (!dobCheck.matches) {
+      if (isDobMismatch) {
         return NextResponse.json({
           isMatch: false,
-          reason: `Simulation Match Error: ${dobCheck.reason}`
+          reason: 'በመዝገብ ላይ ያስገቡት የትውልድ ቀን እና በመታወቂያው ላይ ያለው ቀን አልተመሳሰለም።'
         });
       }
 
@@ -364,17 +354,18 @@ export async function POST(req: Request) {
     console.log("Extracted OCR Text from ID:", extractedText);
     const lowerText = extractedText.toLowerCase();
 
-    // 1. Strict Document Type Check (Passport or official Digital ID only)
+    // 1. Strict Document Type Check (Passport, Digital ID, Driving License)
     const allowedDocKeywords = [
       'passport', 'paasaboor', 'ፓስፖርት', 'جواز', 'سفر',
-      'national id', 'identity card', 'id card', 'national identity', 'የብሔራዊ መታወቂያ', 'መታወቂያ', 'aqoonsi', 'aqoonsiga', 'waraqadda', 'widentity', 'fayda'
+      'national id', 'identity card', 'id card', 'national identity', 'የብሔራዊ መታወቂያ', 'መታወቂያ', 'aqoonsi', 'aqoonsiga', 'waraqadda', 'widentity', 'fayda',
+      'driving license', 'driver\'s license', 'መንጃ ፍቃድ', 'መንጃ ፈቃድ'
     ];
     const hasValidDocType = allowedDocKeywords.some(keyword => lowerText.includes(keyword));
 
     if (!hasValidDocType) {
       return NextResponse.json({
         isMatch: false,
-        reason: 'Only official Passport or Digital ID (e.g. Fayda ID) is accepted. Fake documents, screenshots, and non-standard IDs are strictly blocked.'
+        reason: 'የተያያዘው ምስል ትክክለኛ መታወቂያ አይደለም። እባክዎን ህጋዊ መታወቂያ፣ ፓስፖርት ወይም መንጃ ፍቃድ ብቻ ያያይዙ።'
       });
     }
 
@@ -383,7 +374,7 @@ export async function POST(req: Request) {
     if (!nameCheck.matches) {
       return NextResponse.json({
         isMatch: false,
-        reason: nameCheck.reason
+        reason: 'ያስገቡት የመዝገብ ስም እና መታወቂያው ላይ ያለው ስም አልተመሳሰለም። እባክዎን ትክክለኛ መታወቂያዎን ያያይዙ።'
       });
     }
 
@@ -392,7 +383,7 @@ export async function POST(req: Request) {
     if (!dobCheck.matches) {
       return NextResponse.json({
         isMatch: false,
-        reason: dobCheck.reason
+        reason: 'በመዝገብ ላይ ያስገቡት የትውልድ ቀን እና በመታወቂያው ላይ ያለው ቀን አልተመሳሰለም።'
       });
     }
 

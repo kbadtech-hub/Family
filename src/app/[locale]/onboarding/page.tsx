@@ -762,9 +762,37 @@ function OnboardingContent() {
             gallery_urls: formData.gallery_photos,
             onboarding_step: 7
           };
-        } else if (step === 4 || step === 5) {
+        } else if (step === 4) {
+          try {
+            const result = await simulateIdentityVerification(userId, formData.id_photo, 'doc_only', {
+              full_name: formData.full_name,
+              birth_date: formData.birth_date,
+              location: {
+                country: selectedCountry === 'Others' ? customCountry : selectedCountry,
+                region: selectedRegion === 'Others' ? customRegion : selectedRegion,
+                city: selectedCity === 'Others' ? customCity : selectedCity
+              }
+            });
+
+            if (!result.isMatch) {
+              setErrorMsg(result.reason || 'Verification failed');
+              setIsSubmitting(false);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              return;
+            }
+          } catch (verifyErr: any) {
+            console.error("ID verification API error:", verifyErr);
+            setErrorMsg(locale === 'am' ? 'የማንነት ማረጋገጫ ፍተሻ በኔትወርክ ወይም በሰርቨር ችግር ምክንያት አልተሳካም። እባክዎ እንደገና ይሞክሩ።' : 'Verification failed due to a network or server error. Please try again.');
+            setIsSubmitting(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+          }
           updateData = {
-            onboarding_step: step + 1
+            onboarding_step: 5
+          };
+        } else if (step === 5) {
+          updateData = {
+            onboarding_step: 6
           };
         }
 
@@ -1406,15 +1434,7 @@ function OnboardingContent() {
                />
             </label>
 
-            <button
-                type="button"
-                onClick={() => {
-                  setStep(5);
-                }}
-                className="w-full mt-6 bg-slate-100 hover:bg-slate-200 text-gray-600 py-4 rounded-[1.5rem] font-bold text-xs uppercase tracking-widest transition-all"
-             >
-                {locale === 'am' ? 'ይህን ደረጃ ዝለል (Skip Step)' : locale === 'ti' ? 'እዚ ደረጃ እዚ ሕለፎ (Skip Step)' : locale === 'om' ? 'Tarkaanfii kana utaali (Skip Step)' : 'Skip ID Verification'}
-             </button>
+            
            </div>
          );
       case 5: // Selfie Video Verification (Live camera / file fallback)
