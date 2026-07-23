@@ -75,8 +75,17 @@ export default async function LocaleLayout({
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4519221650297297"
           crossOrigin="anonymous"
         ></script>
+        <script
+          async
+          custom-element="amp-auto-ads"
+          src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js"
+        ></script>
       </head>
       <body className={`min-h-screen bg-white dark:bg-accent ${locale === 'ar' ? 'font-arabic' : 'font-sans'} flex flex-col transition-colors duration-500`}>
+        <amp-auto-ads
+          type="adsense"
+          data-ad-client="ca-pub-4519221650297297"
+        ></amp-auto-ads>
         <NextIntlClientProvider messages={messages}>
           <FirebaseProvider>
           <AuthProvider>
