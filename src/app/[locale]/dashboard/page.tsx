@@ -2250,6 +2250,8 @@ function DashboardContent() {
             </button>
           </div>
         </div>
+      )}
+
       {/* Automated Reward System Pop-up Modal */}
       {profile?.id && unseenRewardPopups.length > 0 && (
         <RewardTierPopupModal
