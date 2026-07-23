@@ -88,8 +88,8 @@ async function showNativeRewardedAd(
 
     let adId = (window as any).Capacitor.getPlatform() === 'ios'
       ? 'ca-app-pub-3940256099942544/1712485313'
-      : 'ca-app-pub-3940256099942544/5224354917';
-    let isTesting = true;
+      : 'ca-app-pub-4519221650297297/3526384833';
+    let isTesting = false;
 
     try {
       const { data } = await supabase.from('settings').select('ad_config').limit(1).single();
