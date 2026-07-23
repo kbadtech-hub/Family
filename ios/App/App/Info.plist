@@ -47,6 +47,17 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.beteseb.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.beteseb.app</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>Beteseb requires camera access to allow you to make secure video calls and upload profile pictures.</string>
 	<key>NSMicrophoneUsageDescription</key>

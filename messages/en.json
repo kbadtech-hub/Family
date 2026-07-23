@@ -94,16 +94,58 @@
     "welcome": "Welcome back!",
     "subtitle": "Find your perfect match within the Beteseb family.",
     "planner": {
-      "title": "Beteseb Royal Wedding Planning",
-      "subtitle": "Crafting Unforgettable Habesha Weddings",
-      "introText": "Select your ideal venue, photo/cinema team, and royal styling packages below to calculate your estimated wedding budget and book an expert consultation.",
+      "title": "Royal Wedding Planner",
+      "subtitle": "Design Your Royal Tomorrow.",
+      "hallCatering": "Halls & Catering",
+      "photoCinema": "Photo & Cinema",
+      "beautyAttire": "Beauty & Attire",
+      "costEstimation": "Cost Estimation summary",
+      "venueFood": "Venue & Food",
+      "photosVideo": "Photos & Video",
+      "beautyClothes": "Beauty & Clothes",
+      "totalEstimate": "Total Estimate",
+      "inquireBook": "Inquire / Book Consultation",
+      "customRequirements": "Write custom requirements here...",
+      "sendInquiry": "Send Planner Inquiry",
+      "verifiedVendors": "Verified Wedding Vendors",
+      "bookings": "Your Consultation Bookings",
+      "noBookings": "No planning consultations scheduled yet.",
       "gourmetBuffet": "Gourmet Buffet",
-      "cinemaPhotos": "Cinema Photos",
+      "cinemaPhotos": "Cinema & Photos",
       "royalAttire": "Royal Attire",
       "perfectMemories": "Perfect Memories",
-      "hallCatering": "Halls & Catering",
-      "photoCinema": "Photo & Video",
-      "beautyAttire": "Beauty & Attire"
+      "selectDateAlert": "Please select a wedding date.",
+      "successAlert": "Inquiry sent successfully!",
+      "sending": "Sending...",
+      "packages": {
+        "hall-basic": {
+          "name": "Habesha Traditional Celebration",
+          "desc": "Traditional hall venue decorated in Habesha theme, buffet and soft drinks for 150 guests."
+        },
+        "hall-premium": {
+          "name": "Royal Grand Ballroom",
+          "desc": "Luxury ballroom, professional gourmet catering, premium decor, sound/lighting, and capacity for 300+ guests."
+        },
+        "photo-basic": {
+          "name": "Classic Memories",
+          "desc": "1 Photographer + 1 Videographer, coverage of church/nikah and reception, digital delivery."
+        },
+        "photo-premium": {
+          "name": "Cinematic Royal Gold",
+          "desc": "3 Cameras, drone coverage, 4K cinema trailer, luxury printed leather album, and pre-wedding photo shoot."
+        },
+        "beauty-basic": {
+          "name": "Habesha Traditional Attire & Styling",
+          "desc": "Bridal makeup and hair, couple traditional handwoven Habesha Kemis & Kuta outfits (rental)."
+        },
+        "beauty-premium": {
+          "name": "Imperial Royal Styling",
+          "desc": "VIP bridal styling party, custom designer couple attire to keep, and bridesmaid styling packages."
+        }
+      },
+      "introText": "Plan, estimate, and connect with premium service providers in Ethiopia.",
+      "verifiedVendorsSubtitle": "Beteseb-partnered luxury wedding services, venues, and cinema studios",
+      "bookingsSubtitle": "Track the status of your royal wedding planning consultations"
     },
     "premium": {
       "active": "Premium Active",
@@ -193,60 +235,6 @@
       "deleteSuccess": "Your account and all associated data have been permanently deleted.",
       "generatingCode": "GENERATING CODE...",
       "sendingInvitation": "SENDING INVITATION..."
-    },
-    "planner": {
-      "title": "Royal Wedding Planner",
-      "subtitle": "Design Your Royal Tomorrow.",
-      "hallCatering": "Halls & Catering",
-      "photoCinema": "Photo & Cinema",
-      "beautyAttire": "Beauty & Attire",
-      "costEstimation": "Cost Estimation summary",
-      "venueFood": "Venue & Food",
-      "photosVideo": "Photos & Video",
-      "beautyClothes": "Beauty & Clothes",
-      "totalEstimate": "Total Estimate",
-      "inquireBook": "Inquire / Book Consultation",
-      "customRequirements": "Write custom requirements here...",
-      "sendInquiry": "Send Planner Inquiry",
-      "verifiedVendors": "Verified Wedding Vendors",
-      "bookings": "Your Consultation Bookings",
-      "noBookings": "No planning consultations scheduled yet.",
-      "gourmetBuffet": "Gourmet Buffet",
-      "cinemaPhotos": "Cinema & Photos",
-      "royalAttire": "Royal Attire",
-      "perfectMemories": "Perfect Memories",
-      "selectDateAlert": "Please select a wedding date.",
-      "successAlert": "Inquiry sent successfully!",
-      "sending": "Sending...",
-      "packages": {
-        "hall-basic": {
-          "name": "Habesha Traditional Celebration",
-          "desc": "Traditional hall venue decorated in Habesha theme, buffet and soft drinks for 150 guests."
-        },
-        "hall-premium": {
-          "name": "Royal Grand Ballroom",
-          "desc": "Luxury ballroom, professional gourmet catering, premium decor, sound/lighting, and capacity for 300+ guests."
-        },
-        "photo-basic": {
-          "name": "Classic Memories",
-          "desc": "1 Photographer + 1 Videographer, coverage of church/nikah and reception, digital delivery."
-        },
-        "photo-premium": {
-          "name": "Cinematic Royal Gold",
-          "desc": "3 Cameras, drone coverage, 4K cinema trailer, luxury printed leather album, and pre-wedding photo shoot."
-        },
-        "beauty-basic": {
-          "name": "Habesha Traditional Attire & Styling",
-          "desc": "Bridal makeup and hair, couple traditional handwoven Habesha Kemis & Kuta outfits (rental)."
-        },
-        "beauty-premium": {
-          "name": "Imperial Royal Styling",
-          "desc": "VIP bridal styling party, custom designer couple attire to keep, and bridesmaid styling packages."
-        }
-      },
-      "introText": "Plan, estimate, and connect with premium service providers in Ethiopia.",
-      "verifiedVendorsSubtitle": "Beteseb-partnered luxury wedding services, venues, and cinema studios",
-      "bookingsSubtitle": "Track the status of your royal wedding planning consultations"
     },
     "payments": {
       "upgradePlaySuccess": "Premium upgraded successfully via Google Play!",
@@ -717,7 +705,30 @@
       "day": "Day",
       "month": "Month",
       "year": "Year"
-    }
+    },
+    "skip": "Skip",
+    "next": "Next",
+    "back": "Back",
+    "getStarted": "Get Started",
+    "login": "Login",
+    "signup": "Sign Up",
+    "offlineError": "Please check your internet connection.",
+    "step1_title": "Select Language",
+    "step1_desc": "Please choose your preferred language to proceed. The onboarding slides will be shown in your language.",
+    "step2_title": "Welcome to Beteseb",
+    "step2_desc": "Connecting families, honoring values, building secure futures.",
+    "step3_title": "Smart Matching",
+    "step3_desc": "Our intelligent matching engine pairs you with compatible partners based on shared culture and core values.",
+    "step4_title": "Community Hubs",
+    "step4_desc": "Engage in secure, value-driven community spaces and build meaningful social connections.",
+    "step5_title": "Beteseb Academy",
+    "step5_desc": "Equip yourself with relationships workshops and expert counseling for a lifelong journey.",
+    "step6_title": "Wedding Planner & Gifts",
+    "step6_desc": "Calculate wedding budgets, manage vendors, and exchange meaningful gifts safely.",
+    "step7_title": "Referral & Rewards",
+    "step7_desc": "Invite friends using your unique link and earn coins to unlock premium features.",
+    "step8_title": "Get Started",
+    "step8_desc": "Join a secure matrimonial platform built on traditional heritage and modern trust."
   },
   "TopHeader": {
     "email": "betesebhub@gmail.com",

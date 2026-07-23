@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import AppStoreBadges from '@/components/AppStoreBadges';
+import MobileOnboarding from '@/components/MobileOnboarding';
 
 interface SystemSettings {
   cms_content?: {
@@ -91,18 +92,27 @@ export default function Home() {
   const router = useRouter();
   
   const [settings, setSettings] = useState<SystemSettings | null>(null);
+  const [isNative, setIsNative] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // If user is already authenticated, send them straight to the dashboard.
-  // This handles the case where they open the app after being logged in
-  // (but NOT after logging out — signOut() clears the session token).
+  // Platform and session verification
   useEffect(() => {
-    const checkSession = async () => {
+    const checkPlatformAndAuth = async () => {
+      // Platform detection
+      const cap = (window as any).Capacitor;
+      const native = !!cap?.isNativePlatform?.();
+      setIsNative(native);
+
+      // Session verification
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
+        setIsAuthenticated(true);
         router.replace('/dashboard');
       }
+      setAuthChecked(true);
     };
-    checkSession();
+    checkPlatformAndAuth();
   }, [router]);
 
   useEffect(() => {
@@ -112,6 +122,18 @@ export default function Home() {
     };
     fetchSettings();
   }, []);
+
+  // On native Capacitor, bypass the long web landing page and show onboarding/auth entry
+  if (isNative) {
+    if (!authChecked || isAuthenticated) {
+      return (
+        <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+        </div>
+      );
+    }
+    return <MobileOnboarding />;
+  }
 
   return (
     <div className="flex flex-col bg-white text-[#0F172A] overflow-hidden min-h-screen" dir={locale === 'ar' ? 'rtl' : 'ltr'}>

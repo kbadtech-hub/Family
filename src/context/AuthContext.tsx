@@ -32,6 +32,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initAuth();
 
+    // 3. Listen to native deep links (Google/Facebook/Apple OAuth redirects)
+    if (typeof window !== 'undefined' && (window as any).Capacitor) {
+      const initDeepLinking = async () => {
+        try {
+          const { App } = await import('@capacitor/app');
+          App.addListener('appUrlOpen', async (data: any) => {
+            console.log('[DeepLink] App opened with URL:', data.url);
+            const urlStr = data.url;
+            if (urlStr) {
+              // Handle Firebase OAuth redirect handlers
+              if (urlStr.includes('__/auth') || urlStr.includes('__/__/auth')) {
+                const webUrl = urlStr.replace('com.beteseb.app://', 'https://beteseb1.online/');
+                window.location.href = webUrl;
+              }
+              // Handle direct Supabase OAuth callbacks
+              else if (urlStr.includes('auth-callback')) {
+                const hashIndex = urlStr.indexOf('#');
+                if (hashIndex !== -1) {
+                  const hash = urlStr.substring(hashIndex + 1);
+                  const params = new URLSearchParams(hash);
+                  const accessToken = params.get('access_token');
+                  const refreshToken = params.get('refresh_token');
+                  if (accessToken && refreshToken) {
+                    await supabase.auth.setSession({
+                      access_token: accessToken,
+                      refresh_token: refreshToken
+                    });
+                    // Force redirect to dashboard
+                    window.location.href = '/dashboard';
+                  }
+                }
+              }
+            }
+          });
+        } catch (e) {
+          console.error('[DeepLink] Failed to initialize native deep links:', e);
+        }
+      };
+      initDeepLinking();
+    }
+
     // 2. Listen for auth changes (Login, Logout, Token Refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);

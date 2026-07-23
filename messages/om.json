@@ -616,7 +616,30 @@
       "partnerIntentRequired": "Haala fi kaayyoo filadhu",
       "otpRequired": "OTP galchaa",
       "locationMismatch": "Iddoo galumsaa filattanii fi biyya piroofaayila keessan irratti guuttan waan wal hin simneef maaloo sirreessaa"
-    }
+    },
+    "skip": "Darbi",
+    "next": "Fufu",
+    "back": "Duba",
+    "getStarted": "Amma Jalqabi",
+    "login": "Seeni",
+    "signup": "Galmee",
+    "offlineError": "Maaloo intarneetii keessan mirkaneessaa.",
+    "step1_title": "Afaan Filadhu",
+    "step1_desc": "Maaloo itti fufuuf afaan keessan filadhaa.",
+    "step2_title": "Gara Maatiitti Baga Nagaan Dhuftan",
+    "step2_desc": "Maatii walitti fiduu, qulqullina kabajuu, fuuldura amansiisaa ijaaruu.",
+    "step3_title": "Wal-simannaa Smaartii",
+    "step3_desc": "Siriin keenya heera, aadaa fi fedhii keessan irratti hundaa'ee namoota isiniif ta'an isiniif fida.",
+    "step4_title": "Haba Maatii",
+    "step4_desc": "Haba maatii keenya keessatti namoota aadaa keessan qaban wajjiin wal-argaa.",
+    "step5_title": "Akadaamii Maatii",
+    "step5_desc": "Leenjii gaa'ela duraa fi barumsa adda addaa gaa'ela gaarii ijaaruuf qophaa'e argadhaa.",
+    "step6_title": "Karoora Gaa'elaa fi Kennaa",
+    "step6_desc": "Gaa'ela keessan karoorsaa, baajeta tilmaamaa, kennaawwan sirriitti wal-jijjiiraa.",
+    "step7_title": "Affeerraa fi Badhaasa",
+    "step7_desc": "Hiriyoota keessan affeeraa, qarshii (coins) fi faayidaalee addaa argadhaa.",
+    "step8_title": "Amma Jalqabi",
+    "step8_desc": "Gaa'ela qulqulluu fi maatii ijaaruuf nu wajjiin ta'aa."
   },
   "Constants": {
     "Religions": {

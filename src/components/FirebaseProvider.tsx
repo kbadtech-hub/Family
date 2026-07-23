@@ -15,6 +15,15 @@ export default function FirebaseProvider({ children }: { children: React.ReactNo
   // Initialize Firebase services once at app mount
   useEffect(() => {
     initFirebaseServices();
+
+    // Register Service Worker for offline-first support
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then((reg) => {
+        console.log('[Service Worker] Registered successfully with scope:', reg.scope);
+      }).catch((err) => {
+        console.error('[Service Worker] Registration failed:', err);
+      });
+    }
   }, []);
 
   // Track page/screen views on route change
