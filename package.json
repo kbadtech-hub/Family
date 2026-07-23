@@ -16,6 +16,7 @@
     "@capacitor-community/admob": "^8.0.0",
     "@capacitor-firebase/analytics": "^8.3.0",
     "@capacitor-firebase/app": "^8.3.0",
+    "@capacitor-firebase/authentication": "^8.3.0",
     "@capacitor-firebase/crashlytics": "^8.3.0",
     "@capacitor-firebase/messaging": "^8.3.0",
     "@capacitor/android": "^8.4.0",
