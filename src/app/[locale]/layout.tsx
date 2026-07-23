@@ -16,6 +16,14 @@ import PrivacyBlurOverlay from "@/components/PrivacyBlurOverlay";
 import AppLockGate from "@/components/AppLockGate";
 import FirebaseProvider from "@/components/FirebaseProvider";
 
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'amp-auto-ads': any;
+    }
+  }
+}
+
 const poppins = Poppins({
   variable: "--font-poppins",
   subsets: ["latin"],
