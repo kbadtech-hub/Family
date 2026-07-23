@@ -462,6 +462,40 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
     };
   }, [selectedMatch, currentUser]);
 
+  // Real-time profiles listener to instantly reflect matching profile changes
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const channel = supabase
+      .channel(`chat_profiles_realtime_${currentUser.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'profiles' },
+        (payload) => {
+          const updatedProfile = payload.new;
+          if (!updatedProfile) return;
+
+          // 1. Update matching user in matches sidebar list
+          setMatches((prev) =>
+            prev.map((m) => (m.id === updatedProfile.id ? { ...m, ...(updatedProfile as any) } : m))
+          );
+
+          // 2. Update selectedMatch if they are the one updated
+          setSelectedMatch((prev) => {
+            if (prev && prev.id === updatedProfile.id) {
+              return { ...prev, ...(updatedProfile as any) };
+            }
+            return prev;
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUser]);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;

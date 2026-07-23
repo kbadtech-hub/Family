@@ -158,6 +158,28 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
     };
 
     fetchMatchDetails();
+
+    // Subscribe to real-time updates for this match profile
+    const channel = supabase
+      .channel(`profile_detail_${matchId}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${matchId}` },
+        (payload) => {
+          const updatedProfile = payload.new;
+          if (updatedProfile) {
+            setProfile(updatedProfile);
+            if (updatedProfile.gallery_urls) {
+               setPhotos(updatedProfile.gallery_urls.map((url: string) => ({ url })));
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [matchId]);
 
   if (loading) return (

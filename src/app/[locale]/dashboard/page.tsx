@@ -898,6 +898,94 @@ function DashboardContent() {
     });
   }, []);
 
+  // Real-time profiles listener to instantly reflect settings updates (Ghost Mode, Incognito, Abushakir, etc.)
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+
+      const channel = supabase
+        .channel(`profiles_realtime_dashboard_${user.id}`)
+        .on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'profiles' },
+          (payload) => {
+            const updatedProfile = payload.new;
+            if (!updatedProfile) return;
+
+            // 1. If it's our own profile, update it
+            if (updatedProfile.id === user.id) {
+              setProfile((prev) => {
+                if (prev) {
+                  const coins = prev.coins;
+                  const merged = { ...prev, ...(updatedProfile as any), coins };
+                  OfflineCache.cacheData(`profile_${user.id}`, merged);
+                  return merged;
+                }
+                return prev;
+              });
+            }
+
+            // 2. If it's one of the candidates, update or filter them out
+            setCandidates((prev) => {
+              if (updatedProfile.strict_incognito === true) {
+                return prev.filter((c) => c.id !== updatedProfile.id);
+              }
+              return prev.map((c) => {
+                if (c.id === updatedProfile.id) {
+                  return {
+                    ...c,
+                    ...updatedProfile
+                  };
+                }
+                return c;
+              });
+            });
+
+            // 3. Update matches feed state as well
+            setMatches((prev) => {
+              if (updatedProfile.strict_incognito === true) {
+                return prev.filter((m) => m.id !== updatedProfile.id);
+              }
+              return prev.map((m) => {
+                if (m.id === updatedProfile.id) {
+                  return {
+                    ...m,
+                    name: updatedProfile.full_name || 'Anonymous',
+                    image: updatedProfile.avatar_url || m.image,
+                    profile: {
+                      ...m.profile,
+                      ...updatedProfile
+                    }
+                  };
+                }
+                return m;
+              });
+            });
+
+            // 4. Update suggestions list
+            setSuggestions((prev) => {
+              if (updatedProfile.strict_incognito === true) {
+                return prev.filter((s) => s.id !== updatedProfile.id);
+              }
+              return prev.map((s) => {
+                if (s.id === updatedProfile.id) {
+                  return {
+                    ...s,
+                    ...updatedProfile
+                  };
+                }
+                return s;
+              });
+            });
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    });
+  }, []);
 
   const completionRate = calculateCompletionRate(profile as any);
   const userTier = getUserTier(profile as any, hasVouchedRecords);
