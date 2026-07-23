@@ -37,6 +37,7 @@ import {
 } from '@/lib/constants';
 import { COUNTRIES } from '@/lib/countries';
 import ethiopianDate from 'ethiopian-date';
+import CustomSelect from '@/components/ui/CustomSelect';
 
 const locationData: Record<string, Record<string, string[]>> = {
   'Ethiopia': {
@@ -964,14 +965,13 @@ function OnboardingContent() {
                 <label className="block text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
                   {t('fields.gender')}
                 </label>
-                <select 
-                  value={formData.gender} 
-                  onChange={(e) => updateField('gender', e.target.value)} 
-                  className="w-full p-4 bg-muted/30 border border-gray-200 rounded-2xl font-bold text-xs"
-                >
-                  <option value="">{t('fields.gender')}</option>
-                  {GENDERS.map(g => <option key={g} value={g}>{t_const(`Genders.${g}`)}</option>)}
-                </select>
+                <CustomSelect
+                  value={formData.gender}
+                  onChange={(val) => updateField('gender', val)}
+                  options={GENDERS.map(g => ({ value: g, label: t_const(`Genders.${g}`) }))}
+                  placeholder={t('fields.gender')}
+                  label={t('fields.gender')}
+                />
               </div>
 
               {/* Date of Birth Input with Calendar Toggle */}
@@ -987,22 +987,27 @@ function OnboardingContent() {
                   
                   {formData.calendar_type === 'ethiopian' ? (
                     <div className="grid grid-cols-3 gap-3">
-                       <select value={formData.eth_birth_day} aria-label={t('calendar.day')} onChange={(e) => updateField('eth_birth_day', e.target.value)} className="p-4 bg-muted/30 border border-gray-150 rounded-2xl font-bold text-xs">
-                         <option value="">{t('calendar.day') || 'Day'}</option>
-                         {Array.from({ length: formData.eth_birth_month === '13' ? 6 : 30 }, (_, i) => i + 1).map(day => (
-                           <option key={day} value={day}>{day}</option>
-                         ))}
-                       </select>
-                       <select value={formData.eth_birth_month} aria-label={t('calendar.month')} onChange={(e) => updateField('eth_birth_month', e.target.value)} className="p-4 bg-muted/30 border border-gray-150 rounded-2xl font-bold text-xs">
-                         <option value="">{t('calendar.month') || 'Month'}</option>
-                         {['Meskerem', 'Tikemt', 'Hidar', 'Tahsas', 'Tir', 'Yekatit', 'Megabit', 'Miazia', 'Genbot', 'Sene', 'Hamle', 'Nehase', 'Pagume'].map((m, i) => <option key={m} value={i + 1}>{t_const(`Months.${m}`)}</option>)}
-                       </select>
-                       <select value={formData.eth_birth_year} aria-label={t('calendar.year')} onChange={(e) => updateField('eth_birth_year', e.target.value)} className="p-4 bg-muted/30 border border-gray-150 rounded-2xl font-bold text-xs">
-                         <option value="">{t('calendar.year') || 'Year'}</option>
-                         {Array.from({ length: 70 }, (_, i) => 2018 - 18 - i).map(year => (
-                           <option key={year} value={year}>{year}</option>
-                         ))}
-                       </select>
+                       <CustomSelect
+                          value={formData.eth_birth_day}
+                          onChange={(val) => updateField('eth_birth_day', val)}
+                          options={Array.from({ length: formData.eth_birth_month === '13' ? 6 : 30 }, (_, i) => String(i + 1)).map(day => ({ value: String(day), label: String(day) }))}
+                          placeholder={t('calendar.day') || 'Day'}
+                          label={t('calendar.day') || 'Day'}
+                       />
+                       <CustomSelect
+                          value={formData.eth_birth_month}
+                          onChange={(val) => updateField('eth_birth_month', val)}
+                          options={['Meskerem', 'Tikemt', 'Hidar', 'Tahsas', 'Tir', 'Yekatit', 'Megabit', 'Miazia', 'Genbot', 'Sene', 'Hamle', 'Nehase', 'Pagume'].map((m, i) => ({ value: String(i + 1), label: t_const(`Months.${m}`) }))}
+                          placeholder={t('calendar.month') || 'Month'}
+                          label={t('calendar.month') || 'Month'}
+                       />
+                       <CustomSelect
+                          value={formData.eth_birth_year}
+                          onChange={(val) => updateField('eth_birth_year', val)}
+                          options={Array.from({ length: 70 }, (_, i) => String(2018 - 18 - i)).map(year => ({ value: String(year), label: String(year) }))}
+                          placeholder={t('calendar.year') || 'Year'}
+                          label={t('calendar.year') || 'Year'}
+                       />
                     </div>
                   ) : (
                     <input 
@@ -1027,14 +1032,13 @@ function OnboardingContent() {
                 <label className="block text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
                   {t('fields.religion')}
                 </label>
-                <select 
-                  value={formData.religion} 
-                  onChange={(e) => updateField('religion', e.target.value)} 
-                  className="w-full p-4 bg-muted/30 border border-gray-200 rounded-2xl font-bold text-xs"
-                >
-                  <option value="">{t('fields.religion')}</option>
-                  {RELIGIONS.map(r => <option key={r} value={r}>{t_const(`Religions.${r}`)}</option>)}
-                </select>
+                <CustomSelect
+                  value={formData.religion}
+                  onChange={(val) => updateField('religion', val)}
+                  options={RELIGIONS.map(r => ({ value: r, label: t_const(`Religions.${r}`) }))}
+                  placeholder={t('fields.religion')}
+                  label={t('fields.religion')}
+                />
               </div>
 
               {/* Marital Status Input */}
@@ -1042,14 +1046,13 @@ function OnboardingContent() {
                 <label className="block text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
                   {t('fields.maritalStatus')}
                 </label>
-                <select 
-                  value={formData.marital_status} 
-                  onChange={(e) => updateField('marital_status', e.target.value)} 
-                  className="w-full p-4 bg-muted/30 border border-gray-200 rounded-2xl font-bold text-xs"
-                >
-                  <option value="">{t('fields.maritalStatus')}</option>
-                  {(formData.gender === 'Female' ? MARITAL_STATUS_FEMALE : MARITAL_STATUS_MALE).map(s => <option key={s} value={s}>{t_const(`Marital.${s}`)}</option>)}
-                </select>
+                <CustomSelect
+                  value={formData.marital_status}
+                  onChange={(val) => updateField('marital_status', val)}
+                  options={(formData.gender === 'Female' ? MARITAL_STATUS_FEMALE : MARITAL_STATUS_MALE).map(s => ({ value: s, label: t_const(`Marital.${s}`) }))}
+                  placeholder={t('fields.maritalStatus')}
+                  label={t('fields.maritalStatus')}
+                />
               </div>
 
               {/* Future Children Input */}
@@ -1057,14 +1060,13 @@ function OnboardingContent() {
                 <label className="block text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
                   {locale === 'am' ? 'የልጅ እቅድ' : 'Future Children'}
                 </label>
-                <select 
-                  value={formData.future_children} 
-                  onChange={(e) => updateField('future_children', e.target.value)} 
-                  className="w-full p-4 bg-muted/30 border border-gray-200 rounded-2xl font-bold text-xs"
-                >
-                  <option value="">{locale === 'am' ? 'የልጅ እቅድ' : 'Future Children'}</option>
-                  {FUTURE_CHILDREN_OPTIONS.map((o: string) => <option key={o} value={o}>{t_const(`FutureChildren.${o}`)}</option>)}
-                </select>
+                <CustomSelect
+                  value={formData.future_children}
+                  onChange={(val) => updateField('future_children', val)}
+                  options={FUTURE_CHILDREN_OPTIONS.map((o: string) => ({ value: o, label: t_const(`FutureChildren.${o}`) }))}
+                  placeholder={locale === 'am' ? 'የልጅ እቅድ' : 'Future Children'}
+                  label={locale === 'am' ? 'የልጅ እቅድ' : 'Future Children'}
+                />
               </div>
 
               {/* Location Cascading Picker */}
@@ -1077,31 +1079,27 @@ function OnboardingContent() {
                     <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider ml-1">
                       {locale === 'am' ? 'ሀገር' : locale === 'ti' ? 'ሃገር' : locale === 'om' ? 'Biyya' : 'Country'}
                     </label>
-                    <select
+                    <CustomSelect
                       value={selectedCountry}
-                      onChange={(e) => {
-                        setSelectedCountry(e.target.value);
+                      onChange={(val) => {
+                        setSelectedCountry(val);
                         setSelectedRegion('');
                         setSelectedCity('');
-                        updateField('location', e.target.value);
+                        updateField('location', val);
                       }}
-                      className="w-full p-3.5 bg-white border border-gray-200 rounded-xl font-bold text-xs"
-                    >
-                      <option value="">{locale === 'am' ? 'ሀገር ይምረጡ' : locale === 'ti' ? 'ሃገር ይምረጡ' : locale === 'om' ? 'Biyya Filadhu' : 'Select Country'}</option>
-                      {[...COUNTRIES]
-                        .sort((a, b) => {
-                          const nameA = locale === 'am' ? a.nameAm : a.name;
-                          const nameB = locale === 'am' ? b.nameAm : b.name;
-                          return nameA.localeCompare(nameB, locale);
-                        })
-                        .map(c => (
-                          <option key={c.iso} value={c.name}>
-                            {locale === 'am' ? c.nameAm : c.name}
-                          </option>
-                        ))
-                      }
-                      <option value="Others">{locale === 'am' ? 'ሌላ' : locale === 'ti' ? 'ካልእ' : locale === 'om' ? 'Kan biraa' : 'Others'}</option>
-                    </select>
+                      options={[
+                        ...[...COUNTRIES]
+                          .sort((a, b) => {
+                            const nameA = locale === 'am' ? a.nameAm : a.name;
+                            const nameB = locale === 'am' ? b.nameAm : b.name;
+                            return nameA.localeCompare(nameB, locale);
+                          })
+                          .map(c => ({ value: c.name, label: locale === 'am' ? c.nameAm : c.name })),
+                        { value: 'Others', label: locale === 'am' ? 'ሌላ' : locale === 'ti' ? 'ካልእ' : locale === 'om' ? 'Kan biraa' : 'Others' }
+                      ]}
+                      placeholder={locale === 'am' ? 'ሀገር ይምረጡ' : locale === 'ti' ? 'ሃገር ይምረጡ' : locale === 'om' ? 'Biyya Filadhu' : 'Select Country'}
+                      label={locale === 'am' ? 'ሀገር' : locale === 'ti' ? 'ሃገር' : locale === 'om' ? 'Biyya' : 'Country'}
+                    />
                     {selectedCountry === 'Others' && (
                       <input
                         type="text"
@@ -1117,23 +1115,22 @@ function OnboardingContent() {
                     <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider ml-1">
                       {locale === 'am' ? 'ክልል/ግዛት' : locale === 'ti' ? 'ክፍለ ሃገር' : locale === 'om' ? 'Naannoo' : 'Region'}
                     </label>
-                    <select
+                    <CustomSelect
                       value={selectedRegion}
                       disabled={!selectedCountry}
-                      onChange={(e) => {
-                        setSelectedRegion(e.target.value);
+                      onChange={(val) => {
+                        setSelectedRegion(val);
                         setSelectedCity('');
                       }}
-                      className="w-full p-3.5 bg-white border border-gray-200 rounded-xl font-bold text-xs disabled:opacity-50"
-                    >
-                      <option value="">{locale === 'am' ? 'ክልል/ግዛት ይምረጡ' : locale === 'ti' ? 'ክፍለ ሃገር ይምረጡ' : locale === 'om' ? 'Naannoo Filadhu' : 'Select Region'}</option>
-                      {selectedCountry && selectedCountry !== 'Others' && 
-                        Object.keys(locationData[selectedCountry] || {}).map(region => (
-                          <option key={region} value={region}>{getTranslation(region, locale)}</option>
-                        ))
-                      }
-                      {selectedCountry && <option value="Others">{locale === 'am' ? 'ሌላ' : locale === 'ti' ? 'ካልእ' : locale === 'om' ? 'Kan biraa' : 'Others'}</option>}
-                    </select>
+                      options={[
+                        ...(selectedCountry && selectedCountry !== 'Others'
+                          ? Object.keys(locationData[selectedCountry] || {}).map(region => ({ value: region, label: getTranslation(region, locale) }))
+                          : []),
+                        ...(selectedCountry ? [{ value: 'Others', label: locale === 'am' ? 'ሌላ' : locale === 'ti' ? 'ካልእ' : locale === 'om' ? 'Kan biraa' : 'Others' }] : [])
+                      ]}
+                      placeholder={locale === 'am' ? 'ክልል/ግዛት ይምረጡ' : locale === 'ti' ? 'ክፍለ ሃገር ይምረጡ' : locale === 'om' ? 'Naannoo Filadhu' : 'Select Region'}
+                      label={locale === 'am' ? 'ክልል/ግዛት' : locale === 'ti' ? 'ክፍለ ሃገር' : locale === 'om' ? 'Naannoo' : 'Region'}
+                    />
                     {selectedRegion === 'Others' && (
                       <input
                         type="text"
@@ -1149,20 +1146,19 @@ function OnboardingContent() {
                     <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider ml-1">
                       {locale === 'am' ? 'ከተማ' : locale === 'ti' ? 'ከተማ' : locale === 'om' ? 'Magaalaa' : 'City'}
                     </label>
-                    <select
+                    <CustomSelect
                       value={selectedCity}
                       disabled={!selectedRegion}
-                      onChange={(e) => setSelectedCity(e.target.value)}
-                      className="w-full p-3.5 bg-white border border-gray-200 rounded-xl font-bold text-xs disabled:opacity-50"
-                    >
-                      <option value="">{locale === 'am' ? 'ከተማ ይምረጡ' : locale === 'ti' ? 'ከተማ ይምረጡ' : locale === 'om' ? 'Magaalaa Filadhu' : 'Select City'}</option>
-                      {selectedCountry && selectedRegion && selectedRegion !== 'Others' && 
-                        (locationData[selectedCountry]?.[selectedRegion] || []).map(city => (
-                          <option key={city} value={city}>{getTranslation(city, locale)}</option>
-                        ))
-                      }
-                      {selectedRegion && <option value="Others">{locale === 'am' ? 'ሌላ' : locale === 'ti' ? 'ካልእ' : locale === 'om' ? 'Kan biraa' : 'Others'}</option>}
-                    </select>
+                      onChange={(val) => setSelectedCity(val)}
+                      options={[
+                        ...(selectedCountry && selectedRegion && selectedRegion !== 'Others'
+                          ? (locationData[selectedCountry]?.[selectedRegion] || []).map(city => ({ value: city, label: getTranslation(city, locale) }))
+                          : []),
+                        ...(selectedRegion ? [{ value: 'Others', label: locale === 'am' ? 'ሌላ' : locale === 'ti' ? 'ካልእ' : locale === 'om' ? 'Kan biraa' : 'Others' }] : [])
+                      ]}
+                      placeholder={locale === 'am' ? 'ከተማ ይምረጡ' : locale === 'ti' ? 'ከተማ ይምረጡ' : locale === 'om' ? 'Magaalaa Filadhu' : 'Select City'}
+                      label={locale === 'am' ? 'ከተማ' : locale === 'ti' ? 'ከተማ' : locale === 'om' ? 'Magaalaa' : 'City'}
+                    />
                     {selectedCity === 'Others' && (
                       <input
                         type="text"
@@ -1195,16 +1191,18 @@ function OnboardingContent() {
                     <label className="text-[9px] font-black uppercase text-slate-500 tracking-wider ml-1">
                       {locale === 'am' ? 'የልጆች ብዛት' : 'Number of Children'}
                     </label>
-                    <select
+                    <CustomSelect
                       value={childrenCount}
-                      onChange={(e) => setChildrenCount(e.target.value)}
-                      className="w-full p-4 bg-white border border-gray-200 rounded-2xl font-bold text-xs"
-                    >
-                      <option value="1">1</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                      <option value="More than 3">More than 3 / ከ 3 በላይ</option>
-                    </select>
+                      onChange={(val) => setChildrenCount(val)}
+                      options={[
+                        { value: '1', label: '1' },
+                        { value: '2', label: '2' },
+                        { value: '3', label: '3' },
+                        { value: 'More than 3', label: 'More than 3 / ከ 3 በላይ' }
+                      ]}
+                      placeholder={locale === 'am' ? 'የልጆች ብዛት' : 'Number of Children'}
+                      label={locale === 'am' ? 'የልጆች ብዛት' : 'Number of Children'}
+                    />
                   </div>
                 )}
               </div>
@@ -1217,22 +1215,35 @@ function OnboardingContent() {
           <div className="space-y-6">
             <h2 className="text-3xl font-bold text-accent italic">{t('career')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <select value={formData.job} aria-label={t('fields.jobTitle')} onChange={(e) => updateField('job', e.target.value)} className="p-3 bg-muted rounded-xl col-span-full font-bold">
-                  <option value="">{t('fields.jobTitle')}</option>
-                  {JOB_CATEGORIES.map(cat => <option key={cat} value={cat}>{t_const(`Jobs.${cat}`)}</option>)}
-               </select>
-               <select value={formData.finance_habit} aria-label={t('fields.financeHabit')} onChange={(e) => updateField('finance_habit', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
-                  <option value="">{t('fields.financeHabit')}</option>
-                  {FINANCE_HABITS.map(h => <option key={h} value={h}>{t_const(`Finance.${h}`)}</option>)}
-               </select>
-               <select value={formData.family_value} aria-label={t('fields.familyValues')} onChange={(e) => updateField('family_value', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
-                  <option value="">{t('fields.familyValues')}</option>
-                  {FAMILY_VALUES.map(v => <option key={v} value={v}>{t_const(`Values.${v}`)}</option>)}
-               </select>
-               <select value={formData.conflict_resolution} aria-label={t('fields.conflictResolution')} onChange={(e) => updateField('conflict_resolution', e.target.value)} className="p-3 bg-muted rounded-xl font-bold">
-                  <option value="">{t('fields.conflictResolution')}</option>
-                  {CONFLICT_RESOLUTIONS.map(c => <option key={c} value={c}>{t_const(`Conflict.${c}`)}</option>)}
-               </select>
+               <CustomSelect
+                  value={formData.job}
+                  onChange={(val) => updateField('job', val)}
+                  options={JOB_CATEGORIES.map(cat => ({ value: cat, label: t_const(`Jobs.${cat}`) }))}
+                  placeholder={t('fields.jobTitle')}
+                  label={t('fields.jobTitle')}
+                  className="col-span-full"
+               />
+               <CustomSelect
+                  value={formData.finance_habit}
+                  onChange={(val) => updateField('finance_habit', val)}
+                  options={FINANCE_HABITS.map(h => ({ value: h, label: t_const(`Finance.${h}`) }))}
+                  placeholder={t('fields.financeHabit')}
+                  label={t('fields.financeHabit')}
+               />
+               <CustomSelect
+                  value={formData.family_value}
+                  onChange={(val) => updateField('family_value', val)}
+                  options={FAMILY_VALUES.map(v => ({ value: v, label: t_const(`Values.${v}`) }))}
+                  placeholder={t('fields.familyValues')}
+                  label={t('fields.familyValues')}
+               />
+               <CustomSelect
+                  value={formData.conflict_resolution}
+                  onChange={(val) => updateField('conflict_resolution', val)}
+                  options={CONFLICT_RESOLUTIONS.map(c => ({ value: c, label: t_const(`Conflict.${c}`) }))}
+                  placeholder={t('fields.conflictResolution')}
+                  label={t('fields.conflictResolution')}
+               />
                <div className="col-span-full space-y-4">
                   <span className="text-sm font-bold text-primary uppercase tracking-widest">{t('fields.spouseRequirements')}</span>
                   <div className="flex flex-wrap gap-2">
@@ -1331,23 +1342,24 @@ function OnboardingContent() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider">Partner Religion Preference</label>
-                      <select
+                      <CustomSelect
                         value={showCustomPartnerReligion ? 'Others' : formData.partner_religion}
-                        onChange={(e) => {
-                          if (e.target.value === 'Others') {
+                        onChange={(val) => {
+                          if (val === 'Others') {
                             setShowCustomPartnerReligion(true);
                             updateField('partner_religion', '');
                           } else {
                             setShowCustomPartnerReligion(false);
-                            updateField('partner_religion', e.target.value);
+                            updateField('partner_religion', val);
                           }
                         }}
-                        className="w-full p-3 bg-muted rounded-xl font-bold text-xs"
-                      >
-                        <option value="">Select Religion</option>
-                        {RELIGIONS.map(r => <option key={r} value={r}>{t_const(`Religions.${r}`) || r}</option>)}
-                        <option value="Others">Others / ሌላ</option>
-                      </select>
+                        options={[
+                          ...RELIGIONS.map(r => ({ value: r, label: t_const(`Religions.${r}`) || r })),
+                          { value: 'Others', label: 'Others / ሌላ' }
+                        ]}
+                        placeholder="Select Religion"
+                        label="Partner Religion Preference"
+                      />
                       {showCustomPartnerReligion && (
                         <input
                           type="text"
@@ -1361,26 +1373,27 @@ function OnboardingContent() {
 
                     <div>
                       <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider">Partner Relationship Goal</label>
-                      <select
+                      <CustomSelect
                         value={showCustomPartnerIntent ? 'Others' : formData.partner_intent}
-                        onChange={(e) => {
-                          if (e.target.value === 'Others') {
+                        onChange={(val) => {
+                          if (val === 'Others') {
                             setShowCustomPartnerIntent(true);
                             updateField('partner_intent', '');
                           } else {
                             setShowCustomPartnerIntent(false);
-                            updateField('partner_intent', e.target.value);
+                            updateField('partner_intent', val);
                           }
                         }}
-                        className="w-full p-3 bg-muted rounded-xl font-bold text-xs"
-                      >
-                        <option value="">Select Goal</option>
-                        <option value="Serious Partner/Marriage">Serious Partner / Marriage</option>
-                        <option value="Serious Relationship/Dating">Serious Relationship / Dating</option>
-                        <option value="Normal Friendship">Normal Friendship</option>
-                        <option value="Passing Time/Learning and Understanding Marriage">Passing Time / Learning and Understanding Marriage</option>
-                        <option value="Others">Others / ሌላ</option>
-                      </select>
+                        options={[
+                          { value: 'Serious Partner/Marriage', label: 'Serious Partner / Marriage' },
+                          { value: 'Serious Relationship/Dating', label: 'Serious Relationship / Dating' },
+                          { value: 'Normal Friendship', label: 'Normal Friendship' },
+                          { value: 'Passing Time/Learning and Understanding Marriage', label: 'Passing Time / Learning and Understanding Marriage' },
+                          { value: 'Others', label: 'Others / ሌላ' }
+                        ]}
+                        placeholder="Select Goal"
+                        label="Partner Relationship Goal"
+                      />
                       {showCustomPartnerIntent && (
                         <input
                           type="text"

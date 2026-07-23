@@ -15,8 +15,13 @@ import {
   ChevronRight, 
   ChevronLeft, 
   AlertCircle,
-  X
+  X,
+  MessageSquare,
+  HeartHandshake,
+  Calendar,
+  Coins
 } from 'lucide-react';
+import CustomSelect from '@/components/ui/CustomSelect';
 
 const languages = [
   { code: 'en', name: 'English' },
@@ -67,7 +72,7 @@ export default function MobileOnboarding() {
   }, []);
 
   const handleNext = () => {
-    if (currentStep < 8) {
+    if (currentStep < 11) {
       setCurrentStep(prev => prev + 1);
     }
   };
@@ -79,7 +84,7 @@ export default function MobileOnboarding() {
   };
 
   const handleSkip = () => {
-    setCurrentStep(8);
+    setCurrentStep(11);
   };
 
   const handleLanguageSelect = (langCode: string) => {
@@ -136,7 +141,7 @@ export default function MobileOnboarding() {
 
   return (
     <div 
-      className="fixed inset-0 bg-[#0F172A] text-white flex flex-col justify-between p-6 z-[999] select-none font-sans"
+      className="fixed inset-0 bg-[#0F172A] text-white flex flex-col justify-between p-6 pb-8 pt-4 z-[999] select-none font-sans overflow-hidden"
       dir={isRtl ? 'rtl' : 'ltr'}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
@@ -146,14 +151,14 @@ export default function MobileOnboarding() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--color-primary)_0%,_transparent_60%)] opacity-10 pointer-events-none" />
 
       {/* Top Header Row */}
-      <div className="flex items-center justify-between w-full h-12 relative z-10">
+      <div className="flex items-center justify-between w-full h-12 relative z-10 shrink-0">
         <span className="text-primary italic tracking-tight font-black text-xl">
           {locale === 'am' ? 'ቤተሰብ' : 'BETESEB'}
         </span>
-        {currentStep < 8 && (
+        {currentStep < 11 && (
           <button 
             onClick={handleSkip}
-            className="text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white transition-colors py-2 px-4 rounded-full border border-white/10 bg-white/5"
+            className="text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white transition-colors py-2 px-4 rounded-full border border-white/10 bg-white/5 cursor-pointer active:scale-95"
           >
             {t('skip')}
           </button>
@@ -161,89 +166,85 @@ export default function MobileOnboarding() {
       </div>
 
       {/* Main Slide Card Area */}
-      <div className="flex-1 flex items-center justify-center py-6 relative z-10 w-full">
+      <div className="flex-1 flex items-center justify-center py-4 relative z-10 w-full overflow-hidden">
         {/* Step 1: Language Select */}
         {currentStep === 1 && (
           <div className="w-full max-w-sm flex flex-col space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-500">
             <div className="text-center space-y-2">
-              <div className="w-16 h-16 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary mx-auto">
+              <div className="w-16 h-16 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary mx-auto mb-1">
                 <Globe size={32} />
               </div>
               <h2 className="text-xl font-bold tracking-tight">{t('step1_title')}</h2>
               <p className="text-xs text-white/60 leading-relaxed px-4">{t('step1_desc')}</p>
             </div>
             
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              {languages.map((lang) => (
-                <button
-                  key={lang.code}
-                  onClick={() => handleLanguageSelect(lang.code)}
-                  className={`py-4 px-3 rounded-2xl border text-center transition-all active:scale-95 flex flex-col items-center justify-center space-y-1 ${
-                    locale === lang.code 
-                      ? 'border-primary bg-primary/10 text-white font-bold' 
-                      : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10'
-                  }`}
-                >
-                  <span className="text-xs font-black uppercase tracking-wider">{lang.code}</span>
-                  <span className="text-sm font-semibold">{lang.name}</span>
-                </button>
-              ))}
+            <div className="pt-2 px-4">
+              <CustomSelect
+                value={locale}
+                onChange={handleLanguageSelect}
+                options={languages.map(l => ({ value: l.code, label: l.name }))}
+                placeholder="Choose Language / ቋንቋ ይምረጡ"
+                label="Language / ቋንቋ"
+              />
             </div>
           </div>
         )}
 
-        {/* Informational Slides (Steps 2 to 7) */}
-        {currentStep >= 2 && currentStep <= 7 && (
-          <div className="w-full max-w-sm flex flex-col items-center text-center space-y-8 animate-in fade-in zoom-in-95 duration-500">
+        {/* Informational Slides (Steps 2 to 10) */}
+        {currentStep >= 2 && currentStep <= 10 && (
+          <div className="w-full max-w-sm flex flex-col items-center text-center space-y-6 px-4 animate-in fade-in zoom-in-95 duration-500">
             {/* Step Icon */}
-            <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-tr from-primary/10 to-primary/20 border border-primary/30 flex items-center justify-center text-primary shadow-lg shadow-primary/10">
-              {currentStep === 2 && <Heart size={44} className="animate-pulse" />}
-              {currentStep === 3 && <Sparkles size={44} />}
-              {currentStep === 4 && <Users size={44} />}
-              {currentStep === 5 && <BookOpen size={44} />}
-              {currentStep === 6 && <Gift size={44} />}
-              {currentStep === 7 && <Share2 size={44} />}
+            <div className="w-20 h-20 rounded-[2rem] bg-gradient-to-tr from-primary/10 to-primary/20 border border-primary/30 flex items-center justify-center text-primary shadow-lg shadow-primary/10 shrink-0">
+              {currentStep === 2 && <Heart size={40} className="animate-pulse text-primary fill-primary/20" />}
+              {currentStep === 3 && <Sparkles size={40} />}
+              {currentStep === 4 && <MessageSquare size={40} />}
+              {currentStep === 5 && <Users size={40} />}
+              {currentStep === 6 && <BookOpen size={40} />}
+              {currentStep === 7 && <HeartHandshake size={40} />}
+              {currentStep === 8 && <Calendar size={40} />}
+              {currentStep === 9 && <Gift size={40} />}
+              {currentStep === 10 && <Coins size={40} />}
             </div>
 
             {/* Step Content */}
-            <div className="space-y-3 px-2">
-              <h2 className="text-2xl font-black leading-tight italic text-white">
+            <div className="space-y-3 px-2 overflow-hidden">
+              <h2 className="text-xl font-black leading-tight italic text-white tracking-wide">
                 {t(`step${currentStep}_title`)}
               </h2>
-              <p className="text-sm text-white/60 leading-relaxed font-medium">
+              <p className="text-xs text-white/60 leading-relaxed font-medium max-h-[30vh] overflow-y-auto">
                 {t(`step${currentStep}_desc`)}
               </p>
             </div>
           </div>
         )}
 
-        {/* Step 8: Get Started / Auth Gate */}
-        {currentStep === 8 && (
-          <div className="w-full max-w-sm flex flex-col items-center text-center space-y-8 animate-in fade-in zoom-in-95 duration-500">
-            <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-tr from-primary/10 to-primary/25 border border-primary/40 flex items-center justify-center text-primary shadow-2xl shadow-primary/15 animate-bounce duration-1000">
-              <ShieldCheck size={48} />
+        {/* Step 11: Get Started / Auth Gate */}
+        {currentStep === 11 && (
+          <div className="w-full max-w-sm flex flex-col items-center text-center space-y-6 px-4 animate-in fade-in zoom-in-95 duration-500">
+            <div className="w-20 h-20 rounded-[2rem] bg-gradient-to-tr from-primary/10 to-primary/25 border border-primary/40 flex items-center justify-center text-primary shadow-2xl shadow-primary/15 animate-bounce duration-1000 shrink-0">
+              <ShieldCheck size={44} />
             </div>
 
             <div className="space-y-3 px-2">
-              <h2 className="text-2xl font-black leading-tight italic text-white">
-                {t('step8_title')}
+              <h2 className="text-xl font-black leading-tight italic text-white tracking-wide">
+                {t('step11_title')}
               </h2>
-              <p className="text-sm text-white/60 leading-relaxed font-medium">
-                {t('step8_desc')}
+              <p className="text-xs text-white/60 leading-relaxed font-medium">
+                {t('step11_desc')}
               </p>
             </div>
 
             {/* Login & Signup Buttons */}
-            <div className="w-full flex flex-col gap-4 pt-4 px-4">
+            <div className="w-full flex flex-col gap-3 pt-2 px-2 shrink-0">
               <button
                 onClick={() => handleAuthRedirect('/signup')}
-                className="w-full py-5 rounded-[2rem] bg-primary text-white font-bold text-sm uppercase tracking-widest hover:shadow-xl hover:shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2"
+                className="w-full py-4 rounded-[2rem] bg-primary text-white font-bold text-xs uppercase tracking-widest hover:shadow-xl hover:shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
               >
-                {t('signup')} <ChevronRight size={16} className={isRtl ? 'rotate-180' : ''} />
+                {t('signup')} <ChevronRight size={14} className={isRtl ? 'rotate-180' : ''} />
               </button>
               <button
                 onClick={() => handleAuthRedirect('/login')}
-                className="w-full py-5 rounded-[2rem] border-2 border-white/20 hover:border-white/40 text-white font-bold text-sm uppercase tracking-widest bg-white/5 hover:bg-white/10 transition-all active:scale-95"
+                className="w-full py-4 rounded-[2rem] border-2 border-white/10 hover:border-white/20 text-white font-bold text-xs uppercase tracking-widest bg-white/5 hover:bg-white/10 transition-all active:scale-95 cursor-pointer"
               >
                 {t('login')}
               </button>
@@ -253,14 +254,14 @@ export default function MobileOnboarding() {
       </div>
 
       {/* Footer Navigation Area */}
-      <div className="w-full flex flex-col space-y-6 relative z-10">
+      <div className="w-full flex flex-col space-y-6 relative z-10 shrink-0">
         {/* Navigation Indicator Dots & Arrow Buttons */}
         <div className="flex items-center justify-between w-full px-2">
           {/* Back Button */}
           {currentStep > 1 ? (
             <button 
               onClick={handleBack}
-              className="w-10 h-10 rounded-full border border-white/10 bg-white/5 flex items-center justify-center hover:bg-white/10 active:scale-90 transition-all text-white/70 hover:text-white"
+              className="w-10 h-10 rounded-full border border-white/10 bg-white/5 flex items-center justify-center hover:bg-white/10 active:scale-90 transition-all text-white/70 hover:text-white cursor-pointer"
             >
               <ChevronLeft size={20} className={isRtl ? 'rotate-180' : ''} />
             </button>
@@ -269,24 +270,24 @@ export default function MobileOnboarding() {
           )}
 
           {/* Indicator Dots */}
-          <div className="flex items-center gap-2">
-            {Array.from({ length: 8 }).map((_, idx) => (
+          <div className="flex items-center gap-1.5">
+            {Array.from({ length: 11 }).map((_, idx) => (
               <div 
                 key={idx}
-                className={`h-2 rounded-full transition-all duration-300 ${
+                className={`h-1.5 rounded-full transition-all duration-300 ${
                   currentStep === idx + 1 
-                    ? 'w-6 bg-primary' 
-                    : 'w-2 bg-white/20'
+                    ? 'w-5 bg-primary' 
+                    : 'w-1.5 bg-white/20'
                 }`}
               />
             ))}
           </div>
 
           {/* Next Button */}
-          {currentStep < 8 ? (
+          {currentStep < 11 ? (
             <button 
               onClick={handleNext}
-              className="w-10 h-10 rounded-full bg-primary flex items-center justify-center hover:bg-primary/95 active:scale-90 transition-all text-white shadow-md shadow-primary/25"
+              className="w-10 h-10 rounded-full bg-primary flex items-center justify-center hover:bg-primary/95 active:scale-90 transition-all text-white shadow-md shadow-primary/25 cursor-pointer"
             >
               <ChevronRight size={20} className={isRtl ? 'rotate-180' : ''} />
             </button>
@@ -298,11 +299,11 @@ export default function MobileOnboarding() {
 
       {/* Offline Alert Dialog Overlay Modal */}
       {showOfflineModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-6 z-[1000] animate-in fade-in duration-300">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-6 z-[10000] animate-in fade-in duration-300">
           <div className="bg-[#1E293B] border border-white/10 p-6 rounded-[2.5rem] w-full max-w-sm text-center relative space-y-6 shadow-2xl animate-in zoom-in-95 duration-300">
             <button 
               onClick={() => setShowOfflineModal(false)}
-              className="absolute top-4 right-4 text-white/40 hover:text-white transition-colors"
+              className="absolute top-4 right-4 text-white/40 hover:text-white transition-colors cursor-pointer"
             >
               <X size={20} />
             </button>
@@ -322,7 +323,7 @@ export default function MobileOnboarding() {
 
             <button
               onClick={() => setShowOfflineModal(false)}
-              className="w-full py-4 rounded-[1.5rem] bg-white/10 hover:bg-white/15 border border-white/5 text-white font-bold text-xs uppercase tracking-widest transition-all active:scale-95"
+              className="w-full py-4 rounded-[1.5rem] bg-white/10 hover:bg-white/15 border border-white/5 text-white font-bold text-xs uppercase tracking-widest transition-all active:scale-95 cursor-pointer"
             >
               {locale === 'am' ? 'እሺ' : 'OK'}
             </button>
@@ -332,3 +333,4 @@ export default function MobileOnboarding() {
     </div>
   );
 }
+
