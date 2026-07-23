@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Coins, 
+  Gift,
   Sparkles, 
   Settings, 
   Save, 
