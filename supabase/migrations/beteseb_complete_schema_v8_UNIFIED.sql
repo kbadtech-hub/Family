@@ -1017,7 +1017,53 @@ ON CONFLICT (user_id) DO NOTHING;
 
 
 -- =========================================================================
+-- PART 18: REALTIME PUBLICATIONS & REPLICATION
+-- =========================================================================
+-- This section configures the PostgreSQL replication for all tables that
+-- use Supabase Realtime subscriptions in the user dashboard and admin panels.
+-- Includes financial_transactions and coin_transactions.
+-- =========================================================================
+
+DO $$
+DECLARE
+  t text;
+  tables_to_add text[] := ARRAY[
+    'verifications',
+    'payments',
+    'support_tickets',
+    'counselor_bookings',
+    'messages',
+    'friendships',
+    'wali_messages',
+    'profiles',
+    'call_violations',
+    'interaction_telemetry',
+    'vouch_records',
+    'financial_transactions',
+    'coin_transactions'
+  ];
+BEGIN
+  -- Ensure the supabase_realtime publication exists
+  IF NOT EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime') THEN
+    CREATE PUBLICATION supabase_realtime;
+  END IF;
+
+  -- Iteratively add each table to the publication if not already present
+  FOREACH t IN ARRAY tables_to_add LOOP
+    IF NOT EXISTS (
+      SELECT 1
+      FROM pg_publication_rel pr
+      JOIN pg_class c ON pr.prrelid = c.oid
+      JOIN pg_publication p ON pr.prpubid = p.oid
+      WHERE p.pubname = 'supabase_realtime' AND c.relname = t
+    ) THEN
+      EXECUTE format('ALTER PUBLICATION supabase_realtime ADD TABLE public.%I', t);
+    END IF;
+  END LOOP;
+END $$;
+
+-- =========================================================================
 -- END | Beteseb Platform Database Schema v8.0 | Production Ready
--- Tables: 33 | Triggers: 7 | RLS Policies: 54+ | Indexes: 34+
+-- Tables: 33 | Triggers: 7 | RLS Policies: 54+ | Indexes: 34+ | Realtime: 13
 -- SUPERSEDES all previous SQL files. This is the ONLY file needed.
 -- =========================================================================

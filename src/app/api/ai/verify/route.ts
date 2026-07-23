@@ -288,6 +288,33 @@ export async function POST(req: Request) {
         });
       }
 
+      // 1. If mockOcrData is provided, perform name & date comparison checks
+      if (mockOcrData) {
+        const mockName = (mockOcrData.full_name || '').trim();
+        const mockDob = (mockOcrData.birth_date || '').trim();
+
+        if (mockName) {
+          const nameCheck = await verifyNameMatch(dbFullName, mockName);
+          if (!nameCheck.matches) {
+            return NextResponse.json({
+              isMatch: false,
+              reason: 'ያስገቡት የመዝገብ ስም እና መታወቂያው ላይ ያለው ስም አልተመሳሰለም። እባክዎን ትክክለኛ መታወቂያዎን ያያይዙ።'
+            });
+          }
+        }
+
+        if (mockDob) {
+          const dobCheck = verifyBirthDateMatch(dbBirthDate, mockDob);
+          if (!dobCheck.matches) {
+            return NextResponse.json({
+              isMatch: false,
+              reason: dobCheck.reason || 'በመዝገብ ላይ ያስገቡት የትውልድ ቀን እና በመታወቂያው ላይ ያለው ቀን አልተመሳሰለም።'
+            });
+          }
+        }
+      }
+
+      // 2. Fallback url-triggered mismatches for legacy testing compatibility
       if (isNameMismatch) {
         return NextResponse.json({
           isMatch: false,

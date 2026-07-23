@@ -23,9 +23,17 @@ export function getIceServers(): RTCIceServer[] {
       credential: turnCredential
     });
   } else {
-    // Provide a fallback public TURN configuration for testing purposes.
-    // In production, these should be resolved dynamically or from secure turn server.
-    console.warn("NEXT_PUBLIC_TURN_SERVER env configs not set. Using STUN-only WebRTC fallback.");
+    // Provide Open Relay Project free public TURN server configuration as fallback.
+    // This allows peer-to-peer calling on strict mobile carrier NATs without any cost.
+    console.log("Using Open Relay Project public TURN fallback configuration.");
+    servers.push({
+      urls: [
+        'turn:openrelay.metered.ca:80',
+        'turn:openrelay.metered.ca:443?transport=tcp'
+      ],
+      username: 'openrelay',
+      credential: 'openrelay'
+    });
   }
 
   return servers;
