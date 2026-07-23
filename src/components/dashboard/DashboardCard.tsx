@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Heart, X, UserPlus, Gift, MoreVertical, Sparkles, MapPin, Star } from 'lucide-react';
+import { Heart, X, UserPlus, Gift, MoreVertical, Sparkles, MapPin, Star, EyeOff } from 'lucide-react';
 import { calculateCompatibility } from '@/lib/compatibility';
 import { getUserTier } from '@/lib/tiers';
+import { supabase } from '@/lib/supabase';
+import { maskNameToInitials } from '@/lib/vip';
 
 interface DashboardCardProps {
   currentUser: any;
@@ -31,15 +33,45 @@ export default function DashboardCard({
 }: DashboardCardProps) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  const isCandidateVip = candidate.is_vip_member && 
+    (!candidate.vip_expires_at || new Date(candidate.vip_expires_at) > new Date());
+  const isGhostModeActive = isCandidateVip && candidate.is_ghost_mode_active;
+
+  useEffect(() => {
+    if (!currentUser?.id || !candidate?.id || !isGhostModeActive) return;
+    if (currentUser.id === candidate.id) {
+      setIsAuthorized(true);
+      return;
+    }
+    const checkReveal = async () => {
+      const { data } = await supabase
+        .from('vip_photo_reveals')
+        .select('id')
+        .eq('vip_id', candidate.id)
+        .eq('viewer_id', currentUser.id)
+        .maybeSingle();
+      if (data) {
+        setIsAuthorized(true);
+      }
+    };
+    checkReveal();
+  }, [currentUser?.id, candidate?.id, isGhostModeActive]);
+
+  const shouldBlur = isGhostModeActive && !isAuthorized;
+  const showAbushakir = currentUser?.enable_abushakir !== false && candidate?.enable_abushakir !== false;
 
   const matchPercent = calculateCompatibility(currentUser, candidate);
   const candTier = getUserTier(candidate, !!candidate.has_vouched);
 
   // Collect photos (avatar_url + gallery_urls)
-  const photos = [
-    candidate.avatar_url,
-    ...(candidate.gallery_urls || [])
-  ].filter(Boolean);
+  const photos = shouldBlur
+    ? [candidate.avatar_url].filter(Boolean)
+    : [
+        candidate.avatar_url,
+        ...(candidate.gallery_urls || [])
+      ].filter(Boolean);
 
   // Automatic photo rotation every 7 seconds
   useEffect(() => {
@@ -95,9 +127,18 @@ export default function DashboardCard({
           src={activePhoto} 
           alt={candidate.full_name || 'Candidate'}
           fill
-          className="object-cover pointer-events-none select-none transition-all duration-1000"
+          className={`object-cover pointer-events-none select-none transition-all duration-1000 ${shouldBlur ? 'blur-[25px] scale-110' : 'blur-0'}`}
+          style={shouldBlur ? { filter: 'blur(25px)' } : undefined}
           priority
         />
+        {shouldBlur && (
+          <div className="absolute inset-0 bg-slate-950/45 flex flex-col items-center justify-center p-6 text-center z-15 backdrop-blur-[2px] pointer-events-none">
+            <div className="w-10 h-10 bg-amber-500/20 border border-amber-500/30 rounded-2xl flex items-center justify-center text-amber-300 mb-2 animate-pulse">
+              <EyeOff size={18} />
+            </div>
+            <p className="text-[9px] font-black uppercase text-amber-300 tracking-[0.25em]">Ghost Mode Active</p>
+          </div>
+        )}
       </div>
 
       {/* Royal Frame Overlay */}
@@ -149,7 +190,9 @@ export default function DashboardCard({
       <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-accent/95 via-accent/60 to-transparent flex flex-col justify-end min-h-[40%] text-white space-y-4">
         <div className="space-y-1">
           <div className="flex items-baseline gap-2">
-            <h2 className="text-2xl font-black italic tracking-tighter leading-none">{candidate.full_name || 'Anonymous'}</h2>
+            <h2 className="text-2xl font-black italic tracking-tighter leading-none">
+              {shouldBlur ? maskNameToInitials(candidate.full_name) : (candidate.full_name || 'Anonymous')}
+            </h2>
             {showAge && age !== null && (
               <span className="text-lg font-bold opacity-80">
                 {age}
@@ -158,7 +201,7 @@ export default function DashboardCard({
           </div>
           
           <div className="flex flex-wrap gap-2 pt-1">
-            {candidate.star_sign && (
+            {showAbushakir && candidate.star_sign && (
               <span className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-[8px] font-bold tracking-widest uppercase flex items-center gap-1 border border-white/5">
                 <Star size={8} className="fill-primary" /> {candidate.star_sign}
               </span>

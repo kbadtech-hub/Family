@@ -17,12 +17,14 @@ import {
   UserCheck, 
   Clock, 
   Loader2,
-  Lightbulb 
+  Lightbulb,
+  EyeOff
 } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import Image from 'next/image';
 import { getUserTier, calculateCompletionRate } from '@/lib/tiers';
 import { calculateCompatibility } from '@/lib/compatibility';
+import { maskNameToInitials } from '@/lib/vip';
 
 interface MatchDetailProps {
   matchId: string;
@@ -41,6 +43,36 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
   const [photos, setPhotos] = useState<any[]>([]);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  const isCandidateVip = profile?.is_vip_member && 
+    (!profile?.vip_expires_at || new Date(profile.vip_expires_at) > new Date());
+  const isGhostModeActive = isCandidateVip && profile?.is_ghost_mode_active;
+
+  useEffect(() => {
+    if (!currentUserProfile?.id || !matchId || !isGhostModeActive) return;
+    if (currentUserProfile.id === matchId) {
+      setIsAuthorized(true);
+      return;
+    }
+    const checkReveal = async () => {
+      const { data } = await supabase
+        .from('vip_photo_reveals')
+        .select('id')
+        .eq('vip_id', matchId)
+        .eq('viewer_id', currentUserProfile.id)
+        .maybeSingle();
+      if (data) {
+        setIsAuthorized(true);
+      }
+    };
+    checkReveal();
+  }, [currentUserProfile?.id, matchId, isGhostModeActive]);
+
+  const shouldBlur = isGhostModeActive && !isAuthorized;
+  const showAge = profile?.show_age !== false;
+  const showCity = profile?.show_city !== false;
+  const showAbushakir = currentUserProfile?.enable_abushakir !== false && profile?.enable_abushakir !== false;
 
   const candCompletionRate = calculateCompletionRate(profile);
   const candTier = getUserTier(profile, !!profile?.has_vouched);
@@ -134,10 +166,12 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
     </div>
   );
 
-  const allPhotos = [
-    { url: profile?.avatar_url || 'https://images.unsplash.com/photo-1531123897727-8f129e16fd3c?auto=format&fit=crop&q=80&w=400' },
-    ...photos
-  ];
+  const allPhotos = shouldBlur
+    ? [{ url: profile?.avatar_url || 'https://images.unsplash.com/photo-1531123897727-8f129e16fd3c?auto=format&fit=crop&q=80&w=400' }]
+    : [
+        { url: profile?.avatar_url || 'https://images.unsplash.com/photo-1531123897727-8f129e16fd3c?auto=format&fit=crop&q=80&w=400' },
+        ...photos
+      ];
 
   const nextPhoto = () => setCurrentPhotoIndex((prev) => (prev + 1) % allPhotos.length);
   const prevPhoto = () => setCurrentPhotoIndex((prev) => (prev - 1 + allPhotos.length) % allPhotos.length);
@@ -287,8 +321,17 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
              src={allPhotos[currentPhotoIndex].url} 
              alt="Profile" 
              fill 
-             className="object-cover transition-all duration-700 pointer-events-none select-none"
+             className={`object-cover transition-all duration-700 pointer-events-none select-none ${shouldBlur ? 'blur-[25px] scale-110' : 'blur-0'}`}
+             style={shouldBlur ? { filter: 'blur(25px)' } : undefined}
            />
+           {shouldBlur && (
+             <div className="absolute inset-0 bg-slate-950/45 flex flex-col items-center justify-center p-6 text-center z-15 backdrop-blur-[2px] pointer-events-none">
+               <div className="w-10 h-10 bg-amber-500/20 border border-amber-500/30 rounded-2xl flex items-center justify-center text-amber-300 mb-2 animate-pulse">
+                 <EyeOff size={18} />
+               </div>
+               <p className="text-[9px] font-black uppercase text-amber-300 tracking-[0.25em]">Ghost Mode Active</p>
+             </div>
+           )}
            
            <div className="absolute inset-0 bg-gradient-to-t from-accent/85 via-transparent to-transparent" />
 
@@ -313,7 +356,9 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
         <div className="w-full md:w-1/2 h-1/3 md:h-full overflow-y-auto p-10 md:p-16 custom-scrollbar space-y-10">
            <div className="space-y-6">
                <div className="flex items-center gap-3">
-                  <h2 className="text-4xl font-black text-accent italic tracking-tighter">{profile?.full_name}</h2>
+                  <h2 className="text-4xl font-black text-accent italic tracking-tighter">
+                    {shouldBlur ? maskNameToInitials(profile?.full_name) : profile?.full_name}
+                  </h2>
                   {profile?.is_verified && <CheckCircle2 size={28} className="text-primary fill-primary/10" />}
                </div>
                
@@ -325,9 +370,11 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                   <span className={`px-4 py-2 border text-[10px] font-black rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-sm ${badge.color}`}>
                      <span>{badge.emoji}</span> <span>{badge.label}</span>
                   </span>
-                  <span className="px-4 py-2 bg-muted text-gray-500 text-[10px] font-black rounded-full uppercase tracking-widest flex items-center gap-2">
-                     <MapPin size={12} /> {typeof profile?.location === 'string' ? profile.location : profile?.location?.city || 'Addis Ababa'}
-                  </span>
+                  {showCity && (
+                    <span className="px-4 py-2 bg-muted text-gray-500 text-[10px] font-black rounded-full uppercase tracking-widest flex items-center gap-2">
+                       <MapPin size={12} /> {typeof profile?.location === 'string' ? profile.location : profile?.location?.city || 'Addis Ababa'}
+                    </span>
+                  )}
                </div>
 
                {/* Profile Completion Bar */}
@@ -349,9 +396,11 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                   )}
                </div>
 
-               <p className="text-[9px] text-gray-400 font-bold italic leading-relaxed">
-                  {tr('starSignDisclaimer')}
-               </p>
+                {showAbushakir && (
+                 <p className="text-[9px] text-gray-400 font-bold italic leading-relaxed">
+                    {tr('starSignDisclaimer')}
+                 </p>
+                )}
            </div>
 
            {guardianEndorsement && (
@@ -454,9 +503,11 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                       {tMatch('conversationStarters')}
                     </p>
                     <div className="space-y-1.5">
-                      <p className="p-3 bg-white rounded-xl border border-slate-100 text-[10px] text-gray-600 leading-relaxed font-bold italic">
-                        {tMatch('zodiacPrompt', { zodiac1: currentUserProfile.star_sign || 'Aries', zodiac2: profile?.star_sign || 'Virgo' })}
-                      </p>
+                      {showAbushakir && (
+                        <p className="p-3 bg-white rounded-xl border border-slate-100 text-[10px] text-gray-600 leading-relaxed font-bold italic">
+                          {tMatch('zodiacPrompt', { zodiac1: currentUserProfile.star_sign || 'Aries', zodiac2: profile?.star_sign || 'Virgo' })}
+                        </p>
+                      )}
                       {profile?.family_values === currentUserProfile.family_values && (
                         <p className="p-3 bg-white rounded-xl border border-slate-100 text-[10px] text-gray-600 leading-relaxed font-bold italic">
                           {tMatch('familyValuesPrompt', { value: profile?.family_values || '' })}
@@ -515,6 +566,10 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                        {t('requestSent')}
                     </div>
                   )
+                ) : profile?.allow_friend_requests === false ? (
+                  <div className="w-full bg-muted/50 border border-muted text-gray-400 py-6 rounded-[2rem] font-bold text-xs uppercase tracking-wider text-center">
+                     {locale === 'am' ? 'ይህ ተጠቃሚ የጓደኝነት ጥያቄዎችን አግዷል' : 'Friend requests disabled by user'}
+                  </div>
                 ) : (
                   <button 
                    onClick={handleAddFriend}

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
@@ -207,13 +207,11 @@ export default function CallInterface({
     const setupCall = async () => {
       // Check caller limits first
       if (!isIncoming) {
-         const isVipActive = currentUserProfile?.is_vip_member && 
-           (!currentUserProfile?.vip_expires_at || new Date(currentUserProfile.vip_expires_at) > new Date());
-         
-         const userTier = getUserTier(currentUserProfile, hasVouched);
-         const limits = getTierLimits(userTier);
-         const maxMinutes = isVideo ? limits.maxVideoCallMinutes : limits.maxAudioCallMinutes;
-         if (maxMinutes !== Infinity && !isVipActive) {
+          const userTier = getUserTier(currentUserProfile, hasVouched);
+          const isVipActive = userTier === 'vip';
+          const limits = getTierLimits(userTier);
+          const maxMinutes = isVideo ? limits.maxVideoCallMinutes : limits.maxAudioCallMinutes;
+          if (maxMinutes !== Infinity && !isVipActive) {
            const allowed = (maxMinutes * 60) + ((callerLimits?.ad_extensions || 0) * 60);
            if ((callerLimits?.calls_duration_seconds || 0) >= allowed) {
               alert(
@@ -495,8 +493,8 @@ export default function CallInterface({
 
   const saveCallDuration = async (seconds: number) => {
     if (!currentUser || seconds <= 0 || isIncoming) return;
-    const isVipActive = currentUserProfile?.is_vip_member && 
-      (!currentUserProfile?.vip_expires_at || new Date(currentUserProfile.vip_expires_at) > new Date());
+    const userTier = getUserTier(currentUserProfile, hasVouched);
+    const isVipActive = userTier === 'vip';
     if (isVipActive) return;
     try {
       const { data: limitsData } = await supabase
@@ -530,8 +528,7 @@ export default function CallInterface({
           const userTier = getUserTier(currentUserProfile, hasVouched);
           const limits = getTierLimits(userTier);
 
-          const isVipActive = currentUserProfile?.is_vip_member && 
-            (!currentUserProfile?.vip_expires_at || new Date(currentUserProfile.vip_expires_at) > new Date());
+          const isVipActive = userTier === 'vip';
 
           const maxMinutes = isVideo ? limits.maxVideoCallMinutes : limits.maxAudioCallMinutes;
           if (maxMinutes !== Infinity && !isVipActive) {

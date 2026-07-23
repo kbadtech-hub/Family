@@ -187,16 +187,24 @@ export default function SwipeCards({ userProfile, candidates, onLike, onPass, is
   };
   const badge = getTierBadge(candTier);
 
+  const showAge = activeCandidate.show_age !== false;
+  const showCity = activeCandidate.show_city !== false;
+  const showAbushakir = userProfile?.enable_abushakir !== false && activeCandidate.enable_abushakir !== false;
+
   // Cultural AI Icebreaker opener using Abushakir calendar & star sign details
   const triggerIcebreaker = () => {
     const starSignLabel = activeCandidate.star_sign 
       ? (StarSignLabels as Record<string, string>)[activeCandidate.star_sign] || activeCandidate.star_sign 
       : 'Star Sign';
 
-    const openers = [
+    const openers = showAbushakir ? [
       `ሰላም ${shouldBlur ? 'እጩ' : activeCandidate.full_name}! የከዋክብት ምልክትዎ ${starSignLabel} መሆኑን አይቻለሁ። በዛሬው የኢትዮጵያ ቀን (${ethDateStr}) መሰረት በጣም ተኳሃኝ ነን!`,
       `Akkam! I noticed your star sign is ${starSignLabel}. Today on the Abushakir calendar is ${ethDateStr}, a perfect day to start our connection!`,
       `Did you know that according to Abushakir star charts, your sign ${starSignLabel} represents wonderful loyalty? Let's connect on this beautiful day of ${ethDateStr}!`
+    ] : [
+      `ሰላም ${shouldBlur ? 'እጩ' : activeCandidate.full_name}! ስለ ራስዎ የበለጠ ለመማር ጓጉቻለሁ።`,
+      `Akkam! I'd love to connect and learn more about you.`,
+      `Hello! I noticed we share some great matching preferences. Let's connect!`
     ];
     setIcebreakerText(openers[Math.floor(Math.random() * openers.length)]);
     setShowIcebreaker(true);
@@ -377,7 +385,7 @@ export default function SwipeCards({ userProfile, candidates, onLike, onPass, is
               <h2 className="text-3xl font-black italic tracking-tighter leading-none">
                 {shouldBlur ? maskNameToInitials(activeCandidate.full_name) : (activeCandidate.full_name || 'Anonymous')}
               </h2>
-              {activeCandidate.birth_date && (
+              {showAge && activeCandidate.birth_date && (
                 <span className="text-xl font-bold opacity-80 text-amber-300">
                   {new Date().getFullYear() - new Date(activeCandidate.birth_date).getFullYear()}
                 </span>
@@ -385,12 +393,12 @@ export default function SwipeCards({ userProfile, candidates, onLike, onPass, is
             </div>
             
             <div className="flex flex-wrap gap-2 pt-1">
-              {activeCandidate.star_sign && (
+              {showAbushakir && activeCandidate.star_sign && (
                 <span className="px-3.5 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-[9px] font-bold tracking-widest uppercase flex items-center gap-1.5 border border-white/5 text-slate-350">
                   <Star size={10} className="fill-amber-400 text-amber-400" /> {activeCandidate.star_sign}
                 </span>
               )}
-              {activeCandidate.location && (
+              {showCity && activeCandidate.location && (
                 <span className="px-3.5 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-[9px] font-bold tracking-widest uppercase flex items-center gap-1.5 border border-white/5 text-slate-355">
                   <MapPin size={10} className="text-amber-400" /> {typeof activeCandidate.location === 'string' ? activeCandidate.location : activeCandidate.location?.city || 'Addis Ababa'}
                 </span>

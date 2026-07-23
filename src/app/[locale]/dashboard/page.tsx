@@ -733,7 +733,8 @@ function DashboardContent() {
       let matchQuery = supabase.from('profiles')
         .select('*')
         .neq('id', user.id)
-        .eq('onboarding_completed', true);
+        .eq('onboarding_completed', true)
+        .or('strict_incognito.eq.false,strict_incognito.is.null');
       
       if (blockedIds.length > 0) {
         matchQuery = matchQuery.not('id', 'in', `(${blockedIds.join(',')})`);
@@ -821,7 +822,8 @@ function DashboardContent() {
       let suggestionsQuery = supabase
         .from('profiles')
         .select('*')
-        .neq('id', user.id);
+        .neq('id', user.id)
+        .or('strict_incognito.eq.false,strict_incognito.is.null');
       
       if (blockedIds.length > 0) {
         suggestionsQuery = suggestionsQuery.not('id', 'in', `(${blockedIds.join(',')})`);

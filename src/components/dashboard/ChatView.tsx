@@ -67,6 +67,13 @@ interface Profile {
   is_verified: boolean;
   enable_last_seen?: boolean;
   enable_read_receipts?: boolean;
+  hide_read_receipts?: boolean;
+  hide_online_status?: boolean;
+  allow_friend_requests?: boolean;
+  strict_incognito?: boolean;
+  is_vip_member?: boolean;
+  vip_expires_at?: string | null;
+  is_lifetime?: boolean;
   last_online?: string;
 }
 
@@ -380,11 +387,17 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
       if (data) setMessages(data);
 
       // Mark unread messages from the other user as read
-      await supabase.from('messages')
-        .update({ is_read: true })
-        .eq('sender_id', selectedMatch.id)
-        .eq('receiver_id', currentUser.id)
-        .eq('is_read', false);
+      const receiptsEnabled = userProfile?.enable_read_receipts !== false &&
+                              userProfile?.hide_read_receipts !== true &&
+                              selectedMatch?.enable_read_receipts !== false &&
+                              selectedMatch?.hide_read_receipts !== true;
+      if (receiptsEnabled) {
+        await supabase.from('messages')
+          .update({ is_read: true })
+          .eq('sender_id', selectedMatch.id)
+          .eq('receiver_id', currentUser.id)
+          .eq('is_read', false);
+      }
     };
 
     fetchMessages();
@@ -405,7 +418,13 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
           if (msg.sender_id === selectedMatch.id) {
             setMessages((prev) => [...prev, msg]);
             // Auto-mark as read since we're already in this chat room
-            supabase.from('messages').update({ is_read: true }).eq('id', msg.id);
+            const receiptsEnabled = userProfile?.enable_read_receipts !== false &&
+                                    userProfile?.hide_read_receipts !== true &&
+                                    selectedMatch?.enable_read_receipts !== false &&
+                                    selectedMatch?.hide_read_receipts !== true;
+            if (receiptsEnabled) {
+              supabase.from('messages').update({ is_read: true }).eq('id', msg.id);
+            }
             
             // Auto-refresh coin balance if it contains coin symbol
             if (msg.content.includes('🪙')) {
@@ -697,10 +716,8 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
     const messageContent = newMessage.trim();
 
     // Tiers & Daily Action Limits (Beteseb v3.6)
-    const isVipActive = userProfile?.is_vip_member && 
-      (!userProfile?.vip_expires_at || new Date(userProfile.vip_expires_at) > new Date());
-
     const userTier = getUserTier(userProfile, hasVouchedRecords);
+    const isVipActive = userTier === 'vip';
     const limits = getTierLimits(userTier);
     let currentSentCount = 0;
 
@@ -973,8 +990,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
 
   // Voice Note Recording
   const getVoiceLimit = () => {
-    const isVipActive = userProfile?.is_vip_member && 
-      (!userProfile?.vip_expires_at || new Date(userProfile.vip_expires_at) > new Date());
+    const isVipActive = userTier === 'vip';
     if (isVipActive) return 60; // Max allowed (equivalent to Diamond or higher)
     const limits = getTierLimits(userTier);
     return limits.maxVoiceNoteSeconds ?? 7;
@@ -1087,7 +1103,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
   }, [currentUser]);
 
   const getLastSeenText = (match: Profile) => {
-    if (match.enable_last_seen === false) return null;
+    if (match.enable_last_seen === false || match.hide_online_status === true) return null;
     if (!match.last_online) return null;
 
     try {
@@ -1116,6 +1132,13 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
     } catch (e) {
       return null;
     }
+  };
+
+  const isOnline = (match: any) => {
+    if (match.hide_online_status === true || match.enable_last_seen === false) return false;
+    if (!match.last_online) return false;
+    const diffMs = new Date().getTime() - new Date(match.last_online).getTime();
+    return diffMs < 3 * 60 * 1000; // 3 minutes
   };
 
   if (loading) return <div className="flex-1 flex items-center justify-center">{t('loading')}</div>;
@@ -1191,7 +1214,9 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                         <div className="w-full h-full flex items-center justify-center text-primary"><User size={24} /></div>
                       )}
                     </div>
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+                    {isOnline(match) && (
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+                    )}
                   </div>
                   <div className="flex-1 text-center md:text-left">
                     <p className="font-bold text-accent group-hover:text-primary transition-colors flex items-center justify-center md:justify-start gap-1">
@@ -1268,7 +1293,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                     </h3>
                     {getLastSeenText(selectedMatch) ? (
                       <p className="text-[10px] text-green-500 font-bold tracking-wide">{getLastSeenText(selectedMatch)}</p>
-                    ) : (
+                    ) : (selectedMatch.enable_last_seen === false || selectedMatch.hide_online_status === true) ? null : (
                       <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{t('activeNow')}</p>
                     )}
                   </div>
@@ -1564,7 +1589,11 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                     <div className={`flex items-center gap-2 mt-2 px-2 text-[10px] ${msg.sender_id === currentUser?.id ? 'justify-end text-gray-400' : 'justify-start text-gray-400'}`}>
                       {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       {msg.sender_id === currentUser?.id && (
-                        msg.is_read && (userProfile?.enable_read_receipts !== false) && (selectedMatch?.enable_read_receipts !== false)
+                        msg.is_read && 
+                        (userProfile?.enable_read_receipts !== false) && 
+                        (selectedMatch?.enable_read_receipts !== false) &&
+                        (userProfile?.hide_read_receipts !== true) &&
+                        (selectedMatch?.hide_read_receipts !== true)
                           ? <CheckCheck size={14} className="text-primary" /> // Read - brand orange
                           : <CheckCheck size={14} className="text-gray-300" /> // Delivered - gray
                       )}
