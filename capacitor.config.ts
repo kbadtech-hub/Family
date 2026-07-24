@@ -10,6 +10,12 @@ const config: CapacitorConfig = {
     url: 'https://beteseb1.online',
     cleartext: false,
   },
+  plugins: {
+    FirebaseAuthentication: {
+      skipNativeAuth: false,
+      providers: ['google.com', 'facebook.com', 'apple.com'],
+    },
+  },
 };
 
 export default config;
