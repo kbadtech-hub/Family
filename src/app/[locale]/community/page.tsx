@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
-import { Link } from '@/i18n/routing';
+import { Link, useRouter } from '@/i18n/routing';
 import { 
   MessageCircle, 
   Heart, 
@@ -80,6 +80,8 @@ interface CommunityUser {
 function CommunityContent() {
   const t = useTranslations('Community');
   const locale = useLocale();
+  const router = useRouter();
+
   
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [currentUser, setCurrentUser] = useState<CommunityUser | null>(null);
