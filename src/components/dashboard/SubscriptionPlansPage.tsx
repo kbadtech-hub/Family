@@ -41,7 +41,7 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
   const showAlert = (message: string, type: 'error' | 'success' | 'info' | 'warning' = 'info', title?: string) => {
     setAlertModal({ isOpen: true, message, type, title });
   };
-  const [selectedDuration, setSelectedDuration] = useState<string>('3m');
+  const [selectedDuration, setSelectedDuration] = useState<string>('6m');
   const [isProcessing, setIsProcessing] = useState(false);
   
   const [isLocationVerified, setIsLocationVerified] = useState(false);
@@ -154,15 +154,15 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
   const premiumPlans = {
     ETB: [
       { id: '1m', name: isAm ? '1 ወር' : '1 Month', price: 149.99, originalPrice: 149.99, period: isAm ? 'በወር' : 'monthly', discount: 0 },
-      { id: '3m', name: isAm ? '3 ወር (15% ቅናሽ)' : '3 Months (15% Off)', price: 379.99, originalPrice: 449.97, period: isAm ? 'በ3 ወር' : 'quarterly', discount: 15, popular: true },
-      { id: '6m', name: isAm ? '6 ወር (28% ቅናሽ)' : '6 Months (28% Off)', price: 649.99, originalPrice: 899.94, period: isAm ? 'በ6 ወር' : 'semi-annually', discount: 28 },
+      { id: '3m', name: isAm ? '3 ወር (15% ቅናሽ)' : '3 Months (15% Off)', price: 379.99, originalPrice: 449.97, period: isAm ? 'በ3 ወር' : 'quarterly', discount: 15 },
+      { id: '6m', name: isAm ? '6 ወር (28% ቅናሽ)' : '6 Months (28% Off)', price: 649.99, originalPrice: 899.94, period: isAm ? 'በ6 ወር' : 'semi-annually', discount: 28, popular: true },
       { id: '12m', name: isAm ? '1 ዓመት (44% ቅናሽ)' : '1 Year (44% Off)', price: 999.99, originalPrice: 1799.88, period: isAm ? 'በዓመት' : 'yearly', discount: 44 },
       { id: 'lifetime', name: isAm ? 'የዕድሜ ልክ' : 'Lifetime Access', price: 1499.99, originalPrice: 1499.99, period: isAm ? 'ቋሚ' : 'lifetime', discount: 0 }
     ],
     USD: [
       { id: '1m', name: '1 Month', price: 7.99, originalPrice: 7.99, period: 'monthly', discount: 0 },
-      { id: '3m', name: '3 Months (17% Off)', price: 19.99, originalPrice: 23.97, period: 'quarterly', discount: 17, popular: true },
-      { id: '6m', name: '6 Months (29% Off)', price: 33.99, originalPrice: 47.94, period: 'semi-annually', discount: 29 },
+      { id: '3m', name: '3 Months (17% Off)', price: 19.99, originalPrice: 23.97, period: 'quarterly', discount: 17 },
+      { id: '6m', name: '6 Months (29% Off)', price: 33.99, originalPrice: 47.94, period: 'semi-annually', discount: 29, popular: true },
       { id: '12m', name: '1 Year (48% Off)', price: 49.99, originalPrice: 95.88, period: 'yearly', discount: 48 },
       { id: 'lifetime', name: 'Lifetime Access', price: 74.99, originalPrice: 74.99, period: 'lifetime', discount: 0 }
     ]
@@ -172,15 +172,15 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
   const vipPlans = {
     ETB: [
       { id: 'vip_1m', name: isAm ? '1 ወር VIP' : '1 Month VIP', price: 299.98, originalPrice: 299.98, period: isAm ? 'በወር' : 'monthly', discount: 0 },
-      { id: 'vip_3m', name: isAm ? '3 ወር VIP (15% ቅናሽ)' : '3 Months VIP (15% Off)', price: 759.98, originalPrice: 899.94, period: isAm ? 'በ3 ወር' : 'quarterly', discount: 15, popular: true },
-      { id: 'vip_6m', name: isAm ? '6 ወር VIP (28% ቅናሽ)' : '6 Months VIP (28% Off)', price: 1299.98, originalPrice: 1799.88, period: isAm ? 'በ6 ወር' : 'semi-annually', discount: 28 },
+      { id: 'vip_3m', name: isAm ? '3 ወር VIP (15% ቅናሽ)' : '3 Months VIP (15% Off)', price: 759.98, originalPrice: 899.94, period: isAm ? 'በ3 ወር' : 'quarterly', discount: 15 },
+      { id: 'vip_6m', name: isAm ? '6 ወር VIP (28% ቅናሽ)' : '6 Months VIP (28% Off)', price: 1299.98, originalPrice: 1799.88, period: isAm ? 'በ6 ወር' : 'semi-annually', discount: 28, popular: true },
       { id: 'vip_12m', name: isAm ? '1 ዓመት VIP (44% ቅናሽ)' : '1 Year VIP (44% Off)', price: 1999.98, originalPrice: 3599.76, period: isAm ? 'በዓመት' : 'yearly', discount: 44 },
       { id: 'vip_lifetime', name: isAm ? 'የዕድሜ ልክ VIP' : 'Lifetime VIP', price: 2999.98, originalPrice: 2999.98, period: isAm ? 'ቋሚ' : 'lifetime', discount: 0 }
     ],
     USD: [
       { id: 'vip_1m', name: '1 Month VIP', price: 15.98, originalPrice: 15.98, period: 'monthly', discount: 0 },
-      { id: 'vip_3m', name: '3 Months VIP (17% Off)', price: 39.98, originalPrice: 47.94, period: 'quarterly', discount: 17, popular: true },
-      { id: 'vip_6m', name: '6 Months VIP (29% Off)', price: 67.98, originalPrice: 95.88, period: 'semi-annually', discount: 29 },
+      { id: 'vip_3m', name: '3 Months VIP (17% Off)', price: 39.98, originalPrice: 47.94, period: 'quarterly', discount: 17 },
+      { id: 'vip_6m', name: '6 Months VIP (29% Off)', price: 67.98, originalPrice: 95.88, period: 'semi-annually', discount: 29, popular: true },
       { id: 'vip_12m', name: '1 Year VIP (48% Off)', price: 99.98, originalPrice: 191.76, period: 'yearly', discount: 48 },
       { id: 'vip_lifetime', name: 'Lifetime VIP', price: 149.98, originalPrice: 149.98, period: 'lifetime', discount: 0 }
     ]
@@ -194,9 +194,9 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
   useEffect(() => {
     const isVip = activePlanType === 'vip';
     if (isVip) {
-      setSelectedDuration('vip_3m');
+      setSelectedDuration('vip_6m');
     } else {
-      setSelectedDuration('3m');
+      setSelectedDuration('6m');
     }
   }, [activePlanType]);
 
