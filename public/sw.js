@@ -1,11 +1,9 @@
-const CACHE_NAME = 'beteseb-offline-cache-v2';
+const CACHE_NAME = 'beteseb-offline-cache-v3';
 
 // Core assets to cache immediately on SW install
 const ASSETS_TO_CACHE = [
-  '/',
   '/logo.png',
   '/manifest.json',
-  '/favicon.ico',
 ];
 
 self.addEventListener('install', (event) => {
@@ -61,8 +59,21 @@ self.addEventListener('fetch', (event) => {
 
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
-      const fetchPromise = fetch(request).then((networkResponse) => {
-        // Cache successful GET responses
+      if (cachedResponse) {
+        // Fetch fresh copy in background to update cache
+        fetch(request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, responseToCache);
+            });
+          }
+        }).catch(() => {});
+        return cachedResponse;
+      }
+
+      // If not in cache, fetch directly from network without catching to undefined
+      return fetch(request).then((networkResponse) => {
         if (networkResponse && networkResponse.status === 200) {
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -70,12 +81,8 @@ self.addEventListener('fetch', (event) => {
           });
         }
         return networkResponse;
-      }).catch((err) => {
-        console.warn('[Service Worker] Network request failed:', err);
       });
-
-      // Serve from cache if available, else fetch from network
-      return cachedResponse || fetchPromise;
     })
   );
 });
+
