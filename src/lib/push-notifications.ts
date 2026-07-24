@@ -50,15 +50,31 @@ async function registerNativePushNotifications() {
   try {
     const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
 
-    // Request permission
-    const { receive } = await FirebaseMessaging.requestPermissions();
-    if (receive !== 'granted') {
-      console.warn('[FCM] Push notification permission denied.');
+    // Check permission status first before prompting
+    const checkStatus = await FirebaseMessaging.checkPermissions().catch(() => null);
+    if (checkStatus && checkStatus.receive === 'denied') {
+      console.warn('[FCM] Push notification permission previously denied.');
       return;
     }
 
-    // Get FCM token
-    const { token } = await FirebaseMessaging.getToken();
+    // Request permission safely
+    const permResult = await FirebaseMessaging.requestPermissions().catch((err) => {
+      console.warn('[FCM] requestPermissions failed:', err);
+      return { receive: 'denied' };
+    });
+
+    if (permResult.receive !== 'granted') {
+      console.warn('[FCM] Push notification permission not granted.');
+      return;
+    }
+
+    // Get FCM token safely
+    const tokenResult = await FirebaseMessaging.getToken().catch((err) => {
+      console.warn('[FCM] getToken failed:', err);
+      return null;
+    });
+
+    const token = tokenResult?.token;
     console.log('[FCM] Native token:', token);
     if (token) await storeFcmToken(token);
 

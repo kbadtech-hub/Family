@@ -41,30 +41,46 @@ export default function FirebaseProvider({ children }: { children: React.ReactNo
 async function initFirebaseServices() {
   if (typeof window === 'undefined') return;
 
+  // 1. Initialize Firebase App
   try {
-    // 1. Initialize Firebase app
     const { getFirebaseApp } = await import('@/lib/firebase');
-    getFirebaseApp(); // Singleton — safe to call multiple times
+    getFirebaseApp();
+  } catch (e) {
+    console.warn('[Firebase] App init warning:', e);
+  }
 
-    // 2. Initialize Firebase Analytics
+  // 2. Initialize Firebase Analytics
+  try {
     const { getFirebaseAnalytics } = await import('@/lib/firebase');
     await getFirebaseAnalytics();
     console.log('[Firebase] Analytics initialized.');
+  } catch (e) {
+    console.warn('[Firebase] Analytics warning:', e);
+  }
 
-    // 3. Initialize Crashlytics (native only)
+  // 3. Initialize Crashlytics (native only)
+  try {
     const { initCrashlytics } = await import('@/lib/firebase-crashlytics');
     await initCrashlytics();
+  } catch (e) {
+    console.warn('[Firebase] Crashlytics warning:', e);
+  }
 
-    // 4. Register Push Notifications
-    const { registerPushNotifications } = await import('@/lib/push-notifications');
-    await registerPushNotifications();
-
-    // 5. Initialize AdMob (Native only)
+  // 4. Initialize AdMob (Native only)
+  try {
     const { initializeAdMob } = await import('@/lib/ads');
     await initializeAdMob();
-
-    console.log('[Firebase] All services initialized.');
   } catch (e) {
-    console.warn('[Firebase] Service initialization warning:', e);
+    console.warn('[Firebase] AdMob warning:', e);
+  }
+
+  // 5. Register Push Notifications (delayed slightly to avoid pop-up collision during splash load)
+  try {
+    const { registerPushNotifications } = await import('@/lib/push-notifications');
+    setTimeout(() => {
+      registerPushNotifications().catch((err) => console.warn('[FCM] Push registration warning:', err));
+    }, 2500);
+  } catch (e) {
+    console.warn('[Firebase] Push registration error:', e);
   }
 }
