@@ -31,12 +31,10 @@ export default function PostCreationModal({
   const isVipOrDiamond = userTier === 'diamond' || userTier === 'vip' || currentUser?.profile?.is_vip_member;
   const isPlatinum = userTier === 'platinum' || currentUser?.profile?.is_premium;
   const isGold = userTier === 'gold' || currentUser?.profile?.verification_status === 'verified';
-  const isAdmin = ['admin', 'super_admin', 'expert'].includes(currentUser?.profile?.role || '');
-  // Only block if TRULY bronze/silver AND not admin — allow all authenticated users who are logged in
-  const isBronzeOrSilver = !isGold && !isPlatinum && !isVipOrDiamond && !isAdmin && !currentUser?.id;
+  const isBronzeOrSilver = !isGold && !isPlatinum && !isVipOrDiamond && !['admin', 'super_admin', 'expert'].includes(currentUser?.profile?.role || '');
 
-  // Character Limit based on Tier — all authenticated users get at least 500 chars
-  const maxChars = isVipOrDiamond ? 1000 : 500;
+  // Character Limit based on Tier
+  const maxChars = isVipOrDiamond ? 1000 : (isPlatinum || isGold ? 500 : 0);
 
   // Check Posting Frequency Limit from Supabase
   useEffect(() => {
@@ -88,46 +86,31 @@ export default function PostCreationModal({
   const isPostingDisabled = isBronzeOrSilver || isTextEmpty || isOverCharLimit || !!cooldownRemaining || isSubmitting;
 
   const handleCreatePost = async () => {
-    if (!currentUser) {
-      setErrorMsg('You must be logged in to post.');
-      return;
-    }
-    if (content.trim().length < 5) {
-      setErrorMsg('Post must be at least 5 characters.');
-      return;
-    }
-    if (isSubmitting) return;
+    if (isPostingDisabled || !currentUser) return;
 
     setIsSubmitting(true);
     setErrorMsg(null);
 
-    // 1. AI Content Moderation Check (wrapped in try/catch so it never blocks posting)
-    try {
-      const modResult = await moderateText(content.trim());
-      if (!modResult.approved) {
-        setErrorMsg(`⚠️ Auto-Moderation: ${modResult.reason || 'Content violates community guidelines.'}`);
-        setIsSubmitting(false);
-        return;
-      }
-    } catch (modErr) {
-      console.warn('Moderation check failed, proceeding with post:', modErr);
+    // 1. AI Content Moderation Check
+    const modResult = await moderateText(content.trim());
+    if (!modResult.approved) {
+      setErrorMsg(`⚠️ Auto-Moderation Alert: ${modResult.reason || 'Content violates family community guidelines (topic limits, profane language, or contact sharing).'}`);
+      setIsSubmitting(false);
+      return;
     }
 
-    // 2. Insert Post — try with category/is_approved, fallback to minimal payload
-    let insertPayload: any = {
-      author_id: currentUser.id,
-      content: content.trim(),
-      topic,
-    };
-
-    // Try to include optional columns (only work if migration 23 has been applied)
-    try {
-      insertPayload = { ...insertPayload, category: 'general', is_approved: true };
-    } catch (_) {}
-
+    // 2. Insert Post (Text-Only with Published Status)
     const { data: newPost, error } = await supabase
       .from('community_posts')
-      .insert(insertPayload)
+      .insert({
+        author_id: currentUser.id,
+        content: content.trim(),
+        topic,
+        category: 'general',
+        is_approved: true,
+        dislike_count: 0,
+        heart_count: 0
+      })
       .select(`
         *,
         profiles!community_posts_author_id_fkey(id, full_name, avatar_url, role, tier, verification_status),
@@ -140,33 +123,8 @@ export default function PostCreationModal({
       .single();
 
     if (error) {
-      console.error('Post creation error:', error);
-      // If error is about unknown columns, retry with minimal payload
-      if (error.message?.includes('column') || error.message?.includes('is_approved') || error.message?.includes('category')) {
-        const { data: fallbackPost, error: fallbackError } = await supabase
-          .from('community_posts')
-          .insert({ author_id: currentUser.id, content: content.trim(), topic })
-          .select(`
-            *,
-            profiles!community_posts_author_id_fkey(id, full_name, avatar_url, role, tier, verification_status),
-            post_likes(count),
-            post_comments(*, profiles(full_name, avatar_url))
-          `)
-          .single();
-        if (fallbackError) {
-          console.error('Fallback post error:', fallbackError);
-          setErrorMsg(`Error: ${fallbackError.message}`);
-          setIsSubmitting(false);
-        } else {
-          setContent('');
-          setIsSubmitting(false);
-          onPostSuccess(fallbackPost);
-          onClose();
-        }
-      } else {
-        setErrorMsg(`Error: ${error.message}`);
-        setIsSubmitting(false);
-      }
+      setErrorMsg(error.message);
+      setIsSubmitting(false);
     } else {
       setContent('');
       setIsSubmitting(false);

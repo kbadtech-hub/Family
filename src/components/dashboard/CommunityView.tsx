@@ -143,10 +143,7 @@ export default function CommunityView({
       query = query.not('author_id', 'in', `(${blockedIds.join(',')})`);
     }
 
-    const { data, error: fetchError } = await query;
-    if (fetchError) {
-      console.error('fetchPosts error:', fetchError);
-    }
+    const { data } = await query;
     if (data) {
       const filteredData = data.map((post: any) => {
         if (post.post_comments) {
