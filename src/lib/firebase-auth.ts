@@ -77,19 +77,26 @@ export async function signInWithGoogle(): Promise<SocialAuthResult> {
 
     // Capacitor Native Sign-In
     if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.()) {
-      const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
-      const result = await FirebaseAuthentication.signInWithGoogle();
+      try {
+        const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+        const result = await FirebaseAuthentication.signInWithGoogle();
 
-      const cred = result.credential as any;
-      const idToken = cred?.idToken;
-      if (!idToken) throw new Error('No Google ID Token received from native Google login.');
+        const cred = result.credential as any;
+        const idToken = cred?.idToken;
+        if (!idToken) throw new Error('No Google ID Token received from native Google login.');
 
-      const credential = GoogleAuthProvider.credential(idToken);
-      const jsUser = await signInWithCredential(auth, credential);
-      const firebaseUser = jsUser.user;
+        const credential = GoogleAuthProvider.credential(idToken);
+        const jsUser = await signInWithCredential(auth, credential);
+        const firebaseUser = jsUser.user;
 
-      const syncRes = await syncFirebaseUserWithSupabase(firebaseUser);
-      return { success: true, isNewUser: syncRes.isNewUser, hasPhone: syncRes.hasPhone, firebaseUser };
+        const syncRes = await syncFirebaseUserWithSupabase(firebaseUser);
+        return { success: true, isNewUser: syncRes.isNewUser, hasPhone: syncRes.hasPhone, firebaseUser };
+      } catch (nativeErr: any) {
+        console.warn('[FirebaseAuth] Native Google Sign-In warning/fallback:', nativeErr);
+        if (nativeErr?.message?.includes('closed') || nativeErr?.code === 'auth/popup-closed-by-user') {
+          throw nativeErr;
+        }
+      }
     }
 
     const provider = new GoogleAuthProvider();
@@ -122,19 +129,26 @@ export async function signInWithFacebook(): Promise<SocialAuthResult> {
 
     // Capacitor Native Sign-In
     if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.()) {
-      const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
-      const result = await FirebaseAuthentication.signInWithFacebook();
+      try {
+        const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+        const result = await FirebaseAuthentication.signInWithFacebook();
 
-      const cred = result.credential as any;
-      const accessToken = cred?.accessToken;
-      if (!accessToken) throw new Error('No Facebook Access Token received from native Facebook login.');
+        const cred = result.credential as any;
+        const accessToken = cred?.accessToken;
+        if (!accessToken) throw new Error('No Facebook Access Token received from native Facebook login.');
 
-      const credential = FacebookAuthProvider.credential(accessToken);
-      const jsUser = await signInWithCredential(auth, credential);
-      const firebaseUser = jsUser.user;
+        const credential = FacebookAuthProvider.credential(accessToken);
+        const jsUser = await signInWithCredential(auth, credential);
+        const firebaseUser = jsUser.user;
 
-      const syncRes = await syncFirebaseUserWithSupabase(firebaseUser);
-      return { success: true, isNewUser: syncRes.isNewUser, hasPhone: syncRes.hasPhone, firebaseUser };
+        const syncRes = await syncFirebaseUserWithSupabase(firebaseUser);
+        return { success: true, isNewUser: syncRes.isNewUser, hasPhone: syncRes.hasPhone, firebaseUser };
+      } catch (nativeErr: any) {
+        console.warn('[FirebaseAuth] Native Facebook Sign-In warning/fallback:', nativeErr);
+        if (nativeErr?.message?.includes('closed') || nativeErr?.code === 'auth/popup-closed-by-user') {
+          throw nativeErr;
+        }
+      }
     }
 
     const provider = new FacebookAuthProvider();
@@ -167,24 +181,31 @@ export async function signInWithApple(): Promise<SocialAuthResult> {
 
     // Capacitor Native Sign-In
     if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.()) {
-      const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
-      const result = await FirebaseAuthentication.signInWithApple();
+      try {
+        const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+        const result = await FirebaseAuthentication.signInWithApple();
 
-      const cred = result.credential as any;
-      const idToken = cred?.idToken;
-      const rawNonce = cred?.rawNonce;
-      if (!idToken) throw new Error('No Apple ID Token received from native Apple login.');
+        const cred = result.credential as any;
+        const idToken = cred?.idToken;
+        const rawNonce = cred?.rawNonce;
+        if (!idToken) throw new Error('No Apple ID Token received from native Apple login.');
 
-      const provider = new OAuthProvider('apple.com');
-      const credential = provider.credential({
-        idToken: idToken,
-        rawNonce: rawNonce
-      });
-      const jsUser = await signInWithCredential(auth, credential);
-      const firebaseUser = jsUser.user;
+        const provider = new OAuthProvider('apple.com');
+        const credential = provider.credential({
+          idToken: idToken,
+          rawNonce: rawNonce
+        });
+        const jsUser = await signInWithCredential(auth, credential);
+        const firebaseUser = jsUser.user;
 
-      const syncRes = await syncFirebaseUserWithSupabase(firebaseUser);
-      return { success: true, isNewUser: syncRes.isNewUser, hasPhone: syncRes.hasPhone, firebaseUser };
+        const syncRes = await syncFirebaseUserWithSupabase(firebaseUser);
+        return { success: true, isNewUser: syncRes.isNewUser, hasPhone: syncRes.hasPhone, firebaseUser };
+      } catch (nativeErr: any) {
+        console.warn('[FirebaseAuth] Native Apple Sign-In warning/fallback:', nativeErr);
+        if (nativeErr?.message?.includes('closed') || nativeErr?.code === 'auth/popup-closed-by-user') {
+          throw nativeErr;
+        }
+      }
     }
 
     const provider = new OAuthProvider('apple.com');
