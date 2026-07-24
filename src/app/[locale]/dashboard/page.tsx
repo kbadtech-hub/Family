@@ -1837,7 +1837,7 @@ function DashboardContent() {
               {!isVipActive && (
                 <div className="w-full space-y-4">
 
-                  {/* ── PREMIUM CARD (Hidden for active Premium/Diamond/VIP users) ── */}
+                  {/* ── PREMIUM / DIAMOND CARD (Hidden for active Premium/Diamond/VIP users) ── */}
                   {!isPremium && (
                     <div
                       onClick={() => setShowBenefitsModal('premium')}
@@ -1849,38 +1849,60 @@ function DashboardContent() {
                       <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-white/5 rounded-full" />
 
                       <div className="relative flex flex-col gap-5 w-full">
-                        {/* Top Row: Title spanning edge-to-edge with Price */}
+                        {/* Top Row: Title & Correct Price */}
                         <div className="flex justify-between items-center w-full border-b border-white/15 pb-4">
-                          <span className="text-sm font-black uppercase tracking-wider text-white">
-                            {locale === 'am' ? 'የዳይመንድ (ፕሪሚየም) አባልነት' : 'Diamond (Premium) Membership'}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <Sparkles size={20} className="text-white fill-white/50" />
+                            <span className="text-sm font-black uppercase tracking-wider text-white">
+                              {locale === 'am' ? 'የዳይመንድ (ፕሪሚየም) አባልነት' : 'Diamond (Premium) Membership'}
+                            </span>
+                          </div>
                           <div className="text-white/95 font-black text-right">
-                            <span className="text-lg leading-none">{isEthiopiaUser ? 'ብር 700' : '$7.99'}</span>
-                            <span className="text-[9px] text-white/60 block font-bold leading-none mt-0.5">{isEthiopiaUser ? 'ከወር' : '/month'}</span>
+                            <span className="text-lg leading-none">{isEthiopiaUser ? 'ብር 149.99' : '$7.99'}</span>
+                            <span className="text-[9px] text-white/70 block font-bold leading-none mt-0.5">{isEthiopiaUser ? 'በወር' : '/month'}</span>
                           </div>
                         </div>
 
-                        {/* Middle Row: Icon & Descriptive Tag */}
-                        <div className="flex items-center justify-start gap-4">
-                          <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
-                            <Sparkles size={20} className="text-white fill-white/50" />
+                        {/* Middle Row: Detailed Benefits List */}
+                        <div className="space-y-2.5 pt-1">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-white/70">
+                            {locale === 'am' ? 'በዳይመንድ አባልነት የሚያገኙት ጥቅሞች፦' : 'Benefits of Diamond Membership:'}
+                          </p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-semibold text-white/95">
+                            <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-xl backdrop-blur-sm">
+                              <span>♾️</span>
+                              <span>{locale === 'am' ? 'ያልተገደበ የትዳር አጋር ማግኘት' : 'Unlimited Matching Feed'}</span>
+                            </div>
+                            <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-xl backdrop-blur-sm">
+                              <span>💬</span>
+                              <span>{locale === 'am' ? 'የቀጥታ ጽሑፍ ውይይት (ከዕጩዎች ጋር)' : 'Direct Private Chat'}</span>
+                            </div>
+                            <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-xl backdrop-blur-sm">
+                              <span>📋</span>
+                              <span>{locale === 'am' ? 'የሰዎች ሙሉ ዝርዝር መረጃና ባዮ' : 'Full Profile Bios & Details'}</span>
+                            </div>
+                            <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-xl backdrop-blur-sm">
+                              <span>🎓</span>
+                              <span>{locale === 'am' ? 'የባለሙያ ክፍሎችና ወርክሾፖች' : 'Access to Expert Classes'}</span>
+                            </div>
+                            <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-xl backdrop-blur-sm sm:col-span-2">
+                              <span>⚡</span>
+                              <span>{locale === 'am' ? 'ቅድሚያ የሚሰጠው የደንበኞች ድጋፍ' : 'Priority Customer Care'}</span>
+                            </div>
                           </div>
-                          <span className="text-[10px] text-white/80 font-bold italic leading-relaxed">
-                            {locale === 'am' ? 'ያልተገደበ ዕጩዎች፣ የቀጥታ ቻት እና ሙሉ ፕሮፋይሎችን ይክፈቱ።' : 'Unlock unlimited matches, private chat & full bios.'}
-                          </span>
                         </div>
 
                         {/* Bottom Row: Centered Upgrade Button */}
                         <div className="flex justify-center w-full mt-1">
-                          <div className="w-full text-center bg-white text-primary text-xs font-black uppercase tracking-[0.15em] py-4.5 rounded-2xl shadow-lg group-hover:bg-orange-50 transition-colors">
-                            {locale === 'am' ? 'ወደ ዳይመንድ ያሳድጉ' : 'Upgrade to Diamond'}
+                          <div className="w-full text-center bg-white text-primary text-xs font-black uppercase tracking-[0.15em] py-4 rounded-2xl shadow-lg group-hover:bg-orange-50 transition-colors">
+                            {locale === 'am' ? 'ወደ ዳይመንድ ያሳድጉ (149.99 ብር)' : 'Upgrade to Diamond ($7.99)'}
                           </div>
                         </div>
                       </div>
                     </div>
                   )}
 
-                  {/* ── VIP CARD (Visible for all non-VIP users, including Diamond/Premium users) ── */}
+                  {/* ── VIP CARD (Visible for all non-VIP users) ── */}
                   <div
                     onClick={() => setShowBenefitsModal('vip')}
                     className="w-full cursor-pointer group relative overflow-hidden rounded-[2.5rem] p-8 text-white shadow-2xl shadow-amber-500/30 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] select-none"
@@ -1890,31 +1912,51 @@ function DashboardContent() {
                     <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-yellow-300/10 rounded-full" />
 
                     <div className="relative flex flex-col gap-5 w-full">
-                      {/* Top Row: Title spanning edge-to-edge with Price */}
+                      {/* Top Row: Title & Correct Price */}
                       <div className="flex justify-between items-center w-full border-b border-white/15 pb-4">
                         <span className="text-sm font-black uppercase tracking-wider text-yellow-200 flex items-center gap-1.5">
-                          {locale === 'am' ? 'የቪ.አይ.ፒ ልዩ አባልነት' : 'VIP Elite Membership'} 👑
+                          <Crown size={20} className="text-yellow-200 fill-yellow-200/30" />
+                          {locale === 'am' ? 'የቪ.አይ.ፒ (VIP) ልዩ አባልነት' : 'VIP Elite Membership'} 👑
                         </span>
                         <div className="text-white/95 font-black text-right">
-                          <span className="text-lg leading-none">{isEthiopiaUser ? 'ብር 1,500' : '$12.99'}</span>
-                          <span className="text-[9px] text-white/60 block font-bold leading-none mt-0.5">{isEthiopiaUser ? 'ከወር' : '/month'}</span>
+                          <span className="text-lg leading-none">{isEthiopiaUser ? 'ብር 299.98' : '$12.99'}</span>
+                          <span className="text-[9px] text-white/70 block font-bold leading-none mt-0.5">{isEthiopiaUser ? 'በወር' : '/month'}</span>
                         </div>
                       </div>
 
-                      {/* Middle Row: Icon & Descriptive Tag */}
-                      <div className="flex items-center justify-start gap-4">
-                        <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
-                          <Crown size={20} className="text-yellow-200 fill-yellow-200/30" />
+                      {/* Middle Row: Detailed Benefits List */}
+                      <div className="space-y-2.5 pt-1">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-yellow-200/80">
+                          {locale === 'am' ? 'በቪአይፒ አባልነት የሚያገኙት ልዩ ጥቅሞች፦' : 'Exclusive Benefits of VIP Membership:'}
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-semibold text-white/95">
+                          <div className="flex items-center gap-2 bg-black/20 border border-yellow-400/20 px-3 py-2 rounded-xl backdrop-blur-sm">
+                            <span>👑</span>
+                            <span>{locale === 'am' ? 'የወርቅ አክሊል ባጅ (Golden Crown)' : 'Golden Crown Status'}</span>
+                          </div>
+                          <div className="flex items-center gap-2 bg-black/20 border border-yellow-400/20 px-3 py-2 rounded-xl backdrop-blur-sm">
+                            <span>👻</span>
+                            <span>{locale === 'am' ? 'Ghost Mode — ሙሉ የፎቶና ስም ድብቅነት' : 'Ghost Mode & Incognito'}</span>
+                          </div>
+                          <div className="flex items-center gap-2 bg-black/20 border border-yellow-400/20 px-3 py-2 rounded-xl backdrop-blur-sm">
+                            <span>🔕</span>
+                            <span>{locale === 'am' ? 'የመስመር ላይ መገኘትንና የታየ ምልክትን መደበቅ' : 'Hide Online Status & Receipts'}</span>
+                          </div>
+                          <div className="flex items-center gap-2 bg-black/20 border border-yellow-400/20 px-3 py-2 rounded-xl backdrop-blur-sm">
+                            <span>🛡️</span>
+                            <span>{locale === 'am' ? 'ማን እንዳያችሁ የመቆጣጠር መብት' : 'Control Profile Visibility'}</span>
+                          </div>
+                          <div className="flex items-center gap-2 bg-black/20 border border-yellow-400/20 px-3 py-2 rounded-xl backdrop-blur-sm sm:col-span-2">
+                            <span>💎</span>
+                            <span>{locale === 'am' ? 'ሁሉንም የዳይመንድ ጥቅሞች ያካትታል' : 'Includes All Diamond Benefits'}</span>
+                          </div>
                         </div>
-                        <span className="text-[10px] text-white/80 font-bold italic leading-relaxed">
-                          {locale === 'am' ? 'የወርቅ አክሊል ባጅ፣ Ghost Mode፣ እና የተሟላ ፕሪሚየም ጥቅሞች።' : 'Crown badge, ghost mode, incognito & all premium benefits.'}
-                        </span>
                       </div>
 
                       {/* Bottom Row: Centered Upgrade Button */}
                       <div className="flex justify-center w-full mt-1">
-                        <div className="w-full text-center bg-amber-400 text-amber-950 text-xs font-black uppercase tracking-[0.15em] py-4.5 rounded-2xl shadow-lg group-hover:bg-amber-300 transition-colors">
-                          {locale === 'am' ? 'ወደ ቪ አይ ፒ ያሳድጉ' : 'Upgrade to VIP'}
+                        <div className="w-full text-center bg-amber-400 text-amber-950 text-xs font-black uppercase tracking-[0.15em] py-4 rounded-2xl shadow-lg group-hover:bg-amber-300 transition-colors">
+                          {locale === 'am' ? 'ወደ ቪ አይ ፒ ያሳድጉ (299.98 ብር)' : 'Upgrade to VIP ($12.99)'}
                         </div>
                       </div>
                     </div>
@@ -2122,8 +2164,8 @@ function DashboardContent() {
                     <div className="flex items-baseline gap-1 mt-0.5">
                       <span className="text-white font-black text-lg">
                         {showBenefitsModal === 'vip'
-                          ? (isEthiopiaUser ? 'ብር 1,500' : '$12.99')
-                          : (isEthiopiaUser ? 'ብር 700' : '$7.99')}
+                          ? (isEthiopiaUser ? 'ብር 299.98' : '$12.99')
+                          : (isEthiopiaUser ? 'ብር 149.99' : '$7.99')}
                       </span>
                       <span className="text-white/50 text-[9px] font-bold">{locale === 'am' ? '/ ወር' : '/ month'}</span>
                     </div>
