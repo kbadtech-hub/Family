@@ -37,6 +37,10 @@ interface GiftRecord {
   delivery_address: string | null;
   delivery_phone: string | null;
   delivery_status: 'none' | 'requested' | 'processing' | 'delivered' | 'failed';
+  status?: string;
+  is_converted?: boolean;
+  conversion_fee?: number;
+  net_coins_received?: number;
   created_at: string;
   sender?: {
     full_name: string;
@@ -81,6 +85,48 @@ export default function GiftsView({ locale }: { locale: string }) {
   const [deliveryLoading, setDeliveryLoading] = useState(false);
   const [deliveryError, setDeliveryError] = useState('');
   const [deliverySuccess, setDeliverySuccess] = useState('');
+
+  // Gift Conversion State
+  const [convertingGiftId, setConvertingGiftId] = useState<string | null>(null);
+
+  const handleConvertGiftToCoins = async (gift: GiftRecord) => {
+    if (!userId || gift.is_converted || gift.status === 'converted') return;
+    setConvertingGiftId(gift.id);
+
+    try {
+      const response = await fetch('/api/gifts/convert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ giftId: gift.id, userId })
+      });
+
+      const data = await response.json();
+      if (!response.ok || data.error) {
+        throw new Error(data.error || 'Failed to convert gift');
+      }
+
+      setCoinBalance(data.newBalance);
+      setReceivedGifts(prev => prev.map(g => g.id === gift.id ? {
+        ...g,
+        is_converted: true,
+        status: 'converted',
+        net_coins_received: data.netCoins,
+        conversion_fee: data.fee
+      } : g));
+
+      showAlert(
+        locale === 'am'
+          ? `ስጦታው በተሳካ ሁኔታ ወደ ${data.netCoins} ኮይኖች ተቀይሯል! (20% ትራንዛክሽን ክፍያ፡ ${data.fee} ኮይን ተቀንሷል)`
+          : `Gift successfully converted to ${data.netCoins} coins! (20% fee: ${data.fee} coins deducted)`,
+        'success',
+        locale === 'am' ? 'ስጦታው ወደ ኮይን ተቀይሯል' : 'Gift Converted'
+      );
+    } catch (err: any) {
+      showAlert(err.message, 'error');
+    } finally {
+      setConvertingGiftId(null);
+    }
+  };
 
   // Phase 4 Custom Claim States
   const [clothingSize, setClothingSize] = useState('Medium');
@@ -444,60 +490,93 @@ export default function GiftsView({ locale }: { locale: string }) {
                   </p>
                </div>
             ) : (
-               receivedGifts.map((gift) => (
-                 <div key={gift.id} className="bg-white rounded-[2.5rem] p-6 border border-muted shadow-lg hover:shadow-xl transition-all flex flex-col justify-between space-y-4">
-                    <div className="flex justify-between items-start gap-4">
-                       <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-lg">
-                             {getGiftIcon(gift.gift_catalog?.image_url || gift.gift_type)}
-                          </div>
-                          <div>
-                             <h4 className="text-xs font-black text-accent uppercase">
-                                {locale === 'am' ? gift.gift_catalog?.name_am : gift.gift_catalog?.name_en}
-                             </h4>
-                             <p className="text-[9px] text-gray-400 font-bold flex items-center gap-1 uppercase tracking-widest">
-                                <User size={10} /> {gift.sender?.full_name}
-                             </p>
-                          </div>
-                       </div>
-                       
-                       <div className="text-right text-[8px] text-gray-400 font-bold uppercase flex items-center gap-1">
-                          <Calendar size={10} /> {new Date(gift.created_at).toLocaleDateString()}
-                       </div>
-                    </div>
+               receivedGifts.map((gift) => {
+                 const isConverted = gift.is_converted || gift.status === 'converted';
+                 const netCoins = gift.net_coins_received ?? Math.floor(gift.amount * 0.8);
+                 return (
+                   <div key={gift.id} className="bg-white rounded-[2.5rem] p-6 border border-muted shadow-lg hover:shadow-xl transition-all flex flex-col justify-between space-y-4">
+                      <div className="flex justify-between items-start gap-4">
+                         <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary font-bold text-2xl shadow-inner">
+                               {getGiftIcon(gift.gift_catalog?.image_url || gift.gift_type)}
+                            </div>
+                            <div>
+                               <h4 className="text-xs font-black text-accent uppercase">
+                                  {locale === 'am' ? gift.gift_catalog?.name_am : gift.gift_catalog?.name_en}
+                               </h4>
+                               <p className="text-[9px] text-gray-400 font-bold flex items-center gap-1 uppercase tracking-widest mt-0.5">
+                                  <User size={10} /> {locale === 'am' ? `ከ ${gift.sender?.full_name || 'ተጠቃሚ'}` : `From ${gift.sender?.full_name || 'User'}`}
+                               </p>
+                            </div>
+                         </div>
+                         <div className="text-right space-y-1">
+                            <div className="flex items-center gap-1 text-[10px] font-black text-amber-500 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full justify-end">
+                               <Coins size={12} /> {gift.amount} {locale === 'am' ? 'ኮይን' : 'Coins'}
+                            </div>
+                            <div className="text-[8px] text-gray-400 font-bold uppercase flex items-center gap-1 justify-end">
+                               <Calendar size={9} /> {new Date(gift.created_at).toLocaleDateString()}
+                            </div>
+                         </div>
+                      </div>
 
-                    {gift.message && (
-                       <div className="p-4 bg-muted/30 rounded-2xl border border-muted text-[11px] font-medium text-gray-600 flex items-start gap-2 italic">
-                          <MessageSquare size={14} className="text-gray-400 flex-shrink-0 mt-0.5" />
-                          <p>« {gift.message} »</p>
-                       </div>
-                    )}
+                      {gift.message && (
+                         <div className="p-3.5 bg-muted/30 rounded-2xl border border-muted text-[11px] font-medium text-gray-600 flex items-start gap-2 italic">
+                            <MessageSquare size={14} className="text-gray-400 flex-shrink-0 mt-0.5" />
+                            <p>« {gift.message} »</p>
+                         </div>
+                      )}
 
-                    {/* Delivery Status & Action */}
-                    <div className="pt-4 border-t border-muted/50 flex justify-between items-center flex-wrap gap-3">
-                       {gift.delivery_status !== 'none' ? (
-                          <>
-                             <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Delivery Status:</span>
-                             {getDeliveryStatusBadge(gift.delivery_status)}
-                          </>
-                       ) : (
-                          <>
-                             <p className="text-[10px] text-gray-400 font-bold max-w-[200px] leading-relaxed">
-                                {locale === 'am' 
-                                  ? 'ይህንን ስጦታ በአካል ቤተሰብ ዲሊቨሪ በኩል ማስረከብ ይፈልጋሉ?' 
-                                  : 'Request real physical delivery of this gift straight to your address?'}
-                             </p>
-                             <button
-                               onClick={() => setDeliveryGift(gift)}
-                               className="px-4 py-2 border border-primary text-primary hover:bg-primary hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-colors flex items-center gap-1.5"
-                             >
-                                <Truck size={12} /> {locale === 'am' ? 'አካል አቅርቦት' : 'Request Delivery'}
-                             </button>
-                          </>
-                       )}
-                    </div>
-                 </div>
-               ))
+                      {/* Convert to Coins or Delivery */}
+                      <div className="pt-3 border-t border-muted/50 space-y-2">
+                         {isConverted ? (
+                            <div className="w-full bg-emerald-50 border border-emerald-200 rounded-2xl p-3 flex items-center justify-between text-emerald-700">
+                               <div className="flex items-center gap-2">
+                                  <CheckCircle2 size={16} className="text-emerald-600" />
+                                  <span className="text-[10px] font-black uppercase tracking-wider">
+                                     {locale === 'am' ? 'ወደ ኮይን ተቀይሯል' : 'Converted to Coins'}
+                                  </span>
+                               </div>
+                               <span className="text-xs font-black">+{netCoins} {locale === 'am' ? 'ኮይን' : 'Coins'}</span>
+                            </div>
+                         ) : (
+                            <button
+                              onClick={() => handleConvertGiftToCoins(gift)}
+                              disabled={convertingGiftId === gift.id}
+                              className="w-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-black text-[10px] uppercase tracking-wider py-3.5 px-4 rounded-2xl shadow-lg shadow-amber-500/20 hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                            >
+                               {convertingGiftId === gift.id ? (
+                                  <Loader2 className="animate-spin" size={14} />
+                               ) : (
+                                  <Coins size={14} />
+                               )}
+                               {locale === 'am'
+                                  ? `ወደ ${netCoins} ኮይን ቀይር (20% ክፍያ)`
+                                  : `Convert to ${netCoins} Coins (20% Fee)`}
+                            </button>
+                         )}
+                         {!isConverted && gift.delivery_status !== 'none' && (
+                            <div className="flex justify-between items-center">
+                               <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Delivery:</span>
+                               {getDeliveryStatusBadge(gift.delivery_status)}
+                            </div>
+                         )}
+                         {!isConverted && gift.delivery_status === 'none' && (
+                            <div className="flex justify-between items-center">
+                               <span className="text-[9px] text-gray-400 font-bold">
+                                  {locale === 'am' ? 'ወይም አካላዊ ዲሊቨሪ ጠይቅ:' : 'Or request physical delivery:'}
+                               </span>
+                               <button
+                                 onClick={() => setDeliveryGift(gift)}
+                                 className="text-[9px] font-black text-primary uppercase tracking-wider underline hover:text-accent flex items-center gap-1"
+                               >
+                                  <Truck size={9} /> {locale === 'am' ? 'ዲሊቨሪ ጠይቅ' : 'Request'}
+                               </button>
+                            </div>
+                         )}
+                      </div>
+                   </div>
+                 );
+               })
             )}
          </div>
       )}

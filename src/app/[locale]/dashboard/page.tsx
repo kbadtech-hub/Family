@@ -131,6 +131,16 @@ function DashboardContent() {
   // Automated Reward System Popups State
   const [unseenRewardPopups, setUnseenRewardPopups] = useState<any[]>([]);
 
+  // Real-time gift notification popup state
+  const [giftNotification, setGiftNotification] = useState<{
+    isOpen: boolean;
+    senderName: string;
+    giftName: string;
+    giftEmoji: string;
+    coinAmount: number;
+    message: string | null;
+  } | null>(null);
+
   useEffect(() => {
     if (profile?.id) {
       fetch('/api/rewards/sync', {
@@ -1007,6 +1017,60 @@ function DashboardContent() {
       };
     });
   }, []);
+
+  // Real-time gift notifications — shows a popup when someone sends this user a gift
+  useEffect(() => {
+    let giftChannel: any;
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+
+      giftChannel = supabase
+        .channel(`gifts_realtime_${user.id}`)
+        .on(
+          'postgres_changes' as any,
+          { event: 'INSERT', schema: 'public', table: 'gifts', filter: `receiver_id=eq.${user.id}` },
+          async (payload: any) => {
+            const newGift = payload.new;
+            if (!newGift) return;
+
+            const [senderRes, catalogRes] = await Promise.all([
+              supabase.from('profiles').select('full_name').eq('id', newGift.sender_id).single(),
+              newGift.catalog_gift_id
+                ? supabase.from('gift_catalog').select('name_en, name_am, image_url').eq('id', newGift.catalog_gift_id).single()
+                : Promise.resolve({ data: null })
+            ]);
+
+            const senderName = (senderRes as any).data?.full_name || (locale === 'am' ? 'ተጠቃሚ' : 'A user');
+            const catalogItem = (catalogRes as any).data;
+            const giftName = locale === 'am' ? (catalogItem?.name_am || 'ስጦታ') : (catalogItem?.name_en || 'Gift');
+            const imageUrl = (catalogItem?.image_url || '').toLowerCase();
+            const emojiMap: Record<string, string> = {
+              rose: '🌹', flower: '🌸', ring: '💍', diamond: '💎',
+              heart: '❤️', gold: '🏅', crown: '👑', cake: '🎂',
+              chocolate: '🍫', gift: '🎁', star: '⭐', balloon: '🎈'
+            };
+            const giftEmoji = Object.entries(emojiMap).find(([k]) => imageUrl.includes(k))?.[1] || '🎁';
+
+            setGiftNotification({
+              isOpen: true,
+              senderName,
+              giftName,
+              giftEmoji,
+              coinAmount: Number(newGift.amount || 0),
+              message: newGift.message || null
+            });
+
+            setTimeout(() => setGiftNotification(null), 8000);
+          }
+        )
+        .subscribe();
+    });
+
+    return () => {
+      if (giftChannel) supabase.removeChannel(giftChannel);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locale]);
 
   const completionRate = calculateCompletionRate(profile as any);
   const userTier = getUserTier(profile as any, hasVouchedRecords);
@@ -2320,7 +2384,57 @@ function DashboardContent() {
           onCloseAll={() => setUnseenRewardPopups([])}
         />
       )}
+
+      {/* Real-time Gift Received Notification Popup */}
+      {giftNotification && giftNotification.isOpen && (
+        <div className="fixed bottom-6 right-6 z-[9999] animate-in slide-in-from-right-8 fade-in duration-500 max-w-sm w-full">
+          <div className="bg-white rounded-[2rem] shadow-2xl border border-amber-200/60 overflow-hidden">
+            {/* Accent stripe */}
+            <div className="h-1.5 w-full bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400" />
+            <div className="p-5 space-y-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center text-3xl shadow-inner border border-amber-100 flex-shrink-0">
+                    {giftNotification.giftEmoji}
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-amber-500 mb-0.5">
+                      🎁 {locale === 'am' ? 'ስጦታ ደረሰዎት!' : 'Gift Received!'}
+                    </p>
+                    <h4 className="text-sm font-black text-gray-900 leading-tight">
+                      {locale === 'am'
+                        ? `${giftNotification.senderName} ${giftNotification.giftName} ልኮልዎታል`
+                        : `${giftNotification.senderName} sent you ${giftNotification.giftName}`}
+                    </h4>
+                    <div className="flex items-center gap-1 mt-1 text-[10px] font-bold text-amber-600">
+                      <Coins size={11} /> {giftNotification.coinAmount} {locale === 'am' ? 'ኮይን' : 'Coins'}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setGiftNotification(null)}
+                  className="text-gray-300 hover:text-gray-600 transition-colors flex-shrink-0 mt-0.5"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              {giftNotification.message && (
+                <div className="bg-amber-50/60 border border-amber-100 rounded-xl p-3 text-[11px] italic text-gray-600">
+                  « {giftNotification.message} »
+                </div>
+              )}
+              <button
+                onClick={() => { setGiftNotification(null); handleTabClick('gifts'); }}
+                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-[10px] uppercase tracking-wider py-2.5 rounded-xl transition-all active:scale-95"
+              >
+                {locale === 'am' ? 'ስጦታዎቹን ይመልከቱ →' : 'View My Gifts →'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+
   );
 }
 

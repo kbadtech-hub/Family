@@ -199,63 +199,23 @@ export default function GiftModal({ recipientId, recipientName, locale, onClose,
     setSuccessMsg('');
 
     try {
-      // 1. Record Debit Transaction (coin_transactions)
-      const { data: tx, error: txError } = await supabase
-        .from('coin_transactions')
-        .insert({
-          user_id: userId,
-          amount: -selectedGift.coin_price,
-          type: 'gift_send'
+      const response = await fetch('/api/gifts/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          senderId: userId,
+          recipientId,
+          catalogGiftId: selectedGift.id,
+          message
         })
-        .select()
-        .single();
+      });
 
-      if (txError) throw txError;
-
-      // 2. Record Gift Event (gifts)
-      const { error: giftError } = await supabase
-        .from('gifts')
-        .insert({
-          sender_id: userId,
-          receiver_id: recipientId,
-          catalog_gift_id: selectedGift.id,
-          gift_type: selectedGift.image_url as any, // keep legacy field populated
-          amount: selectedGift.coin_price,
-          currency: 'COIN',
-          message: message,
-          status: 'completed'
-        });
-
-      if (giftError) throw giftError;
-
-      // ── Mirror Gift Send to Master Ledger ──────────────────────────────────
-      try {
-        const txRef = `GIFT-SEND-${userId.substring(0, 8)}-${selectedGift.id.substring(0, 8)}-${Date.now()}`;
-        const { data: prof } = await supabase
-          .from('profiles')
-          .select('full_name, email')
-          .eq('id', userId)
-          .single();
-
-        await supabase.from('financial_transactions').insert({
-          tx_ref: txRef,
-          user_id: userId,
-          user_name_snapshot: prof?.full_name || prof?.email || 'Beteseb User',
-          user_email_snapshot: prof?.email || null,
-          revenue_source: 'gift_purchase',
-          payment_gateway: 'coin_balance',
-          currency: 'COINS',
-          gross_amount: selectedGift.coin_price,
-          gateway_fee: 0,
-          net_amount: selectedGift.coin_price,
-          payment_status: 'completed'
-        });
-      } catch (logErr) {
-        console.error('Failed to log gift transaction:', logErr);
+      const data = await response.json();
+      if (!response.ok || data.error) {
+        throw new Error(data.error || 'Failed to send gift');
       }
 
-      // 3. Deduct locally
-      setCoinBalance(prev => prev - selectedGift.coin_price);
+      setCoinBalance(data.newBalance);
       setSuccessMsg(locale === 'am'
         ? `የተመረጠውን ስጦታ ለ${recipientName} በተሳካ ሁኔታ ልከዋል! 🎉`
         : `Successfully sent the gift to ${recipientName}! 🎉`);
