@@ -197,39 +197,6 @@ export default function CommunityView({
     initPage();
   }, [fetchPosts, fetchAiTopic]);
 
-  // Supabase Realtime Channel for Cross-Account Global Feed Sync
-  useEffect(() => {
-    const channel = supabase
-      .channel('global-community-feed-sync')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'community_posts' },
-        () => {
-          fetchPosts();
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'post_comments' },
-        () => {
-          fetchPosts();
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'post_likes' },
-        () => {
-          fetchPosts();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [fetchPosts]);
-
-
   // Social Actions
   const handleFollowToggle = async (authorId: string, authorName: string) => {
     if (!currentUser) return;
@@ -702,14 +669,8 @@ export default function CommunityView({
         currentUser={currentUser}
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        onPostSuccess={(newPost?: any) => {
-          if (newPost) {
-            setPosts(prev => [newPost, ...prev]);
-          }
-          fetchPosts();
-        }}
+        onPostSuccess={fetchPosts}
       />
-
 
       {/* Edit Post Modal (1-time edit limit) */}
       {editingPost && (
