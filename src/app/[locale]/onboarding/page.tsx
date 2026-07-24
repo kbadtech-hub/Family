@@ -845,7 +845,9 @@ function OnboardingContent() {
           return;
         }
         
-        router.push('/dashboard');
+        // Transition to Step 4 (Verification Screen)
+        setStep(4);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (e) {
       console.error(e);
@@ -1447,7 +1449,57 @@ function OnboardingContent() {
                />
             </label>
 
-            
+            {/* Trust & Security Explainer Box */}
+            <div className="bg-slate-50 border border-slate-200/80 rounded-[2rem] p-6 text-left space-y-4 shadow-inner">
+               <h4 className="font-extrabold text-xs text-accent uppercase tracking-wider flex items-center gap-2">
+                 🔒 {locale === 'am' ? 'ለምን መታወቂያ እና ሰልፊ ማረጋገጫ ያስፈልጋል?' : 'Why Identity Verification is Required'}
+               </h4>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-gray-600">
+                 <div className="flex gap-2.5 items-start bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                   <span className="text-base">🤖</span>
+                   <div>
+                     <p className="font-bold text-gray-900">{locale === 'am' ? 'የሰውነት ማረጋገጫ (Bot Defense)' : 'Human Verification'}</p>
+                     <p className="text-[11px] text-gray-500">{locale === 'am' ? 'ቦት ወይም የውሸት አካውንት አለመሆንዎን ለማረጋገጥ።' : 'To confirm you are a real human and prevent fake/bot accounts.'}</p>
+                   </div>
+                 </div>
+                 <div className="flex gap-2.5 items-start bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                   <span className="text-base">💳</span>
+                   <div>
+                     <p className="font-bold text-gray-900">{locale === 'am' ? 'የገንዘብ ወጪና ትራንዛክሽን' : 'Financial Security'}</p>
+                     <p className="text-[11px] text-gray-500">{locale === 'am' ? 'ገንዘብ ወጪ ለማድረግ የስም እና የመታወቂያ መመሳሰል የግዴታ ነው።' : 'Required for safe money withdrawals and bank transactions.'}</p>
+                   </div>
+                 </div>
+                 <div className="flex gap-2.5 items-start bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                   <span className="text-base">🎁</span>
+                   <div>
+                     <p className="font-bold text-gray-900">{locale === 'am' ? 'ስጦታዎች እና ዲሊቨሪ' : 'Gifts & Services'}</p>
+                     <p className="text-[11px] text-gray-500">{locale === 'am' ? 'አካላዊ ስጦታዎች እና አገልግሎቶች ለተረጋገጠ ሰው ብቻ ይደርሳሉ።' : 'Ensures verified physical delivery of gifts and services.'}</p>
+                   </div>
+                 </div>
+                 <div className="flex gap-2.5 items-start bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                   <span className="text-base">🛡️</span>
+                   <div>
+                     <p className="font-bold text-gray-900">{locale === 'am' ? 'የመረጃ ምስጢራዊነት ጥበቃ' : 'Data Privacy Guarantee'}</p>
+                     <p className="text-[11px] text-gray-500">{locale === 'am' ? 'መታወቂያዎ በTLS ተመስጥሮ ለአድሚን ፍተሻ ብቻ ይውላል፤ ለ3ኛ ወገን አይሰጥም።' : 'Encrypted with TLS, used solely for verification, and never shared.'}</p>
+                   </div>
+                 </div>
+               </div>
+            </div>
+
+            {/* Skip Button (Silver Tier) */}
+            <button
+               type="button"
+               onClick={async () => {
+                 if (userId) {
+                   await supabase.from('profiles').update({ onboarding_completed: true }).eq('id', userId);
+                 }
+                 router.push('/dashboard');
+               }}
+               className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-4 rounded-[1.5rem] font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-slate-200"
+            >
+               <span>{locale === 'am' ? 'ለጊዜው እለፍ (ወደ ዳሽቦርድ ሂድ • Silver Tier)' : 'Skip for Now (Continue to Dashboard as Silver Tier)'}</span>
+               <ChevronRight size={16} />
+            </button>
            </div>
          );
       case 5: // Selfie Video Verification (Live camera / file fallback)
@@ -1816,7 +1868,7 @@ function OnboardingContent() {
              </div>
 
              <button onClick={handleFinish} disabled={isSubmitting} className="w-full btn-primary py-5 text-xs font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 hover:shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-3">
-                {isSubmitting ? <Loader2 className="animate-spin" /> : t('finishCTA')}
+                {isSubmitting ? <Loader2 className="animate-spin" /> : (locale === 'am' ? 'ወደ ቬሪፊኬሽን ሂድ (ቀጣይ) 🛡️' : locale === 'ti' ? 'ናብ ምርግጋጽ ይኺዱ (ቀጻሊ) 🛡️' : locale === 'om' ? 'Gara Mirkaneessaatti Tarikaa 🛡️' : 'Proceed to Verification 🛡️')}
              </button>
           </div>
         );

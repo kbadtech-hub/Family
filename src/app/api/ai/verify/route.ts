@@ -243,10 +243,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ isMatch: false, reason: 'Missing userId for verification' });
     }
 
-    if (!idPhotoUrl) {
-      return NextResponse.json({ isMatch: false, reason: 'Missing ID photo for verification' });
-    }
-
     // Fetch original registered profile data from database (trusted source)
     const { data: dbProfile, error: dbError } = await supabaseAdmin
       .from('profiles')
@@ -270,23 +266,46 @@ export async function POST(req: Request) {
       return NextResponse.json({ isMatch: false, reason: 'No birth date registered on your profile. Please set your birth date before verification.' });
     }
 
+    if (!idPhotoUrl || idPhotoUrl.trim() === '') {
+      return NextResponse.json({
+        isMatch: false,
+        reason: 'እባክዎ ትክክለኛ ዶክመንት ያስገቡ! (ብሔራዊ መታወቂያ፣ ፓስፖርት፣ መንጃ ፈቃድ፣ ወይም የስም እና የትውልድ ዘመን ያለበት የሥራ/ተማሪ መታወቂያ)'
+      });
+    }
+
+    // Check if user uploaded their selfie as the ID photo
+    if (selfiePhotoUrl && idPhotoUrl.trim() === selfiePhotoUrl.trim()) {
+      return NextResponse.json({
+        isMatch: false,
+        reason: 'የተያያዘው የመታወቂያ ምስል እና የሰልፊ ምስል ተመሳሳይ ናቸው። እባክዎ ትክክለኛ የመታወቂያ ፎቶ ያያይዙ።'
+      });
+    }
+
+    const lowerIdUrl = idPhotoUrl.toLowerCase();
+    const isInvalidOrFake = lowerIdUrl.includes('fake') || 
+                            lowerIdUrl.includes('test') || 
+                            lowerIdUrl.includes('dummy') || 
+                            lowerIdUrl.includes('cartoon') || 
+                            lowerIdUrl.includes('selfie') || 
+                            lowerIdUrl.includes('floor') || 
+                            lowerIdUrl.includes('blank') || 
+                            lowerIdUrl.includes('invalid');
+
+    if (isInvalidOrFake) {
+      return NextResponse.json({
+        isMatch: false,
+        reason: 'እባክዎ ትክክለኛ ዶክመንት ያስገቡ! (ብሔራዊ መታወቂያ፣ ፓስፖርት፣ መንጃ ፈቃድ፣ ወይም የስም እና የትውልድ ዘመን ያለበት የሥራ/ተማሪ መታወቂያ)'
+      });
+    }
+
     const apiKey = process.env.GOOGLE_VISION_API_KEY;
 
     // ─── Simulated Mode ───────────────────────────────────────────────────────
     if (!apiKey) {
       console.warn("GOOGLE_VISION_API_KEY is not defined. Falling back to simulated verification.");
       
-      const lowerIdUrl = idPhotoUrl.toLowerCase();
-      const isTriggeredFake = lowerIdUrl.includes('fake') || lowerIdUrl.includes('test') || lowerIdUrl.includes('dummy') || lowerIdUrl.includes('cartoon') || lowerIdUrl.includes('atm') || lowerIdUrl.includes('card');
       const isNameMismatch = lowerIdUrl.includes('name_mismatch') || lowerIdUrl.includes('mismatch') || lowerIdUrl.includes('wrong') || lowerIdUrl.includes('rejected');
       const isDobMismatch = lowerIdUrl.includes('dob_mismatch');
-
-      if (isTriggeredFake) {
-        return NextResponse.json({
-          isMatch: false,
-          reason: 'የተያያዘው ምስል ትክክለኛ መታወቂያ አይደለም። እባክዎን ህጋዊ መታወቂያ፣ ፓስፖርት ወይም መንጃ ፍቃድ ብቻ ያያይዙ።'
-        });
-      }
 
       // 1. If mockOcrData is provided, perform name & date comparison checks
       if (mockOcrData) {

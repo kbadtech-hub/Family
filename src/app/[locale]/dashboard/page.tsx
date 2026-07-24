@@ -1635,28 +1635,29 @@ function DashboardContent() {
           </div>
         )}
 
-        {/* Verification Banner — use the synced local verificationStatus state, NOT the raw
-            profile fields which may be stale on first render before DB sync completes */}
+        {/* Verification Banner — Displays Silver Tier status & Gold Tier upgrade call-to-action */}
         {verificationStatus !== 'verified' && verificationStatus !== 'pending' && verificationStatus !== 'loading' && verificationStatus !== 'rejected' && (
-          <div className="mb-10 bg-gradient-to-r from-primary to-orange-400 p-8 md:p-10 rounded-[3rem] text-white shadow-2xl shadow-primary/20 relative overflow-hidden group">
+          <div className="mb-10 bg-gradient-to-r from-slate-900 via-primary to-orange-500 p-8 md:p-10 rounded-[3rem] text-white shadow-2xl shadow-primary/20 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:scale-110 transition-transform duration-700" />
             <div className="relative flex flex-col md:flex-row items-center justify-between gap-8">
                <div className="space-y-4 text-center md:text-left">
-                  <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/20 rounded-full text-[10px] font-black uppercase tracking-widest">
-                     <ShieldCheck size={14} /> {t('actionRequired')}
+                  <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-400/30 text-amber-200 border border-amber-400/40 rounded-full text-[10px] font-black uppercase tracking-widest">
+                     <ShieldCheck size={14} /> {locale === 'am' ? 'የብር ደረጃ (Silver Tier Active)' : 'Silver Tier Active'}
                   </div>
                   <h2 className="text-3xl font-black italic tracking-tighter">
-                    {t('verifyBannerTitle')}
+                    {locale === 'am' ? 'ወደ Gold ደረጃ ያድጉ (የወርቅ ማረጋገጫ)' : 'Upgrade to Gold Tier (ID Verified)'}
                   </h2>
-                  <p className="text-white/80 font-medium max-w-lg">
-                    {t('verifyBannerSub')}
+                  <p className="text-white/80 font-medium max-w-lg text-xs leading-relaxed">
+                    {locale === 'am'
+                      ? 'አካውንትዎ የ Silver ደረጃ ላይ ይገኛል። ገንዘብ ወጪ ለማድረግ፣ ስጦታዎችን ለመቀበል እና አካላዊ አገልግሎቶችን ለማግኘት መታወቂያዎን አያይዘው ወደ Gold ደረጃ ያድጉ።'
+                      : 'Your account is currently Silver Tier. Verify your ID to reach Gold Tier, enable financial withdrawals, and receive gifts.'}
                   </p>
                </div>
                <button 
                  onClick={() => router.push('/onboarding?step=4')}
-                 className="bg-white text-primary px-10 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
+                 className="bg-white text-primary px-10 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3 shrink-0"
                >
-                  {t('verifyNow')} <ChevronRight size={20} />
+                  {locale === 'am' ? 'ወደ Gold ደረጃ አድግ (መታወቂያ ያረጋግጡ)' : 'Upgrade to Gold Tier'} <ChevronRight size={20} />
                </button>
             </div>
           </div>
