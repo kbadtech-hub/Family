@@ -1858,7 +1858,7 @@ function DashboardContent() {
                             </span>
                           </div>
                           <div className="text-white/95 font-black text-right">
-                            <span className="text-lg leading-none">{isEthiopiaUser ? 'ብር 149.99' : '$7.99'}</span>
+                            <span className="text-lg leading-none">{isEthiopiaUser ? '149 ብር ከ 99 ሳንቲም' : '$7.99'}</span>
                             <span className="text-[9px] text-white/70 block font-bold leading-none mt-0.5">{isEthiopiaUser ? 'በወር' : '/month'}</span>
                           </div>
                         </div>
@@ -1895,7 +1895,7 @@ function DashboardContent() {
                         {/* Bottom Row: Centered Upgrade Button */}
                         <div className="flex justify-center w-full mt-1">
                           <div className="w-full text-center bg-white text-primary text-xs font-black uppercase tracking-[0.15em] py-4 rounded-2xl shadow-lg group-hover:bg-orange-50 transition-colors">
-                            {locale === 'am' ? 'ወደ ዳይመንድ ያሳድጉ (149.99 ብር)' : 'Upgrade to Diamond ($7.99)'}
+                            {locale === 'am' ? (isEthiopiaUser ? 'ወደ ዳይመንድ ያሳድጉ (149 ብር ከ 99 ሳንቲም)' : 'ወደ ዳይመንድ ያሳድጉ ($7.99)') : 'Upgrade to Diamond'}
                           </div>
                         </div>
                       </div>
@@ -1919,7 +1919,7 @@ function DashboardContent() {
                           {locale === 'am' ? 'የቪ.አይ.ፒ (VIP) ልዩ አባልነት' : 'VIP Elite Membership'} 👑
                         </span>
                         <div className="text-white/95 font-black text-right">
-                          <span className="text-lg leading-none">{isEthiopiaUser ? 'ብር 299.98' : '$12.99'}</span>
+                          <span className="text-lg leading-none">{isEthiopiaUser ? '299 ብር ከ 98 ሳንቲም' : '$12.99'}</span>
                           <span className="text-[9px] text-white/70 block font-bold leading-none mt-0.5">{isEthiopiaUser ? 'በወር' : '/month'}</span>
                         </div>
                       </div>
@@ -1956,7 +1956,7 @@ function DashboardContent() {
                       {/* Bottom Row: Centered Upgrade Button */}
                       <div className="flex justify-center w-full mt-1">
                         <div className="w-full text-center bg-amber-400 text-amber-950 text-xs font-black uppercase tracking-[0.15em] py-4 rounded-2xl shadow-lg group-hover:bg-amber-300 transition-colors">
-                          {locale === 'am' ? 'ወደ ቪ አይ ፒ ያሳድጉ (299.98 ብር)' : 'Upgrade to VIP ($12.99)'}
+                          {locale === 'am' ? (isEthiopiaUser ? 'ወደ ቪ አይ ፒ ያሳድጉ (299 ብር ከ 98 ሳንቲም)' : 'ወደ ቪ አይ ፒ ያሳድጉ ($12.99)') : 'Upgrade to VIP'}
                         </div>
                       </div>
                     </div>
@@ -2164,8 +2164,8 @@ function DashboardContent() {
                     <div className="flex items-baseline gap-1 mt-0.5">
                       <span className="text-white font-black text-lg">
                         {showBenefitsModal === 'vip'
-                          ? (isEthiopiaUser ? 'ብር 299.98' : '$12.99')
-                          : (isEthiopiaUser ? 'ብር 149.99' : '$7.99')}
+                          ? (isEthiopiaUser ? '299 ብር ከ 98 ሳንቲም' : '$12.99')
+                          : (isEthiopiaUser ? '149 ብር ከ 99 ሳንቲም' : '$7.99')}
                       </span>
                       <span className="text-white/50 text-[9px] font-bold">{locale === 'am' ? '/ ወር' : '/ month'}</span>
                     </div>
