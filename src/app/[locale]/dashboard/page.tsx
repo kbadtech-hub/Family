@@ -1703,53 +1703,9 @@ function DashboardContent() {
                 </button>
               )}
             </div>
-
-
-                {isProfileDropdownOpen && (
-                  <div className={`absolute top-full ${locale === 'ar' ? 'left-0' : 'right-0'} mt-2 w-56 bg-white border border-border rounded-3xl shadow-2xl z-[100] overflow-hidden`}>
-                    {[
-                      { id: 'dashboard', icon: Home, label: n('dashboard') },
-                      { id: 'chat', icon: MessageCircle, label: n('chat') },
-                      { id: 'community', icon: Users, label: n('community') },
-                      { id: 'academy', icon: GraduationCap, label: n('academy') },
-                      { id: 'counseling', icon: ShieldCheck, label: n('counseling') },
-                      { id: 'workshops', icon: GraduationCap, label: n('workshops') },
-                      { id: 'wedding', icon: Sparkles, label: n('wedding') },
-                      { id: 'gifts', icon: Gift, label: n('gifts') },
-                      { id: 'referral', icon: Wallet, label: locale === 'am' ? 'ሪፈራል እና ወሌት' : 'Referral & Wallet' },
-                      { id: 'profile', icon: UserCircle, label: n('profile') }
-                    ].map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => {
-                          handleTabClick(item.id);
-                          setIsProfileDropdownOpen(false);
-                        }}
-                        className={`w-full px-5 py-3 text-left text-xs font-bold hover:bg-[#F8F4F1] transition-all flex items-center gap-3 ${activeTab === item.id ? 'text-primary bg-[#F8F4F1]' : 'text-gray-600'}`}
-                      >
-                        <item.icon size={16} className={activeTab === item.id ? 'text-primary' : 'text-gray-400'} />
-                        <span>{item.label}</span>
-                      </button>
-                    ))}
-                    
-                    <div className="border-t border-gray-100 mt-1 pt-1">
-                      <button
-                        onClick={() => {
-                          setIsProfileDropdownOpen(false);
-                          handleLogout();
-                        }}
-                        className="w-full px-5 py-3 text-left text-xs font-bold text-red-500 hover:bg-red-50 transition-all flex items-center gap-3"
-                      >
-                        <LogOut size={16} />
-                        <span>{n('logout')}</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
         </header>
+
 
         {/* Onboarding Incomplete Banner */}
         {profile && !profile.onboarding_completed && (
@@ -2511,6 +2467,9 @@ function DashboardContent() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
       {/* Centralized Notifications Modal/Drawer */}
       <NotificationDrawerModal 
         userId={profile?.id || ''}
@@ -2519,6 +2478,7 @@ function DashboardContent() {
         onClose={() => setIsNotificationOpen(false)}
       />
     </div>
+
 
   );
 }
