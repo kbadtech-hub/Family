@@ -34,9 +34,13 @@ import {
   User,
   Crown,
   Loader2,
-  Wallet
+  Wallet,
+  Bell
 } from 'lucide-react';
+import NotificationDrawerModal from '@/components/NotificationDrawerModal';
+import { fetchUserNotifications } from '@/lib/notifications';
 import CommunityView from '@/components/dashboard/CommunityView';
+
 import PostCard from '@/components/dashboard/PostCard';
 
 import PaymentTab from '@/components/dashboard/PaymentTab';
@@ -131,6 +135,10 @@ function DashboardContent() {
   // Automated Reward System Popups State
   const [unseenRewardPopups, setUnseenRewardPopups] = useState<any[]>([]);
 
+  // Centralized Notifications State
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
+
   // Real-time gift notification popup state
   const [giftNotification, setGiftNotification] = useState<{
     isOpen: boolean;
@@ -140,6 +148,7 @@ function DashboardContent() {
     coinAmount: number;
     message: string | null;
   } | null>(null);
+
 
   useEffect(() => {
     if (profile?.id) {
@@ -641,6 +650,12 @@ function DashboardContent() {
         const mergedProfile = { ...(profileData as Profile), coins, email: user.email || null };
         setProfile(mergedProfile);
         OfflineCache.cacheData(`profile_${user.id}`, mergedProfile);
+
+        // Fetch unread notifications count
+        fetchUserNotifications(user.id).then(notifs => {
+          setUnreadNotificationsCount(notifs.filter(n => !n.is_read).length);
+        });
+
 
         // Fetch vouch count
         const { count: vouchCount } = await supabase
@@ -1576,28 +1591,71 @@ function DashboardContent() {
               </div>
             </div>
 
+            {/* User Dashboard Top Navigation Header: RTL order (Profile Avatar -> Language Selector -> Notification Bell -> Coin Balance) */}
             <div className="flex items-center gap-3">
-              {/* Coin Balance Indicator */}
-              {profile && (
-                <button
-                  id="btn-coin-balance-indicator"
-                  onClick={() => setActiveTab('gifts')}
-                  title={locale === 'am' ? 'የኮይን ሂሳብዎ — ይጫኑ ለማሳደግ' : 'Your Coin Balance — click to top up'}
-                  className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 hover:bg-amber-500/20 hover:border-amber-500/40 transition-all text-xs font-black group"
+              {/* 1. Profile Avatar Link with Dropdown */}
+              <div className="relative" ref={profileDropdownRef}>
+                <button 
+                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                  className="hover:scale-105 active:scale-95 transition-all focus:outline-none flex items-center"
+                  aria-label="Profile options"
                 >
-                  <Coins size={14} className="text-amber-500 group-hover:scale-110 transition-transform" />
-                  <span className="tabular-nums">{(profile.coins ?? 0).toLocaleString()}</span>
+                  {renderRoyalAvatar(profile?.avatar_url || null, (profile as any)?.gender || null)}
                 </button>
-              )}
-              {/* Language Switcher */}
+
+                {isProfileDropdownOpen && (
+                  <div className={`absolute top-full ${locale === 'ar' ? 'left-0' : 'right-0'} mt-2 w-56 bg-white border border-border rounded-3xl shadow-2xl z-[100] overflow-hidden`}>
+                    {[
+                      { id: 'dashboard', icon: Home, label: n('dashboard') },
+                      { id: 'chat', icon: MessageCircle, label: n('chat') },
+                      { id: 'community', icon: Users, label: n('community') },
+                      { id: 'academy', icon: GraduationCap, label: n('academy') },
+                      { id: 'counseling', icon: ShieldCheck, label: n('counseling') },
+                      { id: 'workshops', icon: GraduationCap, label: n('workshops') },
+                      { id: 'wedding', icon: Sparkles, label: n('wedding') },
+                      { id: 'gifts', icon: Gift, label: n('gifts') },
+                      { id: 'referral', icon: Wallet, label: locale === 'am' ? 'ሪፈራል እና ወሌት' : 'Referral & Wallet' },
+                      { id: 'profile', icon: UserCircle, label: n('profile') }
+                    ].map(item => (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          handleTabClick(item.id);
+                          setIsProfileDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center gap-3 px-5 py-3 text-left text-xs font-bold transition-all ${
+                          activeTab === item.id ? 'bg-primary/10 text-primary' : 'text-gray-700 hover:bg-muted'
+                        }`}
+                      >
+                        <item.icon size={16} />
+                        <span>{item.label}</span>
+                      </button>
+                    ))}
+                    <div className="border-t border-border p-2">
+                      <button
+                        onClick={() => {
+                          setIsProfileDropdownOpen(false);
+                          handleLogout();
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 transition-all"
+                      >
+                        <LogOut size={16} />
+                        <span>{n('logout')}</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 2. Language Switcher */}
               <div className="relative">
                 <button
                   onClick={() => setIsLangOpen(!isLangOpen)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-border hover:border-primary transition-all text-xs font-bold"
+                  className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-white border border-border hover:border-primary transition-all text-xs font-bold shadow-sm"
                 >
-                  <Globe size={14} className="text-primary" />
+                  <Globe size={16} className="text-primary" />
                   <span className="uppercase">{locale}</span>
-                  <ChevronDown size={12} className={`transition-transform ${isLangOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={14} className={`transition-transform ${isLangOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {isLangOpen && (
@@ -1615,15 +1673,37 @@ function DashboardContent() {
                 )}
               </div>
 
-              {/* Avatar Link with Dropdown */}
-              <div className="relative" ref={profileDropdownRef}>
-                <button 
-                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                  className="hover:scale-105 active:scale-95 transition-all focus:outline-none flex items-center"
-                  aria-label="Profile options"
+              {/* 3. Centralized Notification Bell Icon */}
+              <button
+                onClick={() => {
+                  setIsNotificationOpen(true);
+                  setUnreadNotificationsCount(0);
+                }}
+                className="w-10 h-10 rounded-2xl bg-white hover:bg-primary/10 hover:text-primary flex items-center justify-center transition-all border border-gray-200 shadow-sm relative group"
+                title="Centralized Platform Notifications"
+              >
+                <Bell size={18} className="text-gray-700 group-hover:text-primary transition-colors" />
+                {unreadNotificationsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 px-1.5 py-0.5 min-w-[18px] text-[10px] font-black text-white bg-primary rounded-full flex items-center justify-center border-2 border-white animate-bounce">
+                    {unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount}
+                  </span>
+                )}
+              </button>
+
+              {/* 4. Coin Balance Display & Wallet Logic */}
+              {profile && (
+                <button
+                  id="btn-coin-balance-indicator"
+                  onClick={() => setActiveTab('gifts')}
+                  title={locale === 'am' ? 'የኮይን ሂሳብዎ — ይጫኑ ለማሳደግ' : 'Your Coin Balance — click to top up'}
+                  className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-700 font-black text-xs uppercase tracking-widest shadow-inner hover:bg-amber-500/20 transition-all"
                 >
-                  {renderRoyalAvatar(profile?.avatar_url || null, (profile as any)?.gender || null)}
+                  <Coins size={16} className="text-amber-500 animate-pulse" />
+                  <span className="tabular-nums">{(profile.coins ?? 0).toLocaleString()} Coins</span>
                 </button>
+              )}
+            </div>
+
 
                 {isProfileDropdownOpen && (
                   <div className={`absolute top-full ${locale === 'ar' ? 'left-0' : 'right-0'} mt-2 w-56 bg-white border border-border rounded-3xl shadow-2xl z-[100] overflow-hidden`}>
@@ -2431,12 +2511,18 @@ function DashboardContent() {
               </button>
             </div>
           </div>
-        </div>
-      )}
+      {/* Centralized Notifications Modal/Drawer */}
+      <NotificationDrawerModal 
+        userId={profile?.id || ''}
+        currentUserName={profile?.full_name || 'User'}
+        isOpen={isNotificationOpen}
+        onClose={() => setIsNotificationOpen(false)}
+      />
     </div>
 
   );
 }
+
 
 export default function DashboardPage() {
   return (

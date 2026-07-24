@@ -1,11 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
-import BetesebCoinIcon from '@/components/BetesebCoinIcon';
-import { moderateText } from '@/lib/moderation';
 import { 
   Send,
   User,
@@ -13,56 +11,63 @@ import {
   Sparkles,
   CheckCircle2,
   Image as ImageIcon,
-  Link as LinkIcon,
   X,
-  Crown,
-  Camera,
   Heart,
   ThumbsDown,
-  MessageSquare,
-  Share2,
-  ChevronDown,
   MessageCircle,
-  MoreVertical,
+  Share2,
+  MoreHorizontal,
   Languages,
   BarChart2,
-  MoreHorizontal
+  UserPlus,
+  UserCheck,
+  Bookmark,
+  Repeat,
+  Edit,
+  Trash2,
+  PlusCircle
 } from 'lucide-react';
 import { translator, SupportedLocale } from '@/lib/translator';
-import PostCard from '@/components/dashboard/PostCard';
+import { toggleFollowUser, isFollowingUser, toggleSavePost, isPostSaved, repostPost } from '@/lib/social';
+import PostCreationModal from '@/components/PostCreationModal';
+import EditPostModal from '@/components/EditPostModal';
+import IceBreakSection from '@/components/IceBreakSection';
 
-
-interface Post {
-  id: string;
-  author_id: string;
-  content: string;
-  topic: string;
-  category?: string;
-  heart_count: number;
-  dislike_count: number;
-  media_url: string | null;
-  media_type: 'image' | 'video' | 'link' | 'none';
-  profiles: {
-    full_name: string;
-    avatar_url: string;
-    star_sign: string;
-    is_verified: boolean;
-    role: string;
-  } | null;
+interface Profile {
+  id?: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  role: string;
+  tier?: string;
+  is_premium?: boolean;
+  is_verified?: boolean;
+  verification_status?: string;
 }
 
-interface Comment {
+interface PostComment {
   id: string;
   post_id: string;
-  author_id: string;
+  user_id: string;
   parent_id: string | null;
   content: string;
   created_at: string;
-  profiles: {
-    full_name: string;
-    avatar_url: string;
-  } | null;
-  replies?: Comment[];
+  profiles: Profile;
+}
+
+interface CommunityPost {
+  id: string;
+  author_id: string;
+  content: string;
+  category: string;
+  topic?: string;
+  created_at: string;
+  is_edited?: boolean;
+  edit_count?: number;
+  is_approved: boolean;
+  is_ai_generated: boolean;
+  profiles: Profile;
+  post_likes: { count: number }[];
+  post_comments: PostComment[];
 }
 
 export default function CommunityView({ 
@@ -78,28 +83,203 @@ export default function CommunityView({
 }) {
   const t = useTranslations('Community');
   const locale = useLocale();
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [newPostContent, setNewPostContent] = useState('');
-  const [mediaUrl, setMediaUrl] = useState<string | null>(null);
-  const [mediaType, setMediaType] = useState<'image' | 'none'>('none');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [selectedTopic, setSelectedTopic] = useState('general');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
-  const [commentContent, setCommentContent] = useState('');
-  const [postComments, setPostComments] = useState<Record<string, Comment[]>>({});
-  const [replyingToId, setReplyingToId] = useState<string | null>(null);
-  const [coinPostConfirm, setCoinPostConfirm] = useState(false);
-  const COIN_PER_POST = 20;
   
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-  const [userReactions, setUserReactions] = useState<Record<string, 'heart' | 'dislike' | null>>({});
-  const pollRef = React.useRef<(HTMLDivElement | null)[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
+  const [posts, setPosts] = useState<CommunityPost[]>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [activeCategory, setActiveCategory] = useState('all');
 
+  // Modals
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<CommunityPost | null>(null);
+  const [activeMenuPostId, setActiveMenuPostId] = useState<string | null>(null);
+
+  // Interactions State
+  const [followingState, setFollowingState] = useState<Record<string, boolean>>({});
+  const [savedPostsState, setSavedPostsState] = useState<Record<string, boolean>>({});
+  const [dislikeState, setDislikeState] = useState<Record<string, boolean>>({});
+
+  // Comments State
+  const [commentingOn, setCommentingOn] = useState<string | null>(null);
+  const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(null);
+  const [commentText, setCommentText] = useState('');
+  const [aiTopic, setAiTopic] = useState<string | null>(null);
+
+  const categories = [
+    { id: 'all', label: t('categories.all'), icon: MessageCircle },
+    { id: 'success_story', label: t('categories.success_story'), icon: Heart },
+    { id: 'lesson_learned', label: t('categories.lesson_learned'), icon: Sparkles },
+    { id: 'expert_class', label: t('categories.expert_class'), icon: CheckCircle2 },
+  ];
+
+  const fetchPosts = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    let blockedIds: string[] = [];
+    if (user) {
+      const { data: blockedData } = await supabase
+        .from('blocks')
+        .select('blocker_id, blocked_id')
+        .or(`blocker_id.eq.${user.id},blocked_id.eq.${user.id}`);
+      blockedIds = (blockedData || []).map(b => b.blocker_id === user.id ? b.blocked_id : b.blocker_id);
+    }
+
+    let query = supabase
+      .from('community_posts')
+      .select(`
+        *,
+        profiles!community_posts_author_id_fkey(id, full_name, avatar_url, role, tier, verification_status),
+        post_likes(count),
+        post_comments(
+          *,
+          profiles(full_name, avatar_url)
+        )
+      `)
+      .order('created_at', { ascending: false });
+
+    if (activeCategory !== 'all') {
+      query = query.eq('category', activeCategory);
+    }
+
+    if (blockedIds.length > 0) {
+      query = query.not('author_id', 'in', `(${blockedIds.join(',')})`);
+    }
+
+    const { data } = await query;
+    if (data) {
+      const filteredData = data.map((post: any) => {
+        if (post.post_comments) {
+          post.post_comments = post.post_comments.filter((comment: any) => !blockedIds.includes(comment.user_id || comment.author_id));
+        }
+        return post;
+      });
+      setPosts(filteredData as unknown as CommunityPost[]);
+
+      // Check follows and saved states for logged in user
+      if (user) {
+        const followMap: Record<string, boolean> = {};
+        const savedMap: Record<string, boolean> = {};
+
+        for (const post of filteredData) {
+          if (post.author_id && post.author_id !== user.id) {
+            followMap[post.author_id] = await isFollowingUser(user.id, post.author_id);
+          }
+          savedMap[post.id] = await isPostSaved(user.id, post.id);
+        }
+        setFollowingState(followMap);
+        setSavedPostsState(savedMap);
+      }
+    }
+  }, [activeCategory]);
+
+  const fetchAiTopic = useCallback(async () => {
+    const { data } = await supabase
+      .from('community_posts')
+      .select('content')
+      .eq('is_ai_generated', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    
+    if (data) {
+      setAiTopic(data.content);
+    }
+  }, []);
+
+  useEffect(() => {
+    const initPage = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+         const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+         setCurrentUser({ ...user, profile });
+      }
+      fetchPosts();
+      fetchAiTopic();
+    };
+    initPage();
+  }, [fetchPosts, fetchAiTopic]);
+
+  // Social Actions
+  const handleFollowToggle = async (authorId: string, authorName: string) => {
+    if (!currentUser) return;
+    const res = await toggleFollowUser(currentUser.id, currentUser.profile?.full_name || 'Member', authorId);
+    setFollowingState(prev => ({ ...prev, [authorId]: res.isFollowing }));
+  };
+
+  const handleSaveToggle = async (postId: string) => {
+    if (!currentUser) return;
+    const res = await toggleSavePost(currentUser.id, postId);
+    setSavedPostsState(prev => ({ ...prev, [postId]: res.isSaved }));
+  };
+
+  const handleRepost = async (postId: string) => {
+    if (!currentUser) return;
+    const res = await repostPost(currentUser.id, postId);
+    if (res.success) {
+      alert(locale === 'am' ? 'ፖስቱ ለጓደኞችዎ ሪፖስት ተደርጓል!' : 'Post recommended to your friends!');
+    }
+  };
+
+  const handleExternalShare = (postId: string) => {
+    const url = `${window.location.origin}/community?post=${postId}`;
+    navigator.clipboard.writeText(url);
+    alert(locale === 'am' ? 'የፖስቱ Deep Link ኮፒ ተደርጓል! ለሌሎች ማጋራት ይችላሉ።' : 'Deep Link copied! Share it anywhere.');
+  };
+
+  const handleLike = async (postId: string) => {
+    if (!currentUser) return;
+    const { error } = await supabase.from('post_likes').insert({
+      post_id: postId,
+      user_id: currentUser.id
+    });
+    if (!error) fetchPosts();
+    else {
+      await supabase.from('post_likes').delete().match({ post_id: postId, user_id: currentUser.id });
+      fetchPosts();
+    }
+  };
+
+  const handleDislikeToggle = (postId: string) => {
+    setDislikeState(prev => ({ ...prev, [postId]: !prev[postId] }));
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    if (!currentUser || !confirm(locale === 'am' ? 'ፖስቱን በቋሚነት ማጥፋት ይፈልጋሉ?' : 'Are you sure you want to permanently delete this post?')) return;
+    
+    const { error } = await supabase.from('community_posts').delete().eq('id', postId);
+    if (!error) {
+      setPosts(prev => prev.filter(p => p.id !== postId));
+      setActiveMenuPostId(null);
+    } else {
+      alert(error.message);
+    }
+  };
+
+  const handleCommentSubmit = async (postId: string, parentId: string | null = null) => {
+    if (!commentText.trim() || !currentUser) return;
+    const { error } = await supabase.from('post_comments').insert({
+      post_id: postId,
+      author_id: currentUser.id,
+      parent_id: parentId,
+      content: commentText.trim()
+    });
+    if (!error) {
+      setCommentText('');
+      setCommentingOn(null);
+      setReplyingToCommentId(null);
+      fetchPosts();
+    }
+  };
+
+  const translatePost = async (post: CommunityPost) => {
+    const translated = await translator.getOrTranslate(
+      'community_posts',
+      post.id,
+      post.content,
+      locale as SupportedLocale
+    );
+    setPosts(prev => prev.map(p => p.id === post.id ? { ...p, content: translated } : p));
+  };
+
+  const pollRef = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     const pollOptions = [
@@ -114,293 +294,27 @@ export default function CommunityView({
     });
   }, []);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      let query = supabase
-        .from('community_posts')
-        .select('*, profiles(full_name, avatar_url, star_sign, is_verified, role)')
-        .order('created_at', { ascending: false });
-
-      if (selectedCategory !== 'all') {
-        query = query.eq('category', selectedCategory);
-      }
-      
-      const { data: postsData } = await query;
-      if (postsData) setPosts(postsData as any[]);
-
-      if (user) {
-        setCurrentUserId(user.id);
-        const { data: reactionsData } = await supabase
-          .from('post_reactions')
-          .select('post_id, reaction_type')
-          .eq('user_id', user.id);
-        
-        const reactions: Record<string, 'heart' | 'dislike' | null> = {};
-        reactionsData?.forEach(r => reactions[r.post_id] = r.reaction_type as any);
-        setUserReactions(reactions);
-      }
-
-      
-      setLoading(false);
-    };
-
-    fetchData();
-  }, [selectedCategory]);
-
-  const fetchComments = async (postId: string) => {
-    const { data } = await supabase
-      .from('post_comments')
-      .select('*, profiles(full_name, avatar_url)')
-      .eq('post_id', postId)
-      .order('created_at', { ascending: true });
-    
-    if (data) {
-      // Organize into nested structure
-      const commentMap: Record<string, Comment> = {};
-      const roots: Comment[] = [];
-      
-      data.forEach(c => {
-        commentMap[c.id] = { ...c, replies: [] };
-      });
-      
-      data.forEach(c => {
-        if (c.parent_id && commentMap[c.parent_id]) {
-          commentMap[c.parent_id].replies?.push(commentMap[c.id]);
-        } else {
-          roots.push(commentMap[c.id]);
-        }
-      });
-      
-      setPostComments(prev => ({ ...prev, [postId]: roots }));
-    }
-  };
-
-  const handleReaction = async (postId: string, type: 'heart' | 'dislike') => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    if (!isVerified) {
-      alert(locale === 'am' 
-        ? "ያልተረጋገጠ (Bronze/Silver Tier) አባላት ላይክ ወይም ሪአክት ማድረግ አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!" 
-        : "Unverified (Bronze/Silver Tier) members are blocked from reacting. Please complete verification first!");
-      return;
-    }
-
-    const currentReaction = userReactions[postId];
-    
-    if (currentReaction === type) {
-      // Remove reaction
-      await supabase.from('post_reactions').delete().eq('post_id', postId).eq('user_id', user.id);
-      setUserReactions(prev => ({ ...prev, [postId]: null }));
-    } else {
-      // Add or update reaction
-      if (currentReaction) {
-        await supabase.from('post_reactions').delete().eq('post_id', postId).eq('user_id', user.id);
-      }
-      await supabase.from('post_reactions').insert({ post_id: postId, user_id: user.id, reaction_type: type });
-      setUserReactions(prev => ({ ...prev, [postId]: type }));
-    }
-
-    
-    // Refresh post counts (simplified for demo, usually use RPC or triggers)
-    const { data } = await supabase.from('community_posts').select('heart_count, dislike_count').eq('id', postId).single();
-    if (data) {
-      setPosts(prev => prev.map(p => p.id === postId ? { ...p, ...data } : p));
-    }
-  };
-
-  const handleCommentSubmit = async (postId: string) => {
-    if (!commentContent.trim()) return;
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    if (!isVerified) {
-      alert(locale === 'am' 
-        ? "ያልተረጋገጠ (Bronze/Silver Tier) አባላት አስተያየት መጻፍ አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!" 
-        : "Unverified (Bronze/Silver Tier) members are blocked from commenting. Please complete verification first!");
-      return;
-    }
-
-    const { error } = await supabase.from('post_comments').insert({
-      post_id: postId,
-      author_id: user.id,
-      parent_id: replyingToId,
-      content: commentContent.trim()
-    });
-
-    if (!error) {
-      setCommentContent('');
-      setReplyingToId(null);
-      fetchComments(postId);
-    }
-  };
-
-  const translatePost = async (post: Post) => {
-    const translated = await translator.getOrTranslate(
-      'community_posts',
-      post.id,
-      post.content,
-      locale as SupportedLocale
-    );
-    
-    setPosts(prev => prev.map(p => 
-      p.id === post.id ? { ...p, content: translated } : p
-    ));
-  };
-
-  const translateComment = async (comment: Comment) => {
-    const translated = await translator.getOrTranslate(
-      'post_comments',
-      comment.id,
-      comment.content,
-      locale as SupportedLocale
-    );
-    
-    setPostComments(prev => {
-      const updated = { ...prev };
-      for (const postId in updated) {
-        updated[postId] = updated[postId].map(c => 
-          c.id === comment.id ? { ...c, content: translated } : c
-        );
-      }
-      return updated;
-    });
-  };
-
-  const handleJoinDiscussion = () => {
-    textareaRef.current?.focus();
-    textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  };
-
-
-  const handlePostSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newPostContent.trim()) return;
-
-    // Subscription check: only Diamond (isPremium), VIP, or Admin can post
-    if (!isPremium && !isAdmin) {
-      alert(locale === 'am' 
-        ? "የዳይመንድ (Diamond) ወይም የቪአይፒ (VIP) አባላት ብቻ በማህበረሰቡ ሰሌዳ ላይ መለጠፍ ይችላሉ። እባክዎ አካውንትዎን ያሻሽሉ!"
-        : "Only Diamond or VIP members can create posts on the community board. Please upgrade your account!");
-      return;
-    }
-
-    // Link Restriction Check
-    const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9-]+\.[a-z]{2,})/gi;
-    const hasLinks = urlRegex.test(newPostContent);
-
-    if (hasLinks && !isAdmin) {
-       alert(t('adminOnly'));
-       return;
-    }
-
-    setIsSubmitting(true);
-    setCoinPostConfirm(false);
-    
-    // AI Moderation API Call
-    const safety = await moderateText(newPostContent);
-    if (!safety.approved) {
-      alert(`${t('unsafeContent')}: ${safety.reason}`);
-      setIsSubmitting(false);
-      return;
-    }
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    // Deduct coins if not premium
-    if (!isPremium && !isAdmin) {
-      await supabase.from('profiles').update({ coins: userCoins - COIN_PER_POST }).eq('id', user.id);
-    }
-
-    const { error } = await supabase.from('community_posts').insert({
-      author_id: user.id,
-      content: newPostContent.trim(),
-      topic: selectedTopic,
-      category: selectedTopic,
-      media_url: mediaUrl,
-      media_type: mediaType === 'none' && hasLinks ? 'link' : mediaType,
-      is_approved: true
-    });
-
-    if (!error) {
-      setNewPostContent('');
-      setMediaUrl(null);
-      setMediaType('none');
-      // Re-fetch posts
-      const { data } = await supabase
-        .from('community_posts')
-        .select('*, profiles(full_name, avatar_url, star_sign, is_verified, role)')
-        .order('created_at', { ascending: false });
-      if (data) setPosts(data as any[]);
-    }
-    setIsSubmitting(false);
-  };
-
-
-  if (loading) return <div className="p-12 text-center text-foreground/40 font-black uppercase tracking-widest text-xs">{t('loadingFeed')}</div>;
-
   return (
-    <div className="max-w-7xl mx-auto space-y-8 pb-20" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
-      {/* ── Coin Confirmation Modal ── */}
-      {coinPostConfirm && (
-        <div className="fixed inset-0 z-[10000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl border border-primary/20 text-center space-y-5">
-            <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto">
-              <BetesebCoinIcon className="w-12 h-12" />
-            </div>
-            <div>
-              <h4 className="font-black text-accent text-lg italic">
-                {locale === 'am' ? `${COIN_PER_POST} ኮይን ይጠቀሙ?` : `Use ${COIN_PER_POST} Coins?`}
-              </h4>
-              <p className="text-xs text-gray-500 font-medium mt-2">
-                {locale === 'am' 
-                  ? `ይህ ፖስት ለማደርግ ${COIN_PER_POST} ቤተሰብ ኮይን ይቀነሳሉ። ቀሪ ኮይን: ${userCoins - COIN_PER_POST}`
-                  : `This post will deduct ${COIN_PER_POST} Beteseb Coins. Remaining: ${userCoins - COIN_PER_POST}`}
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setCoinPostConfirm(false)}
-                className="flex-1 py-3 rounded-2xl border-2 border-border text-accent font-black text-xs uppercase tracking-wider hover:bg-muted transition-all"
-              >
-                {locale === 'am' ? 'ሰርዝ' : 'Cancel'}
-              </button>
-              <button
-                onClick={(e) => { setCoinPostConfirm(false); handlePostSubmit(e as any); }}
-                className="flex-1 py-3 rounded-2xl bg-primary text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
-              >
-                {locale === 'am' ? 'አረጋግጥ' : 'Confirm'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Main Grid: 3-column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 px-2 md:px-4">
+    <div className="space-y-8" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+         
          {/* Left Sidebar: Categories & AI Topic */}
          <aside className="lg:col-span-3 space-y-4">
-            <div className="bg-card p-6 rounded-[2.5rem] shadow-sm border border-primary/20 sticky top-28">
-               <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 px-2">{locale === 'am' ? 'ምድቦች' : 'Categories'}</h4>
+            <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-100 sticky top-28">
+               <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 px-2">
+                 {locale === 'am' ? 'ምድቦች' : 'Categories'}
+               </h4>
                <nav className="space-y-2">
-                  {[
-                    { id: 'all', label: t('categories.all'), icon: MessageCircle },
-                    { id: 'success_story', label: t('categories.success_story'), icon: Heart },
-                    { id: 'lesson_learned', label: t('categories.lesson_learned'), icon: Sparkles },
-                    { id: 'expert_class', label: t('categories.expert_class'), icon: CheckCircle2 }
-                  ].map((cat) => (
+                  {categories.map((cat) => (
                      <button 
                         key={cat.id}
-                        type="button"
-                        onClick={() => setSelectedCategory(cat.id)}
+                        onClick={() => setActiveCategory(cat.id)}
                         className={`w-full flex items-center gap-3 p-4 rounded-2xl transition-all font-bold text-sm ${
-                           selectedCategory === cat.id ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105' : 'text-gray-500 hover:bg-muted'
+                           activeCategory === cat.id ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105' : 'text-gray-500 hover:bg-muted'
                         }`}
                      >
-                        <cat.icon size={18} className={selectedCategory === cat.id ? 'fill-white' : ''} />
+                        <cat.icon size={18} />
                         {cat.label}
                      </button>
                   ))}
@@ -409,282 +323,319 @@ export default function CommunityView({
                <div className="mt-10 p-6 bg-secondary/10 rounded-3xl border border-secondary/20">
                   <div className="flex items-center gap-2 text-secondary mb-2">
                      <Sparkles size={18} />
-                     <span className="font-black text-xs uppercase tracking-widest">{locale === 'am' ? 'የዕለቱ የAI መወያያ አርዕስት' : locale === 'ti' ? 'ናይ መዓልቲ ናይ AI መመያየጢ ኣርእስቲ' : locale === 'om' ? "Mata Duree AI Har'aa" : locale === 'so' ? 'Mowduuca AI ee Maalinta' : locale === 'ar' ? 'موضوع الذكاء الاصطناعي لليوم' : 'AI Topic of the Day'}</span>
+                     <span className="font-black text-xs uppercase tracking-widest">
+                       {locale === 'am' ? 'የዕለቱ የAI መወያያ አርዕስት' : 'AI Topic of the Day'}
+                     </span>
                   </div>
-                  <p className="text-sm font-bold text-accent italic">{locale === 'am' ? 'ባህላዊው የአቡሻኪር የቀን አቆጣጠር ዘመናዊ የፍቅር ግንኙነት ድካምን እንዴት ሊፈታ ይችላል?' : locale === 'ti' ? 'ባህላዊ ኣቡሻኪር ሎጂክ ንዘመናዊ ናይ ፍቕሪ ርክብ ድካም ከመይ ገይሩ ክፈትሕ ይኽእል?' : locale === 'om' ? "Haalli dorgommii Abushakir dhiphina hariiroo ammayyaa akkamitti furuu danda'a?" : locale === 'so' ? 'Sidee macquulnimada dhaqanka Abushakir u xallin kartaa daalka shukaansiga casriga ah?' : locale === 'ar' ? 'كيف يمكن لمنطق أبوشاكر التقليدي حل إرهاق المواعدة الحديثة؟' : 'How can traditional Abushakir logic solve modern dating burnout?'}</p>
+                  <p className="text-sm font-bold text-accent italic">
+                    &quot;{aiTopic || (locale === 'am' ? 'ባህላዊው የአቡሻኪር የቀን አቆጣጠር ዘመናዊ የፍቅር ግንኙነት ድካምን እንዴት ሊፈታ ይችላል?' : 'How can traditional Abushakir logic solve modern dating burnout?')}&quot;
+                  </p>
                </div>
             </div>
          </aside>
 
-         {/* Middle Column: Create Post & Post Feed */}
+         {/* Center Feed */}
          <main className="lg:col-span-6 space-y-8">
-            {/* Header banner */}
-            <div className="flex justify-between items-center bg-card p-4 md:p-6 rounded-[2rem] border border-primary/20 shadow-sm">
-               <div className="flex items-center gap-4">
-                  <h2 className="text-xl md:text-2xl font-black text-foreground tracking-tighter uppercase italic">{t('title')}</h2>
-                  <div className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-black rounded-full uppercase tracking-widest flex items-center gap-1">
-                     <ShieldCheck size={12} /> {t('moderated')}
-                  </div>
-               </div>
-            </div>
-
-            {/* Daily Discussion Topic */}
-            <div className="bg-primary text-white p-8 rounded-[2.5rem] md:rounded-[3rem] shadow-2xl relative overflow-hidden group border border-primary/20">
-               <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:scale-110 transition-transform duration-700" />
-               <div className="relative z-10 space-y-4 text-center md:text-left flex flex-col items-center md:items-start">
-                  <div className="flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full w-fit backdrop-blur-md border border-white/10">
-                     <Sparkles size={14} className="animate-pulse" />
-                     <span className="text-[10px] font-black uppercase tracking-widest">{t('topicDay')}</span>
-                  </div>
-                  <h3 className="text-2xl font-black italic tracking-tighter leading-tight">
-                     {t('topicQuestion')}
-                  </h3>
-                  <p className="text-white/70 text-xs font-medium">{t('topicJoin')}</p>
-                  <button 
-                    onClick={handleJoinDiscussion}
-                    className="w-full md:w-auto bg-white text-primary px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-105 transition-all"
-                  >
-                     {t('joinBtn')}
-                  </button>
-               </div>
-            </div>
-
-            {/* Post Submission Form Card */}
-            <div className="bg-card p-8 rounded-[2.5rem] border border-primary/20 shadow-xl relative overflow-hidden">
-              {!isVerified && (
-                <div className="absolute inset-0 z-20 bg-white/60 backdrop-blur-[2px] flex items-center justify-center p-6 text-center">
-                   <div className="space-y-4 max-w-sm">
-                      <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto text-primary">
-                         <ShieldCheck size={32} />
-                      </div>
-                      <h4 className="font-black text-lg text-accent italic">{t('verifyToPostTitle')}</h4>
-                      <p className="text-xs text-gray-500 font-medium">{t('verifyToPostSub')}</p>
-                      <button 
-                        onClick={() => window.location.href = `/${locale}/onboarding`}
-                        className="bg-primary text-white px-8 py-3 rounded-2xl font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20"
-                      >
-                        {t('completeProfile')}
-                      </button>
-                   </div>
-                </div>
-              )}
-              {isVerified && !isPremium && !isAdmin && (
-                <div className="absolute inset-0 z-20 bg-white/70 backdrop-blur-[1px] flex items-center justify-center p-6 text-center">
-                   <div className="space-y-4 max-w-sm">
-                      <div className="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto text-amber-600 border border-amber-500/20">
-                         <Crown size={32} className="fill-amber-600" />
-                      </div>
-                      <h4 className="font-black text-lg text-amber-800 italic">
-                        {locale === 'am' ? 'የዳይመንድ ወይም የቪአይፒ አባልነት ይፈልጋል' : 'Diamond or VIP Member Required'}
-                      </h4>
-                      <p className="text-xs text-gray-500 font-semibold leading-relaxed">
-                        {locale === 'am' 
-                          ? 'በማህበረሰብ ሰሌዳ ላይ አዲስ ፖስት ለመለጠፍ የዳይመንድ (Diamond) ወይም የቪአይፒ (VIP) ደረጃ ሊኖርዎት ይገባል።'
-                          : 'You need to be a Diamond or VIP member to write new posts on the community board.'}
-                      </p>
-                      <button 
-                        type="button"
-                        onClick={() => {
-                          const event = new CustomEvent('openUpgradeModal');
-                          window.dispatchEvent(event);
-                        }}
-                        className="bg-gradient-to-r from-amber-500 to-yellow-600 text-white px-8 py-3.5 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-amber-500/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 mx-auto animate-pulse"
-                      >
-                         👑 {locale === 'am' ? 'ደረጃዎን ያሳድጉ (Upgrade)' : 'Upgrade to Diamond / VIP'}
-                      </button>
-                   </div>
-                </div>
-              )}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl opacity-50" />
-              <div className="flex flex-col md:flex-row gap-4 relative z-10 items-center md:items-start">
-                <div className="w-12 h-12 rounded-2xl bg-muted border border-border flex-shrink-0 flex items-center justify-center text-primary">
-                  <User size={24} />
-                </div>
-                <form onSubmit={handlePostSubmit} className="w-full flex-1 space-y-4">
-                  <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-                     {[
-                       { id: 'general', label: t('categories.all').replace('All Posts', 'General').replace('ሁሉም ፖስቶች', 'ጠቅላላ') },
-                       { id: 'success_story', label: t('categories.success_story') },
-                       { id: 'lesson_learned', label: t('categories.lesson_learned') },
-                       ...(isAdmin ? [{ id: 'expert_class', label: t('categories.expert_class') }] : [])
-                     ].map(topic => (
-                       <button
-                         key={topic.id}
-                         type="button"
-                         onClick={() => setSelectedTopic(topic.id)}
-                         className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border ${selectedTopic === topic.id ? 'bg-primary text-white border-primary border-2 shadow-lg' : 'bg-muted text-gray-500 border-border hover:border-primary/50'}`}
-                       >
-                          {topic.label}
-                       </button>
-                     ))}
-                  </div>
-                  <textarea 
-                    ref={textareaRef}
-                    value={newPostContent}
-                    onChange={(e) => setNewPostContent(e.target.value)}
-                    placeholder={t('newPostPlaceholder')} 
-                    aria-label="Post content"
-                    className="w-full bg-background/30 border border-border rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-6 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[120px] resize-none text-foreground"
+            
+            {/* Facebook-Style Post Creation Trigger Box */}
+            <div 
+              onClick={() => setIsCreateModalOpen(true)}
+              className="bg-white p-6 md:p-8 rounded-[3rem] shadow-xl border border-gray-100 cursor-pointer hover:border-primary/40 transition-all group"
+            >
+               <div className="flex gap-4 items-center mb-4">
+                  <Image 
+                    src={currentUser?.profile?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop'} 
+                    alt="User Avatar" 
+                    width={48} 
+                    height={48} 
+                    className="w-12 h-12 rounded-2xl object-cover shadow-sm border border-gray-100" 
                   />
-
-                  {mediaUrl && (
-                    <div className="relative w-full aspect-video rounded-3xl overflow-hidden border border-border">
-                      <img src={mediaUrl} className="w-full h-full object-cover" alt="Preview" />
-                      <button 
-                        type="button"
-                        onClick={() => { setMediaUrl(null); setMediaType('none'); }}
-                        aria-label="Remove media"
-                        className="absolute top-4 right-4 bg-red-500 text-white p-2 rounded-xl shadow-lg"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  )}
-
-                  <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-                      <div className="flex items-center gap-4">
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          className="p-3 bg-muted rounded-xl text-primary hover:bg-primary/10 transition-colors flex items-center gap-2"
-                        >
-                          <Camera size={18} />
-                          <span className="text-[10px] font-black uppercase tracking-widest hidden md:block">{t('photo')}</span>
-                        </button>
-                        <input 
-                          type="file" 
-                          ref={fileInputRef} 
-                          className="hidden" 
-                          aria-label="Upload photo"
-                          accept="image/*"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            setIsUploading(true);
-                            
-                            let uploadFile: File | Blob = file;
-                            if (file.type.startsWith('image/')) {
-                              try {
-                                const compressed = await new Promise<Blob>((resolve) => {
-                                  const reader = new FileReader();
-                                  reader.readAsDataURL(file);
-                                  reader.onload = (event) => {
-                                    const img = new window.Image();
-                                    img.src = event.target?.result as string;
-                                    img.onload = () => {
-                                      const canvas = document.createElement('canvas');
-                                      let width = img.width;
-                                      let height = img.height;
-                                      
-                                      const MAX_DIM = 800;
-                                      if (width > MAX_DIM || height > MAX_DIM) {
-                                        if (width > height) {
-                                          height = Math.round((height * MAX_DIM) / width);
-                                          width = MAX_DIM;
-                                        } else {
-                                          width = Math.round((width * MAX_DIM) / height);
-                                          height = MAX_DIM;
-                                        }
-                                      }
-                                      
-                                      canvas.width = width;
-                                      canvas.height = height;
-                                      const ctx = canvas.getContext('2d');
-                                      if (!ctx) {
-                                        resolve(file);
-                                        return;
-                                      }
-                                      ctx.drawImage(img, 0, 0, width, height);
-                                      
-                                      let quality = 0.7;
-                                      const tryCompress = () => {
-                                        canvas.toBlob((blob) => {
-                                          if (!blob) {
-                                            resolve(file);
-                                            return;
-                                          }
-                                          if (blob.size > 50 * 1024 && quality > 0.1) {
-                                            quality -= 0.15;
-                                            tryCompress();
-                                          } else {
-                                            resolve(blob);
-                                          }
-                                        }, 'image/jpeg', quality);
-                                      };
-                                      tryCompress();
-                                    };
-                                    img.onerror = () => resolve(file);
-                                  };
-                                  reader.onerror = () => resolve(file);
-                                });
-                                uploadFile = compressed;
-                              } catch (err) {
-                                console.error("Compression failed", err);
-                              }
-                            }
-
-                            const { data: { user } } = await supabase.auth.getUser();
-                            if (user) {
-                                const path = `community/${user.id}-${Date.now()}.jpg`;
-                                const { error } = await supabase.storage.from('user_photos').upload(path, uploadFile, {
-                                  contentType: 'image/jpeg'
-                                });
-                                if (!error) {
-                                  const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(path);
-                                  setMediaUrl(publicUrl);
-                                  setMediaType('image');
-                                }
-                            }
-                            setIsUploading(false);
-                          }}
-                        />
-                        <div className="flex items-center gap-2 text-[10px] text-primary font-black uppercase tracking-widest">
-                            <Sparkles size={12} className="animate-pulse" /> {t('aiFilter')}
-                        </div>
-                      </div>
-                      <button 
-                      type="submit"
-                      disabled={isSubmitting || isUploading || (!newPostContent.trim() && !mediaUrl)}
-                      className="w-full md:w-auto btn-primary py-4 md:py-3 px-8 text-xs flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50"
-                      >
-                      <Send size={16} /> {isSubmitting ? t('checking') : t('postButton')}
-                      </button>
+                  <div className="flex-1 bg-muted/40 group-hover:bg-muted/70 rounded-2xl p-4 text-gray-500 font-medium text-sm transition-colors flex items-center justify-between">
+                     <span>{locale === 'am' ? 'ምን አዲስ ነገር አለ? ሃሳብዎን ያጋሩ...' : "What's on your mind? Share text post..."}</span>
+                     <PlusCircle size={20} className="text-primary group-hover:scale-110 transition-transform" />
                   </div>
-                </form>
-              </div>
+               </div>
+               <div className="flex items-center justify-between pt-3 border-t border-gray-50 text-xs font-bold text-gray-400">
+                 <span className="flex items-center gap-1.5">✍️ Text-Only Community Hub</span>
+                 <span className="text-primary group-hover:underline">Create Post &rarr;</span>
+               </div>
             </div>
 
-            {/* Posts Timeline Feed */}
-            <div className="space-y-4 md:space-y-6">
-              {posts.map((post) => (
-                <PostCard 
-                  key={post.id}
-                  post={post}
-                  currentUserId={currentUserId}
-                  isVerified={isVerified}
-                  isPremium={isPremium}
-                  isAdmin={isAdmin}
-                />
-              ))}
+            {/* News Feed - Card Layout with High Contrast Black Text on White Cards */}
+            <div className="space-y-8">
+               {posts.map(post => {
+                  const isAuthor = currentUser && post.author_id === currentUser.id;
+                  const isFollowingAuthor = followingState[post.author_id];
+                  const isSaved = savedPostsState[post.id];
+                  const isDisliked = dislikeState[post.id];
+
+                  return (
+                    <div 
+                      key={post.id} 
+                      id={`post-${post.id}`}
+                      className="bg-white rounded-[3rem] shadow-sm border border-gray-100 overflow-hidden group hover:shadow-2xl transition-all duration-500"
+                    >
+                       <div className="p-8">
+                          
+                          {/* Card Header: Author Info + Follow Button + 3-Dots Menu */}
+                          <div className="flex justify-between items-center mb-6">
+                             <div className="flex gap-4 items-center">
+                                <Image 
+                                  src={post.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop'} 
+                                  alt={`${post.profiles?.full_name || 'Author'}'s avatar`} 
+                                  width={56} 
+                                  height={56} 
+                                  className="w-14 h-14 rounded-2xl object-cover shadow-md border border-gray-100" 
+                                />
+                                <div>
+                                   <div className="flex items-center gap-3">
+                                      <p className="font-black text-gray-900 text-base">{post.profiles?.full_name || 'Community Member'}</p>
+                                      
+                                      {/* Author Follow Button (If not author) */}
+                                      {currentUser && !isAuthor && (
+                                        <button
+                                          onClick={() => handleFollowToggle(post.author_id, post.profiles?.full_name || 'Member')}
+                                          className={`px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
+                                            isFollowingAuthor 
+                                              ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' 
+                                              : 'bg-primary text-white shadow-sm hover:scale-105'
+                                          }`}
+                                        >
+                                          {isFollowingAuthor ? (
+                                            <>
+                                              <UserCheck size={12} />
+                                              <span>Following</span>
+                                            </>
+                                          ) : (
+                                            <>
+                                              <UserPlus size={12} />
+                                              <span>Follow</span>
+                                            </>
+                                          )}
+                                        </button>
+                                      )}
+                                   </div>
+                                   
+                                   <div className="flex items-center gap-2 mt-0.5">
+                                      <span className="text-xs text-gray-400 font-medium">
+                                        {new Date(post.created_at).toLocaleDateString()}
+                                      </span>
+                                      
+                                      {/* Edited Badge */}
+                                      {post.is_edited && (
+                                        <span className="text-[10px] font-black bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full border border-amber-200">
+                                          Edited / ተስተካክሏል
+                                        </span>
+                                      )}
+                                   </div>
+                                </div>
+                             </div>
+
+                             {/* 3-Dots Menu (Post Owner Only: Edit 1x & Delete) */}
+                             <div className="relative">
+                                {isAuthor ? (
+                                  <button 
+                                    onClick={() => setActiveMenuPostId(activeMenuPostId === post.id ? null : post.id)}
+                                    aria-label="Post options" 
+                                    className="p-3 text-gray-400 hover:text-gray-900 transition-colors rounded-2xl hover:bg-muted"
+                                  >
+                                    <MoreHorizontal size={20} />
+                                  </button>
+                                ) : null}
+
+                                {activeMenuPostId === post.id && isAuthor && (
+                                  <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-100 rounded-2xl shadow-xl z-30 p-2 space-y-1 animate-in zoom-in-95">
+                                     <button
+                                       onClick={() => {
+                                         setEditingPost(post);
+                                         setActiveMenuPostId(null);
+                                       }}
+                                       disabled={(post.edit_count || 0) >= 1}
+                                       className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-gray-700 hover:bg-muted transition-colors flex items-center gap-2 disabled:opacity-40"
+                                     >
+                                       <Edit size={14} className="text-blue-500" />
+                                       <span>{(post.edit_count || 0) >= 1 ? 'Edited (Max 1)' : 'Edit Post (1x)'}</span>
+                                     </button>
+
+                                     <button
+                                       onClick={() => handleDeletePost(post.id)}
+                                       className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+                                     >
+                                       <Trash2 size={14} />
+                                       <span>Delete Post</span>
+                                     </button>
+                                  </div>
+                                )}
+                             </div>
+                          </div>
+
+                          {/* Post Topic Tag & High Contrast Text */}
+                          <div className="space-y-4 mb-6">
+                             <span className="inline-block text-[10px] font-black bg-primary/10 text-primary px-3 py-1 rounded-full uppercase tracking-widest border border-primary/20">
+                                #{post.topic || post.category?.replace('_', ' ') || 'Marriage'}
+                             </span>
+
+                             {/* High Contrast Text: Black Text on White Background */}
+                             <p className="text-gray-900 leading-relaxed text-lg font-medium whitespace-pre-line">
+                               {post.content}
+                             </p>
+
+                             <button 
+                                onClick={() => translatePost(post)}
+                                className="flex items-center gap-1.5 text-[10px] font-black text-primary uppercase tracking-widest bg-primary/5 px-3 py-1 rounded-full hover:bg-primary hover:text-white transition-all mt-2"
+                             >
+                                <Languages size={12} /> {locale === 'am' ? 'ተርጉም' : 'Translate'}
+                             </button>
+                          </div>
+
+                          {/* Interactive Action Buttons Row */}
+                          <div className="flex items-center justify-between border-t border-gray-100 pt-6 flex-wrap gap-3">
+                             <div className="flex items-center gap-4 md:gap-6">
+                                
+                                {/* Like */}
+                                <button 
+                                   onClick={() => handleLike(post.id)}
+                                   aria-label="Like post"
+                                   className="flex items-center gap-1.5 text-gray-500 hover:text-red-500 transition-colors group/like"
+                                >
+                                   <Heart size={18} className="group-hover/like:fill-red-500 transition-all" /> 
+                                   <span className="font-bold text-xs">{post.post_likes?.[0]?.count || 0}</span>
+                                </button>
+
+                                {/* Dislike */}
+                                <button 
+                                   onClick={() => handleDislikeToggle(post.id)}
+                                   aria-label="Dislike post"
+                                   className={`flex items-center gap-1.5 transition-colors ${
+                                     isDisliked ? 'text-amber-600 font-bold' : 'text-gray-500 hover:text-amber-600'
+                                   }`}
+                                >
+                                   <ThumbsDown size={18} />
+                                </button>
+
+                                {/* Comment Drawer Toggle */}
+                                <button 
+                                   onClick={() => setCommentingOn(commentingOn === post.id ? null : post.id)}
+                                   aria-label="Comment on post"
+                                   className="flex items-center gap-1.5 text-gray-500 hover:text-primary transition-colors font-bold text-xs"
+                                >
+                                   <MessageCircle size={18} /> 
+                                   <span>{post.post_comments?.length || 0}</span>
+                                </button>
+
+                                {/* In-App Repost */}
+                                <button
+                                   onClick={() => handleRepost(post.id)}
+                                   className="flex items-center gap-1 text-gray-500 hover:text-emerald-600 transition-colors font-bold text-xs"
+                                   title="Recommend to friends"
+                                >
+                                   <Repeat size={18} />
+                                </button>
+
+                                {/* Save Post Button */}
+                                <button
+                                   onClick={() => handleSaveToggle(post.id)}
+                                   className={`flex items-center gap-1 transition-colors text-xs font-bold ${
+                                     isSaved ? 'text-primary' : 'text-gray-500 hover:text-primary'
+                                   }`}
+                                   title="Save post"
+                                >
+                                   <Bookmark size={18} className={isSaved ? 'fill-primary' : ''} />
+                                   <span className="hidden sm:inline">{isSaved ? 'Saved' : 'Save'}</span>
+                                </button>
+
+                             </div>
+
+                             {/* External Share (Deep Link Generator) */}
+                             <button 
+                                onClick={() => handleExternalShare(post.id)}
+                                className="flex items-center gap-1.5 text-gray-500 hover:text-primary transition-colors font-bold text-xs uppercase tracking-widest bg-muted/50 px-3 py-1.5 rounded-xl border border-gray-100"
+                             >
+                                <Share2 size={16} /> 
+                                <span>Deep Link Share</span>
+                             </button>
+                          </div>
+
+                          {/* Threaded Comments Section */}
+                          {commentingOn === post.id && (
+                             <div className="mt-8 pt-8 border-t border-gray-100 space-y-6 animate-in slide-in-from-top-4 duration-300">
+                                <div className="flex gap-3">
+                                   <input 
+                                      value={commentText}
+                                      onChange={(e) => setCommentText(e.target.value)}
+                                      placeholder={replyingToCommentId ? "Writing a reply..." : t('interactions.writeComment')}
+                                      className="flex-1 bg-muted/40 border border-gray-200 rounded-2xl px-6 py-3 text-sm font-medium focus:ring-primary focus:border-primary"
+                                   />
+                                   <button 
+                                      onClick={() => handleCommentSubmit(post.id, replyingToCommentId)}
+                                      aria-label="Send comment"
+                                      className="p-3 bg-primary text-white rounded-2xl hover:scale-105 transition-all shadow-lg shadow-primary/20"
+                                   >
+                                      <Send size={18} />
+                                   </button>
+                                </div>
+
+                                <div className="space-y-4">
+                                   {post.post_comments?.map((comment: PostComment) => (
+                                      <div key={comment.id} className="flex gap-4 group/comment">
+                                         <Image 
+                                           src={comment.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop'} 
+                                           alt="Commenter Avatar" 
+                                           width={40} 
+                                           height={40} 
+                                           className="w-10 h-10 rounded-xl object-cover shadow-sm" 
+                                         />
+                                         <div className="flex-1 bg-muted/30 p-4 rounded-[1.5rem] relative border border-gray-100">
+                                            <p className="text-xs font-black text-gray-900 mb-1">{comment.profiles?.full_name || 'Member'}</p>
+                                            <p className="text-sm text-gray-800 font-medium">{comment.content}</p>
+                                            
+                                            <div className="flex gap-4 mt-2">
+                                               <button 
+                                                 onClick={() => setReplyingToCommentId(comment.id)}
+                                                 className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline"
+                                               >
+                                                 {t('interactions.reply')}
+                                               </button>
+                                            </div>
+                                         </div>
+                                      </div>
+                                   ))}
+                                </div>
+                             </div>
+                          )}
+                       </div>
+                    </div>
+                  );
+               })}
             </div>
+
+            {/* Ice Break Section (Gold+ Tier Discussion Topic) */}
+            <IceBreakSection currentUser={currentUser} locale={locale} />
+
          </main>
 
-         {/* Right Sidebar: Family Poll & Trending Tags */}
+         {/* Right Sidebar: Preserved Existing Sections (Family Poll & Trending Tags) */}
          <aside className="lg:col-span-3 space-y-8">
-            <div className="bg-card p-8 rounded-[3rem] shadow-xl border border-primary/20 relative overflow-hidden group text-left">
+            
+            {/* Preserved Family Poll Section */}
+            <div className="bg-white p-8 rounded-[3rem] shadow-xl border border-gray-100 relative overflow-hidden group">
                <div className="absolute top-0 left-0 w-2 h-full bg-secondary group-hover:w-4 transition-all" />
                <div className="flex items-center gap-3 mb-6">
                   <BarChart2 className="text-secondary" />
-                  <h4 className="text-lg font-black text-accent italic">{locale === 'am' ? 'የቤተሰብ የህዝብ አስተያየት' : locale === 'ti' ? 'ናይ ስድራቤት ህዝባዊ ርእይቶ' : locale === 'om' ? 'Filannoo Maatii' : locale === 'so' ? 'Cod-bixinta Qoyska' : locale === 'ar' ? 'استطلاع الأسرة' : 'Family Poll'}</h4>
+                  <h4 className="text-lg font-black text-accent italic">
+                    {locale === 'am' ? 'የቤተሰብ የህዝብ አስተያየት' : 'Family Poll'}
+                  </h4>
                </div>
-               <p className="font-bold text-accent mb-6 leading-relaxed">{locale === 'am' ? 'ለረጅም ርቀት የፍቅር ግንኙነት በጣም አስፈላጊው ባህሪ ምንድነው?' : locale === 'ti' ? 'ንነዊሕ ርሕቀት ዘለዎ ናይ ፍቕሪ ርክብ ዝበለጸ ኣገዳሲ ባህሪ እንታይ እዩ?' : locale === 'om' ? "Hariiroo fageenyaa keessatti amalli baay'ee barbaachisaa ta'e maali?" : locale === 'so' ? 'Waa maxay astaanta ugu muhiimsan ee xiriirka fogaanta ah?' : locale === 'ar' ? 'ما هي أهم ميزة لعلاقة حب عن بعد؟' : 'What is the most important trait for a long-distance relationship?'}</p>
+               <p className="font-bold text-accent mb-6 leading-relaxed">
+                 {locale === 'am' ? 'ለረጅም ርቀት የፍቅር ግንኙነት በጣም አስፈላጊው ባህሪ ምንድነው?' : 'What is the most important trait for a long-distance relationship?'}
+               </p>
                <div className="space-y-3">
                   {[
-                     { label: locale === 'am' ? 'የዕለታዊ የቪዲዮ ወሬ' : locale === 'ti' ? 'መዓልታዊ ናይ ቪዲዮ ዕላል' : locale === 'om' ? 'Viidiyoo Chatii Guyyuu' : locale === 'so' ? 'Wada hadalka Muuqaalka ee Maalinlaha' : locale === 'ar' ? 'محادثة فيديو يومية' : 'Daily Video Chat', percent: 45 },
-                     { label: locale === 'am' ? 'እምነት እና ግልጽነት' : locale === 'ti' ? 'እምነትን ግልጽነትን' : locale === 'om' ? 'Amanamummaa fi Gabaasamummaa' : locale === 'so' ? 'Aaminaad iyo Furfurnaan' : locale === 'ar' ? 'الثقة والشفافية' : 'Trust & Transparency', percent: 82 },
-                     { label: locale === 'am' ? 'የወደፊት እቅድ' : locale === 'ti' ? 'ናይ መጻኢ ውጥን' : locale === 'om' ? 'Karoora Gara Fulduuraa' : locale === 'so' ? 'Qorshaha Mustaqbalka' : locale === 'ar' ? 'خطة المستقبل' : 'Future Plan', percent: 34 }
+                     { label: locale === 'am' ? 'የዕለታዊ የቪዲዮ ወሬ' : 'Daily Video Chat', percent: 45 },
+                     { label: locale === 'am' ? 'እምነት እና ግልጽነት' : 'Trust & Transparency', percent: 82 },
+                     { label: locale === 'am' ? 'የወደፊት እቅድ' : 'Future Plan', percent: 34 }
                   ].map((opt, i) => (
-                     <button key={i} type="button" className="w-full p-4 rounded-2xl border border-gray-100 hover:border-secondary transition-all text-left relative overflow-hidden group/opt">
+                     <button key={i} className="w-full p-4 rounded-2xl border border-gray-100 hover:border-secondary transition-all text-left relative overflow-hidden group/opt">
                         <div className="relative z-10 flex justify-between items-center font-bold text-sm">
                            <span>{opt.label}</span>
                            <span className="text-secondary">{opt.percent}%</span>
@@ -698,74 +649,41 @@ export default function CommunityView({
                </div>
             </div>
 
-            <div className="bg-card p-8 rounded-[3rem] shadow-2xl border border-primary/20 text-left">
-               <h4 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6">{locale === 'am' ? 'በብዛት የተጎበኙ መለያዎች' : locale === 'ti' ? 'ብብዝሒ ዝተረኣዩ መለለዪታት' : locale === 'om' ? "Mirkannoo Babal'atan" : locale === 'so' ? 'Mawduucyada ugu caansan' : locale === 'ar' ? 'الوسوم الشائعة' : 'Trending Tags'}</h4>
+            {/* Preserved Trending Tags Section */}
+            <div className="bg-card p-8 rounded-[3rem] shadow-2xl border border-white/5">
+               <h4 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6">
+                 {locale === 'am' ? 'በብዛት የተጎበኙ መለያዎች' : 'Trending Tags'}
+               </h4>
                <div className="flex flex-wrap gap-2">
-                  {(locale === 'am' ? ['#አቡሻኪር', '#የስኬትታሪኮች', '#የሐበሻሰርግ', '#የቤተሰብእሴቶች', '#የኢትዮጵያቅርስ'] : locale === 'ti' ? ['#አቡሻኪር', '#ታሪኽዓወት', '#መርዓሓበሻ', '#ክብርታትስድራቤት', '#ቅርስኢትዮጵያ'] : locale === 'om' ? ['#Abushaakir', '#SeenaaMilkaa\'inaa', '#CidhaHabeshaa', '#DuudhaaleeMaatii', '#DhaalaItoophiyaa'] : locale === 'so' ? ['#Abushakir', '#SheekooyinkaGuusha', '#AroosyadaHabesha', '#QiimahaQoyska', '#HiddahaItoobiya'] : locale === 'ar' ? ['#أبوشاكر', '#قصص_نجاح', '#أعراس_الحبشة', '#القيم_الأسرية', '#التراث_الأثيوبي'] : ['#Abushakir', '#SuccessStories', '#HabeshaWeddings', '#FamilyValues', '#EthiopianHeritage']).map(tag => (
+                  {(locale === 'am' ? ['#አቡሻኪር', '#የስኬትታሪኮች', '#የሐበሻሰርግ', '#የቤተሰብእሴቶች', '#የኢትዮጵያቅርስ'] : ['#Abushakir', '#SuccessStories', '#HabeshaWeddings', '#FamilyValues', '#EthiopianHeritage']).map(tag => (
                      <span key={tag} className="text-[10px] font-black bg-white/5 hover:bg-primary hover:text-white px-4 py-2 rounded-full cursor-pointer transition-all border border-white/5">{tag}</span>
                   ))}
                </div>
             </div>
+
          </aside>
       </div>
+
+      {/* Post Creation Modal */}
+      <PostCreationModal 
+        currentUser={currentUser}
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onPostSuccess={fetchPosts}
+      />
+
+      {/* Edit Post Modal (1-time edit limit) */}
+      {editingPost && (
+        <EditPostModal
+          post={editingPost}
+          isOpen={!!editingPost}
+          onClose={() => setEditingPost(null)}
+          onPostEdited={() => {
+            fetchPosts();
+            setEditingPost(null);
+          }}
+        />
+      )}
     </div>
   );
 }
-
-const RecursiveComments = ({ 
-  comments, 
-  level = 0, 
-  t, 
-  setReplyingToId,
-  translateComment,
-  locale
-}: { 
-  comments: Comment[], 
-  level?: number, 
-  t: any, 
-  setReplyingToId: (id: string) => void,
-  translateComment: (comment: Comment) => void,
-  locale: string
-}) => {
-  return (
-    <div className={`space-y-4 ${level > 0 ? 'ml-8 border-l-2 border-primary/10 pl-4' : ''} text-left`}>
-      {comments.map(comment => (
-        <div key={comment.id} className="space-y-2 animate-in fade-in slide-in-from-left-2 duration-300">
-          <div className="flex items-start gap-3 bg-muted/30 p-4 rounded-2xl">
-            <div className="w-8 h-8 rounded-lg bg-muted border border-border overflow-hidden flex-shrink-0">
-              {comment.profiles?.avatar_url ? (
-                <Image src={comment.profiles.avatar_url} alt="" width={32} height={32} className="w-full h-full object-cover" />
-              ) : (
-                <User size={16} className="m-auto text-primary" />
-              )}
-            </div>
-            <div className="flex-1">
-              <div className="flex justify-between items-center mb-1">
-                <span className="font-black text-[10px] uppercase tracking-widest text-foreground">{comment.profiles?.full_name}</span>
-                <span className="text-[8px] text-gray-400 font-bold uppercase">{new Date(comment.created_at).toLocaleDateString()}</span>
-              </div>
-              <p className="text-sm text-foreground/80 leading-relaxed font-medium">{comment.content}</p>
-              <div className="flex gap-4 mt-2">
-                <button 
-                  onClick={() => setReplyingToId(comment.id)}
-                  className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline"
-                >
-                  {t('reply')}
-                </button>
-                <button 
-                  onClick={() => translateComment(comment)}
-                  className="text-[10px] font-black text-secondary uppercase tracking-widest hover:underline flex items-center gap-1"
-                >
-                  <Languages size={10} /> {locale === 'am' ? 'ተርጉም' : 'Translate'}
-                </button>
-              </div>
-            </div>
-          </div>
-          {comment.replies && comment.replies.length > 0 && (
-            <RecursiveComments comments={comment.replies} level={level + 1} t={t} setReplyingToId={setReplyingToId} translateComment={translateComment} locale={locale} />
-          )}
-        </div>
-      ))}
-    </div>
-  );
-};

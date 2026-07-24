@@ -196,15 +196,19 @@ function CommunityContent() {
   useEffect(() => {
     const initPage = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-         const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-         setCurrentUser({ ...user, profile: profile as Profile });
+      if (!user) {
+        // Auth Protection Guard: Redirect guest to login
+        router.replace('/login');
+        return;
       }
+      const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+      setCurrentUser({ ...user, profile: profile as Profile });
       fetchPosts();
       fetchAiTopic();
     };
     initPage();
-  }, [fetchPosts, fetchAiTopic]);
+  }, [fetchPosts, fetchAiTopic, router]);
+
 
   // Actions
   const handleFollowToggle = async (authorId: string, authorName: string) => {
