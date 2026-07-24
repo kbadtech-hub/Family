@@ -1591,10 +1591,66 @@ function DashboardContent() {
               </div>
             </div>
 
-            {/* User Dashboard Header: Order (Left-to-Right): 1. VIP/Tier Badge -> 2. Language Selector -> 3. Notification Bell -> 4. Compact Coin Balance */}
+            {/* User Dashboard Header: Order (Left-to-Right): 1. Coin Balance -> 2. Notification Bell -> 3. Language Selector -> 4. Profile Avatar */}
             <div className="flex items-center gap-3">
               
-              {/* 1st (Leftmost): 👑 VIP / Tier Badge (User Profile Avatar & Tier Badge) */}
+              {/* 1st (Far Left / መጀመሪያ): 🪙 Coin Balance Display */}
+              {profile && (
+                <button
+                  id="btn-coin-balance-indicator"
+                  onClick={() => setActiveTab('gifts')}
+                  title={locale === 'am' ? 'የኮይን ሂሳብዎ — ይጫኑ ለማሳደግ' : 'Your Coin Balance — click to top up'}
+                  className="flex items-center gap-1.5 px-3 py-2 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-700 text-xs font-black shadow-sm hover:bg-amber-500/20 transition-all"
+                >
+                  <Coins size={15} className="text-amber-500 animate-pulse" />
+                  <span className="tabular-nums">{(profile.coins ?? 0).toLocaleString()}</span>
+                </button>
+              )}
+
+              {/* 2nd (ከዛ): 🔔 Notification Bell Icon */}
+              <button
+                onClick={() => {
+                  setIsNotificationOpen(true);
+                  setUnreadNotificationsCount(0);
+                }}
+                className="w-10 h-10 rounded-2xl bg-white hover:bg-primary/10 hover:text-primary flex items-center justify-center transition-all border border-gray-200 shadow-sm relative group"
+                title="Centralized Platform Notifications"
+              >
+                <Bell size={18} className="text-gray-700 group-hover:text-primary transition-colors" />
+                {unreadNotificationsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 px-1.5 py-0.5 min-w-[18px] text-[10px] font-black text-white bg-primary rounded-full flex items-center justify-center border-2 border-white animate-bounce">
+                    {unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount}
+                  </span>
+                )}
+              </button>
+
+              {/* 3rd (ከዛ): 🌐 Language Selector */}
+              <div className="relative">
+                <button
+                  onClick={() => setIsLangOpen(!isLangOpen)}
+                  className="flex items-center gap-1.5 px-3 py-2 h-10 rounded-2xl bg-white border border-border hover:border-primary transition-all text-xs font-bold shadow-sm"
+                >
+                  <Globe size={15} className="text-primary" />
+                  <span className="uppercase">{locale}</span>
+                  <ChevronDown size={13} className={`transition-transform ${isLangOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isLangOpen && (
+                  <div className={`absolute top-full ${locale === 'ar' ? 'left-0' : 'right-0'} mt-2 w-40 bg-white border border-border rounded-2xl shadow-xl z-[100] overflow-hidden`}>
+                    {languages.map(lang => (
+                      <button
+                        key={lang.id}
+                        onClick={() => handleLanguageChange(lang.id)}
+                        className={`w-full px-5 py-3 text-left text-xs font-bold hover:bg-[#F8F4F1] transition-all ${locale === lang.id ? 'text-primary bg-[#F8F4F1]' : 'text-gray-600'}`}
+                      >
+                        {lang.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 4th (Far Right / ከዛ ደግሞ): 👑 Profile Avatar / VIP Tier Badge */}
               <div className="relative" ref={profileDropdownRef}>
                 <button 
                   onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
@@ -1605,7 +1661,7 @@ function DashboardContent() {
                 </button>
 
                 {isProfileDropdownOpen && (
-                  <div className={`absolute top-full ${locale === 'ar' ? 'right-0' : 'left-0'} mt-2 w-56 bg-white border border-border rounded-3xl shadow-2xl z-[100] overflow-hidden`}>
+                  <div className={`absolute top-full ${locale === 'ar' ? 'left-0' : 'right-0'} mt-2 w-56 bg-white border border-border rounded-3xl shadow-2xl z-[100] overflow-hidden`}>
                     {[
                       { id: 'dashboard', icon: Home, label: n('dashboard') },
                       { id: 'chat', icon: MessageCircle, label: n('chat') },
@@ -1647,63 +1703,8 @@ function DashboardContent() {
                   </div>
                 )}
               </div>
-
-              {/* 2nd: 🌐 Language Selector */}
-              <div className="relative">
-                <button
-                  onClick={() => setIsLangOpen(!isLangOpen)}
-                  className="flex items-center gap-1.5 px-3 py-2 h-10 rounded-2xl bg-white border border-border hover:border-primary transition-all text-xs font-bold shadow-sm"
-                >
-                  <Globe size={15} className="text-primary" />
-                  <span className="uppercase">{locale}</span>
-                  <ChevronDown size={13} className={`transition-transform ${isLangOpen ? 'rotate-180' : ''}`} />
-                </button>
-
-                {isLangOpen && (
-                  <div className={`absolute top-full ${locale === 'ar' ? 'right-0' : 'left-0'} mt-2 w-40 bg-white border border-border rounded-2xl shadow-xl z-[100] overflow-hidden`}>
-                    {languages.map(lang => (
-                      <button
-                        key={lang.id}
-                        onClick={() => handleLanguageChange(lang.id)}
-                        className={`w-full px-5 py-3 text-left text-xs font-bold hover:bg-[#F8F4F1] transition-all ${locale === lang.id ? 'text-primary bg-[#F8F4F1]' : 'text-gray-600'}`}
-                      >
-                        {lang.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* 3rd: 🔔 Notification Bell Icon */}
-              <button
-                onClick={() => {
-                  setIsNotificationOpen(true);
-                  setUnreadNotificationsCount(0);
-                }}
-                className="w-10 h-10 rounded-2xl bg-white hover:bg-primary/10 hover:text-primary flex items-center justify-center transition-all border border-gray-200 shadow-sm relative group"
-                title="Centralized Platform Notifications"
-              >
-                <Bell size={18} className="text-gray-700 group-hover:text-primary transition-colors" />
-                {unreadNotificationsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 px-1.5 py-0.5 min-w-[18px] text-[10px] font-black text-white bg-primary rounded-full flex items-center justify-center border-2 border-white animate-bounce">
-                    {unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount}
-                  </span>
-                )}
-              </button>
-
-              {/* 4th (Rightmost): 🪙 Coin Balance Display (Compact Pill Shape Sizing) */}
-              {profile && (
-                <button
-                  id="btn-coin-balance-indicator"
-                  onClick={() => setActiveTab('gifts')}
-                  title={locale === 'am' ? 'የኮይን ሂሳብዎ — ይጫኑ ለማሳደግ' : 'Your Coin Balance — click to top up'}
-                  className="flex items-center gap-1.5 px-3 py-2 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-700 text-xs font-black shadow-sm hover:bg-amber-500/20 transition-all"
-                >
-                  <Coins size={15} className="text-amber-500 animate-pulse" />
-                  <span className="tabular-nums">{(profile.coins ?? 0).toLocaleString()}</span>
-                </button>
-              )}
             </div>
+
 
           </div>
         </header>
