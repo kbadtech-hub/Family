@@ -1591,9 +1591,10 @@ function DashboardContent() {
               </div>
             </div>
 
-            {/* User Dashboard Top Navigation Header: RTL order (Profile Avatar -> Language Selector -> Notification Bell -> Coin Balance) */}
+            {/* User Dashboard Header: Order (Left-to-Right): 1. VIP/Tier Badge -> 2. Language Selector -> 3. Notification Bell -> 4. Compact Coin Balance */}
             <div className="flex items-center gap-3">
-              {/* 1. Profile Avatar Link with Dropdown */}
+              
+              {/* 1st (Leftmost): 👑 VIP / Tier Badge (User Profile Avatar & Tier Badge) */}
               <div className="relative" ref={profileDropdownRef}>
                 <button 
                   onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
@@ -1604,7 +1605,7 @@ function DashboardContent() {
                 </button>
 
                 {isProfileDropdownOpen && (
-                  <div className={`absolute top-full ${locale === 'ar' ? 'left-0' : 'right-0'} mt-2 w-56 bg-white border border-border rounded-3xl shadow-2xl z-[100] overflow-hidden`}>
+                  <div className={`absolute top-full ${locale === 'ar' ? 'right-0' : 'left-0'} mt-2 w-56 bg-white border border-border rounded-3xl shadow-2xl z-[100] overflow-hidden`}>
                     {[
                       { id: 'dashboard', icon: Home, label: n('dashboard') },
                       { id: 'chat', icon: MessageCircle, label: n('chat') },
@@ -1647,19 +1648,19 @@ function DashboardContent() {
                 )}
               </div>
 
-              {/* 2. Language Switcher */}
+              {/* 2nd: 🌐 Language Selector */}
               <div className="relative">
                 <button
                   onClick={() => setIsLangOpen(!isLangOpen)}
-                  className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-white border border-border hover:border-primary transition-all text-xs font-bold shadow-sm"
+                  className="flex items-center gap-1.5 px-3 py-2 h-10 rounded-2xl bg-white border border-border hover:border-primary transition-all text-xs font-bold shadow-sm"
                 >
-                  <Globe size={16} className="text-primary" />
+                  <Globe size={15} className="text-primary" />
                   <span className="uppercase">{locale}</span>
-                  <ChevronDown size={14} className={`transition-transform ${isLangOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={13} className={`transition-transform ${isLangOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {isLangOpen && (
-                  <div className={`absolute top-full ${locale === 'ar' ? 'left-0' : 'right-0'} mt-2 w-40 bg-white border border-border rounded-2xl shadow-xl z-[100] overflow-hidden`}>
+                  <div className={`absolute top-full ${locale === 'ar' ? 'right-0' : 'left-0'} mt-2 w-40 bg-white border border-border rounded-2xl shadow-xl z-[100] overflow-hidden`}>
                     {languages.map(lang => (
                       <button
                         key={lang.id}
@@ -1673,7 +1674,7 @@ function DashboardContent() {
                 )}
               </div>
 
-              {/* 3. Centralized Notification Bell Icon */}
+              {/* 3rd: 🔔 Notification Bell Icon */}
               <button
                 onClick={() => {
                   setIsNotificationOpen(true);
@@ -1690,19 +1691,20 @@ function DashboardContent() {
                 )}
               </button>
 
-              {/* 4. Coin Balance Display & Wallet Logic */}
+              {/* 4th (Rightmost): 🪙 Coin Balance Display (Compact Pill Shape Sizing) */}
               {profile && (
                 <button
                   id="btn-coin-balance-indicator"
                   onClick={() => setActiveTab('gifts')}
                   title={locale === 'am' ? 'የኮይን ሂሳብዎ — ይጫኑ ለማሳደግ' : 'Your Coin Balance — click to top up'}
-                  className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-700 font-black text-xs uppercase tracking-widest shadow-inner hover:bg-amber-500/20 transition-all"
+                  className="flex items-center gap-1.5 px-3 py-2 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-700 text-xs font-black shadow-sm hover:bg-amber-500/20 transition-all"
                 >
-                  <Coins size={16} className="text-amber-500 animate-pulse" />
-                  <span className="tabular-nums">{(profile.coins ?? 0).toLocaleString()} Coins</span>
+                  <Coins size={15} className="text-amber-500 animate-pulse" />
+                  <span className="tabular-nums">{(profile.coins ?? 0).toLocaleString()}</span>
                 </button>
               )}
             </div>
+
           </div>
         </header>
 
