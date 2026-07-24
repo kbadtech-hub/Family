@@ -10,8 +10,9 @@ interface PostCreationModalProps {
   currentUser: any;
   isOpen: boolean;
   onClose: () => void;
-  onPostSuccess: () => void;
+  onPostSuccess: (newPost?: any) => void;
 }
+
 
 export default function PostCreationModal({
   currentUser,
@@ -98,14 +99,28 @@ export default function PostCreationModal({
       return;
     }
 
-    // 2. Insert Post (Text-Only)
-    const { error } = await supabase.from('community_posts').insert({
-      author_id: currentUser.id,
-      content: content.trim(),
-      topic,
-      dislike_count: 0,
-      heart_count: 0
-    });
+    // 2. Insert Post (Text-Only with Published Status)
+    const { data: newPost, error } = await supabase
+      .from('community_posts')
+      .insert({
+        author_id: currentUser.id,
+        content: content.trim(),
+        topic,
+        category: 'general',
+        is_approved: true,
+        dislike_count: 0,
+        heart_count: 0
+      })
+      .select(`
+        *,
+        profiles!community_posts_author_id_fkey(id, full_name, avatar_url, role, tier, verification_status),
+        post_likes(count),
+        post_comments(
+          *,
+          profiles(full_name, avatar_url)
+        )
+      `)
+      .single();
 
     if (error) {
       setErrorMsg(error.message);
@@ -113,10 +128,11 @@ export default function PostCreationModal({
     } else {
       setContent('');
       setIsSubmitting(false);
-      onPostSuccess();
+      onPostSuccess(newPost);
       onClose();
     }
   };
+
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
