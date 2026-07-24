@@ -1635,29 +1635,43 @@ function DashboardContent() {
           </div>
         )}
 
-        {/* Verification Banner — Displays Silver Tier status & Gold Tier upgrade call-to-action */}
-        {verificationStatus !== 'verified' && verificationStatus !== 'pending' && verificationStatus !== 'loading' && verificationStatus !== 'rejected' && (
-          <div className="mb-10 bg-gradient-to-r from-slate-900 via-primary to-orange-500 p-8 md:p-10 rounded-[3rem] text-white shadow-2xl shadow-primary/20 relative overflow-hidden group">
+        {/* Gold Tier Upgrade Banner — Shown ONLY after Onboarding is completed (when user skipped verification and is on Silver Tier) */}
+        {profile && profile.onboarding_completed && verificationStatus !== 'verified' && verificationStatus !== 'pending' && verificationStatus !== 'loading' && verificationStatus !== 'rejected' && (
+          <div className="mb-10 bg-gradient-to-r from-slate-900 via-primary to-orange-500 p-8 md:p-10 rounded-[3rem] text-white shadow-2xl shadow-primary/20 relative overflow-hidden group border border-amber-400/30 animate-in fade-in duration-500">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:scale-110 transition-transform duration-700" />
             <div className="relative flex flex-col md:flex-row items-center justify-between gap-8">
                <div className="space-y-4 text-center md:text-left">
-                  <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-400/30 text-amber-200 border border-amber-400/40 rounded-full text-[10px] font-black uppercase tracking-widest">
+                  <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-400/30 text-amber-200 border border-amber-400/40 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">
                      <ShieldCheck size={14} /> {locale === 'am' ? 'የብር ደረጃ (Silver Tier Active)' : 'Silver Tier Active'}
                   </div>
-                  <h2 className="text-3xl font-black italic tracking-tighter">
-                    {locale === 'am' ? 'ወደ Gold ደረጃ ያድጉ (የወርቅ ማረጋገጫ)' : 'Upgrade to Gold Tier (ID Verified)'}
+                  <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter text-white">
+                    {locale === 'am' ? 'ወደ Gold ደረጃ ያሳድጉ (የወርቅ ማረጋገጫ)' : 'Upgrade to Gold Tier (ID Verification)'}
                   </h2>
-                  <p className="text-white/80 font-medium max-w-lg text-xs leading-relaxed">
+                  <p className="text-white/90 font-medium max-w-2xl text-xs md:text-sm leading-relaxed">
                     {locale === 'am'
-                      ? 'አካውንትዎ የ Silver ደረጃ ላይ ይገኛል። ገንዘብ ወጪ ለማድረግ፣ ስጦታዎችን ለመቀበል እና አካላዊ አገልግሎቶችን ለማግኘት መታወቂያዎን አያይዘው ወደ Gold ደረጃ ያድጉ።'
-                      : 'Your account is currently Silver Tier. Verify your ID to reach Gold Tier, enable financial withdrawals, and receive gifts.'}
+                      ? 'አካውንትዎ አሁን የ Silver (የብር) ደረጃ ላይ ይገኛል። ትክክለኛ የትዳር አጋርዎን ለማግኘት፣ በቻት/በጥሪ ለማውራት፣ በኮሚኒቲ ሀብ ላይ ለመሳተፍ፣ ስጦታዎችን ለመላላክ፣ የቤተሰብ አካዳሚን ለመጠቀም እና የባለሙያ የምክር አገልግሎት ለማግኘት መታወቂያዎን ወይም የሰውነትዎን የሚገልጽ መረጃ በማስገባት አካውንትዎን አሁኑኑ ወደ Gold ደረጃ ያሳድጉ!'
+                      : 'Your account is currently Silver Tier. To unlock matrimonial matching, chat/calls, Community Hub, gifts, Beteseb Academy, and expert counseling, please upload your ID document to upgrade to Gold Tier!'}
                   </p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-2 text-[11px] font-bold text-amber-200">
+                     <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
+                        <span>💍</span> {locale === 'am' ? 'የትዳር አጋር ማች' : 'Matching'}
+                     </div>
+                     <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
+                        <span>💬</span> {locale === 'am' ? 'ቻት እና ጥሪ' : 'Chat & Calls'}
+                     </div>
+                     <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
+                        <span>🎁</span> {locale === 'am' ? 'ስጦታዎችና አካዳሚ' : 'Gifts & Academy'}
+                     </div>
+                     <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
+                        <span>👥</span> {locale === 'am' ? 'ኮሚኒቲና ምክር' : 'Community & Counseling'}
+                     </div>
+                  </div>
                </div>
                <button 
                  onClick={() => router.push('/onboarding?step=4')}
-                 className="bg-white text-primary px-10 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3 shrink-0"
+                 className="bg-white text-primary hover:bg-amber-50 px-10 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3 shrink-0"
                >
-                  {locale === 'am' ? 'ወደ Gold ደረጃ አድግ (መታወቂያ ያረጋግጡ)' : 'Upgrade to Gold Tier'} <ChevronRight size={20} />
+                  {locale === 'am' ? 'ወደ Gold ደረጃ ያሳድጉ' : 'Upgrade to Gold Tier'} <ChevronRight size={20} />
                </button>
             </div>
           </div>
