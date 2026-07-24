@@ -26,6 +26,7 @@ import Image from 'next/image';
 import { getUserTier, calculateCompletionRate } from '@/lib/tiers';
 import { COUNTRIES } from '@/lib/countries';
 import { isAppLockEnabled, setAppLockEnabled, clearStoredPin } from '@/components/AppLockGate';
+import { fetchProfileSocialStats, SocialStats } from '@/lib/social';
 
 const locationData: Record<string, Record<string, string[]>> = {
   'Ethiopia': {
@@ -318,7 +319,17 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
   const [vouchDuration, setVouchDuration] = useState(1);
   const [isSendingVouchInvite, setIsSendingVouchInvite] = useState(false);
 
+  // Community Hub Real-Time Statistics
+  const [socialStats, setSocialStats] = useState<SocialStats>({ followersCount: 0, followingCount: 0, totalPostLikes: 0 });
+
+  useEffect(() => {
+    if (profile?.id) {
+      fetchProfileSocialStats(profile.id).then(stats => setSocialStats(stats));
+    }
+  }, [profile?.id]);
+
   const userCompletion = calculateCompletionRate(profile);
+
   const hasVouched = vouchRequests.some(v => v.vouch_status === 'approved');
   const userTier = getUserTier(profile, hasVouched);
   const isRoyal = userCompletion === 100 && userTier === 'diamond';
@@ -831,9 +842,37 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                   />
                 </div>
              </div>
+
+             {/* Community Hub Real-Time Statistics (Followers, Following, Total Post Likes) */}
+             <div className="flex items-center gap-3 pt-2">
+                <div className="flex-1 p-3 rounded-2xl bg-white border border-gray-100 shadow-sm text-center">
+                   <div className="text-sm font-black text-gray-900 flex items-center justify-center gap-1">
+                      <span>👥</span>
+                      <span>{socialStats.followersCount}</span>
+                   </div>
+                   <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Followers</p>
+                </div>
+
+                <div className="flex-1 p-3 rounded-2xl bg-white border border-gray-100 shadow-sm text-center">
+                   <div className="text-sm font-black text-gray-900 flex items-center justify-center gap-1">
+                      <span>👤</span>
+                      <span>{socialStats.followingCount}</span>
+                   </div>
+                   <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Following</p>
+                </div>
+
+                <div className="flex-1 p-3 rounded-2xl bg-white border border-gray-100 shadow-sm text-center">
+                   <div className="text-sm font-black text-red-500 flex items-center justify-center gap-1">
+                      <span>❤️</span>
+                      <span>{socialStats.totalPostLikes}</span>
+                   </div>
+                   <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Post Likes</p>
+                </div>
+             </div>
           </div>
         </div>
       </div>
+
 
       <div className="bg-white rounded-[2rem] md:rounded-[3rem] p-8 md:p-10 border border-gray-100 shadow-xl space-y-8">
         <h3 className="text-lg md:text-xl font-black text-accent italic tracking-tighter flex items-center gap-2 justify-center md:justify-start">

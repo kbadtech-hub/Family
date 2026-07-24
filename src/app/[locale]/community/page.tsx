@@ -9,26 +9,40 @@ import { Link } from '@/i18n/routing';
 import { 
   MessageCircle, 
   Heart, 
-  Send,
-  Image as ImageIcon,
-  Video,
-  MoreHorizontal,
-  Share2,
-  CheckCircle2,
-  Sparkles,
-  BarChart2,
-  X,
-  Languages
+  Send, 
+  MoreHorizontal, 
+  Share2, 
+  CheckCircle2, 
+  Sparkles, 
+  BarChart2, 
+  X, 
+  Languages,
+  UserPlus,
+  UserCheck,
+  Bookmark,
+  Repeat,
+  ThumbsDown,
+  Edit,
+  Trash2,
+  Lock,
+  PlusCircle,
+  HelpCircle
 } from 'lucide-react';
 import { translator, SupportedLocale } from '@/lib/translator';
+import { toggleFollowUser, isFollowingUser, toggleSavePost, isPostSaved, repostPost } from '@/lib/social';
+import PostCreationModal from '@/components/PostCreationModal';
+import EditPostModal from '@/components/EditPostModal';
+import IceBreakSection from '@/components/IceBreakSection';
 
 interface Profile {
+  id?: string;
   full_name: string | null;
   avatar_url: string | null;
   role: string;
+  tier?: string;
   is_premium?: boolean;
-  trial_ends_at?: string;
-  premium_until?: string;
+  is_verified?: boolean;
+  verification_status?: string;
 }
 
 interface PostComment {
@@ -46,9 +60,10 @@ interface CommunityPost {
   author_id: string;
   content: string;
   category: string;
-  media_url: string | null;
-  media_type: string;
+  topic?: string;
   created_at: string;
+  is_edited?: boolean;
+  edit_count?: number;
   is_approved: boolean;
   is_ai_generated: boolean;
   profiles: Profile;
@@ -67,15 +82,24 @@ function CommunityContent() {
   const locale = useLocale();
   
   const [posts, setPosts] = useState<CommunityPost[]>([]);
-  const [newPost, setNewPost] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentUser, setCurrentUser] = useState<CommunityUser | null>(null);
   const [activeCategory, setActiveCategory] = useState('all');
-  const [mediaFile, setMediaFile] = useState<File | null>(null);
-  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
-  const [postCategory, setPostCategory] = useState('general');
+
+  // Modals state
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<CommunityPost | null>(null);
+  const [activeMenuPostId, setActiveMenuPostId] = useState<string | null>(null);
+
+  // Interaction State
+  const [followingState, setFollowingState] = useState<Record<string, boolean>>({});
+  const [savedPostsState, setSavedPostsState] = useState<Record<string, boolean>>({});
+  const [dislikeState, setDislikeState] = useState<Record<string, boolean>>({});
+
+  // Comments state
   const [commentingOn, setCommentingOn] = useState<string | null>(null);
+  const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(null);
   const [commentText, setCommentText] = useState('');
+
   const searchParams = useSearchParams();
   const [highlightedPost, setHighlightedPost] = useState<string | null>(searchParams.get('post'));
   const [aiTopic, setAiTopic] = useState<string | null>(null);
@@ -83,18 +107,11 @@ function CommunityContent() {
   useEffect(() => {
     const postId = searchParams.get('post');
     if (postId) {
-      // Optional: scroll to post
       setTimeout(() => {
         document.getElementById(`post-${postId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 1000);
     }
   }, [searchParams]);
-
-  const handleShare = (postId: string) => {
-    const url = `${window.location.origin}${window.location.pathname}?post=${postId}`;
-    navigator.clipboard.writeText(url);
-    alert(t('interactions.linkCopied') || "Link copied to clipboard!");
-  };
 
   const categories = [
     { id: 'all', label: t('categories.all'), icon: MessageCircle },
@@ -118,7 +135,7 @@ function CommunityContent() {
       .from('community_posts')
       .select(`
         *,
-        profiles(full_name, avatar_url, role),
+        profiles!community_posts_author_id_fkey(id, full_name, avatar_url, role, tier, verification_status),
         post_likes(count),
         post_comments(
           *,
@@ -139,11 +156,26 @@ function CommunityContent() {
     if (data) {
       const filteredData = data.map((post: any) => {
         if (post.post_comments) {
-          post.post_comments = post.post_comments.filter((comment: any) => !blockedIds.includes(comment.author_id));
+          post.post_comments = post.post_comments.filter((comment: any) => !blockedIds.includes(comment.user_id || comment.author_id));
         }
         return post;
       });
       setPosts(filteredData as unknown as CommunityPost[]);
+
+      // Check follows and saved states for logged in user
+      if (user) {
+        const followMap: Record<string, boolean> = {};
+        const savedMap: Record<string, boolean> = {};
+
+        for (const post of filteredData) {
+          if (post.author_id && post.author_id !== user.id) {
+            followMap[post.author_id] = await isFollowingUser(user.id, post.author_id);
+          }
+          savedMap[post.id] = await isPostSaved(user.id, post.id);
+        }
+        setFollowingState(followMap);
+        setSavedPostsState(savedMap);
+      }
     }
   }, [activeCategory]);
 
@@ -154,7 +186,7 @@ function CommunityContent() {
       .eq('is_ai_generated', true)
       .order('created_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
     
     if (data) {
       setAiTopic(data.content);
@@ -174,65 +206,31 @@ function CommunityContent() {
     initPage();
   }, [fetchPosts, fetchAiTopic]);
 
-  const handleMediaSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setMediaFile(file);
-      setMediaPreview(URL.createObjectURL(file));
+  // Actions
+  const handleFollowToggle = async (authorId: string, authorName: string) => {
+    if (!currentUser) return;
+    const res = await toggleFollowUser(currentUser.id, currentUser.profile?.full_name || 'Member', authorId);
+    setFollowingState(prev => ({ ...prev, [authorId]: res.isFollowing }));
+  };
+
+  const handleSaveToggle = async (postId: string) => {
+    if (!currentUser) return;
+    const res = await toggleSavePost(currentUser.id, postId);
+    setSavedPostsState(prev => ({ ...prev, [postId]: res.isSaved }));
+  };
+
+  const handleRepost = async (postId: string) => {
+    if (!currentUser) return;
+    const res = await repostPost(currentUser.id, postId);
+    if (res.success) {
+      alert(locale === 'am' ? 'ፖስቱ ለጓደኞችዎ ሪፖስት ተደርጓል!' : 'Post recommended/reposted to your friends!');
     }
   };
 
-  const handlePost = async () => {
-    if (!newPost.trim() || !currentUser) return;
-    setIsSubmitting(true);
-    
-    let mediaUrl = null;
-    let mediaType = 'image';
-
-    if (mediaFile) {
-      const fileExt = mediaFile.name.split('.').pop();
-      const fileName = `${currentUser.id}/${Date.now()}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage
-        .from('community_media')
-        .upload(fileName, mediaFile);
-
-      if (!uploadError) {
-        const { data: { publicUrl } } = supabase.storage
-          .from('community_media')
-          .getPublicUrl(fileName);
-        mediaUrl = publicUrl;
-        mediaType = mediaFile.type.startsWith('video') ? 'video' : 'image';
-      }
-    }
-
-    const isPremium = currentUser.profile?.is_premium || 
-                     (currentUser.profile?.premium_until && new Date(currentUser.profile.premium_until) > new Date()) ||
-                     ['admin', 'super_admin', 'expert'].includes(currentUser.profile?.role);
-
-    if (!isPremium) {
-       alert(locale === 'am' ? "ይህ ፊቸር ለፕሪሚየም አባላት ብቻ ነው" : "This feature is for premium members only");
-       setIsSubmitting(false);
-       return;
-    }
-
-    const { error } = await supabase.from('community_posts').insert({
-       author_id: currentUser.id,
-       content: newPost.trim(),
-       category: postCategory,
-       media_url: mediaUrl,
-       media_type: mediaType,
-       is_approved: currentUser.profile?.role === 'admin' || currentUser.profile?.role === 'expert'
-    });
-    
-    if (!error) {
-       setNewPost('');
-       setMediaFile(null);
-       setMediaPreview(null);
-       fetchPosts();
-    } else {
-       alert(error.message);
-    }
-    setIsSubmitting(false);
+  const handleExternalShare = (postId: string) => {
+    const url = `${window.location.origin}${window.location.pathname}?post=${postId}`;
+    navigator.clipboard.writeText(url);
+    alert(locale === 'am' ? 'የፖስቱ Deep Link ኮፒ ተደርጓል! ለሌሎች ማጋራት ይችላሉ።' : 'Deep Link copied to clipboard! Share it anywhere.');
   };
 
   const handleLike = async (postId: string) => {
@@ -248,17 +246,34 @@ function CommunityContent() {
     }
   };
 
-  const handleComment = async (postId: string, parentId: string | null = null) => {
+  const handleDislikeToggle = (postId: string) => {
+    setDislikeState(prev => ({ ...prev, [postId]: !prev[postId] }));
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    if (!currentUser || !confirm(locale === 'am' ? 'ፖስቱን በቋሚነት ማጥፋት ይፈልጋሉ?' : 'Are you sure you want to permanently delete this post?')) return;
+    
+    const { error } = await supabase.from('community_posts').delete().eq('id', postId);
+    if (!error) {
+      setPosts(prev => prev.filter(p => p.id !== postId));
+      setActiveMenuPostId(null);
+    } else {
+      alert(error.message);
+    }
+  };
+
+  const handleCommentSubmit = async (postId: string, parentId: string | null = null) => {
     if (!commentText.trim() || !currentUser) return;
     const { error } = await supabase.from('post_comments').insert({
       post_id: postId,
-      user_id: currentUser.id,
+      author_id: currentUser.id,
       parent_id: parentId,
       content: commentText.trim()
     });
     if (!error) {
       setCommentText('');
       setCommentingOn(null);
+      setReplyingToCommentId(null);
       fetchPosts();
     }
   };
@@ -270,26 +285,7 @@ function CommunityContent() {
       post.content,
       locale as SupportedLocale
     );
-    
-    setPosts(prev => prev.map(p => 
-      p.id === post.id ? { ...p, content: translated } : p
-    ));
-  };
-
-  const translateComment = async (comment: PostComment) => {
-    const translated = await translator.getOrTranslate(
-      'post_comments',
-      comment.id,
-      comment.content,
-      locale as SupportedLocale
-    );
-    
-    setPosts(prev => prev.map(p => ({
-      ...p,
-      post_comments: p.post_comments?.map(c => 
-        c.id === comment.id ? { ...c, content: translated } : c
-      )
-    })));
+    setPosts(prev => prev.map(p => p.id === post.id ? { ...p, content: translated } : p));
   };
 
   const pollRef = useRef<(HTMLDivElement | null)[]>([]);
@@ -309,22 +305,29 @@ function CommunityContent() {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA]" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+      {/* Header Bar */}
       <header className="bg-primary text-white p-6 md:px-12 flex justify-between items-center shadow-lg sticky top-0 z-50">
          <div className="flex items-center gap-4">
             <Link href="/" className="text-2xl font-black tracking-tighter decoration-transparent hover:scale-105 transition-transform flex items-center gap-2">
                <Heart size={28} className="fill-white" />
-               <span>{locale === 'am' ? 'ቤተሰብ' : 'BETESEB'}</span>
+               <span>{locale === 'am' ? 'ቤተሰብ ጓዳ' : 'BETESEB COMMUNITY'}</span>
             </Link>
          </div>
          <div className="flex gap-6 items-center">
-            <Link href="/dashboard" className="hover:text-white/80 font-bold text-xs uppercase tracking-widest bg-white/10 px-4 py-2 rounded-full transition-all">{locale === 'am' ? 'ዳሽቦርድ' : 'Dashboard'}</Link>
+            <Link href="/dashboard" className="hover:text-white/80 font-bold text-xs uppercase tracking-widest bg-white/10 px-4 py-2 rounded-full transition-all">
+              {locale === 'am' ? 'ዳሽቦርድ' : 'Dashboard'}
+            </Link>
          </div>
       </header>
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 py-10 px-4">
+         
+         {/* Left Sidebar: Categories & AI Topic */}
          <aside className="lg:col-span-3 space-y-4">
             <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-100 sticky top-28">
-               <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 px-2">{locale === 'am' ? 'ምድቦች' : 'Categories'}</h4>
+               <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 px-2">
+                 {locale === 'am' ? 'ምድቦች' : 'Categories'}
+               </h4>
                <nav className="space-y-2">
                   {categories.map((cat) => (
                      <button 
@@ -343,211 +346,319 @@ function CommunityContent() {
                <div className="mt-10 p-6 bg-secondary/10 rounded-3xl border border-secondary/20">
                   <div className="flex items-center gap-2 text-secondary mb-2">
                      <Sparkles size={18} />
-                     <span className="font-black text-xs uppercase tracking-widest">{locale === 'am' ? 'የዕለቱ የAI መወያያ አርዕስት' : locale === 'ti' ? 'ናይ መዓልቲ ናይ AI መመያየጢ ኣርእስቲ' : locale === 'om' ? "Mata Duree AI Har'aa" : locale === 'so' ? 'Mowduuca AI ee Maalinta' : locale === 'ar' ? 'موضوع الذكاء الاصطناعي لليوم' : 'AI Topic of the Day'}</span>
+                     <span className="font-black text-xs uppercase tracking-widest">
+                       {locale === 'am' ? 'የዕለቱ የAI መወያያ አርዕስት' : 'AI Topic of the Day'}
+                     </span>
                   </div>
-                  <p className="text-sm font-bold text-accent italic">&quot;{aiTopic || (locale === 'am' ? 'ባህላዊው የአቡሻኪር የቀን አቆጣጠር ዘመናዊ የፍቅር ግንኙነት ድካምን እንዴት ሊፈታ ይችላል?' : locale === 'ti' ? 'ባህላዊ ኣቡሻኪር ሎጂክ ንዘመናዊ ናይ ፍቕሪ ርክብ ድካም ከመይ ገይሩ ክፈትሕ ይኽእል?' : locale === 'om' ? "Haalli dorgommii Abushakir dhiphina hariiroo ammayyaa akkamitti furuu danda'a?" : locale === 'so' ? 'Sidee macquulnimada dhaqanka Abushakir u xallin kartaa daalka shukaansiga casriga ah?' : locale === 'ar' ? 'كيف يمكن لمنطق أبوشاكر التقليدي حل إرهاق المواعدة الحديثة؟' : 'How can traditional Abushakir logic solve modern dating burnout?')}&quot;</p>
+                  <p className="text-sm font-bold text-accent italic">
+                    &quot;{aiTopic || (locale === 'am' ? 'ባህላዊው የአቡሻኪር የቀን አቆጣጠር ዘመናዊ የፍቅር ግንኙነት ድካምን እንዴት ሊፈታ ይችላል?' : 'How can traditional Abushakir logic solve modern dating burnout?')}&quot;
+                  </p>
                </div>
             </div>
          </aside>
 
+         {/* Center Feed */}
          <main className="lg:col-span-6 space-y-8">
-            <div className="bg-white p-6 md:p-8 rounded-[3rem] shadow-xl border border-gray-100 overflow-hidden relative">
-               <div className="flex gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-2xl bg-secondary flex-shrink-0 shadow-inner" />
-                  <div className="flex-1">
-                     <textarea 
-                        disabled={!currentUser}
-                        value={newPost}
-                        onChange={(e) => setNewPost(e.target.value)}
-                        className="w-full bg-muted/30 rounded-2xl p-6 border-none focus:ring-0 text-lg font-medium min-h-[120px] resize-none"
-                        placeholder={currentUser ? t('newPostPlaceholder') : t('loginRequired')}
-                     />
-                     {mediaPreview && (
-                        <div className="mt-4 relative rounded-2xl overflow-hidden border-2 border-primary/20 group">
-                           {mediaFile?.type.startsWith('video') ? (
-                              <video src={mediaPreview} controls className="w-full h-auto" />
-                           ) : (
-                              <Image src={mediaPreview} width={800} height={450} className="w-full h-auto object-cover" alt="Preview" />
-                           )}
-                           <button 
-                               onClick={() => { setMediaFile(null); setMediaPreview(null); }} 
-                               aria-label="Remove media"
-                               className="absolute top-2 right-2 p-2 bg-black/50 text-white rounded-full hover:bg-red-500 transition-colors"
-                            >
-                               <X size={16} />
-                            </button>
-                        </div>
-                     )}
+            
+            {/* Facebook-Style Post Creation Trigger Box */}
+            <div 
+              onClick={() => setIsCreateModalOpen(true)}
+              className="bg-white p-6 md:p-8 rounded-[3rem] shadow-xl border border-gray-100 cursor-pointer hover:border-primary/40 transition-all group"
+            >
+               <div className="flex gap-4 items-center mb-4">
+                  <Image 
+                    src={currentUser?.profile?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop'} 
+                    alt="User Avatar" 
+                    width={48} 
+                    height={48} 
+                    className="w-12 h-12 rounded-2xl object-cover shadow-sm border border-gray-100" 
+                  />
+                  <div className="flex-1 bg-muted/40 group-hover:bg-muted/70 rounded-2xl p-4 text-gray-500 font-medium text-sm transition-colors flex items-center justify-between">
+                     <span>{currentUser ? (locale === 'am' ? 'ምን አዲስ ነገር አለ? ሃሳብዎን ያጋሩ...' : "What's on your mind? Share text post...") : 'Sign in to create a post'}</span>
+                     <PlusCircle size={20} className="text-primary group-hover:scale-110 transition-transform" />
                   </div>
                </div>
-               <div className="flex items-center justify-between pt-4 border-t border-gray-50">
-                  <div className="flex gap-2">
-                     <label className="p-3 bg-muted rounded-xl hover:bg-primary/10 hover:text-primary transition-all cursor-pointer">
-                        <ImageIcon size={20} />
-                        <span className="sr-only">Upload Image</span>
-                        <input type="file" accept="image/*" className="hidden" aria-label="Upload image" onChange={handleMediaSelect} />
-                     </label>
-                     {currentUser?.profile?.role && ['admin', 'expert', 'super_admin'].includes(currentUser.profile.role) && (
-                        <label className="p-3 bg-muted rounded-xl hover:bg-primary/10 hover:text-primary transition-all cursor-pointer">
-                           <Video size={20} />
-                           <span className="sr-only">Upload Video</span>
-                           <input type="file" accept="video/*" className="hidden" aria-label="Upload video" onChange={handleMediaSelect} />
-                        </label>
-                     )}
-                     <select 
-                        value={postCategory} 
-                        onChange={(e) => setPostCategory(e.target.value)}
-                        aria-label="Select post category"
-                        className="bg-muted text-xs font-black uppercase tracking-widest border-none rounded-xl focus:ring-primary"
-                     >
-                        <option value="general">General</option>
-                        <option value="success_story">Success Story</option>
-                        <option value="lesson_learned">Lessons</option>
-                        {currentUser?.profile?.role === 'expert' && <option value="expert_class">Expert Class</option>}
-                     </select>
-                  </div>
-                  <button 
-                     onClick={handlePost}
-                     disabled={!currentUser || !newPost.trim() || isSubmitting}
-                     className="btn-primary py-3 px-8 rounded-2xl flex items-center gap-2 shadow-xl shadow-primary/30 disabled:opacity-50 hover:scale-105 active:scale-95 transition-all font-black uppercase tracking-widest text-xs"
-                  >
-                     {t('postButton')} <Send size={18} />
-                  </button>
+               <div className="flex items-center justify-between pt-3 border-t border-gray-50 text-xs font-bold text-gray-400">
+                 <span className="flex items-center gap-1.5">✍️ Text-Only Community Hub</span>
+                 <span className="text-primary group-hover:underline">Create Post &rarr;</span>
                </div>
             </div>
 
+            {/* News Feed - Card Layout with High Contrast Black Text on White Cards */}
             <div className="space-y-8">
-               {posts.map(post => (
-                  <div 
-                    key={post.id} 
-                    id={`post-${post.id}`}
-                    className={`bg-white rounded-[3rem] shadow-sm border overflow-hidden group hover:shadow-2xl transition-all duration-500 ${
-                      highlightedPost === post.id ? 'border-primary border-4 scale-[1.02] shadow-2xl ring-4 ring-primary/10' : 'border-gray-100'
-                    }`}
-                  >
-                     <div className="p-8">
-                        <div className="flex justify-between items-start mb-6">
-                           <div className="flex gap-4 items-center">
-                              <Image src={post.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop'} alt={`${post.profiles?.full_name || 'User'}'s avatar`} width={56} height={56} className="w-14 h-14 rounded-2xl object-cover shadow-lg" />
-                              <div>
-                                 <div className="flex items-center gap-2">
-                                    <p className="font-black text-accent">{post.profiles?.full_name}</p>
-                                    {post.profiles?.role === 'expert' && (
-                                       <span className="flex items-center gap-1 text-[10px] font-black bg-blue-500/10 text-blue-600 px-2 py-0.5 rounded-full border border-blue-500/20">
-                                          <CheckCircle2 size={10} /> VERIFIED EXPERT
-                                       </span>
-                                    )}
-                                 </div>
-                                 <p className="text-xs text-gray-400 font-medium">{new Date(post.created_at).toLocaleDateString()}</p>
-                              </div>
-                           </div>
-                           <button aria-label="Post options" className="p-3 text-gray-300 hover:text-accent transition-colors"><MoreHorizontal size={20} /></button>
-                        </div>
-                        <div className="space-y-4 mb-6">
-                           <span className="inline-block text-[10px] font-black bg-primary/5 text-primary px-3 py-1 rounded-full uppercase tracking-widest border border-primary/10">
-                              #{post.category?.replace('_', ' ') || 'general'}
-                           </span>
-                           <p className="text-gray-700 leading-relaxed text-lg font-medium">{post.content}</p>
-                           <button 
-                              onClick={() => translatePost(post)}
-                              className="flex items-center gap-1.5 text-[10px] font-black text-primary uppercase tracking-widest bg-primary/5 px-3 py-1 rounded-full hover:bg-primary hover:text-white transition-all mt-2"
-                           >
-                              <Languages size={12} /> {locale === 'am' ? 'ተርጉም' : 'Translate'}
-                           </button>
-                        </div>
-                        {post.media_url && (
-                           <div className="mb-6 rounded-[2rem] overflow-hidden border-4 border-muted shadow-inner">
-                              {post.media_type === 'video' ? (
-                                 <video src={post.media_url} controls className="w-full h-auto" />
-                              ) : (
-                                 <Image src={post.media_url} width={800} height={450} className="w-full h-auto object-cover hover:scale-105 transition-transform duration-700" alt="Post content" />
-                              )}
-                           </div>
-                        )}
-                        <div className="flex items-center justify-between border-t border-gray-0 pt-6">
-                           <div className="flex items-center gap-6">
-                              <button 
-                                 onClick={() => handleLike(post.id)}
-                                 aria-label="Like post"
-                                 className="flex items-center gap-2 text-gray-400 hover:text-red-500 transition-colors group/like"
-                              >
-                                 <Heart size={20} className="group-hover/like:fill-red-500 transition-all" /> 
-                                 <span className="font-bold text-sm">{post.post_likes?.[0]?.count || 0}</span>
-                              </button>
-                              <button 
-                                 onClick={() => setCommentingOn(commentingOn === post.id ? null : post.id)}
-                                 aria-label="Comment on post"
-                                 className="flex items-center gap-2 text-gray-400 hover:text-primary transition-colors"
-                              >
-                                 <MessageCircle size={20} /> 
-                                 <span className="font-bold text-sm">{post.post_comments?.length || 0}</span>
-                              </button>
-                           </div>
-                           <button 
-                              onClick={() => handleShare(post.id)}
-                              className="flex items-center gap-2 text-gray-400 hover:text-primary transition-colors font-bold text-xs uppercase tracking-widest"
-                           >
-                              <Share2 size={18} /> {t('interactions.share')}
-                           </button>
-                        </div>
-                        {commentingOn === post.id && (
-                           <div className="mt-8 pt-8 border-t border-gray-50 space-y-6 animate-in slide-in-from-top-4 duration-300">
-                              <div className="flex gap-3">
-                                 <input 
-                                    value={commentText}
-                                    onChange={(e) => setCommentText(e.target.value)}
-                                    placeholder={t('interactions.writeComment')}
-                                    className="flex-1 bg-muted/50 border-none rounded-2xl px-6 py-3 font-medium focus:ring-primary"
-                                 />
-                                 <button 
-                                    onClick={() => handleComment(post.id)}
-                                    aria-label="Send comment"
-                                    className="p-3 bg-primary text-white rounded-2xl hover:scale-105 transition-all shadow-lg shadow-primary/20"
-                                 >
-                                    <Send size={20} />
-                                 </button>
-                              </div>
-                              <div className="space-y-4">
-                                 {post.post_comments?.map((comment: PostComment) => (
-                                    <div key={comment.id} className="flex gap-4 group/comment">
-                                       <Image src={comment.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop'} alt={`${comment.profiles?.full_name || 'User'}'s avatar`} width={40} height={40} className="w-10 h-10 rounded-xl object-cover shadow-sm" />
-                                       <div className="flex-1 bg-muted/30 p-4 rounded-[1.5rem] relative">
-                                          <p className="text-xs font-black text-accent mb-1">{comment.profiles?.full_name}</p>
-                                          <p className="text-sm text-gray-600 font-medium">{comment.content}</p>
-                                          <div className="flex gap-4 mt-2">
-                                             <button className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">{t('interactions.reply')}</button>
-                                             <button 
-                                                onClick={() => translateComment(comment)}
-                                                className="text-[10px] font-black text-secondary uppercase tracking-widest hover:underline flex items-center gap-1"
-                                             >
-                                                <Languages size={10} /> {locale === 'am' ? 'ተርጉም' : 'Translate'}
-                                             </button>
-                                          </div>
-                                       </div>
-                                    </div>
-                                 ))}
-                              </div>
-                           </div>
-                        )}
-                     </div>
-                  </div>
-               ))}
+               {posts.map(post => {
+                  const isAuthor = currentUser && post.author_id === currentUser.id;
+                  const isFollowingAuthor = followingState[post.author_id];
+                  const isSaved = savedPostsState[post.id];
+                  const isDisliked = dislikeState[post.id];
+
+                  return (
+                    <div 
+                      key={post.id} 
+                      id={`post-${post.id}`}
+                      className={`bg-white rounded-[3rem] shadow-sm border border-gray-100 overflow-hidden group hover:shadow-2xl transition-all duration-500 ${
+                        highlightedPost === post.id ? 'border-primary border-4 scale-[1.02] shadow-2xl ring-4 ring-primary/10' : ''
+                      }`}
+                    >
+                       <div className="p-8">
+                          
+                          {/* Card Header: Author Info + Follow Button + 3-Dots Menu */}
+                          <div className="flex justify-between items-center mb-6">
+                             <div className="flex gap-4 items-center">
+                                <Image 
+                                  src={post.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop'} 
+                                  alt={`${post.profiles?.full_name || 'Author'}'s avatar`} 
+                                  width={56} 
+                                  height={56} 
+                                  className="w-14 h-14 rounded-2xl object-cover shadow-md border border-gray-100" 
+                                />
+                                <div>
+                                   <div className="flex items-center gap-3">
+                                      <p className="font-black text-gray-900 text-base">{post.profiles?.full_name || 'Community Member'}</p>
+                                      
+                                      {/* Author Follow Button (If not author) */}
+                                      {currentUser && !isAuthor && (
+                                        <button
+                                          onClick={() => handleFollowToggle(post.author_id, post.profiles?.full_name || 'Member')}
+                                          className={`px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
+                                            isFollowingAuthor 
+                                              ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' 
+                                              : 'bg-primary text-white shadow-sm hover:scale-105'
+                                          }`}
+                                        >
+                                          {isFollowingAuthor ? (
+                                            <>
+                                              <UserCheck size={12} />
+                                              <span>Following</span>
+                                            </>
+                                          ) : (
+                                            <>
+                                              <UserPlus size={12} />
+                                              <span>Follow</span>
+                                            </>
+                                          )}
+                                        </button>
+                                      )}
+                                   </div>
+                                   
+                                   <div className="flex items-center gap-2 mt-0.5">
+                                      <span className="text-xs text-gray-400 font-medium">
+                                        {new Date(post.created_at).toLocaleDateString()}
+                                      </span>
+                                      
+                                      {/* Edited Badge */}
+                                      {post.is_edited && (
+                                        <span className="text-[10px] font-black bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full border border-amber-200">
+                                          Edited / ተስተካክሏል
+                                        </span>
+                                      )}
+                                   </div>
+                                </div>
+                             </div>
+
+                             {/* 3-Dots Menu (Post Owner Only: Edit 1x & Delete) */}
+                             <div className="relative">
+                                {isAuthor ? (
+                                  <button 
+                                    onClick={() => setActiveMenuPostId(activeMenuPostId === post.id ? null : post.id)}
+                                    aria-label="Post options" 
+                                    className="p-3 text-gray-400 hover:text-gray-900 transition-colors rounded-2xl hover:bg-muted"
+                                  >
+                                    <MoreHorizontal size={20} />
+                                  </button>
+                                ) : null}
+
+                                {activeMenuPostId === post.id && isAuthor && (
+                                  <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-100 rounded-2xl shadow-xl z-30 p-2 space-y-1 animate-in zoom-in-95">
+                                     <button
+                                       onClick={() => {
+                                         setEditingPost(post);
+                                         setActiveMenuPostId(null);
+                                       }}
+                                       disabled={(post.edit_count || 0) >= 1}
+                                       className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-gray-700 hover:bg-muted transition-colors flex items-center gap-2 disabled:opacity-40"
+                                     >
+                                       <Edit size={14} className="text-blue-500" />
+                                       <span>{(post.edit_count || 0) >= 1 ? 'Edited (Max 1)' : 'Edit Post (1x)'}</span>
+                                     </button>
+
+                                     <button
+                                       onClick={() => handleDeletePost(post.id)}
+                                       className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+                                     >
+                                       <Trash2 size={14} />
+                                       <span>Delete Post</span>
+                                     </button>
+                                  </div>
+                                )}
+                             </div>
+                          </div>
+
+                          {/* Post Topic Tag & High Contrast Text */}
+                          <div className="space-y-4 mb-6">
+                             <span className="inline-block text-[10px] font-black bg-primary/10 text-primary px-3 py-1 rounded-full uppercase tracking-widest border border-primary/20">
+                                #{post.topic || post.category?.replace('_', ' ') || 'Marriage'}
+                             </span>
+
+                             {/* High Contrast Text: Black Text on White Background */}
+                             <p className="text-gray-900 leading-relaxed text-lg font-medium whitespace-pre-line">
+                               {post.content}
+                             </p>
+
+                             <button 
+                                onClick={() => translatePost(post)}
+                                className="flex items-center gap-1.5 text-[10px] font-black text-primary uppercase tracking-widest bg-primary/5 px-3 py-1 rounded-full hover:bg-primary hover:text-white transition-all mt-2"
+                             >
+                                <Languages size={12} /> {locale === 'am' ? 'ተርጉም' : 'Translate'}
+                             </button>
+                          </div>
+
+                          {/* Interactive Action Buttons Row */}
+                          <div className="flex items-center justify-between border-t border-gray-100 pt-6 flex-wrap gap-3">
+                             <div className="flex items-center gap-4 md:gap-6">
+                                
+                                {/* Like */}
+                                <button 
+                                   onClick={() => handleLike(post.id)}
+                                   aria-label="Like post"
+                                   className="flex items-center gap-1.5 text-gray-500 hover:text-red-500 transition-colors group/like"
+                                >
+                                   <Heart size={18} className="group-hover/like:fill-red-500 transition-all" /> 
+                                   <span className="font-bold text-xs">{post.post_likes?.[0]?.count || 0}</span>
+                                </button>
+
+                                {/* Dislike */}
+                                <button 
+                                   onClick={() => handleDislikeToggle(post.id)}
+                                   aria-label="Dislike post"
+                                   className={`flex items-center gap-1.5 transition-colors ${
+                                     isDisliked ? 'text-amber-600 font-bold' : 'text-gray-500 hover:text-amber-600'
+                                   }`}
+                                >
+                                   <ThumbsDown size={18} />
+                                </button>
+
+                                {/* Comment Drawer Toggle */}
+                                <button 
+                                   onClick={() => setCommentingOn(commentingOn === post.id ? null : post.id)}
+                                   aria-label="Comment on post"
+                                   className="flex items-center gap-1.5 text-gray-500 hover:text-primary transition-colors font-bold text-xs"
+                                >
+                                   <MessageCircle size={18} /> 
+                                   <span>{post.post_comments?.length || 0}</span>
+                                </button>
+
+                                {/* In-App Repost */}
+                                <button
+                                   onClick={() => handleRepost(post.id)}
+                                   className="flex items-center gap-1 text-gray-500 hover:text-emerald-600 transition-colors font-bold text-xs"
+                                   title="Recommend to friends"
+                                >
+                                   <Repeat size={18} />
+                                </button>
+
+                                {/* Save Post Button */}
+                                <button
+                                   onClick={() => handleSaveToggle(post.id)}
+                                   className={`flex items-center gap-1 transition-colors text-xs font-bold ${
+                                     isSaved ? 'text-primary' : 'text-gray-500 hover:text-primary'
+                                   }`}
+                                   title="Save post"
+                                >
+                                   <Bookmark size={18} className={isSaved ? 'fill-primary' : ''} />
+                                   <span className="hidden sm:inline">{isSaved ? 'Saved' : 'Save'}</span>
+                                </button>
+
+                             </div>
+
+                             {/* External Share (Deep Link Generator) */}
+                             <button 
+                                onClick={() => handleExternalShare(post.id)}
+                                className="flex items-center gap-1.5 text-gray-500 hover:text-primary transition-colors font-bold text-xs uppercase tracking-widest bg-muted/50 px-3 py-1.5 rounded-xl border border-gray-100"
+                             >
+                                <Share2 size={16} /> 
+                                <span>Deep Link Share</span>
+                             </button>
+                          </div>
+
+                          {/* Threaded Comments Section */}
+                          {commentingOn === post.id && (
+                             <div className="mt-8 pt-8 border-t border-gray-100 space-y-6 animate-in slide-in-from-top-4 duration-300">
+                                <div className="flex gap-3">
+                                   <input 
+                                      value={commentText}
+                                      onChange={(e) => setCommentText(e.target.value)}
+                                      placeholder={replyingToCommentId ? "Writing a reply..." : t('interactions.writeComment')}
+                                      className="flex-1 bg-muted/40 border border-gray-200 rounded-2xl px-6 py-3 text-sm font-medium focus:ring-primary focus:border-primary"
+                                   />
+                                   <button 
+                                      onClick={() => handleCommentSubmit(post.id, replyingToCommentId)}
+                                      aria-label="Send comment"
+                                      className="p-3 bg-primary text-white rounded-2xl hover:scale-105 transition-all shadow-lg shadow-primary/20"
+                                   >
+                                      <Send size={18} />
+                                   </button>
+                                </div>
+
+                                <div className="space-y-4">
+                                   {post.post_comments?.map((comment: PostComment) => (
+                                      <div key={comment.id} className="flex gap-4 group/comment">
+                                         <Image 
+                                           src={comment.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop'} 
+                                           alt="Commenter Avatar" 
+                                           width={40} 
+                                           height={40} 
+                                           className="w-10 h-10 rounded-xl object-cover shadow-sm" 
+                                         />
+                                         <div className="flex-1 bg-muted/30 p-4 rounded-[1.5rem] relative border border-gray-100">
+                                            <p className="text-xs font-black text-gray-900 mb-1">{comment.profiles?.full_name || 'Member'}</p>
+                                            <p className="text-sm text-gray-800 font-medium">{comment.content}</p>
+                                            
+                                            <div className="flex gap-4 mt-2">
+                                               <button 
+                                                 onClick={() => setReplyingToCommentId(comment.id)}
+                                                 className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline"
+                                               >
+                                                 {t('interactions.reply')}
+                                               </button>
+                                            </div>
+                                         </div>
+                                      </div>
+                                   ))}
+                                </div>
+                             </div>
+                          )}
+                       </div>
+                    </div>
+                  );
+               })}
             </div>
+
+            {/* Ice Break Section (Gold+ Tier Discussion Topic) */}
+            <IceBreakSection currentUser={currentUser} locale={locale} />
+
          </main>
 
+         {/* Right Sidebar: Preserved Existing Sections (Family Poll & Trending Tags) */}
          <aside className="lg:col-span-3 space-y-8">
+            
+            {/* Preserved Family Poll Section */}
             <div className="bg-white p-8 rounded-[3rem] shadow-xl border border-gray-100 relative overflow-hidden group">
                <div className="absolute top-0 left-0 w-2 h-full bg-secondary group-hover:w-4 transition-all" />
                <div className="flex items-center gap-3 mb-6">
                   <BarChart2 className="text-secondary" />
-                  <h4 className="text-lg font-black text-accent italic">{locale === 'am' ? 'የቤተሰብ የህዝብ አስተያየት' : locale === 'ti' ? 'ናይ ስድራቤት ህዝባዊ ርእይቶ' : locale === 'om' ? 'Filannoo Maatii' : locale === 'so' ? 'Cod-bixinta Qoyska' : locale === 'ar' ? 'استطلاع الأسرة' : 'Family Poll'}</h4>
+                  <h4 className="text-lg font-black text-accent italic">
+                    {locale === 'am' ? 'የቤተሰብ የህዝብ አስተያየት' : 'Family Poll'}
+                  </h4>
                </div>
-               <p className="font-bold text-accent mb-6 leading-relaxed">{locale === 'am' ? 'ለረጅም ርቀት የፍቅር ግንኙነት በጣም አስፈላጊው ባህሪ ምንድነው?' : locale === 'ti' ? 'ንነዊሕ ርሕቀት ዘለዎ ናይ ፍቕሪ ርክብ ዝበለጸ ኣገዳሲ ባህሪ እንታይ እዩ?' : locale === 'om' ? "Hariiroo fageenyaa keessatti amalli baay'ee barbaachisaa ta'e maali?" : locale === 'so' ? 'Waa maxay astaanta ugu muhiimsan ee xiriirka fogaanta ah?' : locale === 'ar' ? 'ما هي أهم ميزة لعلاقة حب عن بعد؟' : 'What is the most important trait for a long-distance relationship?'}</p>
+               <p className="font-bold text-accent mb-6 leading-relaxed">
+                 {locale === 'am' ? 'ለረጅም ርቀት የፍቅር ግንኙነት በጣም አስፈላጊው ባህሪ ምንድነው?' : 'What is the most important trait for a long-distance relationship?'}
+               </p>
                <div className="space-y-3">
                   {[
-                     { label: locale === 'am' ? 'የዕለታዊ የቪዲዮ ወሬ' : locale === 'ti' ? 'መዓልታዊ ናይ ቪዲዮ ዕላል' : locale === 'om' ? 'Viidiyoo Chatii Guyyuu' : locale === 'so' ? 'Wada hadalka Muuqaalka ee Maalinlaha' : locale === 'ar' ? 'محادثة فيديو يومية' : 'Daily Video Chat', percent: 45 },
-                     { label: locale === 'am' ? 'እምነት እና ግልጽነት' : locale === 'ti' ? 'እምነትን ግልጽነትን' : locale === 'om' ? 'Amanamummaa fi Gabaasamummaa' : locale === 'so' ? 'Aaminaad iyo Furfurnaan' : locale === 'ar' ? 'الثقة والشفافية' : 'Trust & Transparency', percent: 82 },
-                     { label: locale === 'am' ? 'የወደፊት እቅድ' : locale === 'ti' ? 'ናይ መጻኢ ውጥን' : locale === 'om' ? 'Karoora Gara Fulduuraa' : locale === 'so' ? 'Qorshaha Mustaqbalka' : locale === 'ar' ? 'خطة المستقبل' : 'Future Plan', percent: 34 }
+                     { label: locale === 'am' ? 'የዕለታዊ የቪዲዮ ወሬ' : 'Daily Video Chat', percent: 45 },
+                     { label: locale === 'am' ? 'እምነት እና ግልጽነት' : 'Trust & Transparency', percent: 82 },
+                     { label: locale === 'am' ? 'የወደፊት እቅድ' : 'Future Plan', percent: 34 }
                   ].map((opt, i) => (
                      <button key={i} className="w-full p-4 rounded-2xl border border-gray-100 hover:border-secondary transition-all text-left relative overflow-hidden group/opt">
                         <div className="relative z-10 flex justify-between items-center font-bold text-sm">
@@ -563,16 +674,41 @@ function CommunityContent() {
                </div>
             </div>
 
+            {/* Preserved Trending Tags Section */}
             <div className="bg-card p-8 rounded-[3rem] shadow-2xl border border-white/5">
-               <h4 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6">{locale === 'am' ? 'በብዛት የተጎበኙ መለያዎች' : locale === 'ti' ? 'ብብዝሒ ዝተረኣዩ መለለዪታት' : locale === 'om' ? "Mirkannoo Babal'atan" : locale === 'so' ? 'Mawduucyada ugu caansan' : locale === 'ar' ? 'الوسوم الشائعة' : 'Trending Tags'}</h4>
+               <h4 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6">
+                 {locale === 'am' ? 'በብዛት የተጎበኙ መለያዎች' : 'Trending Tags'}
+               </h4>
                <div className="flex flex-wrap gap-2">
-                  {(locale === 'am' ? ['#አቡሻኪር', '#የስኬትታሪኮች', '#የሐበሻሰርግ', '#የቤተሰብእሴቶች', '#የኢትዮጵያቅርስ'] : locale === 'ti' ? ['#አቡሻኪር', '#ታሪኽዓወት', '#መርዓሓበሻ', '#ክብርታትስድራቤት', '#ቅርስኢትዮጵያ'] : locale === 'om' ? ['#Abushaakir', '#SeenaaMilkaa\'inaa', '#CidhaHabeshaa', '#DuudhaaleeMaatii', '#DhaalaItoophiyaa'] : locale === 'so' ? ['#Abushakir', '#SheekooyinkaGuusha', '#AroosyadaHabesha', '#QiimahaQoyska', '#HiddahaItoobiya'] : locale === 'ar' ? ['#أبوشاكر', '#قصص_نجاح', '#أعراس_الحبشة', '#القيم_الأسرية', '#التراث_الأثيوبي'] : ['#Abushakir', '#SuccessStories', '#HabeshaWeddings', '#FamilyValues', '#EthiopianHeritage']).map(tag => (
+                  {(locale === 'am' ? ['#አቡሻኪር', '#የስኬትታሪኮች', '#የሐበሻሰርግ', '#የቤተሰብእሴቶች', '#የኢትዮጵያቅርስ'] : ['#Abushakir', '#SuccessStories', '#HabeshaWeddings', '#FamilyValues', '#EthiopianHeritage']).map(tag => (
                      <span key={tag} className="text-[10px] font-black bg-white/5 hover:bg-primary hover:text-white px-4 py-2 rounded-full cursor-pointer transition-all border border-white/5">{tag}</span>
                   ))}
                </div>
             </div>
+
          </aside>
       </div>
+
+      {/* Post Creation Modal */}
+      <PostCreationModal 
+        currentUser={currentUser}
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onPostSuccess={fetchPosts}
+      />
+
+      {/* Edit Post Modal (1-time edit limit) */}
+      {editingPost && (
+        <EditPostModal
+          post={editingPost}
+          isOpen={!!editingPost}
+          onClose={() => setEditingPost(null)}
+          onPostEdited={() => {
+            fetchPosts();
+            setEditingPost(null);
+          }}
+        />
+      )}
     </div>
    );
 }

@@ -89,3 +89,65 @@ export function resolveCoinAmount(planType: string, paidAmount?: number, currenc
 
   return rawNum > 0 ? rawNum : 100;
 }
+
+/**
+ * Universal Coin Deduction Logic for Paid Services (Gifts, Courses, Counseling, Premium Features).
+ * Deducts specified coin amount from user's wallet via coin_transactions.
+ */
+import { supabase } from '@/lib/supabase';
+
+export async function deductCoinsForService({
+  userId,
+  amount,
+  serviceName,
+  referenceId
+}: {
+  userId: string;
+  amount: number;
+  serviceName: string;
+  referenceId?: string;
+}): Promise<{ success: boolean; error?: string; remainingCoins?: number }> {
+  if (!userId || amount <= 0) {
+    return { success: false, error: 'Invalid deduction parameters' };
+  }
+
+  try {
+    // 1. Fetch current wallet balance
+    const { data: wallet, error: walletError } = await supabase
+      .from('user_wallets')
+      .select('coin_balance')
+      .eq('id', userId)
+      .single();
+
+    if (walletError || !wallet) {
+      return { success: false, error: 'Wallet not found' };
+    }
+
+    if (Number(wallet.coin_balance) < amount) {
+      return {
+        success: false,
+        error: `Insufficient coins. You have ${wallet.coin_balance} coins, but ${amount} coins are required.`
+      };
+    }
+
+    // 2. Insert negative transaction to trigger balance update
+    const { error: txError } = await supabase.from('coin_transactions').insert({
+      user_id: userId,
+      amount: -Math.abs(amount),
+      type: 'coin_transfer',
+      reference_id: referenceId || null,
+      note: `Payment for ${serviceName}`
+    });
+
+    if (txError) {
+      return { success: false, error: txError.message };
+    }
+
+    const remainingCoins = Number(wallet.coin_balance) - amount;
+    return { success: true, remainingCoins };
+  } catch (err: any) {
+    console.error('[Coins] Deduction error:', err);
+    return { success: false, error: err.message || 'Deduction failed' };
+  }
+}
+
