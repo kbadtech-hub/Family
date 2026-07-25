@@ -3,9 +3,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Session, User } from '@supabase/supabase-js';
-import { setUserProperties, trackLogin } from '@/lib/firebase-analytics';
-import { setCrashlyticsUser } from '@/lib/firebase-crashlytics';
-import { unregisterPushNotifications } from '@/lib/push-notifications';
 
 interface AuthContextType {
   user: User | null;
@@ -80,15 +77,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
 
       if (_event === 'SIGNED_IN' && session?.user) {
-        // Track login in Firebase Analytics
-        trackLogin('email').catch(() => {});
-        // Set user identity in Crashlytics
-        setCrashlyticsUser(session.user.id).catch(() => {});
-        // Set user properties for segmentation
-        setUserProperties(session.user.id, 'free', session.user.user_metadata?.country || 'ET').catch(() => {});
+        // Lazy-load Firebase services only when a user actually signs in
+        import('@/lib/firebase-analytics').then(({ trackLogin, setUserProperties }) => {
+          trackLogin('email').catch(() => {});
+          setUserProperties(session.user.id, 'free', session.user.user_metadata?.country || 'ET').catch(() => {});
+        }).catch(() => {});
+
+        import('@/lib/firebase-crashlytics').then(({ setCrashlyticsUser }) => {
+          setCrashlyticsUser(session.user.id).catch(() => {});
+        }).catch(() => {});
+
       } else if (_event === 'SIGNED_OUT') {
-        // Clean up FCM tokens on logout
-        unregisterPushNotifications().catch(() => {});
+        // Lazy-load and clean up FCM tokens on logout
+        import('@/lib/push-notifications').then(({ unregisterPushNotifications }) => {
+          unregisterPushNotifications().catch(() => {});
+        }).catch(() => {});
       }
     });
 

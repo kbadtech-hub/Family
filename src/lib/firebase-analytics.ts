@@ -4,7 +4,6 @@
  * Works on Web (via Firebase JS SDK) and Native (via @capacitor-firebase/analytics).
  */
 
-import { logEvent } from 'firebase/analytics';
 import { getFirebaseAnalytics } from './firebase';
 
 // ── Utility: detect native Capacitor platform ──────────────────────────────
@@ -28,6 +27,7 @@ async function logWebEvent(name: string, params?: Record<string, any>) {
   try {
     const analytics = await getFirebaseAnalytics();
     if (!analytics) return;
+    const { logEvent } = await import('firebase/analytics');
     logEvent(analytics, name as any, params);
   } catch (e) {
     console.warn('Web Firebase Analytics log failed:', e);

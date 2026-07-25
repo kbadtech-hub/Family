@@ -204,6 +204,14 @@ export default function GeoGuard({ children }: GeoGuardProps) {
   const locale = useLocale();
   const str = getStrings(locale);
 
+  // On native Android/iOS (Capacitor), skip GeoGuard entirely.
+  // The app is distributed through the Play Store/App Store, so the
+  // geo/VPN check is unnecessary and the GPS + network race at startup
+  // can cause a native crash.
+  if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.()) {
+    return <>{children}</>;
+  }
+
   const [checkState, setCheckState]     = useState<CheckState>('checking');
   const [blockReason, setBlockReason]   = useState<BlockReason>(null);
   const [showWhyInfo, setShowWhyInfo]   = useState(false);
