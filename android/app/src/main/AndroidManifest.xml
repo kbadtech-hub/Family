@@ -31,7 +31,18 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Social Login OAuth redirect (Google, Facebook, Apple via Firebase) -->
                 <data android:scheme="com.beteseb.app" />
+            </intent-filter>
+            <!-- Additional filter for explicit auth-callback path -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="beteseb1.online"
+                    android:pathPrefix="/auth-callback" />
             </intent-filter>
         </activity>
 

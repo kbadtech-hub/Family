@@ -217,13 +217,32 @@ interface SyncResult {
  */
 async function syncFirebaseUserWithSupabase(firebaseUser: FirebaseUser): Promise<SyncResult> {
   // Get a fresh Firebase ID token to send to our server
-  const idToken = await firebaseUser.getIdToken();
-
-  const res = await fetch('/api/auth/firebase-sync', {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ idToken }),
+  const idToken = await firebaseUser.getIdToken().catch((err) => {
+    console.error('[FirebaseAuth] Failed to get ID token:', err);
+    throw new Error('Failed to get authentication token. Please try again.');
   });
+
+  // Use AbortController to prevent hanging on slow networks
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+  let res: Response;
+  try {
+    res = await fetch('/api/auth/firebase-sync', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ idToken }),
+      signal:  controller.signal,
+    });
+  } catch (fetchErr: any) {
+    clearTimeout(timeoutId);
+    if (fetchErr.name === 'AbortError') {
+      throw new Error('Server request timed out. Please check your connection and try again.');
+    }
+    throw new Error(`Network error during sign-in sync: ${fetchErr.message}`);
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!res.ok) {
     let errorMsg = '';
@@ -242,12 +261,20 @@ async function syncFirebaseUserWithSupabase(firebaseUser: FirebaseUser): Promise
     throw new Error(errorMsg);
   }
 
-  const data = await res.json();
-  
+  let data: any;
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error('Invalid response from server. Please try again.');
+  }
+
   // Sign into Supabase client-side to set cookies and establish local session
   const { error: supabaseAuthError } = await supabase.auth.signInWithPassword({
     email:    data.loginEmail,
     password: data.derivedPassword
+  }).catch((err) => {
+    console.error('[FirebaseAuth] Supabase signInWithPassword threw:', err);
+    return { error: err };
   });
 
   if (supabaseAuthError) {
