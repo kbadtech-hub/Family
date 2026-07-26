@@ -470,7 +470,6 @@ Return ONLY valid JSON:
                   birth_date: res.extractedDOB || dbBirthDate,
                 },
               });
-            }
           }
         }
       } catch (geminiErr: any) {
