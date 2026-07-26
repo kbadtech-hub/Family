@@ -355,37 +355,61 @@ Return ONLY valid JSON:
   "rejectionReasonEnglish": string
 }`;
 
-        const geminiRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                parts: [
-                  { text: geminiPrompt },
-                  geminiImagePart
-                ]
-              }],
-              generationConfig: { responseMimeType: 'application/json' }
-            })
+        // Candidate model endpoints to ensure version compatibility across Google AI Studio releases
+        const candidateModels = [
+          'gemini-2.5-flash',
+          'gemini-2.0-flash',
+          'gemini-1.5-flash-latest',
+          'gemini-1.5-flash',
+          'gemini-1.5-pro'
+        ];
+
+        let geminiData: any = null;
+        let lastErrorMsg = '';
+
+        for (const model of candidateModels) {
+          try {
+            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
+            const geminiRes = await fetch(geminiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{
+                  parts: [
+                    { text: geminiPrompt },
+                    geminiImagePart
+                  ]
+                }],
+                generationConfig: { responseMimeType: 'application/json' }
+              })
+            });
+
+            const resJson = await geminiRes.json();
+            if (!resJson.error) {
+              geminiData = resJson;
+              break;
+            } else {
+              lastErrorMsg = resJson.error.message || JSON.stringify(resJson.error);
+              console.warn(`Gemini model ${model} failed:`, lastErrorMsg);
+            }
+          } catch (modelErr: any) {
+            lastErrorMsg = modelErr.message;
+            console.warn(`Gemini model ${model} error:`, modelErr);
           }
-        );
+        }
 
-        const geminiData = await geminiRes.json();
-
-        if (geminiData.error) {
-          console.error('Gemini API Error:', geminiData.error);
-          const geminiErrMsg = geminiData.error.message || JSON.stringify(geminiData.error);
+        if (!geminiData) {
+          console.error('All Gemini API models failed:', lastErrorMsg);
           return NextResponse.json({
             isMatch: false,
-            reason: `Gemini API Error: ${geminiErrMsg}`,
-            displayMessage: `የ Gemini AI ማንነት ማረጋገጫ አልተሳካም። ምክንያት፦ ${geminiErrMsg}። (እባክዎን Vercel ላይ GEMINI_API_KEY ትክክለኛ መሆኑን ያረጋግጡ)።`,
+            reason: `Gemini API Error: ${lastErrorMsg}`,
+            displayMessage: `የ Gemini AI ማንነት ማረጋገጫ አልተሳካም። ምክንያት፦ ${lastErrorMsg}። (እባክዎን Vercel ላይ GEMINI_API_KEY ትክክለኛ መሆኑን ያረጋግጡ)።`,
             mode: isDocOnly ? 'doc_only' : 'full',
           });
-        } else {
-          const geminiText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (geminiText) {
+        }
+
+        const geminiText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (geminiText) {
             let res: any;
             try {
               const cleanJson = geminiText.replace(/```json/g, '').replace(/```/g, '').trim();
