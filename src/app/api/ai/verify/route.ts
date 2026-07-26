@@ -324,7 +324,13 @@ export async function POST(req: Request) {
           console.warn('Gemini: Could not fetch image binary:', fetchErr);
         }
 
-        if (base64DataGemini) {
+        // Build image part: prefer base64 inline_data, fallback to public URL via fileData
+        const geminiImagePart = base64DataGemini
+          ? { inline_data: { mime_type: mimeTypeGemini, data: base64DataGemini } }
+          : { file_data: { mime_type: 'image/jpeg', file_uri: idPhotoUrl } };
+
+        // Always attempt Gemini regardless of whether base64 succeeded
+        {
           const geminiPrompt = `You are an ultra-secure Identity Verification Engine for the Beteseb Matrimonial Application.
 Analyze the provided ID document image carefully.
 
@@ -362,7 +368,7 @@ Return ONLY valid JSON:
                 contents: [{
                   parts: [
                     { text: geminiPrompt },
-                    { inline_data: { mime_type: mimeTypeGemini, data: base64DataGemini } }
+                    geminiImagePart
                   ]
                 }],
                 generationConfig: { responseMimeType: 'application/json' }
