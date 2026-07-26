@@ -379,11 +379,31 @@ Return ONLY valid JSON:
           const geminiData = await geminiRes.json();
 
           if (geminiData.error) {
-            console.error('Gemini API Error:', geminiData.error.message);
+            console.error('Gemini API Error:', geminiData.error);
+            const geminiErrMsg = geminiData.error.message || JSON.stringify(geminiData.error);
+            return NextResponse.json({
+              isMatch: false,
+              reason: `Gemini API Error: ${geminiErrMsg}`,
+              displayMessage: `የ Gemini AI ማንነት ማረጋገጫ አልተሳካም። ምክንያት፦ ${geminiErrMsg}። (እባክዎን በ Google AI Studio ወይም Google Cloud Console ላይ Generative Language API መብራቱን ያረጋግጡ)።`,
+              mode: isDocOnly ? 'doc_only' : 'full',
+            });
           } else {
             const geminiText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
             if (geminiText) {
-              const res = JSON.parse(geminiText);
+              let res: any;
+              try {
+                // Clean markdown code blocks if present (```json ... ```)
+                const cleanJson = geminiText.replace(/```json/g, '').replace(/```/g, '').trim();
+                res = JSON.parse(cleanJson);
+              } catch (parseErr) {
+                console.error("Gemini JSON parse error:", parseErr, "Text:", geminiText);
+                return NextResponse.json({
+                  isMatch: false,
+                  reason: 'Could not parse Gemini verification JSON response.',
+                  displayMessage: 'የ AI ማንነት ማረጋገጫ ምላሽ ማስነበብ አልተቻለም። እባክዎ እንደገና ፎቶ አንስተው ይጫኑ።',
+                  mode: isDocOnly ? 'doc_only' : 'full',
+                });
+              }
 
               if (!res.isValidGovernmentId) {
                 return NextResponse.json({
@@ -437,6 +457,12 @@ Return ONLY valid JSON:
         }
       } catch (geminiErr: any) {
         console.error('Gemini Vision verification failed:', geminiErr);
+        return NextResponse.json({
+          isMatch: false,
+          reason: `Gemini Exception: ${geminiErr.message}`,
+          displayMessage: `የ Gemini AI ማረጋገጫ ስህተት፦ ${geminiErr.message}`,
+          mode: isDocOnly ? 'doc_only' : 'full',
+        });
       }
     }
 
