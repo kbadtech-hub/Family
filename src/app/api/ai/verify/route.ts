@@ -412,20 +412,39 @@ Return strict JSON format ONLY:
     if (googleApiKey) {
       const visionUrl = `https://vision.googleapis.com/v1/images:annotate?key=${googleApiKey}`;
       
-      // Fetch image buffer and convert to base64 to avoid GCV imageUri external URL fetch limitations
-      let imagePayload: any = { source: { imageUri: idPhotoUrl } };
+      // Download image binary directly via Supabase Admin Storage (bypasses RLS & public bucket restrictions)
+      let base64Data: string | null = null;
       try {
-        const imgRes = await fetch(idPhotoUrl);
-        if (imgRes.ok) {
-          const arrayBuffer = await imgRes.arrayBuffer();
-          const base64Data = Buffer.from(arrayBuffer).toString('base64');
-          if (base64Data && base64Data.length > 0) {
-            imagePayload = { content: base64Data };
+        let filePath = idPhotoUrl;
+        if (idPhotoUrl.includes('/user_photos/')) {
+          filePath = idPhotoUrl.split('/user_photos/')[1];
+        }
+
+        if (filePath && !filePath.startsWith('http')) {
+          const { data: fileBlob, error: downloadError } = await supabaseAdmin.storage
+            .from('user_photos')
+            .download(filePath);
+
+          if (fileBlob && !downloadError) {
+            const arrayBuffer = await fileBlob.arrayBuffer();
+            base64Data = Buffer.from(arrayBuffer).toString('base64');
+          }
+        }
+
+        if (!base64Data) {
+          const imgRes = await fetch(idPhotoUrl);
+          if (imgRes.ok) {
+            const arrayBuffer = await imgRes.arrayBuffer();
+            base64Data = Buffer.from(arrayBuffer).toString('base64');
           }
         }
       } catch (fetchErr) {
-        console.warn("Could not fetch image buffer for Vision API, falling back to imageUri:", fetchErr);
+        console.warn("Could not fetch/download image binary for Vision API:", fetchErr);
       }
+
+      const imagePayload = base64Data
+        ? { content: base64Data }
+        : { source: { imageUri: idPhotoUrl } };
 
       const features: Array<{ type: string; maxResults?: number }> = [
         { type: 'DOCUMENT_TEXT_DETECTION' },
@@ -451,7 +470,32 @@ Return strict JSON format ONLY:
       });
 
       const data = await response.json();
+
+      // Check for Google Cloud Vision API response level errors (e.g. 403 API Key restriction / Billing not enabled)
+      if (data.error) {
+        const apiErrMsg = data.error.message || 'Google Vision API Error';
+        console.error("Google Cloud Vision API HTTP Error:", apiErrMsg);
+        return NextResponse.json({
+          isMatch: false,
+          reason: `Google Cloud Vision API Error: ${apiErrMsg}`,
+          displayMessage: `የ Google Cloud Vision API ፍተሻ አልተሳካም። ምክንያት፦ ${apiErrMsg}። (እባክዎን በ Google Cloud Console ላይ Billing መብራቱን እና Cloud Vision API መንቃቱን ያረጋግጡ)።`,
+          mode: isDocOnly ? 'doc_only' : 'full',
+        });
+      }
+
       const visionResponse = data.responses?.[0];
+
+      if (visionResponse?.error) {
+        const apiErrMsg = visionResponse.error.message || 'Google Vision API Image Error';
+        console.error("Google Cloud Vision API Image Error:", apiErrMsg);
+        return NextResponse.json({
+          isMatch: false,
+          reason: `Google Cloud Vision API Image Error: ${apiErrMsg}`,
+          displayMessage: `የተያያዘውን ምስል መመርመር አልተቻለም። ምክንያት፦ ${apiErrMsg}። እባክዎ እንደገና ፎቶ አንስተው ይጫኑ።`,
+          mode: isDocOnly ? 'doc_only' : 'full',
+        });
+      }
+
       const textAnnotations = visionResponse?.textAnnotations;
       const faceAnnotations = visionResponse?.faceAnnotations;
 
