@@ -47,8 +47,11 @@ export default function AnimatedSplashScreen() {
   };
 
   useEffect(() => {
-    // Check if splash was already shown in this session
-    const hasShown = sessionStorage.getItem('beteseb_splash_shown');
+    // Check if splash was already shown in this session.
+    // Wrapped in try/catch: some hardened Android WebViews (Android 13+, OEM-locked)
+    // throw a SecurityError on sessionStorage access during the very first render.
+    let hasShown = false;
+    try { hasShown = sessionStorage.getItem('beteseb_splash_shown') === 'true'; } catch (_) {}
     if (hasShown) {
       return;
     }
@@ -71,7 +74,7 @@ export default function AnimatedSplashScreen() {
     // Unmount and finish at 4 seconds
     const endTimer = setTimeout(() => {
       setIsVisible(false);
-      sessionStorage.setItem('beteseb_splash_shown', 'true');
+      try { sessionStorage.setItem('beteseb_splash_shown', 'true'); } catch (_) {}
     }, 4000);
 
     return () => {
