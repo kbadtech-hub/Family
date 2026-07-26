@@ -411,7 +411,24 @@ Return strict JSON format ONLY:
     // ──────────────────────────────────────────────────────────────────────────
     if (googleApiKey) {
       const visionUrl = `https://vision.googleapis.com/v1/images:annotate?key=${googleApiKey}`;
+      
+      // Fetch image buffer and convert to base64 to avoid GCV imageUri external URL fetch limitations
+      let imagePayload: any = { source: { imageUri: idPhotoUrl } };
+      try {
+        const imgRes = await fetch(idPhotoUrl);
+        if (imgRes.ok) {
+          const arrayBuffer = await imgRes.arrayBuffer();
+          const base64Data = Buffer.from(arrayBuffer).toString('base64');
+          if (base64Data && base64Data.length > 0) {
+            imagePayload = { content: base64Data };
+          }
+        }
+      } catch (fetchErr) {
+        console.warn("Could not fetch image buffer for Vision API, falling back to imageUri:", fetchErr);
+      }
+
       const features: Array<{ type: string; maxResults?: number }> = [
+        { type: 'DOCUMENT_TEXT_DETECTION' },
         { type: 'TEXT_DETECTION' },
       ];
       if (isDocOnly) {
@@ -421,7 +438,7 @@ Return strict JSON format ONLY:
       const requestBody = {
         requests: [
           {
-            image: { source: { imageUri: idPhotoUrl } },
+            image: imagePayload,
             features,
           },
         ],
@@ -438,8 +455,14 @@ Return strict JSON format ONLY:
       const textAnnotations = visionResponse?.textAnnotations;
       const faceAnnotations = visionResponse?.faceAnnotations;
 
+      const extractedText = (
+        visionResponse?.fullTextAnnotation?.text ||
+        textAnnotations?.[0]?.description ||
+        ''
+      ).trim();
+
       // 1. OCR text must be present
-      if (!textAnnotations || textAnnotations.length === 0) {
+      if (!extractedText) {
         return NextResponse.json({
           isMatch: false,
           reason: 'Could not extract text from the ID document.',
@@ -448,7 +471,6 @@ Return strict JSON format ONLY:
         });
       }
 
-      const extractedText = textAnnotations[0].description;
       const lowerText = extractedText.toLowerCase();
 
       // 2. Face photo on ID
@@ -464,10 +486,11 @@ Return strict JSON format ONLY:
       // 3. Document type keywords
       const allowedDocKeywords = [
         'passport', 'paasaboor', 'ፓስፖርት', 'جواز', 'سفر',
-        'national id', 'identity card', 'id card', 'national identity',
-        'የብሔራዊ መታወቂያ', 'መታወቂያ', 'aqoonsi', 'aqoonsiga', 'waraqadda', 'widentity', 'fayda',
-        'driving license', "driver's license", 'መንጃ ፍቃድ', 'መንጃ ፈቃድ',
-        'resident permit', 'residence permit', 'residency card',
+        'national id', 'identity card', 'id card', 'national identity', 'republic', 'ethiopia', 'ኢትዮጵያ', 'ፌደራላዊ', 'ዲሞክራሲያዊ',
+        'የብሔራዊ መታወቂያ', 'መታወቂያ', 'aqoonsi', 'aqoonsiga', 'waraqadda', 'widentity', 'fayda', 'ፋይዳ',
+        'driving license', "driver's license", 'መንጃ ፍቃድ', 'መንጃ ፈቃድ', 'መንጃ',
+        'resident permit', 'residence permit', 'residency card', 'kebele', 'ቀበሌ', 'ወረዳ', 'ዞን', 'ከተማ', 'አድራሻ', 'ክልል',
+        'birth', 'date of birth', 'dob', 'full name', ' sex ', ' gender ', 'የልደት'
       ];
       const hasValidDocType = allowedDocKeywords.some(keyword => lowerText.includes(keyword));
 
