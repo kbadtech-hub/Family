@@ -285,12 +285,10 @@ export async function POST(req: Request) {
       });
     }
 
-    const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_VISION_API_KEY;
-    const openaiApiKey = process.env.OPENAI_API_KEY;
-    const googleApiKey = process.env.GOOGLE_VISION_API_KEY;
+    const geminiApiKey = process.env.GEMINI_API_KEY;
 
     // ──────────────────────────────────────────────────────────────────────────
-    // METHOD A: Google Gemini Vision (Free Tier — Primary Method)
+    // Google Gemini Vision (100% Free Tier — Sole Verification Engine)
     // ──────────────────────────────────────────────────────────────────────────
     if (geminiApiKey) {
       try {
@@ -329,9 +327,7 @@ export async function POST(req: Request) {
           ? { inline_data: { mime_type: mimeTypeGemini, data: base64DataGemini } }
           : { file_data: { mime_type: 'image/jpeg', file_uri: idPhotoUrl } };
 
-        // Always attempt Gemini regardless of whether base64 succeeded
-        {
-          const geminiPrompt = `You are an ultra-secure Identity Verification Engine for the Beteseb Matrimonial Application.
+        const geminiPrompt = `You are an ultra-secure Identity Verification Engine for the Beteseb Matrimonial Application.
 Analyze the provided ID document image carefully.
 
 User Registration Details:
@@ -359,99 +355,97 @@ Return ONLY valid JSON:
   "rejectionReasonEnglish": string
 }`;
 
-          const geminiRes = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contents: [{
-                  parts: [
-                    { text: geminiPrompt },
-                    geminiImagePart
-                  ]
-                }],
-                generationConfig: { responseMimeType: 'application/json' }
-              })
+        const geminiRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [
+                  { text: geminiPrompt },
+                  geminiImagePart
+                ]
+              }],
+              generationConfig: { responseMimeType: 'application/json' }
+            })
+          }
+        );
+
+        const geminiData = await geminiRes.json();
+
+        if (geminiData.error) {
+          console.error('Gemini API Error:', geminiData.error);
+          const geminiErrMsg = geminiData.error.message || JSON.stringify(geminiData.error);
+          return NextResponse.json({
+            isMatch: false,
+            reason: `Gemini API Error: ${geminiErrMsg}`,
+            displayMessage: `የ Gemini AI ማንነት ማረጋገጫ አልተሳካም። ምክንያት፦ ${geminiErrMsg}። (እባክዎን Vercel ላይ GEMINI_API_KEY ትክክለኛ መሆኑን ያረጋግጡ)።`,
+            mode: isDocOnly ? 'doc_only' : 'full',
+          });
+        } else {
+          const geminiText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (geminiText) {
+            let res: any;
+            try {
+              const cleanJson = geminiText.replace(/```json/g, '').replace(/```/g, '').trim();
+              res = JSON.parse(cleanJson);
+            } catch (parseErr) {
+              console.error("Gemini JSON parse error:", parseErr, "Text:", geminiText);
+              return NextResponse.json({
+                isMatch: false,
+                reason: 'Could not parse Gemini verification JSON response.',
+                displayMessage: 'የ AI ማንነት ማረጋገጫ ምላሽ ማስነበብ አልተቻለም። እባክዎ እንደገና ፎቶ አንስተው ይጫኑ።',
+                mode: isDocOnly ? 'doc_only' : 'full',
+              });
             }
-          );
 
-          const geminiData = await geminiRes.json();
+            if (!res.isValidGovernmentId) {
+              return NextResponse.json({
+                isMatch: false,
+                reason: res.rejectionReasonEnglish || 'Invalid document type.',
+                displayMessage: res.rejectionReasonAmharic || 'ያስገቡት ፎቶ ትክክለኛ የመንግስት መታወቂያ አይደለም። እባክዎን ብሔራዊ መታወቂያ፣ ፓስፖርት ወይም መንጃ ፍቃድ ያቅርቡ።',
+                mode: isDocOnly ? 'doc_only' : 'full',
+              });
+            }
 
-          if (geminiData.error) {
-            console.error('Gemini API Error:', geminiData.error);
-            const geminiErrMsg = geminiData.error.message || JSON.stringify(geminiData.error);
-            return NextResponse.json({
-              isMatch: false,
-              reason: `Gemini API Error: ${geminiErrMsg}`,
-              displayMessage: `የ Gemini AI ማንነት ማረጋገጫ አልተሳካም። ምክንያት፦ ${geminiErrMsg}። (እባክዎን በ Google AI Studio ወይም Google Cloud Console ላይ Generative Language API መብራቱን ያረጋግጡ)።`,
-              mode: isDocOnly ? 'doc_only' : 'full',
-            });
-          } else {
-            const geminiText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (geminiText) {
-              let res: any;
-              try {
-                // Clean markdown code blocks if present (```json ... ```)
-                const cleanJson = geminiText.replace(/```json/g, '').replace(/```/g, '').trim();
-                res = JSON.parse(cleanJson);
-              } catch (parseErr) {
-                console.error("Gemini JSON parse error:", parseErr, "Text:", geminiText);
-                return NextResponse.json({
-                  isMatch: false,
-                  reason: 'Could not parse Gemini verification JSON response.',
-                  displayMessage: 'የ AI ማንነት ማረጋገጫ ምላሽ ማስነበብ አልተቻለም። እባክዎ እንደገና ፎቶ አንስተው ይጫኑ።',
-                  mode: isDocOnly ? 'doc_only' : 'full',
-                });
-              }
+            if (!res.hasCardholderPhoto) {
+              return NextResponse.json({
+                isMatch: false,
+                reason: res.rejectionReasonEnglish || 'Missing facial photo on ID.',
+                displayMessage: res.rejectionReasonAmharic || 'ያስገቡት ሰነድ ላይ የመታወቂያ ፎቶ አልተገኘም። እባክዎን ፎቶ ያለበት ትክክለኛ የመንግስት መታወቂያ ያቅርቡ።',
+                mode: isDocOnly ? 'doc_only' : 'full',
+              });
+            }
 
-              if (!res.isValidGovernmentId) {
-                return NextResponse.json({
-                  isMatch: false,
-                  reason: res.rejectionReasonEnglish || 'Invalid document type.',
-                  displayMessage: res.rejectionReasonAmharic || 'ያስገቡት ፎቶ ትክክለኛ የመንግስት መታወቂያ አይደለም። እባክዎን ብሔራዊ መታወቂያ፣ ፓስፖርት ወይም መንጃ ፍቃድ ያቅርቡ።',
-                  mode: isDocOnly ? 'doc_only' : 'full',
-                });
-              }
+            if (!res.nameMatches) {
+              return NextResponse.json({
+                isMatch: false,
+                reason: res.rejectionReasonEnglish || 'Name mismatch.',
+                displayMessage: res.rejectionReasonAmharic || `ያስገቡት ስም (${dbFullName}) በመታወቂያው ላይ ካለው ስም ጋር አይመሳሰልም።`,
+                mode: isDocOnly ? 'doc_only' : 'full',
+              });
+            }
 
-              if (!res.hasCardholderPhoto) {
-                return NextResponse.json({
-                  isMatch: false,
-                  reason: res.rejectionReasonEnglish || 'Missing facial photo on ID.',
-                  displayMessage: res.rejectionReasonAmharic || 'ያስገቡት ሰነድ ላይ የመታወቂያ ፎቶ አልተገኘም። እባክዎን ፎቶ ያለበት ትክክለኛ የመንግስት መታወቂያ ያቅርቡ።',
-                  mode: isDocOnly ? 'doc_only' : 'full',
-                });
-              }
+            if (!res.dobMatches) {
+              return NextResponse.json({
+                isMatch: false,
+                reason: res.rejectionReasonEnglish || 'DOB mismatch.',
+                displayMessage: res.rejectionReasonAmharic || `ያስገቡት የልደት ቀን (${dbBirthDate}) በመታወቂያው ላይ ካለው ቀን ጋር አይመሳሰልም።`,
+                mode: isDocOnly ? 'doc_only' : 'full',
+              });
+            }
 
-              if (!res.nameMatches) {
-                return NextResponse.json({
-                  isMatch: false,
-                  reason: res.rejectionReasonEnglish || 'Name mismatch.',
-                  displayMessage: res.rejectionReasonAmharic || `ያስገቡት ስም (${dbFullName}) በመታወቂያው ላይ ካለው ስም ጋር አይመሳሰልም።`,
-                  mode: isDocOnly ? 'doc_only' : 'full',
-                });
-              }
-
-              if (!res.dobMatches) {
-                return NextResponse.json({
-                  isMatch: false,
-                  reason: res.rejectionReasonEnglish || 'DOB mismatch.',
-                  displayMessage: res.rejectionReasonAmharic || `ያስገቡት የልደት ቀን (${dbBirthDate}) በመታወቂያው ላይ ካለው ቀን ጋር አይመሳሰልም።`,
-                  mode: isDocOnly ? 'doc_only' : 'full',
-                });
-              }
-
-              if (res.isMatch) {
-                return NextResponse.json({
-                  isMatch: true,
-                  score: 0.99,
-                  mode: isDocOnly ? 'doc_only' : 'full',
-                  extractedData: {
-                    full_name: res.extractedName || dbFullName,
-                    birth_date: res.extractedDOB || dbBirthDate,
-                  },
-                });
-              }
+            if (res.isMatch) {
+              return NextResponse.json({
+                isMatch: true,
+                score: 0.99,
+                mode: isDocOnly ? 'doc_only' : 'full',
+                extractedData: {
+                  full_name: res.extractedName || dbFullName,
+                  birth_date: res.extractedDOB || dbBirthDate,
+                },
+              });
             }
           }
         }
@@ -467,306 +461,13 @@ Return ONLY valid JSON:
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // METHOD B: OpenAI Vision (Fallback)
+    // STRICT FALLBACK WHEN GEMINI_API_KEY IS MISSING
     // ──────────────────────────────────────────────────────────────────────────
-    if (openaiApiKey) {
-      try {
-        const openai = new OpenAI({ apiKey: openaiApiKey });
-        const visionPrompt = `You are an ultra-secure and precise Identity Verification Engine for the Beteseb Matrimonial Application.
-Analyze the provided document image URL carefully.
-
-User Registration Details:
-- Registered Full Name: "${dbFullName}"
-- Registered Date of Birth: "${dbBirthDate}"
-
-Evaluate the image according to these mandatory rules without exception:
-
-1. DOCUMENT VALIDATION & TYPE CHECKING:
-   - Check if the image is a valid government-issued photo ID document (e.g., National ID / Fayda ID, Passport, Driver's License, Resident Permit).
-   - REJECT immediately (isValidGovernmentId: false) if the upload is:
-     * A personal selfie or face-only photo.
-     * A blank paper, plain white sheet, paper with hand notes, table top, floor, empty background.
-     * An unrelated image, scenery, landscape, object, animal, screenshot, cartoon, meme, or non-ID document.
-     * Damaged, blurry, dark, or unreadable.
-
-2. REQUIRED DATA EXTRACTION (OCR):
-   - Check if a clear facial photograph of the cardholder is visible on the ID card itself (hasCardholderPhoto: boolean).
-   - Locate and extract Full Legal Name from the ID card (extractedName: string).
-   - Locate and extract Date of Birth from the ID card (extractedDOB: string).
-   - If Name, DOB, or Facial Photo on the ID is missing/unreadable -> REJECT.
-
-3. CROSS-MATCHING WITH REGISTERED DATA:
-   - Compare extracted Full Name with registered name "${dbFullName}". Allow Ethiopian name transliteration variations (e.g., Abebe/Abbebe, Kebede/Kabada, Mohammed/Muhammed, Amharic/English).
-   - Compare extracted DOB with registered DOB "${dbBirthDate}".
-   - If Name or DOB does not match -> REJECT.
-
-Return strict JSON format ONLY:
-{
-  "isValidGovernmentId": boolean,
-  "hasCardholderPhoto": boolean,
-  "extractedName": string,
-  "extractedDOB": string,
-  "nameMatches": boolean,
-  "dobMatches": boolean,
-  "isMatch": boolean,
-  "rejectionReasonAmharic": string,
-  "rejectionReasonEnglish": string
-}`;
-
-        const response = await openai.chat.completions.create({
-          model: 'gpt-4o-mini',
-          messages: [
-            {
-              role: 'user',
-              content: [
-                { type: 'text', text: visionPrompt },
-                { type: 'image_url', image_url: { url: idPhotoUrl, detail: 'high' } }
-              ]
-            }
-          ],
-          response_format: { type: 'json_object' }
-        });
-
-        const resultText = response.choices[0]?.message?.content;
-        if (resultText) {
-          const res = JSON.parse(resultText);
-          
-          if (!res.isValidGovernmentId) {
-            return NextResponse.json({
-              isMatch: false,
-              reason: res.rejectionReasonEnglish || 'Invalid document type.',
-              displayMessage: res.rejectionReasonAmharic || 'ያስገቡት ፎቶ ትክክለኛ የመንግስት መታወቂያ አይደለም። እባክዎን ብሔራዊ መታወቂያ፣ ፓስፖርት ወይም መንጃ ፍቃድ ያቅርቡ።',
-              mode: isDocOnly ? 'doc_only' : 'full',
-            });
-          }
-
-          if (!res.hasCardholderPhoto) {
-            return NextResponse.json({
-              isMatch: false,
-              reason: res.rejectionReasonEnglish || 'Missing facial photo on ID document.',
-              displayMessage: res.rejectionReasonAmharic || 'ያስገቡት ሰነድ ላይ የመታወቂያ ፎቶ አልተገኘም። እባክዎን ፎቶ ያለበት ትክክለኛ የመንግስት መታወቂያ ያቅርቡ።',
-              mode: isDocOnly ? 'doc_only' : 'full',
-            });
-          }
-
-          if (!res.nameMatches) {
-            return NextResponse.json({
-              isMatch: false,
-              reason: res.rejectionReasonEnglish || 'Name mismatch on ID document.',
-              displayMessage: res.rejectionReasonAmharic || `ያስገቡት የፕሮፋይል ስም (${dbFullName}) በመታወቂያው ላይ ካለው ስም ጋር አይመሳሰልም። እባክዎን ትክክለኛ መታወቂያ ያቅርቡ ወይም ስምዎን ያስተካክሉ።`,
-              mode: isDocOnly ? 'doc_only' : 'full',
-            });
-          }
-
-          if (!res.dobMatches) {
-            return NextResponse.json({
-              isMatch: false,
-              reason: res.rejectionReasonEnglish || 'DOB mismatch on ID document.',
-              displayMessage: res.rejectionReasonAmharic || `ያስገቡት የልደት ቀን (${dbBirthDate}) በመታወቂያው ላይ ካለው ቀን ጋር አይመሳሰልም። እባክዎን ትክክለኛ መታወቂያ ያቅርቡ ወይም የልደት ቀንዎን ያስተካክሉ።`,
-              mode: isDocOnly ? 'doc_only' : 'full',
-            });
-          }
-
-          if (res.isMatch) {
-            return NextResponse.json({
-              isMatch: true,
-              score: 0.99,
-              mode: isDocOnly ? 'doc_only' : 'full',
-              extractedData: {
-                full_name: res.extractedName || dbFullName,
-                birth_date: res.extractedDOB || dbBirthDate,
-              },
-            });
-          }
-        }
-      } catch (openAiErr: any) {
-        console.error("OpenAI Vision verification failed:", openAiErr);
-      }
-    }
-
-    // ──────────────────────────────────────────────────────────────────────────
-    // METHOD B: Google Cloud Vision API
-    // ──────────────────────────────────────────────────────────────────────────
-    if (googleApiKey) {
-      const visionUrl = `https://vision.googleapis.com/v1/images:annotate?key=${googleApiKey}`;
-      
-      // Download image binary directly via Supabase Admin Storage (bypasses RLS & public bucket restrictions)
-      let base64Data: string | null = null;
-      try {
-        let filePath = idPhotoUrl;
-        if (idPhotoUrl.includes('/user_photos/')) {
-          filePath = idPhotoUrl.split('/user_photos/')[1];
-        }
-
-        if (filePath && !filePath.startsWith('http')) {
-          const { data: fileBlob, error: downloadError } = await supabaseAdmin.storage
-            .from('user_photos')
-            .download(filePath);
-
-          if (fileBlob && !downloadError) {
-            const arrayBuffer = await fileBlob.arrayBuffer();
-            base64Data = Buffer.from(arrayBuffer).toString('base64');
-          }
-        }
-
-        if (!base64Data) {
-          const imgRes = await fetch(idPhotoUrl);
-          if (imgRes.ok) {
-            const arrayBuffer = await imgRes.arrayBuffer();
-            base64Data = Buffer.from(arrayBuffer).toString('base64');
-          }
-        }
-      } catch (fetchErr) {
-        console.warn("Could not fetch/download image binary for Vision API:", fetchErr);
-      }
-
-      const imagePayload = base64Data
-        ? { content: base64Data }
-        : { source: { imageUri: idPhotoUrl } };
-
-      const features: Array<{ type: string; maxResults?: number }> = [
-        { type: 'DOCUMENT_TEXT_DETECTION' },
-        { type: 'TEXT_DETECTION' },
-      ];
-      if (isDocOnly) {
-        features.push({ type: 'FACE_DETECTION', maxResults: 5 });
-      }
-
-      const requestBody = {
-        requests: [
-          {
-            image: imagePayload,
-            features,
-          },
-        ],
-      };
-
-      const response = await fetch(visionUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      });
-
-      const data = await response.json();
-
-      // Check for Google Cloud Vision API response level errors (e.g. 403 API Key restriction / Billing not enabled)
-      if (data.error) {
-        const apiErrMsg = data.error.message || 'Google Vision API Error';
-        console.error("Google Cloud Vision API HTTP Error:", apiErrMsg);
-        return NextResponse.json({
-          isMatch: false,
-          reason: `Google Cloud Vision API Error: ${apiErrMsg}`,
-          displayMessage: `የ Google Cloud Vision API ፍተሻ አልተሳካም። ምክንያት፦ ${apiErrMsg}። (እባክዎን በ Google Cloud Console ላይ Billing መብራቱን እና Cloud Vision API መንቃቱን ያረጋግጡ)።`,
-          mode: isDocOnly ? 'doc_only' : 'full',
-        });
-      }
-
-      const visionResponse = data.responses?.[0];
-
-      if (visionResponse?.error) {
-        const apiErrMsg = visionResponse.error.message || 'Google Vision API Image Error';
-        console.error("Google Cloud Vision API Image Error:", apiErrMsg);
-        return NextResponse.json({
-          isMatch: false,
-          reason: `Google Cloud Vision API Image Error: ${apiErrMsg}`,
-          displayMessage: `የተያያዘውን ምስል መመርመር አልተቻለም። ምክንያት፦ ${apiErrMsg}። እባክዎ እንደገና ፎቶ አንስተው ይጫኑ።`,
-          mode: isDocOnly ? 'doc_only' : 'full',
-        });
-      }
-
-      const textAnnotations = visionResponse?.textAnnotations;
-      const faceAnnotations = visionResponse?.faceAnnotations;
-
-      const extractedText = (
-        visionResponse?.fullTextAnnotation?.text ||
-        textAnnotations?.[0]?.description ||
-        ''
-      ).trim();
-
-      // 1. OCR text must be present
-      if (!extractedText) {
-        return NextResponse.json({
-          isMatch: false,
-          reason: 'Could not extract text from the ID document.',
-          displayMessage: 'ያስገቡት ምስል ላይ ምንም ጽሑፍ ሊነበብ አልቻለም። እባክዎ ጠርሶ የሚነበብ እና ብርሃናማ የመንግስት መታወቂያ ያቅርቡ።',
-          mode: isDocOnly ? 'doc_only' : 'full',
-        });
-      }
-
-      const lowerText = extractedText.toLowerCase();
-
-      // 2. Face photo on ID
-      if (isDocOnly && (!faceAnnotations || faceAnnotations.length === 0)) {
-        return NextResponse.json({
-          isMatch: false,
-          reason: 'No face photo detected on the ID document.',
-          displayMessage: 'ያስገቡት ሰነድ ላይ የመታወቂያ ፎቶ አልተገኘም። እባክዎን ፎቶ ያለበት ትክክለኛ የመንግስት መታወቂያ ያቅርቡ።',
-          mode: 'doc_only',
-        });
-      }
-
-      // 3. Document type keywords
-      const allowedDocKeywords = [
-        'passport', 'paasaboor', 'ፓስፖርት', 'جواز', 'سفر',
-        'national id', 'identity card', 'id card', 'national identity', 'republic', 'ethiopia', 'ኢትዮጵያ', 'ፌደራላዊ', 'ዲሞክራሲያዊ',
-        'የብሔራዊ መታወቂያ', 'መታወቂያ', 'aqoonsi', 'aqoonsiga', 'waraqadda', 'widentity', 'fayda', 'ፋይዳ',
-        'driving license', "driver's license", 'መንጃ ፍቃድ', 'መንጃ ፈቃድ', 'መንጃ',
-        'resident permit', 'residence permit', 'residency card', 'kebele', 'ቀበሌ', 'ወረዳ', 'ዞን', 'ከተማ', 'አድራሻ', 'ክልል',
-        'birth', 'date of birth', 'dob', 'full name', ' sex ', ' gender ', 'የልደት'
-      ];
-      const hasValidDocType = allowedDocKeywords.some(keyword => lowerText.includes(keyword));
-
-      if (!hasValidDocType) {
-        return NextResponse.json({
-          isMatch: false,
-          reason: 'The uploaded image is not a recognized government-issued ID document.',
-          displayMessage: 'ያስገቡት ፎቶ ትክክለኛ የመንግስት መታወቂያ አይደለም። እባክዎን ብሔራዊ መታወቂያ፣ ፓስፖርት ወይም መንጃ ፍቃድ ያቅርቡ።',
-          mode: isDocOnly ? 'doc_only' : 'full',
-        });
-      }
-
-      // 4. Name match
-      const nameCheck = await verifyNameMatch(dbFullName, extractedText);
-      if (!nameCheck.matches) {
-        return NextResponse.json({
-          isMatch: false,
-          reason: nameCheck.reason || 'Name mismatch on ID document.',
-          displayMessage: `ያስገቡት የፕሮፋይል ስም (${dbFullName}) በመታወቂያው ላይ ካለው ስም ጋር አይመሳሰልም። እባክዎን ትክክለኛ መታወቂያ ያቅርቡ ወይም ስምዎን ያስተካክሉ።`,
-          mode: isDocOnly ? 'doc_only' : 'full',
-        });
-      }
-
-      // 5. DOB match
-      const dobCheck = verifyBirthDateMatch(dbBirthDate, extractedText);
-      if (!dobCheck.matches) {
-        return NextResponse.json({
-          isMatch: false,
-          reason: dobCheck.reason || 'Birth date mismatch on ID document.',
-          displayMessage: `ያስገቡት የልደት ቀን (${dbBirthDate}) በመታወቂያው ላይ ካለው ቀን ጋር አይመሳሰልም። እባክዎን ትክክለኛ መታወቂያ ያቅርቡ ወይም የልደት ቀንዎን ያስተካክሉ።`,
-          mode: isDocOnly ? 'doc_only' : 'full',
-        });
-      }
-
-      return NextResponse.json({
-        isMatch: true,
-        score: isDocOnly ? 0.97 : 0.99,
-        mode: isDocOnly ? 'doc_only' : 'full',
-        extractedData: {
-          full_name: dbFullName,
-          birth_date: dbBirthDate,
-        },
-      });
-    }
-
-    // ──────────────────────────────────────────────────────────────────────────
-    // STRICT FALLBACK — NO VISION API KEY CONFIGURED
-    // ──────────────────────────────────────────────────────────────────────────
-    // IMPORTANT: NEVER AUTO-APPROVE! Reject strictly when no Vision API is available.
-    console.error("NO VISION API KEY CONFIGURED (Neither GEMINI_API_KEY, OPENAI_API_KEY nor GOOGLE_VISION_API_KEY is present).");
+    console.error("GEMINI_API_KEY IS MISSING.");
     return NextResponse.json({
       isMatch: false,
-      reason: 'No Vision API Key (GEMINI_API_KEY, OPENAI_API_KEY or GOOGLE_VISION_API_KEY) configured on the server.',
-      displayMessage: 'የማንነት ማረጋገጫ AI API (GEMINI_API_KEY) በሰርቨሩ ላይ አልተዋቀረም። እባክዎን በ Vercel Environment Variables ላይ GEMINI_API_KEY ያክሉ።',
+      reason: 'GEMINI_API_KEY is not configured on the server.',
+      displayMessage: 'የማንነት ማረጋገጫ GEMINI_API_KEY በ Vercel Environment Variables ላይ አልተጨመረም። እባክዎን GEMINI_API_KEY በ Vercel ላይ ያክሉ።',
       mode: isDocOnly ? 'doc_only' : 'full',
     });
 
