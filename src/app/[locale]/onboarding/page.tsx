@@ -782,7 +782,7 @@ function OnboardingContent() {
           };
         } else if (step === 4) {
           try {
-            const result = await simulateIdentityVerification(userId, formData.id_photo, 'doc_only', {
+            const result = await validateIdDocument(userId, formData.id_photo, {
               full_name: formData.full_name,
               birth_date: formData.birth_date,
               location: {
@@ -793,14 +793,24 @@ function OnboardingContent() {
             });
 
             if (!result.isMatch) {
-              setErrorMsg(result.reason || 'Verification failed');
+              setIdDocValidated(false);
+              const msg = result.displayMessage || result.reason || 'ያስገቡት የመታወቂያ መረጃ የተሳሳተ ወይም ያልተሟላ ነው። እባክዎን ትክክለኛ የመንግስት መታወቂያ፣ ፓስፖርት ወይም መንጃ ፍቃድ ያቅርቡ።';
+              setIdRejectionMessage(msg);
+              setShowIdRejectionModal(true);
+              setErrorMsg(msg);
               setIsSubmitting(false);
               window.scrollTo({ top: 0, behavior: 'smooth' });
               return;
+            } else {
+              setIdDocValidated(true);
             }
           } catch (verifyErr: any) {
             console.error("ID verification API error:", verifyErr);
-            setErrorMsg(locale === 'am' ? 'የማንነት ማረጋገጫ ፍተሻ በኔትወርክ ወይም በሰርቨር ችግር ምክንያት አልተሳካም። እባክዎ እንደገና ይሞክሩ።' : 'Verification failed due to a network or server error. Please try again.');
+            setIdDocValidated(false);
+            const msg = locale === 'am' ? 'የማንነት ማረጋገጫ ፍተሻ በኔትወርክ ወይም በሰርቨር ችግር ምክንያት አልተሳካም። እባክዎ እንደገና ይሞክሩ።' : 'Verification failed due to a network or server error. Please try again.';
+            setIdRejectionMessage(msg);
+            setShowIdRejectionModal(true);
+            setErrorMsg(msg);
             setIsSubmitting(false);
             window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
