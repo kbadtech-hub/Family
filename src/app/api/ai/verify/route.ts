@@ -285,11 +285,157 @@ export async function POST(req: Request) {
       });
     }
 
+    const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_VISION_API_KEY;
     const openaiApiKey = process.env.OPENAI_API_KEY;
     const googleApiKey = process.env.GOOGLE_VISION_API_KEY;
 
     // ──────────────────────────────────────────────────────────────────────────
-    // METHOD A: OpenAI Vision (Multimodal Image Inspection & Data Extraction)
+    // METHOD A: Google Gemini Vision (Free Tier — Primary Method)
+    // ──────────────────────────────────────────────────────────────────────────
+    if (geminiApiKey) {
+      try {
+        // Download image as Base64 via Supabase Admin Storage
+        let base64DataGemini: string | null = null;
+        let mimeTypeGemini = 'image/jpeg';
+        try {
+          let filePath = idPhotoUrl;
+          if (idPhotoUrl.includes('/user_photos/')) {
+            filePath = idPhotoUrl.split('/user_photos/')[1];
+          }
+          if (filePath && !filePath.startsWith('http')) {
+            const { data: fileBlob, error: dlErr } = await supabaseAdmin.storage
+              .from('user_photos')
+              .download(filePath);
+            if (fileBlob && !dlErr) {
+              const ab = await fileBlob.arrayBuffer();
+              base64DataGemini = Buffer.from(ab).toString('base64');
+              mimeTypeGemini = fileBlob.type || 'image/jpeg';
+            }
+          }
+          if (!base64DataGemini) {
+            const imgRes = await fetch(idPhotoUrl);
+            if (imgRes.ok) {
+              const ab = await imgRes.arrayBuffer();
+              base64DataGemini = Buffer.from(ab).toString('base64');
+              mimeTypeGemini = imgRes.headers.get('content-type') || 'image/jpeg';
+            }
+          }
+        } catch (fetchErr) {
+          console.warn('Gemini: Could not fetch image binary:', fetchErr);
+        }
+
+        if (base64DataGemini) {
+          const geminiPrompt = `You are an ultra-secure Identity Verification Engine for the Beteseb Matrimonial Application.
+Analyze the provided ID document image carefully.
+
+User Registration Details:
+- Registered Full Name: "${dbFullName}"
+- Registered Date of Birth: "${dbBirthDate}"
+
+Evaluate strictly:
+1. DOCUMENT TYPE: Is this a valid government-issued photo ID? (National ID/Fayda, Passport, Driver's License, Resident Permit)
+   REJECT if: selfie/face-only photo, blank paper, random image, screenshot, unrelated object, blurry/unreadable.
+2. REQUIRED FIELDS: Does the ID have a facial photo of the cardholder? Full Legal Name? Date of Birth?
+   REJECT if any of these three are missing.
+3. NAME MATCH: Compare extracted name with "${dbFullName}". Allow Ethiopian name transliteration variations.
+4. DOB MATCH: Compare extracted DOB with "${dbBirthDate}".
+
+Return ONLY valid JSON:
+{
+  "isValidGovernmentId": boolean,
+  "hasCardholderPhoto": boolean,
+  "extractedName": string,
+  "extractedDOB": string,
+  "nameMatches": boolean,
+  "dobMatches": boolean,
+  "isMatch": boolean,
+  "rejectionReasonAmharic": string,
+  "rejectionReasonEnglish": string
+}`;
+
+          const geminiRes = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{
+                  parts: [
+                    { text: geminiPrompt },
+                    { inline_data: { mime_type: mimeTypeGemini, data: base64DataGemini } }
+                  ]
+                }],
+                generationConfig: { responseMimeType: 'application/json' }
+              })
+            }
+          );
+
+          const geminiData = await geminiRes.json();
+
+          if (geminiData.error) {
+            console.error('Gemini API Error:', geminiData.error.message);
+          } else {
+            const geminiText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (geminiText) {
+              const res = JSON.parse(geminiText);
+
+              if (!res.isValidGovernmentId) {
+                return NextResponse.json({
+                  isMatch: false,
+                  reason: res.rejectionReasonEnglish || 'Invalid document type.',
+                  displayMessage: res.rejectionReasonAmharic || 'ያስገቡት ፎቶ ትክክለኛ የመንግስት መታወቂያ አይደለም። እባክዎን ብሔራዊ መታወቂያ፣ ፓስፖርት ወይም መንጃ ፍቃድ ያቅርቡ።',
+                  mode: isDocOnly ? 'doc_only' : 'full',
+                });
+              }
+
+              if (!res.hasCardholderPhoto) {
+                return NextResponse.json({
+                  isMatch: false,
+                  reason: res.rejectionReasonEnglish || 'Missing facial photo on ID.',
+                  displayMessage: res.rejectionReasonAmharic || 'ያስገቡት ሰነድ ላይ የመታወቂያ ፎቶ አልተገኘም። እባክዎን ፎቶ ያለበት ትክክለኛ የመንግስት መታወቂያ ያቅርቡ።',
+                  mode: isDocOnly ? 'doc_only' : 'full',
+                });
+              }
+
+              if (!res.nameMatches) {
+                return NextResponse.json({
+                  isMatch: false,
+                  reason: res.rejectionReasonEnglish || 'Name mismatch.',
+                  displayMessage: res.rejectionReasonAmharic || `ያስገቡት ስም (${dbFullName}) በመታወቂያው ላይ ካለው ስም ጋር አይመሳሰልም።`,
+                  mode: isDocOnly ? 'doc_only' : 'full',
+                });
+              }
+
+              if (!res.dobMatches) {
+                return NextResponse.json({
+                  isMatch: false,
+                  reason: res.rejectionReasonEnglish || 'DOB mismatch.',
+                  displayMessage: res.rejectionReasonAmharic || `ያስገቡት የልደት ቀን (${dbBirthDate}) በመታወቂያው ላይ ካለው ቀን ጋር አይመሳሰልም።`,
+                  mode: isDocOnly ? 'doc_only' : 'full',
+                });
+              }
+
+              if (res.isMatch) {
+                return NextResponse.json({
+                  isMatch: true,
+                  score: 0.99,
+                  mode: isDocOnly ? 'doc_only' : 'full',
+                  extractedData: {
+                    full_name: res.extractedName || dbFullName,
+                    birth_date: res.extractedDOB || dbBirthDate,
+                  },
+                });
+              }
+            }
+          }
+        }
+      } catch (geminiErr: any) {
+        console.error('Gemini Vision verification failed:', geminiErr);
+      }
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // METHOD B: OpenAI Vision (Fallback)
     // ──────────────────────────────────────────────────────────────────────────
     if (openaiApiKey) {
       try {
@@ -581,15 +727,14 @@ Return strict JSON format ONLY:
     }
 
     // ──────────────────────────────────────────────────────────────────────────
-    // STRICT FALLBACK WHEN NO VISION API KEYS (OPENAI / GCV) ARE CONFIGURED
+    // STRICT FALLBACK — NO VISION API KEY CONFIGURED
     // ──────────────────────────────────────────────────────────────────────────
-    // IMPORTANT: NEVER AUTO-APPROVE! Any upload when Vision API keys are missing
-    // must be rejected to guarantee security.
-    console.error("NO VISION API KEY CONFIGURED (Neither OPENAI_API_KEY nor GOOGLE_VISION_API_KEY is present).");
+    // IMPORTANT: NEVER AUTO-APPROVE! Reject strictly when no Vision API is available.
+    console.error("NO VISION API KEY CONFIGURED (Neither GEMINI_API_KEY, OPENAI_API_KEY nor GOOGLE_VISION_API_KEY is present).");
     return NextResponse.json({
       isMatch: false,
-      reason: 'No Vision API Key (OPENAI_API_KEY or GOOGLE_VISION_API_KEY) configured on the server.',
-      displayMessage: 'የማንነት ማረጋገጫ AI API (OPENAI_API_KEY ወይም GOOGLE_VISION_API_KEY) በሰርቨሩ ላይ አልተዋቀረም። እባክዎን በ .env.local ወይም በ Vercel Environment Variables ላይ የኤፒአይ ቁልፍ ያክሉ።',
+      reason: 'No Vision API Key (GEMINI_API_KEY, OPENAI_API_KEY or GOOGLE_VISION_API_KEY) configured on the server.',
+      displayMessage: 'የማንነት ማረጋገጫ AI API (GEMINI_API_KEY) በሰርቨሩ ላይ አልተዋቀረም። እባክዎን በ Vercel Environment Variables ላይ GEMINI_API_KEY ያክሉ።',
       mode: isDocOnly ? 'doc_only' : 'full',
     });
 
