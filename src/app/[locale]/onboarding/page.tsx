@@ -19,7 +19,7 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { calculateStarSign } from '@/lib/abushakir';
-import { simulateIdentityVerification } from '@/lib/verification';
+import { simulateIdentityVerification, validateIdDocument } from '@/lib/verification';
 import { moderateImage } from '@/lib/moderation';
 import { 
   RELIGIONS, 
@@ -251,6 +251,17 @@ function OnboardingContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
+
+  // ── ID Document Pre-Validation State ─────────────────────────────────────────
+  /** True once the doc-only API check passes for the currently uploaded ID */
+  const [idDocValidated, setIdDocValidated] = useState(false);
+  /** Controls the bilingual ID rejection popup */
+  const [showIdRejectionModal, setShowIdRejectionModal] = useState(false);
+  /** The Amharic error message shown in the rejection popup */
+  const [idRejectionMessage, setIdRejectionMessage] = useState('');
+  /** Shows a loading spinner inside the Step 4 upload area while the API checks the doc */
+  const [isValidatingId, setIsValidatingId] = useState(false);
+
   const [showMismatchModal, setShowMismatchModal] = useState(false);
   const [mismatchDetails, setMismatchDetails] = useState<{
     type: 'name' | 'birth_date' | 'both';
@@ -691,6 +702,12 @@ function OnboardingContent() {
       case 4: // ID Upload
         if (!formData.id_photo) {
           return locale === 'am' ? 'እባክዎ መጀመሪያ የመታወቂያዎን ፎቶ ይጫኑ።' : 'Please upload your ID document first.';
+        }
+        // Guard: doc-only API check must have passed before proceeding to selfie
+        if (!idDocValidated) {
+          return locale === 'am'
+            ? 'ያስገቡት ሰነድ ገና አልተረጋገጠም። እባክዎ ትክክለኛ የመንግስት መታወቂያ ይጫኑ።'
+            : 'The uploaded document has not passed verification. Please upload a valid government ID.';
         }
         break;
       case 5: // Selfie
@@ -1433,21 +1450,96 @@ function OnboardingContent() {
                     <span className="text-xs font-black uppercase tracking-widest text-gray-400">{t('idVerification.uploadClick').replace('{type}', '')}</span>
                  </div>
                )}
-               <input type="file" accept="image/*" capture="environment" aria-label={t('idVerification.doc')} className="hidden" 
+               {/* Validation loading overlay — shown while doc-only API check is running */}
+               {isValidatingId && (
+                 <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-10">
+                   <Loader2 size={32} className="animate-spin text-primary" />
+                   <p className="text-[10px] font-black uppercase tracking-widest text-primary animate-pulse">
+                     {locale === 'am' ? 'ሰነዱን እያረጋገጥን ነው...' : 'Validating document...'}
+                   </p>
+                 </div>
+               )}
+               <input type="file" accept="image/*" capture="environment" aria-label={t('idVerification.doc')} className="hidden"
                  onChange={async (e) => {
                    const file = e.target.files?.[0];
                    if (!file || !userId) return;
+
+                   // Reset validation state whenever a new file is chosen
+                   setIdDocValidated(false);
+                   setIdRejectionMessage('');
+                   setFormData(prev => ({ ...prev, id_photo: '', verification_status: 'unverified' }));
+
                    setIsSubmitting(true);
-                   const fileName = `${userId}/verification-id-${Date.now()}.jpg`;
-                   const { error } = await supabase.storage.from('user_photos').upload(fileName, file);
-                   if (!error) {
+                   setIsValidatingId(true);
+
+                   try {
+                     // 1. Upload to Supabase Storage
+                     const fileName = `${userId}/verification-id-${Date.now()}.jpg`;
+                     const { error: uploadError } = await supabase.storage.from('user_photos').upload(fileName, file);
+                     if (uploadError) throw uploadError;
+
                      const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(fileName);
+
+                     // Optimistically show the preview while the API check runs
                      setFormData(prev => ({ ...prev, id_photo: publicUrl, verification_status: 'unverified' }));
+
+                     // 2. Immediate document-only pre-validation (blocks selfie step if it fails)
+                     const validationResult = await validateIdDocument(userId, publicUrl, {
+                       full_name: formData.full_name,
+                       birth_date: formData.birth_date,
+                       location: {
+                         country: selectedCountry === 'Others' ? customCountry : selectedCountry,
+                         region: selectedRegion === 'Others' ? customRegion : selectedRegion,
+                         city: selectedCity === 'Others' ? customCity : selectedCity,
+                       },
+                     });
+
+                     if (validationResult.isMatch) {
+                       // ✅ Document passed all checks — unlock the selfie step
+                       setIdDocValidated(true);
+                     } else {
+                       // ❌ Document rejected — show popup and clear the photo so the guard in validateStep triggers
+                       setIdDocValidated(false);
+                       const msg =
+                         validationResult.displayMessage ||
+                         validationResult.reason ||
+                         'ያስገቡት የመታወቂያ መረጃ የተሳሳተ ወይም ያልተሟላ ነው። እባክዎን ትክክለኛ የመንግስት መታወቂያ፣ ፓስፖርት ወይም መንጃ ፍቃድ ያቅርቡ።';
+                       setIdRejectionMessage(msg);
+                       setShowIdRejectionModal(true);
+                     }
+                   } catch (err: any) {
+                     console.error('ID upload/validation error:', err);
+                     setIdDocValidated(false);
+                     setIdRejectionMessage('የሰርቨር ስህተት ተከስቷል። እባክዎ ጥቂት ቆይተው እንደገና ይሞክሩ።');
+                     setShowIdRejectionModal(true);
+                   } finally {
+                     setIsValidatingId(false);
+                     setIsSubmitting(false);
                    }
-                   setIsSubmitting(false);
                  }}
                />
             </label>
+
+            {/* Document validation status badge */}
+            {formData.id_photo && !isValidatingId && (
+              <div className={`flex items-center justify-center gap-2 py-3 px-5 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all ${
+                idDocValidated
+                  ? 'bg-green-50 border-green-200 text-green-700'
+                  : 'bg-red-50 border-red-200 text-red-600'
+              }`}>
+                {idDocValidated ? (
+                  <>
+                    <CheckCircle2 size={14} />
+                    <span>{locale === 'am' ? 'ሰነዱ ተረጋግጧል — ወደ ሰልፊ ማረጋገጫ ይቀጥሉ' : 'Document Verified — Proceed to Selfie'}</span>
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle size={14} />
+                    <span>{locale === 'am' ? 'ሰነዱ አልተረጋገጠም — ሌላ ፎቶ ይጫኑ' : 'Document Not Verified — Please Re-upload'}</span>
+                  </>
+                )}
+              </div>
+            )}
 
             {/* Trust & Security Explainer Box */}
             <div className="bg-slate-50 border border-slate-200/80 rounded-[2rem] p-6 text-left space-y-4 shadow-inner">
@@ -1940,6 +2032,111 @@ function OnboardingContent() {
           <div className={`absolute bottom-0 ${locale === 'ar' ? 'right-0' : 'left-0'} w-32 h-32 bg-secondary/10 rounded-full ${locale === 'ar' ? '-mr-16' : '-ml-16'} -mb-16 blur-2xl opacity-40`} />
           
           <div className="relative">
+            {/* ── ID Document Rejection Modal (Step 4 pre-screen) ── */}
+            {showIdRejectionModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-md animate-in fade-in duration-300">
+                <div className="bg-white rounded-[2rem] max-w-md w-full p-8 border border-red-100 shadow-2xl mx-4 relative overflow-hidden animate-in zoom-in-95 duration-300">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full -mr-16 -mt-16 blur-2xl opacity-60" />
+                  <div className="absolute bottom-0 left-0 w-32 h-32 bg-amber-500/5 rounded-full -ml-16 -mb-16 blur-2xl opacity-40" />
+                  <div className="relative flex flex-col items-center text-center gap-5">
+                    {/* Icon */}
+                    <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center text-red-500 border border-red-100 shadow-sm animate-pulse">
+                      <AlertCircle size={32} />
+                    </div>
+
+                    {/* Title */}
+                    <div className="space-y-1">
+                      <h3 className="text-xl font-extrabold text-gray-900 tracking-tight">
+                        {locale === 'am' ? 'ማንነት ማረጋገጫ ሰነድ ውድቅ ተደርጓል' : 'ID Document Rejected'}
+                      </h3>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-red-500">
+                        {locale === 'am' ? 'ወደ ሰልፊ ደረጃ ማለፍ አልተፈቀደም' : 'Access to Selfie Step Denied'}
+                      </p>
+                    </div>
+
+                    {/* Error message */}
+                    <div className="w-full bg-red-50/70 border border-red-100 rounded-2xl p-4 text-left">
+                      <p className="text-sm font-semibold text-gray-800 leading-relaxed">
+                        {idRejectionMessage}
+                      </p>
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="w-full flex flex-col gap-3">
+                      {/* Primary: re-upload a different ID */}
+                      <label className="w-full bg-primary hover:bg-primary/90 text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-primary/20 cursor-pointer flex items-center justify-center gap-2">
+                        <Upload size={14} />
+                        <span>{locale === 'am' ? 'ሌላ ፎቶ ይጫኑ' : 'Upload Different ID Photo'}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          className="hidden"
+                          onChange={async (e) => {
+                            setShowIdRejectionModal(false);
+                            // Trigger the main upload handler by reading the file
+                            const file = e.target.files?.[0];
+                            if (!file || !userId) return;
+                            setIdDocValidated(false);
+                            setIdRejectionMessage('');
+                            setFormData(prev => ({ ...prev, id_photo: '', verification_status: 'unverified' }));
+                            setIsSubmitting(true);
+                            setIsValidatingId(true);
+                            try {
+                              const fileName = `${userId}/verification-id-${Date.now()}.jpg`;
+                              const { error: uploadError } = await supabase.storage.from('user_photos').upload(fileName, file);
+                              if (uploadError) throw uploadError;
+                              const { data: { publicUrl } } = supabase.storage.from('user_photos').getPublicUrl(fileName);
+                              setFormData(prev => ({ ...prev, id_photo: publicUrl, verification_status: 'unverified' }));
+                              const validationResult = await validateIdDocument(userId, publicUrl, {
+                                full_name: formData.full_name,
+                                birth_date: formData.birth_date,
+                                location: {
+                                  country: selectedCountry === 'Others' ? customCountry : selectedCountry,
+                                  region: selectedRegion === 'Others' ? customRegion : selectedRegion,
+                                  city: selectedCity === 'Others' ? customCity : selectedCity,
+                                },
+                              });
+                              if (validationResult.isMatch) {
+                                setIdDocValidated(true);
+                              } else {
+                                setIdDocValidated(false);
+                                const msg = validationResult.displayMessage || validationResult.reason || 'ያስገቡት የመታወቂያ መረጃ የተሳሳተ ወይም ያልተሟላ ነው። እባክዎን ትክክለኛ የመንግስት መታወቂያ፣ ፓስፖርት ወይም መንጃ ፍቃድ ያቅርቡ።';
+                                setIdRejectionMessage(msg);
+                                setShowIdRejectionModal(true);
+                              }
+                            } catch (err: any) {
+                              setIdDocValidated(false);
+                              setIdRejectionMessage('የሰርቨር ስህተት ተከስቷል። እባክዎ ጥቂት ቆይተው እንደገና ይሞክሩ።');
+                              setShowIdRejectionModal(true);
+                            } finally {
+                              setIsValidatingId(false);
+                              setIsSubmitting(false);
+                            }
+                          }}
+                        />
+                      </label>
+
+                      {/* Secondary: fix name / birth date in Step 1 */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowIdRejectionModal(false);
+                          setFormData(prev => ({ ...prev, id_photo: '', verification_status: 'unverified' }));
+                          setIdDocValidated(false);
+                          setErrorMsg('');
+                          setStep(1);
+                        }}
+                        className="w-full bg-slate-100 hover:bg-slate-200 text-gray-700 py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all"
+                      >
+                        {locale === 'am' ? 'ወደ ደረጃ 1 ተመልሰው ስም / ልደት ቀን ያስተካክሉ' : 'Go to Step 1 & Fix Name / Birth Date'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {showMismatchModal && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
                 <div className="bg-white rounded-[2rem] max-w-md w-full p-8 border border-red-100 shadow-2xl mx-4 relative overflow-hidden animate-in zoom-in-95 duration-300">

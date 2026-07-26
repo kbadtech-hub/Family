@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import OpenAI from 'openai';
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 // Levenshtein Distance helper for fuzzy matching (minor typos)
 function levenshteinDistance(a: string, b: string): number {
   const tmp = [];
@@ -235,9 +237,14 @@ function verifyBirthDateMatch(dbBirthDate: string, ocrText: string): { matches: 
   return { matches: true };
 }
 
+// ─── Main Handler ──────────────────────────────────────────────────────────────
+
 export async function POST(req: Request) {
   try {
     const { userId, idPhotoUrl, selfiePhotoUrl, profileData, mockOcrData } = await req.json();
+
+    // Determine if this is a document-only pre-screen (Step 4) or full verification (Step 5)
+    const isDocOnly = selfiePhotoUrl === 'doc_only';
 
     if (!userId) {
       return NextResponse.json({ isMatch: false, reason: 'Missing userId for verification' });
@@ -252,60 +259,105 @@ export async function POST(req: Request) {
 
     if (dbError || !dbProfile) {
       console.error("Database query failed during verification:", dbError);
-      return NextResponse.json({ isMatch: false, reason: 'Could not fetch onboarding profile metadata from database.' });
+      return NextResponse.json({
+        isMatch: false,
+        reason: 'Could not fetch onboarding profile metadata from database.',
+        displayMessage: 'የሰርቨር ስህተት ተከስቷል። እባክዎ እንደገና ይሞክሩ።',
+        mode: isDocOnly ? 'doc_only' : 'full',
+      });
     }
 
     const dbFullName = (dbProfile.full_name || '').trim();
     const dbBirthDate = (dbProfile.birth_date || '').trim();
 
     if (!dbFullName) {
-      return NextResponse.json({ isMatch: false, reason: 'Profile name is empty. Please set your full name in your profile before verification.' });
+      return NextResponse.json({
+        isMatch: false,
+        reason: 'Profile name is empty. Please set your full name in your profile before verification.',
+        displayMessage: 'ሙሉ ስምዎ በፕሮፋይልዎ ላይ ያልተመዘገበ ነው። ወደ ደረጃ 1 ተመልሰው ስምዎን ያስገቡ።',
+        mode: isDocOnly ? 'doc_only' : 'full',
+      });
     }
 
     if (!dbBirthDate) {
-      return NextResponse.json({ isMatch: false, reason: 'No birth date registered on your profile. Please set your birth date before verification.' });
+      return NextResponse.json({
+        isMatch: false,
+        reason: 'No birth date registered on your profile. Please set your birth date before verification.',
+        displayMessage: 'የልደት ቀንዎ በፕሮፋይልዎ ላይ ያልተመዘገበ ነው። ወደ ደረጃ 1 ተመልሰው የልደት ቀንዎን ያስገቡ።',
+        mode: isDocOnly ? 'doc_only' : 'full',
+      });
     }
 
     if (!idPhotoUrl || idPhotoUrl.trim() === '') {
       return NextResponse.json({
         isMatch: false,
-        reason: 'እባክዎ ትክክለኛ ዶክመንት ያስገቡ! (ብሔራዊ መታወቂያ፣ ፓስፖርት፣ መንጃ ፈቃድ፣ ወይም የስም እና የትውልድ ዘመን ያለበት የሥራ/ተማሪ መታወቂያ)'
+        reason: 'No ID photo URL provided.',
+        displayMessage: 'እባክዎን ትክክለኛ ዶክመንት ያስገቡ! (ብሔራዊ መታወቂያ፣ ፓስፖርት፣ መንጃ ፈቃድ)',
+        mode: isDocOnly ? 'doc_only' : 'full',
       });
     }
 
-    // Check if user uploaded their selfie as the ID photo
-    if (selfiePhotoUrl && idPhotoUrl.trim() === selfiePhotoUrl.trim()) {
+    // ── Reject if selfie was uploaded as the ID document ──────────────────────
+    if (!isDocOnly && selfiePhotoUrl && idPhotoUrl.trim() === selfiePhotoUrl.trim()) {
       return NextResponse.json({
         isMatch: false,
-        reason: 'የተያያዘው የመታወቂያ ምስል እና የሰልፊ ምስል ተመሳሳይ ናቸው። እባክዎ ትክክለኛ የመታወቂያ ፎቶ ያያይዙ።'
+        reason: 'The ID image and selfie image are identical. Please attach a real ID photo.',
+        displayMessage: 'የተያያዘው የመታወቂያ ምስል እና የሰልፊ ምስል ተመሳሳይ ናቸው። እባክዎ ትክክለኛ የመታወቂያ ፎቶ ያያይዙ።',
+        mode: 'full',
       });
     }
 
+    // ── URL-level heuristic: catch obvious non-ID filenames ───────────────────
     const lowerIdUrl = idPhotoUrl.toLowerCase();
-    const isInvalidOrFake = lowerIdUrl.includes('fake') || 
-                            lowerIdUrl.includes('test') || 
-                            lowerIdUrl.includes('dummy') || 
-                            lowerIdUrl.includes('cartoon') || 
-                            lowerIdUrl.includes('selfie') || 
-                            lowerIdUrl.includes('floor') || 
-                            lowerIdUrl.includes('blank') || 
-                            lowerIdUrl.includes('invalid');
+    const isSuspiciousFilename =
+      lowerIdUrl.includes('fake') ||
+      lowerIdUrl.includes('test') ||
+      lowerIdUrl.includes('dummy') ||
+      lowerIdUrl.includes('cartoon') ||
+      lowerIdUrl.includes('selfie') ||
+      lowerIdUrl.includes('floor') ||
+      lowerIdUrl.includes('blank') ||
+      lowerIdUrl.includes('invalid');
 
-    if (isInvalidOrFake) {
+    if (isSuspiciousFilename) {
       return NextResponse.json({
         isMatch: false,
-        reason: 'እባክዎ ትክክለኛ ዶክመንት ያስገቡ! (ብሔራዊ መታወቂያ፣ ፓስፖርት፣ መንጃ ፈቃድ፣ ወይም የስም እና የትውልድ ዘመን ያለበት የሥራ/ተማሪ መታወቂያ)'
+        reason: 'Suspicious ID filename detected.',
+        displayMessage:
+          'ያስገቡት ፎቶ ትክክለኛ የመንግስት መታወቂያ አይደለም። እባክዎን ብሔራዊ መታወቂያ፣ ፓስፖርት ወይም መንጃ ፍቃድ ያቅርቡ።',
+        mode: isDocOnly ? 'doc_only' : 'full',
       });
     }
 
     const apiKey = process.env.GOOGLE_VISION_API_KEY;
 
-    // ─── Simulated Mode ───────────────────────────────────────────────────────
+    // ─── Simulated Mode (no Google Vision API key configured) ─────────────────
     if (!apiKey) {
       console.warn("GOOGLE_VISION_API_KEY is not defined. Falling back to simulated verification.");
-      
-      const isNameMismatch = lowerIdUrl.includes('name_mismatch') || lowerIdUrl.includes('mismatch') || lowerIdUrl.includes('wrong') || lowerIdUrl.includes('rejected');
+
+      const isNameMismatch =
+        lowerIdUrl.includes('name_mismatch') ||
+        lowerIdUrl.includes('mismatch') ||
+        lowerIdUrl.includes('wrong') ||
+        lowerIdUrl.includes('rejected');
       const isDobMismatch = lowerIdUrl.includes('dob_mismatch');
+      const isNotAnId =
+        lowerIdUrl.includes('selfie') ||
+        lowerIdUrl.includes('avatar') ||
+        lowerIdUrl.includes('profile') ||
+        lowerIdUrl.includes('photo_only') ||
+        lowerIdUrl.includes('noid');
+
+      // Reject non-ID uploads (simulated)
+      if (isNotAnId) {
+        return NextResponse.json({
+          isMatch: false,
+          reason: 'The uploaded image does not appear to be a government-issued ID document.',
+          displayMessage:
+            'ያስገቡት ፎቶ ትክክለኛ የመንግስት መታወቂያ አይደለም። እባክዎን ብሔራዊ መታወቂያ፣ ፓስፖርት ወይም መንጃ ፍቃድ ያቅርቡ።',
+          mode: isDocOnly ? 'doc_only' : 'full',
+        });
+      }
 
       // 1. If mockOcrData is provided, perform name & date comparison checks
       if (mockOcrData) {
@@ -317,7 +369,10 @@ export async function POST(req: Request) {
           if (!nameCheck.matches) {
             return NextResponse.json({
               isMatch: false,
-              reason: 'ያስገቡት የመዝገብ ስም እና መታወቂያው ላይ ያለው ስም አልተመሳሰለም። እባክዎን ትክክለኛ መታወቂያዎን ያያይዙ።'
+              reason: nameCheck.reason || 'Name mismatch on ID document.',
+              displayMessage:
+                'ያስገቡት የፕሮፋይል ስም ከሰነዱ ላይ ካለው ስም ጋር አይመሳሰልም። ትክክለኛ መታወቂያ ያቅርቡ ወይም ስምዎን ያስተካክሉ።',
+              mode: isDocOnly ? 'doc_only' : 'full',
             });
           }
         }
@@ -327,151 +382,202 @@ export async function POST(req: Request) {
           if (!dobCheck.matches) {
             return NextResponse.json({
               isMatch: false,
-              reason: dobCheck.reason || 'በመዝገብ ላይ ያስገቡት የትውልድ ቀን እና በመታወቂያው ላይ ያለው ቀን አልተመሳሰለም።'
+              reason: dobCheck.reason || 'Birth date mismatch on ID document.',
+              displayMessage:
+                'ያስገቡት የልደት ቀን ከሰነዱ ላይ ካለው ቀን ጋር አይመሳሰልም። ትክክለኛ መታወቂያ ያቅርቡ ወይም የልደት ቀንዎን ያስተካክሉ።',
+              mode: isDocOnly ? 'doc_only' : 'full',
             });
           }
         }
       }
 
-      // 2. Fallback url-triggered mismatches for legacy testing compatibility
+      // 2. URL-triggered mismatch flags (legacy testing compatibility)
       if (isNameMismatch) {
         return NextResponse.json({
           isMatch: false,
-          reason: 'ያስገቡት የመዝገብ ስም እና መታወቂያው ላይ ያለው ስም አልተመሳሰለም። እባክዎን ትክክለኛ መታወቂያዎን ያያይዙ።'
+          reason: 'ያስገቡት የመዝገብ ስም እና መታወቂያው ላይ ያለው ስም አልተመሳሰለም። እባክዎን ትክክለኛ መታወቂያዎን ያያይዙ።',
+          displayMessage:
+            'ያስገቡት የፕሮፋይል ስም ከሰነዱ ላይ ካለው ስም ጋር አይመሳሰልም። ትክክለኛ መታወቂያ ያቅርቡ ወይም ስምዎን ያስተካክሉ።',
+          mode: isDocOnly ? 'doc_only' : 'full',
         });
       }
 
       if (isDobMismatch) {
         return NextResponse.json({
           isMatch: false,
-          reason: 'በመዝገብ ላይ ያስገቡት የትውልድ ቀን እና በመታወቂያው ላይ ያለው ቀን አልተመሳሰለም።'
+          reason: 'በመዝገብ ላይ ያስገቡት የትውልድ ቀን እና በመታወቂያው ላይ ያለው ቀን አልተመሳሰለም።',
+          displayMessage:
+            'ያስገቡት የልደት ቀን ከሰነዱ ላይ ካለው ቀን ጋር አይመሳሰልም። ትክክለኛ መታወቂያ ያቅርቡ ወይም የልደት ቀንዎን ያስተካክሉ።',
+          mode: isDocOnly ? 'doc_only' : 'full',
         });
       }
 
       return NextResponse.json({
         isMatch: true,
         score: 0.98,
+        mode: isDocOnly ? 'doc_only' : 'full',
         extractedData: {
           full_name: dbFullName,
-          birth_date: dbBirthDate
-        }
+          birth_date: dbBirthDate,
+        },
       });
     }
 
-    // ─── Production Google Cloud Vision API Mode ──────────────────────────────
+    // ─── Production: Google Cloud Vision API ──────────────────────────────────
+
     const visionUrl = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
-    
+
+    // Build the feature list — always request text; also check for faces in doc_only mode
+    const features: Array<{ type: string; maxResults?: number }> = [
+      { type: 'TEXT_DETECTION' },
+    ];
+    if (isDocOnly) {
+      // Face detection on the ID card itself (must have a photo)
+      features.push({ type: 'FACE_DETECTION', maxResults: 5 });
+    }
+
     const requestBody = {
       requests: [
         {
           image: {
-            source: {
-              imageUri: idPhotoUrl
-            }
+            source: { imageUri: idPhotoUrl },
           },
-          features: [
-            {
-              type: "TEXT_DETECTION"
-            }
-          ]
-        }
-      ]
+          features,
+        },
+      ],
     };
 
     const response = await fetch(visionUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestBody)
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody),
     });
 
     const data = await response.json();
-    const textAnnotations = data.responses?.[0]?.textAnnotations;
+    const visionResponse = data.responses?.[0];
+    const textAnnotations = visionResponse?.textAnnotations;
+    const faceAnnotations = visionResponse?.faceAnnotations;
 
+    // ── 1. OCR text must be present (blurry / blank / non-document image) ────
     if (!textAnnotations || textAnnotations.length === 0) {
       return NextResponse.json({
         isMatch: false,
-        reason: 'Could not extract text from the ID document. Please upload a clear photo.'
+        reason: 'Could not extract text from the ID document. Please upload a clear, well-lit photo.',
+        displayMessage:
+          'ያስገቡት ምስል ላይ ፅሁፍ ሊነበብ አልቻለም። ጠርሶ የሚነበብ እና ብርሃናማ ፎቶ ያስገቡ።',
+        mode: isDocOnly ? 'doc_only' : 'full',
       });
     }
 
     const extractedText = textAnnotations[0].description;
-    console.log("Extracted OCR Text from ID:", extractedText);
     const lowerText = extractedText.toLowerCase();
 
-    // 1. Strict Document Type Check (Passport, Digital ID, Driving License)
+    // ── 2. Face photo must be present on the ID (doc_only check) ─────────────
+    if (isDocOnly) {
+      const hasFaceOnId = faceAnnotations && faceAnnotations.length > 0;
+      if (!hasFaceOnId) {
+        return NextResponse.json({
+          isMatch: false,
+          reason: 'No face photo detected on the ID document. Government IDs must have a facial photograph.',
+          displayMessage:
+            'ያስገቡት ሰነድ ፎቶ የሌለው ይመስላል። ፎቶ ያለበት ትክክለኛ የመንግስት መታወቂያ ያቅርቡ።',
+          mode: 'doc_only',
+        });
+      }
+    }
+
+    // ── 3. Document type check ────────────────────────────────────────────────
     const allowedDocKeywords = [
       'passport', 'paasaboor', 'ፓስፖርት', 'جواز', 'سفر',
-      'national id', 'identity card', 'id card', 'national identity', 'የብሔራዊ መታወቂያ', 'መታወቂያ', 'aqoonsi', 'aqoonsiga', 'waraqadda', 'widentity', 'fayda',
-      'driving license', 'driver\'s license', 'መንጃ ፍቃድ', 'መንጃ ፈቃድ'
+      'national id', 'identity card', 'id card', 'national identity',
+      'የብሔራዊ መታወቂያ', 'መታወቂያ', 'aqoonsi', 'aqoonsiga', 'waraqadda', 'widentity', 'fayda',
+      'driving license', "driver's license", 'መንጃ ፍቃድ', 'መንጃ ፈቃድ',
+      'resident permit', 'residence permit', 'residency card',
     ];
     const hasValidDocType = allowedDocKeywords.some(keyword => lowerText.includes(keyword));
 
     if (!hasValidDocType) {
       return NextResponse.json({
         isMatch: false,
-        reason: 'የተያያዘው ምስል ትክክለኛ መታወቂያ አይደለም። እባክዎን ህጋዊ መታወቂያ፣ ፓስፖርት ወይም መንጃ ፍቃድ ብቻ ያያይዙ።'
+        reason: 'The uploaded image is not a recognized government-issued ID document.',
+        displayMessage:
+          'ያስገቡት ፎቶ ትክክለኛ የመንግስት መታወቂያ አይደለም። እባክዎን ብሔራዊ መታወቂያ፣ ፓስፖርት ወይም መንጃ ፍቃድ ያቅርቡ።',
+        mode: isDocOnly ? 'doc_only' : 'full',
       });
     }
 
-    // 2. Enforce Name matching check against database values
+    // ── 4. Name match ─────────────────────────────────────────────────────────
     const nameCheck = await verifyNameMatch(dbFullName, extractedText);
     if (!nameCheck.matches) {
       return NextResponse.json({
         isMatch: false,
-        reason: 'ያስገቡት የመዝገብ ስም እና መታወቂያው ላይ ያለው ስም አልተመሳሰለም። እባክዎን ትክክለኛ መታወቂያዎን ያያይዙ።'
+        reason: nameCheck.reason || 'Name mismatch on ID document.',
+        displayMessage:
+          'ያስገቡት የፕሮፋይል ስም ከሰነዱ ላይ ካለው ስም ጋር አይመሳሰልም። ትክክለኛ መታወቂያ ያቅርቡ ወይም ወደ ደረጃ 1 ተመልሰው ስምዎን ያስተካክሉ።',
+        mode: isDocOnly ? 'doc_only' : 'full',
       });
     }
 
-    // 3. Enforce Birth Date matching check against database values
+    // ── 5. Date of birth match ────────────────────────────────────────────────
     const dobCheck = verifyBirthDateMatch(dbBirthDate, extractedText);
     if (!dobCheck.matches) {
       return NextResponse.json({
         isMatch: false,
-        reason: 'በመዝገብ ላይ ያስገቡት የትውልድ ቀን እና በመታወቂያው ላይ ያለው ቀን አልተመሳሰለም።'
+        reason: dobCheck.reason || 'Birth date mismatch on ID document.',
+        displayMessage:
+          'ያስገቡት የልደት ቀን ከሰነዱ ላይ ካለው ቀን ጋር አይመሳሰልም። ትክክለኛ መታወቂያ ያቅርቡ ወይም ወደ ደረጃ 1 ተመልሰው የልደት ቀንዎን ያስተካክሉ።',
+        mode: isDocOnly ? 'doc_only' : 'full',
       });
     }
 
-    // 4. Residence Area / Address Verification Check
-    let locationMatches = false;
-    const locationData = dbProfile.location || {};
-    const country = (locationData.country || '').toLowerCase().trim();
-    const region = (locationData.region || '').toLowerCase().trim();
-    const city = (locationData.city || '').toLowerCase().trim();
+    // ── 6. Residence / address check (full verification only) ────────────────
+    if (!isDocOnly) {
+      let locationMatches = false;
+      const locationData = dbProfile.location || {};
+      const country = (locationData.country || '').toLowerCase().trim();
+      const region = (locationData.region || '').toLowerCase().trim();
+      const city = (locationData.city || '').toLowerCase().trim();
 
-    if (city && lowerText.includes(city)) locationMatches = true;
-    if (region && lowerText.includes(region)) locationMatches = true;
-    if (country && lowerText.includes(country)) locationMatches = true;
+      if (city && lowerText.includes(city)) locationMatches = true;
+      if (region && lowerText.includes(region)) locationMatches = true;
+      if (country && lowerText.includes(country)) locationMatches = true;
 
-    const addressIndicators = [
-      'address', 'residence', 'place of birth', 'issuing authority', 'region', 'city', 'zone', 'woreda', 'kebele',
-      'አድራሻ', 'ክልል', 'ከተማ', 'ቀበሌ', 'ወረዳ', 'ዞን', 'የመኖሪያ',
-      'lakk.', 'magaala', 'ganda', 'qebee', 'gobolka', 'degmada', 'xaafada', 'عنوان', 'السكن', 'الميلاد'
-    ];
-    const hasAddressIndicator = addressIndicators.some(indicator => lowerText.includes(indicator));
+      const addressIndicators = [
+        'address', 'residence', 'place of birth', 'issuing authority', 'region', 'city', 'zone', 'woreda', 'kebele',
+        'አድራሻ', 'ክልል', 'ከተማ', 'ቀበሌ', 'ወረዳ', 'ዞን', 'የመኖሪያ',
+        'lakk.', 'magaala', 'ganda', 'qebee', 'gobolka', 'degmada', 'xaafada', 'عنوان', 'السكن', 'الميلاد',
+      ];
+      const hasAddressIndicator = addressIndicators.some(indicator => lowerText.includes(indicator));
 
-    if (!locationMatches && !hasAddressIndicator) {
-      return NextResponse.json({
-        isMatch: false,
-        reason: 'Could not verify residence area or address on the ID. Official IDs must clearly show a residential address, city, or issuing authority.'
-      });
+      if (!locationMatches && !hasAddressIndicator) {
+        return NextResponse.json({
+          isMatch: false,
+          reason: 'Could not verify residence area or address on the ID.',
+          displayMessage:
+            'ያስገቡት የመታወቂያ መረጃ የተሳሳተ ወይም ያልተሟላ ነው። እባክዎን ትክክለኛ የመንግስት መታወቂያ፣ ፓስፖርት ወይም መንጃ ፍቃድ ያቅርቡ።',
+          mode: 'full',
+        });
+      }
     }
 
+    // ── All checks passed ─────────────────────────────────────────────────────
     return NextResponse.json({
       isMatch: true,
-      score: 0.99,
+      score: isDocOnly ? 0.97 : 0.99,
+      mode: isDocOnly ? 'doc_only' : 'full',
       extractedData: {
         full_name: dbFullName,
-        birth_date: dbBirthDate
-      }
+        birth_date: dbBirthDate,
+      },
     });
 
   } catch (error: any) {
     console.error("GCV Verification Error:", error);
     return NextResponse.json({
       isMatch: false,
-      reason: 'Server error during verification: ' + error.message
+      reason: 'Server error during verification: ' + error.message,
+      displayMessage: 'የሰርቨር ስህተት ተከስቷል። እባክዎ ጥቂት ቆይተው እንደገና ይሞክሩ።',
+      mode: 'full',
     });
   }
 }
