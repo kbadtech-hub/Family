@@ -1,23 +1,63 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
+// ─── Live Reload Configuration ────────────────────────────────────────────────
+//
+// DEVELOPMENT (Live Reload):
+//   1. Run: npm run dev          (starts Next.js on port 3000)
+//   2. Run: npm run dev:android  (opens Capacitor live reload on Android)
+//
+//   To enable Live Reload, set CAPACITOR_LIVE_RELOAD=true in .env.local
+//   and set DEV_SERVER_URL to your machine's local IP (e.g. http://192.168.x.x:3000)
+//   ⚠️ Use your LAN IP address, NOT localhost — Android device/emulator cannot reach localhost.
+//
+// PRODUCTION (Static Build):
+//   1. Run: npm run build:android  (builds, syncs, and opens Android Studio)
+//   The app loads from: https://beteseb1.online (Vercel deployment)
+//
+// ─────────────────────────────────────────────────────────────────────────────
+
+const isLiveReload = process.env.CAPACITOR_LIVE_RELOAD === 'true';
+const devServerUrl = process.env.DEV_SERVER_URL || 'http://192.168.1.100:3000';
+
 const config: CapacitorConfig = {
   appId: 'com.beteseb.app',
   appName: 'Beteseb',
   webDir: 'out',
-  server: {
-    // Load from the live Vercel deployment.
-    // This allows all API routes to work inside the native Android/iOS app.
-    url: 'https://beteseb1.online',
-    cleartext: false,
-    allowNavigation: [
-      'beteseb1.online',
-      '*.beteseb1.online',
-      '*.firebaseapp.com',
-      '*.google.com',
-      '*.facebook.com',
-      '*.apple.com'
-    ]
-  },
+  server: isLiveReload
+    ? {
+        // ── Live Reload Mode ──────────────────────────────────────────────────
+        // Points to your local Next.js dev server for instant code changes.
+        // Make sure your phone/emulator is on the same WiFi network.
+        url: devServerUrl,
+        cleartext: true,        // Allows HTTP for local dev (not needed for production)
+        allowNavigation: [
+          '192.168.*.*',
+          '10.*.*.*',
+          '172.16.*.*',
+          'localhost',
+          'beteseb1.online',
+          '*.beteseb1.online',
+          '*.firebaseapp.com',
+          '*.google.com',
+          '*.facebook.com',
+          '*.apple.com',
+        ],
+      }
+    : {
+        // ── Production Mode ───────────────────────────────────────────────────
+        // Loads from the live Vercel deployment.
+        // This allows all API routes to work inside the native Android/iOS app.
+        url: 'https://beteseb1.online',
+        cleartext: false,
+        allowNavigation: [
+          'beteseb1.online',
+          '*.beteseb1.online',
+          '*.firebaseapp.com',
+          '*.google.com',
+          '*.facebook.com',
+          '*.apple.com',
+        ],
+      },
   plugins: {
     SplashScreen: {
       launchShowDuration: 800,
