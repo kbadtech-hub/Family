@@ -113,13 +113,14 @@ export async function POST(req: Request) {
       if (isCourse) {
         const videoId = planType.replace(/^(course_|video_)/, '');
         const simulatedPrice = 30;
+        const simulatedCurrency = 'ETB'; // Courses are ETB-priced by default
         const simulatedFee = Math.round(simulatedPrice * 0.035 * 100) / 100;
 
         await supabase.from('payments').insert({
           user_id: userId,
           plan_type: planType,
           amount: simulatedPrice,
-          currency: 'ETB',
+          currency: simulatedCurrency,
           status: 'approved',
           receipt_url: `Chapa TX (Simulated): ${tx_ref}`,
         });
@@ -131,7 +132,7 @@ export async function POST(req: Request) {
           user_email_snapshot: userEmail,
           revenue_source: 'course_sale',
           payment_gateway: 'chapa',
-          currency: 'ETB',
+          currency: simulatedCurrency,
           gross_amount: simulatedPrice,
           gateway_fee: simulatedFee,
           net_amount: Math.max(0, simulatedPrice - simulatedFee),
@@ -152,7 +153,9 @@ export async function POST(req: Request) {
           type: 'course',
         });
       } else if (isCoins) {
-        const amountCoins = resolveCoinAmount(planType, 0, 'ETB');
+        // Demo: infer currency from tx_ref or default ETB (coins are purchased in the user's currency)
+        const demoCoinCurr = 'ETB';
+        const amountCoins = resolveCoinAmount(planType, 0, demoCoinCurr);
 
         const pack = COIN_PACKAGES.find(p => p.id === planType || p.id === `coins_${planType.replace(/^c_?/, '')}`);
         const simulatedPrice = pack ? pack.priceEtb : 30;
@@ -163,7 +166,7 @@ export async function POST(req: Request) {
           user_id: userId,
           plan_type: `coins_${amountCoins}`,
           amount: simulatedPrice,
-          currency: 'ETB',
+          currency: demoCoinCurr,
           status: 'approved',
           receipt_url: `Chapa TX (Simulated): ${tx_ref}`,
         });
@@ -176,7 +179,7 @@ export async function POST(req: Request) {
           user_email_snapshot: userEmail,
           revenue_source: 'coin_sale',
           payment_gateway: 'chapa',
-          currency: 'ETB',
+          currency: demoCoinCurr,
           gross_amount: simulatedPrice,
           gateway_fee: simulatedFee,
           net_amount: Math.max(0, simulatedPrice - simulatedFee),
@@ -209,6 +212,7 @@ export async function POST(req: Request) {
         if (cleanPlan === '12m' || cleanPlan === '1y') days = 365;
         if (isLifetime) days = 36500;
 
+        // Demo: use ETB simulated prices (real payments will use actual Chapa txData.currency)
         let simulatedPrice = 299.98;
         if (cleanPlan === '3m') simulatedPrice = 759.98;
         if (cleanPlan === '6m') simulatedPrice = 1299.98;
@@ -216,6 +220,7 @@ export async function POST(req: Request) {
         if (isLifetime) simulatedPrice = 2999.98;
 
         const simulatedFee = Math.round(simulatedPrice * 0.035 * 100) / 100;
+        const demoVipCurr = 'ETB';
 
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + days);
@@ -224,7 +229,7 @@ export async function POST(req: Request) {
           user_id: userId,
           plan_type: planType,
           amount: simulatedPrice,
-          currency: 'ETB',
+          currency: demoVipCurr,
           status: 'approved',
           receipt_url: `Chapa TX (Simulated): ${tx_ref}`,
         });
@@ -237,7 +242,7 @@ export async function POST(req: Request) {
           user_email_snapshot: userEmail,
           revenue_source: 'subscription_vip',
           payment_gateway: 'chapa',
-          currency: 'ETB',
+          currency: demoVipCurr,
           gross_amount: simulatedPrice,
           gateway_fee: simulatedFee,
           net_amount: Math.max(0, simulatedPrice - simulatedFee),
@@ -268,6 +273,7 @@ export async function POST(req: Request) {
         const premiumUntil = new Date();
         premiumUntil.setDate(premiumUntil.getDate() + days);
 
+        // Demo: use ETB simulated prices (real payments use actual Chapa txData.currency)
         let simulatedPrice = 149.99;
         if (planType === '3m') simulatedPrice = 379.99;
         if (planType === '6m') simulatedPrice = 649.99;
@@ -275,12 +281,13 @@ export async function POST(req: Request) {
         if (isLifetime) simulatedPrice = 1499.99;
 
         const simulatedFee = Math.round(simulatedPrice * 0.035 * 100) / 100;
+        const demoPremCurr = 'ETB';
 
         const { error: premPaymentsSimErr } = await supabase.from('payments').insert({
           user_id: userId,
           plan_type: planType,
           amount: simulatedPrice,
-          currency: 'ETB',
+          currency: demoPremCurr,
           status: 'approved',
           receipt_url: `Chapa TX (Simulated): ${tx_ref}`,
         });
@@ -293,7 +300,7 @@ export async function POST(req: Request) {
           user_email_snapshot: userEmail,
           revenue_source: 'subscription_premium',
           payment_gateway: 'chapa',
-          currency: 'ETB',
+          currency: demoPremCurr,
           gross_amount: simulatedPrice,
           gateway_fee: simulatedFee,
           net_amount: Math.max(0, simulatedPrice - simulatedFee),

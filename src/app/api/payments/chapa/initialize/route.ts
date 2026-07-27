@@ -47,14 +47,10 @@ export async function POST(req: Request) {
       });
     }
 
-    const reqCurrency = (currency || 'ETB').toUpperCase();
-    const usdToEtbExchangeRate = 125;
-
-    // Chapa processes transactions in ETB. Convert USD amounts to ETB for Chapa API.
-    const finalCurrency = 'ETB';
-    const finalAmount = reqCurrency === 'USD' 
-      ? Math.round(Number(amount) * usdToEtbExchangeRate) 
-      : Number(amount);
+    // Pass currency and amount exactly as received — USD stays USD, ETB stays ETB.
+    // USD payments are NEVER converted to ETB; they go directly to Chapa in USD.
+    const finalCurrency = (currency || 'ETB').toUpperCase();
+    const finalAmount = Number(amount);
 
     let response = await fetch('https://api.chapa.co/v1/transaction/initialize', {
       method: 'POST',
@@ -74,14 +70,14 @@ export async function POST(req: Request) {
         ...(chapaSubAccountId ? { subaccount_id: chapaSubAccountId } : {}),
         customization: {
           title: "Beteseb Match", // 13 chars <= 16 chars
-          description: reqCurrency === 'USD' ? "Beteseb Payment (USD Card)" : "Beteseb Payment"
+          description: finalCurrency === 'USD' ? "Beteseb Payment (USD)" : "Beteseb Payment"
         }
       })
     });
 
     let data = await response.json();
 
-    // Secondary fallback retry if needed
+    // Secondary fallback retry if needed (keep same currency — never downgrade to ETB)
     if (data.status === 'failed' || !data.data?.checkout_url) {
       console.warn("Chapa initial attempt failed. Retrying initialization...", data.message);
 
@@ -93,7 +89,7 @@ export async function POST(req: Request) {
         },
         body: JSON.stringify({
           amount: finalAmount,
-          currency: 'ETB',
+          currency: finalCurrency,
           email: validEmail,
           first_name: (first_name || 'Beteseb').slice(0, 30),
           last_name: (last_name || 'Member').slice(0, 30),
@@ -103,7 +99,7 @@ export async function POST(req: Request) {
           ...(chapaSubAccountId ? { subaccount_id: chapaSubAccountId } : {}),
           customization: {
             title: "Beteseb Match",
-            description: "Beteseb Payment"
+            description: finalCurrency === 'USD' ? "Beteseb Payment (USD)" : "Beteseb Payment"
           }
         })
       });

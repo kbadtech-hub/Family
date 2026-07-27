@@ -49,6 +49,8 @@ export async function POST(req: Request) {
 
     const body = JSON.parse(rawBody);
     const { tx_ref, status, amount } = body;
+    // Use the currency reported by Chapa — USD stays USD, ETB stays ETB. Never convert.
+    const payCurrency: string = (body.currency || 'ETB').toUpperCase();
 
     // ── 2. Only process successful transactions ────────────────────────────────
     if (status !== 'success' && status !== 'completed') {
@@ -112,7 +114,7 @@ export async function POST(req: Request) {
         user_id: userId,
         plan_type: planType,
         amount: courseAmt,
-        currency: 'ETB',
+        currency: payCurrency,
         status: 'approved',
         receipt_url: `Chapa TX: ${tx_ref}`,
       });
@@ -125,7 +127,7 @@ export async function POST(req: Request) {
         user_email_snapshot: userEmail,
         revenue_source: 'course_sale',
         payment_gateway: 'chapa',
-        currency: 'ETB',
+        currency: payCurrency,
         gross_amount: courseAmt,
         gateway_fee: courseFee,
         net_amount: Math.max(0, courseAmt - courseFee),
@@ -143,13 +145,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ status: 'success', message: 'Payment recorded and course unlocked successfully' });
     } else if (isCoins) {
       const coinAmt = parseFloat(String(amount || 0));
-      const amountCoins = resolveCoinAmount(planType, coinAmt, 'ETB');
+      const coinCurr = payCurrency as 'ETB' | 'USD';
+      const amountCoins = resolveCoinAmount(planType, coinAmt, coinCurr === 'USD' ? 'USD' : 'ETB');
 
       await supabase.from('payments').insert({
         user_id: userId,
         plan_type: `coins_${amountCoins}`,
         amount: coinAmt,
-        currency: 'ETB',
+        currency: payCurrency,
         status: 'approved',
         receipt_url: `Chapa TX: ${tx_ref}`,
       });
@@ -162,7 +165,7 @@ export async function POST(req: Request) {
         user_email_snapshot: userEmail,
         revenue_source: 'coin_sale',
         payment_gateway: 'chapa',
-        currency: 'ETB',
+        currency: payCurrency,
         gross_amount: coinAmt,
         gateway_fee: coinFee,
         net_amount: Math.max(0, coinAmt - coinFee),
@@ -195,7 +198,7 @@ export async function POST(req: Request) {
         user_id: userId,
         plan_type: planType,
         amount: vipAmt,
-        currency: 'ETB',
+        currency: payCurrency,
         status: 'approved',
         receipt_url: `Chapa TX: ${tx_ref}`,
       });
@@ -208,7 +211,7 @@ export async function POST(req: Request) {
         user_email_snapshot: userEmail,
         revenue_source: 'subscription_vip',
         payment_gateway: 'chapa',
-        currency: 'ETB',
+        currency: payCurrency,
         gross_amount: vipAmt,
         gateway_fee: vipFee,
         net_amount: Math.max(0, vipAmt - vipFee),
@@ -246,7 +249,7 @@ export async function POST(req: Request) {
         user_id: userId,
         plan_type: planType,
         amount: premAmt,
-        currency: 'ETB',
+        currency: payCurrency,
         status: 'approved',
         receipt_url: `Chapa TX: ${tx_ref}`,
       });
@@ -259,7 +262,7 @@ export async function POST(req: Request) {
         user_email_snapshot: userEmail,
         revenue_source: 'subscription_premium',
         payment_gateway: 'chapa',
-        currency: 'ETB',
+        currency: payCurrency,
         gross_amount: premAmt,
         gateway_fee: premFee,
         net_amount: Math.max(0, premAmt - premFee),

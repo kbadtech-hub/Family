@@ -342,8 +342,8 @@ export default function PaymentTab() {
                 </div>
              ) : (
                <>
-                 {/* Payment Method Switcher */}
-                 {((currency === 'ETB' && activeGateways.chapa) || (currency === 'USD' && activeGateways.stripe)) && activeGateways.bank_transfer && (
+                 {/* Payment Method Switcher — both ETB and USD use Chapa */}
+                 {(activeGateways.chapa) && activeGateways.bank_transfer && (
                     <div className="flex bg-[#F1F5F9] p-1.5 rounded-2xl w-fit border border-gray-150 shadow-sm mx-auto">
                        <button 
                          onClick={() => setPaymentMethod('online')} 
@@ -361,7 +361,7 @@ export default function PaymentTab() {
                  )}
 
                  {/* No Active Gateways Alert */}
-                 {!((currency === 'ETB' && activeGateways.chapa) || (currency === 'USD' && activeGateways.stripe)) && !activeGateways.bank_transfer && (
+                 {!activeGateways.chapa && !activeGateways.bank_transfer && (
                     <div className="max-w-md mx-auto bg-red-500/5 p-8 rounded-3xl border border-red-500/20 text-center space-y-4">
                        <p className="text-sm font-bold text-red-600">
                          {t('pausedNotice')}
@@ -369,7 +369,7 @@ export default function PaymentTab() {
                     </div>
                  )}
 
-                 {paymentMethod === 'online' && ((currency === 'ETB' && activeGateways.chapa) || (currency === 'USD' && activeGateways.stripe)) && (
+                 {paymentMethod === 'online' && activeGateways.chapa && (
                     <div className="max-w-md mx-auto bg-white p-10 rounded-[3rem] border border-primary/10 shadow-2xl text-center space-y-8">
                        <div className="w-20 h-20 bg-primary/10 rounded-[2.5rem] flex items-center justify-center mx-auto text-primary">
                           <CreditCard size={36} />
@@ -377,7 +377,7 @@ export default function PaymentTab() {
                        <div className="space-y-3">
                           <h3 className="font-black text-accent uppercase tracking-tight text-lg italic">Instant Online Gateway</h3>
                           <p className="text-xs text-gray-500 italic max-w-xs mx-auto leading-relaxed">
-                             {t('onlineCheckoutDesc', { gateway: currency === 'ETB' ? (locale === 'am' ? 'ቻፓ/ቴሌብር (Chapa)' : 'Chapa (Mobile Banking & Telebirr)') : (locale === 'am' ? 'ስትራይፕ (Stripe)' : 'Stripe (Cards)') })}
+                             {t('onlineCheckoutDesc', { gateway: currency === 'ETB' ? (locale === 'am' ? 'ቻፓ/ቴሌብር (Chapa)' : 'Chapa (Mobile Banking & Telebirr)') : (locale === 'am' ? 'ቻፓ — በዶላር (Chapa USD)' : 'Chapa (International Cards — USD)') })}
                           </p>
                        </div>
                        <button 
