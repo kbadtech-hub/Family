@@ -1,10 +1,18 @@
 package com.beteseb.app;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.WindowManager;
+import androidx.multidex.MultiDex;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        MultiDex.install(this);
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         // FLAG_SECURE is set AFTER super.onCreate().
