@@ -92,7 +92,12 @@ export default function Home() {
   const router = useRouter();
   
   const [settings, setSettings] = useState<SystemSettings | null>(null);
-  const [isNative, setIsNative] = useState(false);
+  const [isNative, setIsNative] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return !!(window as any).Capacitor?.isNativePlatform?.();
+    }
+    return false;
+  });
   const [authChecked, setAuthChecked] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 

@@ -6,7 +6,16 @@ import { useLocale } from 'next-intl';
 
 export default function AnimatedSplashScreen() {
   const locale = useLocale();
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        return sessionStorage.getItem('beteseb_splash_shown') !== 'true';
+      } catch (_) {
+        return true;
+      }
+    }
+    return true;
+  });
   const [scale, setScale] = useState(0.9);
   const [opacity, setOpacity] = useState(1);
 
@@ -53,10 +62,9 @@ export default function AnimatedSplashScreen() {
     let hasShown = false;
     try { hasShown = sessionStorage.getItem('beteseb_splash_shown') === 'true'; } catch (_) {}
     if (hasShown) {
+      setIsVisible(false);
       return;
     }
-    
-    setIsVisible(true);
     
     // Zoom in shortly after mounting
     const scaleUpTimer = setTimeout(() => setScale(1.15), 100);
