@@ -16,7 +16,7 @@ import {
   Award,
   X
 } from 'lucide-react';
-import { useLocale } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import LocationGate from '@/components/dashboard/LocationGate';
 import SystemAlertModal from '@/components/ui/SystemAlertModal';
 import { generateChapaTxRef } from '@/lib/subscription';
@@ -29,6 +29,7 @@ interface SubscriptionPlansPageProps {
 
 export default function SubscriptionPlansPage({ profile, defaultTab = 'premium', onPaymentStarted }: SubscriptionPlansPageProps) {
   const locale = useLocale();
+  const t = useTranslations('Subscription');
   const isAm = locale === 'am';
   const [activePlanType, setActivePlanType] = useState<'premium' | 'vip'>(defaultTab);
   
@@ -64,7 +65,7 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
 
   const handleSubmitClaim = async () => {
     if (!claimTxRef.trim()) {
-      setClaimError(isAm ? 'እባክዎ የትራንዛክሽን ቁጥር ያስገቡ።' : 'Please enter a transaction reference.');
+      setClaimError(t('claimTxRequired'));
       return;
     }
     setSubmittingClaim(true);
@@ -86,11 +87,9 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
       if (error) throw error;
 
       showAlert(
-        isAm 
-          ? `የክፍያ ቅሬታዎ በትኬት ቁጥር ${ticketNumber} በተሳካ ሁኔታ ተመዝግቧል። አድሚኑ መርምሮ ወዲያውኑ አገልግሎቱን ያነቃቃል።` 
-          : `Your payment claim has been submitted successfully under ticket ${ticketNumber}. Admins will verify it shortly.`,
+        t('claimSuccessMsg').replace('{ticket}', ticketNumber),
         'success',
-        isAm ? 'ቅሬታው ቀርቧል' : 'Claim Submitted'
+        t('claimSuccess')
       );
       setShowClaimModal(false);
       setClaimTxRef('');
@@ -153,11 +152,11 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
   // 1. Premium Pricing Packages (Standard Tier)
   const premiumPlans = {
     ETB: [
-      { id: '1m', name: isAm ? '1 ወር' : '1 Month', price: 149.99, originalPrice: 149.99, period: isAm ? 'በወር' : 'monthly', discount: 0 },
-      { id: '3m', name: isAm ? '3 ወር (15% ቅናሽ)' : '3 Months (15% Off)', price: 379.99, originalPrice: 449.97, period: isAm ? 'በ3 ወር' : 'quarterly', discount: 15 },
-      { id: '6m', name: isAm ? '6 ወር (28% ቅናሽ)' : '6 Months (28% Off)', price: 649.99, originalPrice: 899.94, period: isAm ? 'በ6 ወር' : 'semi-annually', discount: 28, popular: true },
-      { id: '12m', name: isAm ? '1 ዓመት (44% ቅናሽ)' : '1 Year (44% Off)', price: 999.99, originalPrice: 1799.88, period: isAm ? 'በዓመት' : 'yearly', discount: 44 },
-      { id: 'lifetime', name: isAm ? 'የዕድሜ ልክ' : 'Lifetime Access', price: 1499.99, originalPrice: 1499.99, period: isAm ? 'ቋሚ' : 'lifetime', discount: 0 }
+      { id: '1m', name: t('plan1m'), price: 149.99, originalPrice: 149.99, period: t('periodMonthly'), discount: 0 },
+      { id: '3m', name: t('plan3m'), price: 379.99, originalPrice: 449.97, period: t('periodQuarterly'), discount: 15 },
+      { id: '6m', name: t('plan6m'), price: 649.99, originalPrice: 899.94, period: t('periodSemiAnnual'), discount: 28, popular: true },
+      { id: '12m', name: t('plan12m'), price: 999.99, originalPrice: 1799.88, period: t('periodYearly'), discount: 44 },
+      { id: 'lifetime', name: t('planLifetime'), price: 1499.99, originalPrice: 1499.99, period: t('periodLifetime'), discount: 0 }
     ],
     USD: [
       { id: '1m', name: '1 Month', price: 7.99, originalPrice: 7.99, period: 'monthly', discount: 0 },
@@ -171,11 +170,11 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
   // 2. VIP Pricing Packages (2x Standard Tier)
   const vipPlans = {
     ETB: [
-      { id: 'vip_1m', name: isAm ? '1 ወር VIP' : '1 Month VIP', price: 299.98, originalPrice: 299.98, period: isAm ? 'በወር' : 'monthly', discount: 0 },
-      { id: 'vip_3m', name: isAm ? '3 ወር VIP (15% ቅናሽ)' : '3 Months VIP (15% Off)', price: 759.98, originalPrice: 899.94, period: isAm ? 'በ3 ወር' : 'quarterly', discount: 15 },
-      { id: 'vip_6m', name: isAm ? '6 ወር VIP (28% ቅናሽ)' : '6 Months VIP (28% Off)', price: 1299.98, originalPrice: 1799.88, period: isAm ? 'በ6 ወር' : 'semi-annually', discount: 28, popular: true },
-      { id: 'vip_12m', name: isAm ? '1 ዓመት VIP (44% ቅናሽ)' : '1 Year VIP (44% Off)', price: 1999.98, originalPrice: 3599.76, period: isAm ? 'በዓመት' : 'yearly', discount: 44 },
-      { id: 'vip_lifetime', name: isAm ? 'የዕድሜ ልክ VIP' : 'Lifetime VIP', price: 2999.98, originalPrice: 2999.98, period: isAm ? 'ቋሚ' : 'lifetime', discount: 0 }
+      { id: 'vip_1m', name: t('plan1mVip'), price: 299.98, originalPrice: 299.98, period: t('periodMonthly'), discount: 0 },
+      { id: 'vip_3m', name: t('plan3mVip'), price: 759.98, originalPrice: 899.94, period: t('periodQuarterly'), discount: 15 },
+      { id: 'vip_6m', name: t('plan6mVip'), price: 1299.98, originalPrice: 1799.88, period: t('periodSemiAnnual'), discount: 28, popular: true },
+      { id: 'vip_12m', name: t('plan12mVip'), price: 1999.98, originalPrice: 3599.76, period: t('periodYearly'), discount: 44 },
+      { id: 'vip_lifetime', name: t('planLifetimeVip'), price: 2999.98, originalPrice: 2999.98, period: t('periodLifetime'), discount: 0 }
     ],
     USD: [
       { id: 'vip_1m', name: '1 Month VIP', price: 15.98, originalPrice: 15.98, period: 'monthly', discount: 0 },
@@ -259,7 +258,7 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
     } catch (err: any) {
       const rawMsg = err?.message || err;
       const displayMsg = typeof rawMsg === 'string' ? rawMsg : JSON.stringify(rawMsg);
-      showAlert(displayMsg, 'error', isAm ? 'የክፍያ ችግር ተፈጥሯል' : 'Payment Initialization Failed');
+      showAlert(displayMsg, 'error', t('paymentFailed'));
     } finally {
       setIsProcessing(false);
     }
@@ -286,17 +285,13 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
       <div className="text-center space-y-4 max-w-2xl mx-auto">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-bold text-xs uppercase tracking-widest">
           <Sparkles size={14} className="fill-primary/20 animate-pulse" />
-          {isAm ? 'ቤተሰብ ዳይመንድ እና ቪአይፒ' : 'Beteseb Diamond & VIP Hub'}
+          {t('hub')}
         </div>
         <h2 className="text-4xl md:text-5xl font-black text-accent italic uppercase tracking-tighter leading-none">
-          {activePlanType === 'vip' 
-            ? (isAm ? 'እንኳን ወደ ቪአይፒ አገልግሎት በደህና መጡ' : 'Welcome to VIP Status')
-            : (isAm ? 'እንኳን ወደ ዳይመንድ አገልግሎት በደህና መጡ' : 'Welcome to Diamond Status')}
+          {activePlanType === 'vip' ? t('welcomeVip') : t('welcomeDiamond')}
         </h2>
         <p className="text-gray-500 font-medium italic text-sm md:text-base leading-relaxed">
-          {activePlanType === 'vip'
-            ? (isAm ? 'የእርስዎን ግላዊነት ሙሉ በሙሉ የሚቆጣጠሩበት፣ ከፍተኛ ጥበቃ የሚደረግለት እና ልዩ የሆኑ ፊቸሮችን የሚያገኙበት የቪአይፒ ክለብ።' : 'Exquisite privacy controls, complete incognito features, and golden crown status for elite matchmaking.')
-            : (isAm ? 'ያልተገደበ የጽሑፍ ውይይት፣ ሙሉ የመገለጫ መረጃዎች እና ምርጥ አማራጮችን በማግኘት የትዳር አጋርዎን በፍጥነት ያግኙ።' : 'Unlock unlimited matches, contact profiles directly, access expert classes, and find your lifetime partner today.')}
+          {activePlanType === 'vip' ? t('descVip') : t('descDiamond')}
         </p>
       </div>
 
@@ -307,14 +302,14 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
           className={`flex items-center gap-2 px-8 py-4 rounded-[1.7rem] text-xs font-black uppercase tracking-widest transition-all ${activePlanType === 'premium' ? 'bg-primary text-white shadow-lg' : 'text-gray-400 hover:text-accent'}`}
         >
           <Zap size={14} className={activePlanType === 'premium' ? 'fill-white' : ''} />
-          {isAm ? 'የዳይመንድ አባልነት' : 'Diamond Plans'}
+          {t('diamondPlans')}
         </button>
         <button 
           onClick={() => setActivePlanType('vip')}
           className={`flex items-center gap-2 px-8 py-4 rounded-[1.7rem] text-xs font-black uppercase tracking-widest transition-all ${activePlanType === 'vip' ? 'bg-amber-500 text-white shadow-lg' : 'text-gray-400 hover:text-accent'}`}
         >
           <Crown size={14} className={activePlanType === 'vip' ? 'fill-white text-yellow-300' : ''} />
-          {isAm ? 'ቪአይፒ አባልነት' : 'VIP Plans'}
+          {t('vipPlans')}
         </button>
       </div>
 
@@ -323,7 +318,7 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
         <div className="space-y-6">
           <h3 className="text-xl font-black text-accent uppercase tracking-tight italic flex items-center gap-2">
             {activePlanType === 'vip' ? <Crown className="text-amber-500 fill-amber-100" /> : <Zap className="text-primary fill-primary/10" />}
-            {isAm ? 'የሚያገኟቸው ዋና ጥቅሞች' : 'Key Features & Benefits'}
+            {t('keyFeatures')}
           </h3>
           
           <div className="space-y-4">
@@ -332,29 +327,29 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
                 <div className="flex items-start gap-4">
                   <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0"><Check size={16} /></div>
                   <div>
-                    <h4 className="text-xs font-black text-accent uppercase tracking-wider">{isAm ? 'ያልተገደበ የትዳር አጋር ማግኘት' : 'Unlimited Matching Feed'}</h4>
-                    <p className="text-[11px] text-gray-500 font-medium italic">{isAm ? 'የየቀኑን ገደብ በማለፍ ሁሉንም መገለጫዎች ይጎብኙ።' : 'Bypass the trust tier daily card limits and explore profiles without restrictions.'}</p>
+                    <h4 className="text-xs font-black text-accent uppercase tracking-wider">{t('feat1Title')}</h4>
+                    <p className="text-[11px] text-gray-500 font-medium italic">{t('feat1Desc')}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
                   <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0"><Check size={16} /></div>
                   <div>
-                    <h4 className="text-xs font-black text-accent uppercase tracking-wider">{isAm ? 'የቀጥታ ውይይት' : 'Direct Private Chat'}</h4>
-                    <p className="text-[11px] text-gray-500 font-medium italic">{isAm ? 'ለሚፈልጉት ሰው ወዲያውኑ የጽሑፍ ውይይት ይጀምሩ።' : 'Start chatting with matches instantly without wait limits.'}</p>
+                    <h4 className="text-xs font-black text-accent uppercase tracking-wider">{t('feat2Title')}</h4>
+                    <p className="text-[11px] text-gray-500 font-medium italic">{t('feat2Desc')}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
                   <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0"><Check size={16} /></div>
                   <div>
-                    <h4 className="text-xs font-black text-accent uppercase tracking-wider">{isAm ? 'የሰዎች ሙሉ ዝርዝር መረጃ' : 'View Full Details & Bios'}</h4>
-                    <p className="text-[11px] text-gray-500 font-medium italic">{isAm ? 'የሰዎችን ባዮ፣ ምርጫዎች እና ዝርዝር መረጃዎች ይክፈቱ።' : 'Reveal blurred profile traits, descriptions, and user bios.'}</p>
+                    <h4 className="text-xs font-black text-accent uppercase tracking-wider">{t('feat3Title')}</h4>
+                    <p className="text-[11px] text-gray-500 font-medium italic">{t('feat3Desc')}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
                   <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0"><Check size={16} /></div>
                   <div>
-                    <h4 className="text-xs font-black text-accent uppercase tracking-wider">{isAm ? 'ቅድሚያ የሚሰጠው የድጋፍ አገልግሎት' : 'Priority Customer Care'}</h4>
-                    <p className="text-[11px] text-gray-500 font-medium italic">{isAm ? 'ማንኛውም ችግር ሲያጋጥምዎት ቅድሚያ ድጋፍ ያገኛሉ።' : 'Your support requests and verification status updates are prioritized.'}</p>
+                    <h4 className="text-xs font-black text-accent uppercase tracking-wider">{t('feat4Title')}</h4>
+                    <p className="text-[11px] text-gray-500 font-medium italic">{t('feat4Desc')}</p>
                   </div>
                 </div>
               </>
@@ -363,29 +358,29 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
                 <div className="flex items-start gap-4">
                   <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600 shrink-0"><Crown size={16} /></div>
                   <div>
-                    <h4 className="text-xs font-black text-accent uppercase tracking-wider">{isAm ? 'የወርቅ አክሊል ባጅ (Crown Badge)' : 'Golden Crown Status'}</h4>
-                    <p className="text-[11px] text-gray-500 font-medium italic">{isAm ? 'በሁሉም ቦታዎች ላይ የወርቅ አክሊል ባጅ መገለጫዎ ላይ ይደረጋል።' : 'Stand out with an elegant Crown Badge on your avatar and details page.'}</p>
+                    <h4 className="text-xs font-black text-accent uppercase tracking-wider">{t('feat5Title')}</h4>
+                    <p className="text-[11px] text-gray-500 font-medium italic">{t('feat5Desc')}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
                   <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600 shrink-0"><EyeOff size={16} /></div>
                   <div>
-                    <h4 className="text-xs font-black text-accent uppercase tracking-wider">{isAm ? 'የመደበቂያ ሁነታ (Ghost Mode)' : 'Ghost Mode & Privacy'}</h4>
-                    <p className="text-[11px] text-gray-500 font-medium italic">{isAm ? 'ፎቶዎን መደበቅ እና ስምዎን ማደብዘዝ ይችላሉ።' : 'Completely blur your avatar image (radius=25) and hide your full name.'}</p>
+                    <h4 className="text-xs font-black text-accent uppercase tracking-wider">{t('feat6Title')}</h4>
+                    <p className="text-[11px] text-gray-500 font-medium italic">{t('feat6Desc')}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
                   <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600 shrink-0"><UserCheck size={16} /></div>
                   <div>
-                    <h4 className="text-xs font-black text-accent uppercase tracking-wider">{isAm ? 'የመስመር ላይ መገኘትን መደበቅ' : 'Incognito Online Controls'}</h4>
-                    <p className="text-[11px] text-gray-500 font-medium italic">{isAm ? 'online መሆንዎን፣ የተነበበ ምልክትን መደበቅ ይችላሉ።' : 'Hide your online active indicators, typing state, and read receipts.'}</p>
+                    <h4 className="text-xs font-black text-accent uppercase tracking-wider">{t('feat7Title')}</h4>
+                    <p className="text-[11px] text-gray-500 font-medium italic">{t('feat7Desc')}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
                   <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600 shrink-0"><Award size={16} /></div>
                   <div>
-                    <h4 className="text-xs font-black text-accent uppercase tracking-wider">{isAm ? 'ሁሉንም የዳይመንድ አገልግሎት ያካትታል' : 'All Diamond Benefits Included'}</h4>
-                    <p className="text-[11px] text-gray-500 font-medium italic">{isAm ? 'ያልተገደበ መገለጫ፣ የቀጥታ ቻት እና ሌሎችንም ያካትታል።' : 'Enjoy complete Diamond access in addition to your exclusive VIP features.'}</p>
+                    <h4 className="text-xs font-black text-accent uppercase tracking-wider">{t('feat8Title')}</h4>
+                    <p className="text-[11px] text-gray-500 font-medium italic">{t('feat8Desc')}</p>
                   </div>
                 </div>
               </>
@@ -425,7 +420,7 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
           <div className="p-8 bg-[#F8FAFC] rounded-[2.5rem] border border-border space-y-6 text-center">
             <div className="space-y-2">
               <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                {isAm ? 'የተመረጠው አገልግሎት' : 'Selected Category'}
+                {t('selectedCategory')}
               </h4>
               <p className="text-2xl font-black text-accent italic uppercase tracking-tighter">
                 {activePlanType === 'vip' ? 'Beteseb VIP Status' : 'Beteseb Premium'}
@@ -434,7 +429,7 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
 
             <div className="p-6 bg-white rounded-3xl border border-gray-150 shadow-inner flex flex-col items-center justify-center gap-1">
               <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                {isAm ? 'ጠቅላላ ክፍያ' : 'Total Amount Due'}
+                {t('totalAmount')}
               </span>
               <div className="flex items-baseline gap-1 text-accent italic font-black">
                 <span className="text-4xl">
@@ -445,7 +440,7 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
               </div>
               {currentPlans.find(p => p.id === selectedDuration)?.discount ? (
                 <span className="text-[10px] bg-red-500 text-white font-black px-3 py-1 rounded-full uppercase tracking-wider animate-pulse">
-                  {currentPlans.find(p => p.id === selectedDuration)?.discount}% {isAm ? 'ቅናሽ ተደርጓል' : 'Discount Applied'}
+                  {currentPlans.find(p => p.id === selectedDuration)?.discount}% {t('discountApplied')}
                 </span>
               ) : null}
             </div>
@@ -456,12 +451,12 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
               className={`w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-2xl flex items-center justify-center gap-3 transition-all active:scale-95 ${activePlanType === 'vip' ? 'bg-amber-500 text-white shadow-amber-500/20 hover:bg-amber-600' : 'bg-primary text-white shadow-primary/20 hover:bg-primary-hover'}`}
             >
               {isProcessing ? <Loader2 className="animate-spin text-white" /> : <CreditCard size={16} />}
-              {isAm ? 'ክፍያን ፈጽም' : 'Complete Upgrade'}
+              {t('completeUpgrade')}
             </button>
 
             <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider flex items-center justify-center gap-2">
               <ShieldCheck size={14} className="text-primary" />
-              {isAm ? 'አስተማማኝ ክፍያ • ወዲያውኑ ገባሪ ይሆናል' : 'Secure gateway • Activated instantly'}
+              {t('secureGateway')}
             </p>
           </div>
         )}
@@ -477,7 +472,7 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
           >
             {plan.popular && (
               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-red-500 text-white px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest shadow-md flex items-center gap-1.5">
-                <Star size={10} fill="white" /> {isAm ? 'ተመራጭ' : 'Best Offer'}
+                <Star size={10} fill="white" /> {t('bestOffer')}
               </div>
             )}
 
@@ -514,7 +509,7 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
           onClick={() => setShowClaimModal(true)}
           className="text-[10px] md:text-xs font-black text-primary uppercase tracking-widest underline decoration-primary/20 hover:text-accent transition-colors"
         >
-          {isAm ? 'ክፍያ ፈጽመው አልሰራልዎትም? ቅሬታ ያቅርቡ (Claim Payment Issue)' : 'Paid but service not activated? Submit a claim'}
+          {t('submitClaimBtn')}
         </button>
       </div>
 
@@ -523,12 +518,12 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-accent/60 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl border border-primary/10 flex flex-col max-h-[90vh]">
             <div className="p-6 border-b border-muted flex justify-between items-center bg-accent text-white">
-              <h3 className="font-bold text-sm tracking-tight uppercase">{isAm ? 'የክፍያ ቅሬታ ማቅረቢያ' : 'Submit Payment Claim'}</h3>
+              <h3 className="font-bold text-sm tracking-tight uppercase">{t('claimTitle')}</h3>
               <button onClick={() => setShowClaimModal(false)} className="text-white/60 hover:text-white transition-colors"><X size={20} /></button>
             </div>
             <div className="p-6 space-y-4 overflow-y-auto">
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{isAm ? 'የትራንዛክሽን ቁጥር (Transaction ID / Reference)' : 'Transaction ID / Reference'}</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{t('claimTxLabel')}</label>
                 <input
                   type="text"
                   value={claimTxRef}
@@ -538,23 +533,23 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{isAm ? 'የክፍያ ዓይነት' : 'Payment Type'}</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{t('claimTypeLabel')}</label>
                 <select
                   value={claimType}
                   onChange={(e) => setClaimType(e.target.value)}
                   className="w-full p-4 bg-muted rounded-2xl border-transparent focus:ring-primary focus:bg-white focus:border-primary transition-all text-sm font-semibold"
                 >
-                  <option value="subscription_vip">VIP Upgrade</option>
-                  <option value="subscription_premium">Diamond Upgrade</option>
-                  <option value="coins">Coins Package (100-10000 Coins)</option>
+                  <option value="subscription_vip">{t('typeVip')}</option>
+                  <option value="subscription_premium">{t('typeDiamond')}</option>
+                  <option value="coins">{t('typeCoins')}</option>
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{isAm ? 'ማብራሪያ' : 'Explanation'}</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{t('claimExplainLabel')}</label>
                 <textarea
                   value={claimExplanation}
                   onChange={(e) => setClaimExplanation(e.target.value)}
-                  placeholder={isAm ? 'የተፈጠረውን ችግር እዚህ ያብራሩ...' : 'Describe what happened (amount paid, method, etc.)...'}
+                  placeholder={t('claimExplainPlaceholder')}
                   className="w-full p-4 bg-muted rounded-2xl border-transparent focus:ring-primary focus:bg-white focus:border-primary transition-all text-sm font-semibold h-24 resize-none"
                 />
               </div>
@@ -565,7 +560,7 @@ export default function SubscriptionPlansPage({ profile, defaultTab = 'premium',
                 className="w-full py-4 bg-primary text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg hover:bg-primary-hover active:scale-95 transition-all flex items-center justify-center gap-2"
               >
                 {submittingClaim ? <Loader2 className="animate-spin" size={14} /> : null}
-                {isAm ? 'ቅሬታውን አቅርብ' : 'Submit Claim'}
+                {t('claimSubmit')}
               </button>
             </div>
           </div>

@@ -81,6 +81,7 @@ export default function CommunityView({
   isAdmin?: boolean,
   userCoins?: number
 }) {
+  const tCom = useTranslations('Community');
   const t = useTranslations('Community');
   const locale = useLocale();
   
@@ -404,12 +405,12 @@ export default function CommunityView({
                                           {isFollowingAuthor ? (
                                             <>
                                               <UserCheck size={12} />
-                                              <span>Following</span>
+                                              <span>{tCom('following')}</span>
                                             </>
                                           ) : (
                                             <>
                                               <UserPlus size={12} />
-                                              <span>Follow</span>
+                                              <span>{tCom('follow')}</span>
                                             </>
                                           )}
                                         </button>
@@ -462,7 +463,7 @@ export default function CommunityView({
                                        className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
                                      >
                                        <Trash2 size={14} />
-                                       <span>Delete Post</span>
+                                       <span>{tCom('deletePost')}</span>
                                      </button>
                                   </div>
                                 )}
@@ -552,7 +553,7 @@ export default function CommunityView({
                                 className="flex items-center gap-1.5 text-gray-500 hover:text-primary transition-colors font-bold text-xs uppercase tracking-widest bg-muted/50 px-3 py-1.5 rounded-xl border border-gray-100"
                              >
                                 <Share2 size={16} /> 
-                                <span>Deep Link Share</span>
+                                <span>{tCom('deepLinkShare')}</span>
                              </button>
                           </div>
 

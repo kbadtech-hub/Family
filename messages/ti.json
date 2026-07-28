@@ -174,7 +174,8 @@
         "usernameTaken": "እዚ መታወቂ ስም ተታሒዙ እዩ። እባክኹም ኻልእ ሕረዩ።",
         "updateSuccess": "ፕሮፋይልካ ብዓወት ተመሓይሹ አሎ!",
         "updateFailed": "ምምሕያሽ ኣይተኻእለን"
-      }
+      },
+      "completion": "ምሉእነት ፕሮፋይል"
     },
     "planner": {
       "title": "ምድላው መርዓ (Wedding Planner)",
@@ -431,7 +432,11 @@
     "media": {
       "uploadPhoto": "ስእሊ ወስኹ",
       "uploadVideo": "ቪድዮ ወስኹ"
-    }
+    },
+    "following": "ትሰዕቦ ኣሎኻ",
+    "follow": "ስዓብ",
+    "deletePost": "ምሕዛዝ ፖስት",
+    "deepLinkShare": "ኣካፍሉ"
   },
   "About": {
     "tagline": "መውስቦ ብባህልን እምነትን ዝምራሕ",
@@ -946,5 +951,74 @@
     "premiumFriendsOnly": "ንፕሪምየም ወይ ንኣዕሩኽ ጥራሕ",
     "upgradeOrFriendSub": "ዕልል ንምጅማር ናብ ፕሪምየም ኣማህይሽ ወይ ብዓርክነት ተቀባልነት ረከብ።",
     "upgradeNow": "ሕዚ ኣማህይሽ"
+  },
+  "Subscription": {
+    "hub": "ቤተሰብ ዳይሞንድ ን VIP",
+    "welcomeVip": "ናብ VIP ኣገልግሎት ብደሓን ምጽኡ",
+    "welcomeDiamond": "ናብ ዳይሞንድ ኣገልግሎት ብደሓን ምጽኡ",
+    "descVip": "ምስጢራውነትካ ብዝሙሉ ንምቁጽጻር፣ ልዑል ዕቃቤ ንምርካብን ፍሉይ ናይ VIP ምኽርን ዝህብ ናይ ኣባልነት ክለብ።",
+    "descDiamond": "ዘይተወሰነ ምድላይ ናይ ሓጋዚ፣ ቀጥታ ምርኻብ፣ ናይ ፍሉያት ኮርሳት ምኽታልን ናይ ህይወት ሓጋዚ ዛሓጺሩ ምርካብን።",
+    "diamondPlans": "ናይ ዳይሞንድ ኣባልነት",
+    "vipPlans": "ናይ VIP ኣባልነት",
+    "keyFeatures": "ዋና ኣገልግሎታትን ጥቕምታትን",
+    "feat1Title": "ዘይተወሰነ ምርካብ ሓጋዚ",
+    "feat1Desc": "ናይ ዕለታዊ ደረት ብምሕላፍ ኩሎም ፕሮፋይላት ዳህስሱ።",
+    "feat2Title": "ቀጥታ ምዝርራብ",
+    "feat2Desc": "ምስ ዝደለኻዮ ሰብ ወዲኡ ዝጀምር ናይ ጽሑፍ ወዝ ጀምር።",
+    "feat3Title": "ምሉእ ዝርዝር ምርኣይ",
+    "feat3Desc": "ናይ ሰባት ባዮ፣ ምርጫ፣ ዝርዝርን ኩሎምን ክፈት።",
+    "feat4Title": "ቅዳሜ-ቀዳምነት ደገፍ",
+    "feat4Desc": "ናይ ደገፍ ሕቶኻ ቅዳሜ ቀዳምነት ይሕዝ።",
+    "feat5Title": "ናይ ወርቂ ዘውዲ ባጅ",
+    "feat5Desc": "ኣብ ኩሎም ቦታ ናይ ወርቂ ዘውዲ ባጅ ኣብ ፕሮፋይልካ ይረአ።",
+    "feat6Title": "ምሽዋር / Ghost Mode",
+    "feat6Desc": "ናይ ሸነኽ ስእሊ ምሽዋርን ምሉእ ስምካ ምሕባእን ትኽእል።",
+    "feat7Title": "ናይ ኦንላይን ምርኣይ ምሕባእ",
+    "feat7Desc": "ኦንላይን ምዃንካ፣ ናይ ምንባብ ምልክት፣ ምሕባእ ትኽእል።",
+    "feat8Title": "ኩሎም ናይ ዳይሞንድ ኣገልግሎት ዘካትት",
+    "feat8Desc": "ምሉእ ዳይሞንድን ፍሉይ VIPን ኣገልግሎት ኣካቲቱ ይሓዝ።",
+    "selectedCategory": "ዝተመርጸ ኣገልግሎት",
+    "totalAmount": "ጠቅላላ ክፍሊት",
+    "discountApplied": "ቅናሽ ተተግቢሩ",
+    "completeUpgrade": "ክፍሊት ፈጽም",
+    "secureGateway": "ውሑስ ክፍሊት • ብቐጥታ ይነቃቕ",
+    "bestOffer": "እቲ ዝሓሸ",
+    "submitClaimBtn": "ክፍሊት ፈጺምካ ኣይሰርሐን? ቅሬታ ኣቕርብ",
+    "claimTitle": "ናይ ክፍሊት ቅሬታ ምቕራብ",
+    "claimTxLabel": "ቁጽሪ ዕድዌ (Transaction ID)",
+    "claimTypeLabel": "ዓይነት ክፍሊት",
+    "claimExplainLabel": "ብርሃን",
+    "claimExplainPlaceholder": "ዝኾነ ዝተፈጥረ ጸገም ኣብዚ ብርሃን ሃብ...",
+    "claimSubmit": "ቅሬታ ኣቕርብ",
+    "paymentFailed": "ጸገም ናይ ክፍሊት",
+    "claimSuccess": "ቅሬታ ቀሪቡ",
+    "claimSuccessMsg": "ናይ ክፍሊት ቅሬታኻ ብቲኬት ቁጽሪ {ticket} ኣምዝጊቡ ኣሎ። ኣድሚናት ብቀልጡፍ ሰርሖ ክፈቱሉ እዮም።",
+    "typeVip": "VIP ኣማህይሽ",
+    "typeDiamond": "ዳይሞንድ ኣማህይሽ",
+    "typeCoins": "ናይ ኮይን ጥሒሎ (100-10000)",
+    "plan1m": "1 ወርሒ",
+    "plan3m": "3 ወርሒ (15% ቅናሽ)",
+    "plan6m": "6 ወርሒ (28% ቅናሽ)",
+    "plan12m": "1 ዓመት (44% ቅናሽ)",
+    "planLifetime": "ናይ ዕድሜ",
+    "plan1mVip": "1 ወርሒ VIP",
+    "plan3mVip": "3 ወርሒ VIP (15% ቅናሽ)",
+    "plan6mVip": "6 ወርሒ VIP (28% ቅናሽ)",
+    "plan12mVip": "1 ዓመት VIP (44% ቅናሽ)",
+    "planLifetimeVip": "ናይ ዕድሜ VIP",
+    "periodMonthly": "ወርሓዊ",
+    "periodQuarterly": "3 ወርሒ",
+    "periodSemiAnnual": "6 ወርሒ",
+    "periodYearly": "ዓመታዊ",
+    "periodLifetime": "ንሓዋሩ",
+    "claimTxRequired": "በጃኹም ቁጽሪ ዕድዌ ኣእቱ።"
+  },
+  "Workshops": {
+    "topicLabel": "ኣርዕስቲ",
+    "timeSlotLabel": "ናይ ግዜ ቦታ",
+    "topicPreMarriage": "ናይ ቅድሚ መርዓ ምኽሪ",
+    "topicFinance": "ናይ ቤተሰብ ፋይናንስ ምምሕዳር",
+    "topicConflict": "ፍታሕ ናይ ምፍጣሕ",
+    "topicGeneral": "ሓፈሻዊ ምኽሪ"
   }
 }

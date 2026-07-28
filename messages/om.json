@@ -174,7 +174,8 @@
         "usernameTaken": "Maqaan fayyadamaa kana dura qabatameera. Maaloo kan biraa filadhaa.",
         "updateSuccess": "Piroofaayiliin keessan milkaa'inaan haaromeera!",
         "updateFailed": "Haaromsuun hin milkaa'ine"
-      }
+      },
+      "completion": "Guutummaa Piroofaayilii"
     },
     "planner": {
       "title": "Qopheessaa Cidhaa (Wedding Planner)",
@@ -431,7 +432,11 @@
     "media": {
       "uploadPhoto": "Suuraa Dabali",
       "uploadVideo": "Muuqaal Dabali"
-    }
+    },
+    "following": "Hordofaa",
+    "follow": "Hordofuu",
+    "deletePost": "Maxxansaa Haquu",
+    "deepLinkShare": "Qooduu"
   },
   "About": {
     "tagline": "Gaa'ela Aadaa fi Amanamummaadhaan Aadaa",
@@ -938,5 +943,74 @@
     "premiumFriendsOnly": "Piriimiyamii ykn Hiriyoota Qofaaf",
     "upgradeOrFriendSub": "Haasaa jalqabuuf gara Piriimiyamitti haaromsaa ykn akka hiriyaatti fudhatama argadhaa.",
     "upgradeNow": "Amma Haaromsaa"
+  },
+  "Subscription": {
+    "hub": "Beteseb Daayimandii fi VIP",
+    "welcomeVip": "Baga Tajaajila VIPtti Dhuftan",
+    "welcomeDiamond": "Baga Tajaajila Daayimandii Dhuftan",
+    "descVip": "Dhuunfummaa keessan guutumaan bulchuuf, eegumsa olaanaa argachuuf fi tajaajila VIP addaa argachuuf giddugala.",
+    "descDiamond": "Hiriyaa hin-daangaofame argachuu, piroofaayilii kallattiin quunnamuu, mana barumsaa ogeeyyii fayyadamuu fi hiriyaa jireenyaa keessan hardhuma argadhaa.",
+    "diamondPlans": "Karoora Daayimandii",
+    "vipPlans": "Karoora VIP",
+    "keyFeatures": "Tajaajilaalee fi Faayidaalee Ijoo",
+    "feat1Title": "Hiriyaa Daangoo Malee Argachuu",
+    "feat1Desc": "Daangoo guyyaa dabarsuun piroofaayilii hunda daawwadhaa.",
+    "feat2Title": "Haasaa Kallattii",
+    "feat2Desc": "Hiriyaalee wajjin yeroo illee haasaa jalqabaa.",
+    "feat3Title": "Odeeffannoo Guutuu Argachuu",
+    "feat3Desc": "Odeeffannoo, ibsa fi piroofaayilii guutuu banaa.",
+    "feat4Title": "Deeggarsa Dursa Kenname",
+    "feat4Desc": "Gaaffiin deeggarsa keessan dursa ilaalama.",
+    "feat5Title": "Baajii Achiichaa Warqee",
+    "feat5Desc": "Baajii warqee piroofaayilii keessan irratti argama.",
+    "feat6Title": "Haaloo Dhokannoo",
+    "feat6Desc": "Fakkii keessan dhoksuuf fi maqaa keessan dhofsisuu dandeessu.",
+    "feat7Title": "Mul'ina Interneetii Dhoksuuf",
+    "feat7Desc": "Haala online ta'uu fi mallattoo dubbifamuu dhokachuu dandeessu.",
+    "feat8Title": "Tajaajila Daayimandii Hunda Dabalata",
+    "feat8Desc": "Daayimandii guutuu fi tajaajila VIP addaa ni argatu.",
+    "selectedCategory": "Tajaajila Filatame",
+    "totalAmount": "Kafaltii Waliigalaa",
+    "discountApplied": "Hir'anni Raawwatameera",
+    "completeUpgrade": "Kafaltii Xumuri",
+    "secureGateway": "Karaa nageenyaa • Yeroo xumurtan banama",
+    "bestOffer": "Filatamaa",
+    "submitClaimBtn": "Kafaltii raawwataniituu hinseenamne? Gaaffii dhiyeessaa",
+    "claimTitle": "Gaaffii Kafaltii Dhiyeessuu",
+    "claimTxLabel": "Lakk. Daddabarsa (Transaction ID)",
+    "claimTypeLabel": "Gosa Kafaltii",
+    "claimExplainLabel": "Ibsa",
+    "claimExplainPlaceholder": "Rakkoo uumame asitti ibsaa...",
+    "claimSubmit": "Gaaffii Dhiyeessi",
+    "paymentFailed": "Rakkoo Kafaltii",
+    "claimSuccess": "Gaaffiin Dhiyaateera",
+    "claimSuccessMsg": "Gaaffiin kafaltii keessan tikeeta lakk {ticket} jalatti galmeera. Adminiistireetaroonni dhihottuma mirkaneesu.",
+    "typeVip": "VIP Haaromsuu",
+    "typeDiamond": "Daayimandii Haaromsuu",
+    "typeCoins": "Kooyina Saanduqa (100-10000)",
+    "plan1m": "Ji'a 1",
+    "plan3m": "Ji'oota 3 (15% hir'ina)",
+    "plan6m": "Ji'oota 6 (28% hir'ina)",
+    "plan12m": "Waggaa 1 (44% hir'ina)",
+    "planLifetime": "Jireenyaa guutuu",
+    "plan1mVip": "Ji'a 1 VIP",
+    "plan3mVip": "Ji'oota 3 VIP (15% hir'ina)",
+    "plan6mVip": "Ji'oota 6 VIP (28% hir'ina)",
+    "plan12mVip": "Waggaa 1 VIP (44% hir'ina)",
+    "planLifetimeVip": "Jireenyaa guutuu VIP",
+    "periodMonthly": "ji'aan",
+    "periodQuarterly": "Ji'a 3n",
+    "periodSemiAnnual": "Ji'a 6n",
+    "periodYearly": "waggaan",
+    "periodLifetime": "yeroo hundaa",
+    "claimTxRequired": "Maaloo lakkoofsa daddabarsa galchi."
+  },
+  "Workshops": {
+    "topicLabel": "Mata-Duree",
+    "timeSlotLabel": "Yeroo Kenname",
+    "topicPreMarriage": "Gorsa Dursaa Gaa'elaa",
+    "topicFinance": "Bulchiinsa Maallaqaa Maatii",
+    "topicConflict": "Furmaata Waldhabdee",
+    "topicGeneral": "Gorsa Waliigalaa"
   }
 }

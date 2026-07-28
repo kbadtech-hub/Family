@@ -174,7 +174,8 @@
         "usernameTaken": "اسم المستخدم مستخدم بالفعل. يرجى اختيار اسم آخر.",
         "updateSuccess": "تم تحديث الملف الشخصي بنجاح!",
         "updateFailed": "فشل التحديث"
-      }
+      },
+      "completion": "اكتمال الملف الشخصي"
     },
     "planner": {
       "title": "مخطط الزفاف الملكي (Wedding Planner)",
@@ -431,7 +432,11 @@
     "media": {
       "uploadPhoto": "إضافة صورة",
       "uploadVideo": "إضافة فيديو"
-    }
+    },
+    "following": "تتابعه",
+    "follow": "تابع",
+    "deletePost": "حذف المنشور",
+    "deepLinkShare": "مشاركة"
   },
   "About": {
     "tagline": "زواج موجه بالتقاليد والثقة",
@@ -938,5 +943,74 @@
     "premiumFriendsOnly": "للمشتركين المميزين أو الأصدقاء فقط",
     "upgradeOrFriendSub": "قم بالترقية إلى الحساب الممتاز أو احصل على قبول كصديق لبدء المحادثة.",
     "upgradeNow": "الترقية الآن"
+  },
+  "Subscription": {
+    "hub": "بيتسب Diamond و VIP",
+    "welcomeVip": "مرحباً بك في مرتبة VIP",
+    "welcomeDiamond": "مرحباً بك في مرتبة Diamond",
+    "descVip": "تحكم كامل في خصوصيتك، ميزات التخفي الكاملة، ومكانة التاج الذهبي لمطابقة النخبة.",
+    "descDiamond": "افتح تطابقات غير محدودة، تواصل مع الملفات مباشرة، استمتع بالدروس المتخصصة، وابحث عن شريكك مدى الحياة اليوم.",
+    "diamondPlans": "خطط Diamond",
+    "vipPlans": "خطط VIP",
+    "keyFeatures": "الميزات والمزايا الرئيسية",
+    "feat1Title": "تغذية غير محدودة للتطابق",
+    "feat1Desc": "تجاوز حدود بطاقات الثقة اليومية واستكشف الملفات الشخصية دون قيود.",
+    "feat2Title": "محادثة خاصة مباشرة",
+    "feat2Desc": "ابدأ الدردشة مع التطابقات فوراً دون حدود انتظار.",
+    "feat3Title": "عرض التفاصيل الكاملة والسير الذاتية",
+    "feat3Desc": "اكشف السمات المشوشة والأوصاف وسيرة المستخدم الكاملة.",
+    "feat4Title": "خدمة عملاء ذات أولوية",
+    "feat4Desc": "طلبات الدعم وتحديثات حالة التحقق لديك تحصل على الأولوية.",
+    "feat5Title": "مرتبة التاج الذهبي",
+    "feat5Desc": "تميّز بشارة تاج أنيقة على صورتك وصفحة تفاصيلك.",
+    "feat6Title": "وضع الشبح والخصوصية",
+    "feat6Desc": "طمس صورتك الرمزية بالكامل وإخفاء اسمك الكامل.",
+    "feat7Title": "ضوابط الإخفاء عبر الإنترنت",
+    "feat7Desc": "إخفاء مؤشرات نشاطك عبر الإنترنت وحالة الكتابة وإيصالات القراءة.",
+    "feat8Title": "جميع مزايا Diamond مشمولة",
+    "feat8Desc": "استمتع بوصول Diamond الكامل بالإضافة إلى ميزات VIP الحصرية.",
+    "selectedCategory": "الفئة المختارة",
+    "totalAmount": "إجمالي المبلغ المستحق",
+    "discountApplied": "تم تطبيق الخصم",
+    "completeUpgrade": "أكمل الترقية",
+    "secureGateway": "بوابة آمنة • يتم التفعيل فوراً",
+    "bestOffer": "أفضل عرض",
+    "submitClaimBtn": "دفعت ولم يتم التفعيل؟ قدّم مطالبة",
+    "claimTitle": "تقديم مطالبة بالدفع",
+    "claimTxLabel": "رقم المعاملة (Transaction ID)",
+    "claimTypeLabel": "نوع الدفع",
+    "claimExplainLabel": "الشرح",
+    "claimExplainPlaceholder": "اشرح ما حدث (المبلغ المدفوع، الطريقة، إلخ)...",
+    "claimSubmit": "تقديم المطالبة",
+    "paymentFailed": "فشل في تهيئة الدفع",
+    "claimSuccess": "تم تقديم المطالبة",
+    "claimSuccessMsg": "تم تسجيل مطالبتك بالدفع بنجاح تحت رقم التذكرة {ticket}. سيتحقق منها المسؤولون قريباً.",
+    "typeVip": "ترقية VIP",
+    "typeDiamond": "ترقية Diamond",
+    "typeCoins": "حزمة العملات (100-10000)",
+    "plan1m": "شهر واحد",
+    "plan3m": "3 أشهر (خصم 15%)",
+    "plan6m": "6 أشهر (خصم 28%)",
+    "plan12m": "سنة واحدة (خصم 44%)",
+    "planLifetime": "وصول مدى الحياة",
+    "plan1mVip": "شهر واحد VIP",
+    "plan3mVip": "3 أشهر VIP (خصم 15%)",
+    "plan6mVip": "6 أشهر VIP (خصم 28%)",
+    "plan12mVip": "سنة واحدة VIP (خصم 44%)",
+    "planLifetimeVip": "VIP مدى الحياة",
+    "periodMonthly": "شهرياً",
+    "periodQuarterly": "ربع سنوي",
+    "periodSemiAnnual": "نصف سنوي",
+    "periodYearly": "سنوياً",
+    "periodLifetime": "مدى الحياة",
+    "claimTxRequired": "يرجى إدخال رقم المعاملة."
+  },
+  "Workshops": {
+    "topicLabel": "الموضوع",
+    "timeSlotLabel": "الفترة الزمنية",
+    "topicPreMarriage": "إرشادات ما قبل الزواج",
+    "topicFinance": "التخطيط المالي للأسرة",
+    "topicConflict": "حل النزاعات",
+    "topicGeneral": "الاستشارة العامة"
   }
 }

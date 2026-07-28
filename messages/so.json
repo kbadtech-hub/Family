@@ -174,7 +174,8 @@
         "usernameTaken": "Magacan isticmaalaha waa la qaatay. Tafadhali dooro mid kale.",
         "updateSuccess": "Profile-kaaga si successfully ah ayaa loo cusbooneysiiyay!",
         "updateFailed": "Cusbooneysiintu wey faashilantay"
-      }
+      },
+      "completion": "Dhamaystirka Profile-ka"
     },
     "planner": {
       "title": "Qorsheeyaha Arooska (Wedding Planner)",
@@ -431,7 +432,11 @@
     "media": {
       "uploadPhoto": "Ku dar Sawir",
       "uploadVideo": "Ku dar Muuqaal"
-    }
+    },
+    "following": "Ku Raacsan Tahay",
+    "follow": "Raac",
+    "deletePost": "Tirtir Qoraalka",
+    "deepLinkShare": "La Wadaag"
   },
   "About": {
     "tagline": "Guurka oo ay Hagayaan Dhaqanka iyo Kalsoonidu",
@@ -939,5 +944,74 @@
     "premiumFriendsOnly": "Keliya Premium ama Saaxiibada",
     "upgradeOrFriendSub": "Kordhi Premium ama lagaa aqbalo saaxiibnimo si aad u start-gareeyso wada-hadalka.",
     "upgradeNow": "Cusboonaysii Hadda"
+  },
+  "Subscription": {
+    "hub": "Beteseb Diamond iyo VIP",
+    "welcomeVip": "Ku Soo Dhowow Xaaladda VIP",
+    "welcomeDiamond": "Ku Soo Dhowow Xaaladda Diamond",
+    "descVip": "Xukun khaaskaaga si buuxda, astaamaha sirta ah oo dhammaystiran, iyo kiisaska goobta VIP.",
+    "descDiamond": "Fur is-fitiinnada aan xad lahayn, la xiriir profiles si toos ah, gal fasallada xirfadlayaasha, oo helo lammaanahaaga nolol ahaan maanta.",
+    "diamondPlans": "Qorshayaasha Diamond",
+    "vipPlans": "Qorshayaasha VIP",
+    "keyFeatures": "Astaamaha iyo Faa'iidooyinka Muhiimka ah",
+    "feat1Title": "Feejignaan Aan Xad Lahayn",
+    "feat1Desc": "Ka gudub xaddiga kartada maalinlaha ah oo baadh profiles xoriyadda leh.",
+    "feat2Title": "Wada-hadal Toos ah",
+    "feat2Desc": "Bilow wada-hadalka is-fitiinnada si degdeg ah adoon sugitaan lahayn.",
+    "feat3Title": "Arag Faahfaahinta & Siiradaha Buuxa",
+    "feat3Desc": "Fur astaamaha profile-ka ee xiran, faahfaahinta, iyo siirada isticmaalaha.",
+    "feat4Title": "Xaaladda Taageerada Mudnaanta",
+    "feat4Desc": "Codsigaaga taageerada iyo cusbooneysiinta xaaladda xaqiijinta waxaa la siinayaa mudnaan.",
+    "feat5Title": "Xaaladda Taajka Dahab",
+    "feat5Desc": "Kaga muuqo Astaanta Taajka Qurxoon ee sawirkaaga iyo bogga faahfaahinta.",
+    "feat6Title": "Qaabka Sirta & Ghost Mode",
+    "feat6Desc": "Buuxda dhig sawirkaaga oo qari magacaaga oo buuxa.",
+    "feat7Title": "Kontaroolka Khadka ee Sireed",
+    "feat7Desc": "Qari tilmaamayaashaada firfircoon ee khadka, xaaladda qoraallada, iyo diiwaanada akhrinta.",
+    "feat8Title": "Dhammaan Faa'iidooyinka Diamond Waxa Ku Jira",
+    "feat8Desc": "Ku raaxayso helitaanka Diamond oo buuxa iyo astaamahaaga gaarka ah ee VIP.",
+    "selectedCategory": "Qaybta la Doortay",
+    "totalAmount": "Wadarta Lacagta La Bixinayo",
+    "discountApplied": "Dhimista La Dabaqay",
+    "completeUpgrade": "Dhamaystir Hormarinta",
+    "secureGateway": "Albaabka amaan • Waxaa la firfircoonayaa si degdeg ah",
+    "bestOffer": "Heshiiska Ugu Wanaagsan",
+    "submitClaimBtn": "Waxaad bixisay laakiin adeeggu ma shaqeyn? Soo gudbi dacwad",
+    "claimTitle": "Soo Gudbi Dacwadda Lacag Bixinta",
+    "claimTxLabel": "Lambarka Macaamilka (Transaction ID)",
+    "claimTypeLabel": "Nooca Lacag Bixinta",
+    "claimExplainLabel": "Sharaxaad",
+    "claimExplainPlaceholder": "Sharax waxa dhacay (lacagta la bixiyay, hab, iwm)...",
+    "claimSubmit": "Gudbi Dacwadda",
+    "paymentFailed": "Dhibaato Lacag Bixinta",
+    "claimSuccess": "Dacwadda Waa La Gudbiyay",
+    "claimSuccessMsg": "Dacwaddaada lacag bixinta waxaa lagu diiwaangeliyay tigidhka {ticket}. Maamulayaasha ayaa xaqiijin doona si dhakhso ah.",
+    "typeVip": "Kor u qaad VIP",
+    "typeDiamond": "Kor u qaad Diamond",
+    "typeCoins": "Xidmo Qadaadac (100-10000)",
+    "plan1m": "1 Bil",
+    "plan3m": "3 Bilood (15% Dhimis)",
+    "plan6m": "6 Bilood (28% Dhimis)",
+    "plan12m": "1 Sanad (44% Dhimis)",
+    "planLifetime": "Weligaa",
+    "plan1mVip": "1 Bil VIP",
+    "plan3mVip": "3 Bilood VIP (15% Dhimis)",
+    "plan6mVip": "6 Bilood VIP (28% Dhimis)",
+    "plan12mVip": "1 Sanad VIP (44% Dhimis)",
+    "planLifetimeVip": "Weligaa VIP",
+    "periodMonthly": "bishiiba",
+    "periodQuarterly": "3 bilood",
+    "periodSemiAnnual": "6 bilood",
+    "periodYearly": "sanadkiiba",
+    "periodLifetime": "weligaa",
+    "claimTxRequired": "Fadlan geli tixraaca macaamilka."
+  },
+  "Workshops": {
+    "topicLabel": "Mawduuca",
+    "timeSlotLabel": "Wakhtiga",
+    "topicPreMarriage": "Hanuuninta Ka Hor Guurka",
+    "topicFinance": "Qorsheynta Maaliyadda Qoyska",
+    "topicConflict": "Xallinta Khilaafka",
+    "topicGeneral": "La-talinta Guud"
   }
 }

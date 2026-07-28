@@ -1,4 +1,5 @@
 'use client';
+import { useTranslations } from 'next-intl';
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
@@ -33,6 +34,7 @@ export default function BetesebVipCard({
   onUndoLastSwipe,
   hasLastSwipe = false
 }: BetesebVipCardProps) {
+  const t = useTranslations('About');
   const [icebreaker, setIcebreaker] = useState<string | null>(null);
   const [showIcebreakerModal, setShowIcebreakerModal] = useState(false);
   const [ethDateStr, setEthDateStr] = useState('');
@@ -126,7 +128,7 @@ export default function BetesebVipCard({
           <div className="flex items-center gap-1.5">
             <div className="bg-cyan-500/25 backdrop-blur-xl border border-cyan-500/30 px-3 py-1 rounded-full text-white text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-lg">
               <span>💎</span>
-              <span>Diamond</span>
+              <span>{t('badges.level4.title').split(' ')[0]}</span>
             </div>
             
             <div className="bg-gradient-to-r from-amber-500 to-yellow-400 border border-amber-300/60 px-3 py-1 rounded-full text-slate-950 text-[9px] font-black uppercase tracking-widest flex items-center gap-1 shadow-lg animate-pulse">

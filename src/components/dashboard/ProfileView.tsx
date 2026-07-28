@@ -264,6 +264,7 @@ function AppLockToggle({ locale }: { locale: string }) {
 
 export default function ProfileView({ profile, onUpdate }: { profile: any, onUpdate: () => void }) {
   const { showConfirm, showPrompt, showToast, showAlert } = useUI();
+  const tDash = useTranslations('Dashboard');
   const t = useTranslations('Dashboard.profile');
   const locale = useLocale();
   const router = useRouter();
@@ -832,7 +833,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
              {/* Profile Completion Indicator */}
              <div className="max-w-xs mx-auto md:mx-0 p-3 bg-muted/40 rounded-xl border border-muted space-y-1.5">
                 <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-wider text-gray-400">
-                  <span>Profile Completion</span>
+                  <span>{tDash('profile.completion')}</span>
                   <span className="text-primary font-bold">{userCompletion}%</span>
                 </div>
                 <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden shadow-inner border border-border">

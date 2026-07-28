@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { supabase } from '@/lib/supabase';
 import { 
   Users, 
@@ -384,21 +385,21 @@ export default function WorkshopsView({ currency, userTier }: { currency: 'ETB' 
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label className="block">
-                  <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Topic</span>
+                  <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">{t('topicLabel')}</span>
                   <select 
                     value={bookingTopic} 
                     onChange={(e) => setBookingTopic(e.target.value as any)}
                     className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none"
                   >
-                    <option value="Pre-Marriage">Pre-Marriage Guidance</option>
-                    <option value="Finance">Family Finance Planning</option>
-                    <option value="Conflict Resolution">Conflict Resolution</option>
-                    <option value="General">General Consultation</option>
+                    <option value="Pre-Marriage">{t('topicPreMarriage')}</option>
+                    <option value="Finance">{t('topicFinance')}</option>
+                    <option value="Conflict Resolution">{t('topicConflict')}</option>
+                    <option value="General">{t('topicGeneral')}</option>
                   </select>
                 </label>
 
                 <label className="block">
-                  <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">Time Slot</span>
+                  <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 block">{t('timeSlotLabel')}</span>
                   <select 
                     value={bookingTime} 
                     onChange={(e) => setBookingTime(e.target.value)}
