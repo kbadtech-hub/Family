@@ -17,6 +17,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 // ─────────────────────────────────────────────────────────────────────────────
 
 const isLiveReload = process.env.CAPACITOR_LIVE_RELOAD === 'true';
+const useRemoteServer = process.env.USE_REMOTE_SERVER === 'true';
 const devServerUrl = process.env.DEV_SERVER_URL || 'http://192.168.1.100:3000';
 
 const config: CapacitorConfig = {
@@ -25,11 +26,8 @@ const config: CapacitorConfig = {
   webDir: 'out',
   server: isLiveReload
     ? {
-        // ── Live Reload Mode ──────────────────────────────────────────────────
-        // Points to your local Next.js dev server for instant code changes.
-        // Make sure your phone/emulator is on the same WiFi network.
         url: devServerUrl,
-        cleartext: true,        // Allows HTTP for local dev (not needed for production)
+        cleartext: true,
         allowNavigation: [
           '192.168.*.*',
           '10.*.*.*',
@@ -44,11 +42,8 @@ const config: CapacitorConfig = {
         ],
       }
     : {
-        // ── Production Mode ───────────────────────────────────────────────────
-        // Loads from the live Vercel deployment.
-        // This allows all API routes to work inside the native Android/iOS app.
         url: 'https://beteseb1.online',
-        cleartext: false,
+        cleartext: true,
         allowNavigation: [
           'beteseb1.online',
           '*.beteseb1.online',
@@ -60,7 +55,7 @@ const config: CapacitorConfig = {
       },
   plugins: {
     SplashScreen: {
-      launchShowDuration: 800,
+      launchShowDuration: 2000,
       launchAutoHide: true,
       backgroundColor: '#0F172A',
       androidSplashResourceName: 'splash',
