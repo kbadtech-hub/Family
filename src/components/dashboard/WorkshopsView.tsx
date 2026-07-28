@@ -50,6 +50,7 @@ const UPCOMING_WORKSHOPS: Workshop[] = [
 ];
 
 export default function WorkshopsView({ currency, userTier }: { currency: 'ETB' | 'USD'; userTier?: string }) {
+  const t = useTranslations('Workshops');
   const [selectedWorkshop, setSelectedWorkshop] = useState<Workshop | null>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [expertName, setExpertName] = useState('Ato Abebe');
