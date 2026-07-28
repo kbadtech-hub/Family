@@ -173,7 +173,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto mt-16 pt-10 border-t border-white/5">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <p className="text-white/30 text-xs font-bold uppercase tracking-[0.3em]">
-            Download the App
+            {t('downloadApp')}
           </p>
           <AppStoreBadges
             playStoreUrl={settings?.play_store_url || (settings?.social_links as any)?.play_store_url}
@@ -188,7 +188,7 @@ export default function Footer() {
         {t('copyright')}
       </div>
       <div className="text-center text-white/30 text-[10px] mt-2 font-bold uppercase tracking-widest">
-        Developed by Nolawi Digital Hub
+        {t('developer')}
       </div>
     </footer>
   );

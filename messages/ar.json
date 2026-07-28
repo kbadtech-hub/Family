@@ -86,7 +86,9 @@
     "workshops": "ورش العمل",
     "profile": "الملف الشخصي",
     "wedding": "مخطط الزفاف",
-    "gifts": "الهدايا"
+    "gifts": "الهدايا",
+    "academy": "أكاديمية بيتسب",
+    "counseling": "جلسات الاستشارة"
   },
   "Dashboard": {
     "welcome": "مرحباً بعودتك!",
@@ -159,19 +161,19 @@
       "bioPlaceholder": "أخبر الآخرين عن نفسك...",
       "interests": "الاهتمامات والهوايات",
       "interestsPlaceholder": "التقاليد، العائلة، السفر، الطبخ...",
-      "saveChanges": "Save Changes",
-      "defaultCity": "Addis Ababa",
+      "saveChanges": "حفظ التغييرات",
+      "defaultCity": "أديس أبابا",
       "roles": {
-        "user": "Habesha Member",
-        "admin": "Beteseb Admin"
+        "user": "عضو حبشي",
+        "admin": "مشرف بيتسب"
       },
       "alerts": {
-        "avatarFailed": "Avatar upload failed",
-        "uploadFailed": "Upload failed",
-        "deleteFailed": "Delete failed",
-        "usernameTaken": "Username already taken. Please choose another.",
-        "updateSuccess": "Profile updated successfully!",
-        "updateFailed": "Update failed"
+        "avatarFailed": "فشل تحميل الصورة الشخصية",
+        "uploadFailed": "فشل التحميل",
+        "deleteFailed": "فشل الحذف",
+        "usernameTaken": "اسم المستخدم مستخدم بالفعل. يرجى اختيار اسم آخر.",
+        "updateSuccess": "تم تحديث الملف الشخصي بنجاح!",
+        "updateFailed": "فشل التحديث"
       }
     },
     "planner": {
@@ -329,16 +331,16 @@
     "trialStatus": "حالة التجربة",
     "daysLeft": "متبقي {count} أيام",
     "paymentSuccess": {
-      "coinsTitle": "Coins Purchased!",
-      "coinsBody": "Your coins have been credited to your account. Enjoy sending gifts and unlocking features!",
-      "vipTitle": "VIP Access Activated!",
-      "vipBody": "Your VIP membership is now active. Enjoy exclusive access and premium features!",
-      "premiumTitle": "Premium Activated!",
-      "premiumBody": "Your premium subscription is now active. Explore all the exclusive features!"
+      "coinsTitle": "تم شراء العملات!",
+      "coinsBody": "تمت إضافة العملات إلى حسابك. استمتع بإرسال الهدايا وفتح الميزات!",
+      "vipTitle": "تم تفعيل الوصول الممتاز VIP!",
+      "vipBody": "عضويتك الممتازة VIP نشطة الآن. استمتع بالوصول الحصري والميزات المتقدمة!",
+      "premiumTitle": "تم تفعيل الاشتراك الممتاز!",
+      "premiumBody": "اشتراكك الممتاز نشط الآن. استكشف جميع الميزات الحصرية!"
     },
     "paymentError": {
-      "title": "Payment Verification Failed",
-      "body": "We could not verify your payment. Please contact support with your transaction reference."
+      "title": "فشل التحقق من الدفع",
+      "body": "لم نتمكن من التحقق من عملية الدفع الخاصة بك. يرجى الاتصال بالدعم مع رقم المرجع الخاص بك."
     }
   },
   "Footer": {
@@ -355,7 +357,9 @@
     "admin": "بوابة أمن المسؤول",
     "copyright": "© 2026 بتسيب (ቤተሰብ). جمع الهابيشا معاً.",
     "address": "لندن، إنجلترا / هرر، إثيوبيا / المدينة المنورة، المملكة العربية السعودية",
-    "community": "موجز المجتمع"
+    "community": "موجز المجتمع",
+    "downloadApp": "تحميل التطبيق",
+    "developer": "تطوير بواسطة Nolawi Digital Hub"
   },
   "Auth": {
     "signIn": "تسجيل الدخول",
@@ -645,7 +649,9 @@
     "step10_title": "عملة بيتسيب (Beteseb Coin) ونظام الإحالة",
     "step10_desc": "احصل على عملات من خلال دعوة أصدقائك إلى بيتسيب (رابط الإحالة)؛ واستخدم العملات المجمعة لترويج حسابك (Boost) والاستفادة من الخدمات الخاصة.",
     "step11_title": "هل أنت مستعد لزواج جاد؟",
-    "step11_desc": "انضم إلينا الآن؛ خذ خطوتك الأولى نحو حياتك الأسرية الجديدة بإنشاء حسابك أو تسجيل الدخول!"
+    "step11_desc": "انضم إلينا الآن؛ خذ خطوتك الأولى نحو حياتك الأسرية الجديدة بإنشاء حسابك أو تسجيل الدخول!",
+    "offlineTitle": "لا يوجد اتصال بالإنترنت",
+    "offlineBtn": "حسناً"
   },
   "Constants": {
     "Religions": {
@@ -693,28 +699,28 @@
       "Mediation Required": "الوساطة مطلوبة"
     },
     "Months": {
-      "Meskerem": "مسكريم",
-      "Tikemt": "تقمت",
-      "Hidar": "حدار",
+      "Meskerem": "ميسكيريم",
+      "Tikemt": "تيقمت",
+      "Hidar": "هيدار",
       "Tahsas": "تحساس",
-      "Tir": "تر",
+      "Tir": "طير",
       "Yekatit": "يكاتيت",
-      "Megabit": "مقابيت",
+      "Megabit": "ميجابيت",
       "Miazia": "ميازيا",
-      "Genbot": "قنبوت",
+      "Genbot": "جينبوت",
       "Sene": "سني",
-      "Hamle": "حملي",
-      "Nehase": "نهاسي",
-      "Pagume": "باغومي"
+      "Hamle": "هملي",
+      "Nehase": "نيهاسي",
+      "Pagume": "باجومي"
     },
     "Locations": {
       "Addis Ababa": "أديس أبابا",
-      "Dire Dawa": "ديري داوا",
+      "Dire Dawa": "ديرة داوا",
       "Mekelle": "ميكيلي",
       "Adama": "أداما",
       "Bahir Dar": "بحر دار",
-      "Gondar": "غوندر",
-      "Hawassa": "هواسا",
+      "Gondar": "غوندار",
+      "Hawassa": "هاواسا",
       "Jimma": "جيما",
       "Jijiga": "جيجيجا",
       "Other (International)": "آخر (دولي)"
@@ -849,8 +855,8 @@
         "t4": "مستودع الحكمة"
       }
     },
-    "general": "General Wisdom",
-    "premiumOnly": "Special Membership Only"
+    "general": "حكمة عامة",
+    "premiumOnly": "للأعضاء المميزين فقط"
   },
   "TopHeader": {
     "email": "betesebhub@gmail.com",
@@ -891,46 +897,46 @@
     }
   },
   "Chat": {
-    "loading": "Loading family chat...",
-    "title": "Matches",
-    "searchPlaceholder": "Search matches...",
-    "noMatches": "No matches yet. Keep exploring!",
-    "premiumTitle": "Premium Feature",
-    "premiumSub": "Direct messaging with your matches is a premium feature. Upgrade now to start your journey.",
-    "upgradeNow": "Upgrade Now",
-    "activeNow": "Active Now",
-    "compatibilityTitle": "Your Abushakir Compatibility is High!",
-    "compatibilitySub": "Start a conversation with traditional values.",
-    "translate": "Translate to {lang}",
-    "original": "Show Original",
-    "iceBreaker": "Suggest AI Ice-Breaker",
-    "typePlaceholder": "Type a message with respect...",
-    "selectMatchTitle": "Select a Match",
-    "selectMatchSub": "Connect with your potential partner within the Beteseb family. Secure, real-time, and privacy-focused messaging.",
-    "encrypted": "Encrypted",
-    "private": "Private"
+    "loading": "جاري تحميل محادثة العائلة...",
+    "title": "التطابقات",
+    "searchPlaceholder": "البحث في التطابقات...",
+    "noMatches": "لا توجد تطابقات حتى الآن. استمر في الاستكشاف!",
+    "premiumTitle": "ميزة ممتازة",
+    "premiumSub": "المراسلة المباشرة مع تطابقاتك هي ميزة ممتازة. ترقية الآن لبدء رحلتك.",
+    "upgradeNow": "الترقية الآن",
+    "activeNow": "نشط الآن",
+    "compatibilityTitle": "توافق أبوشاكر الخاص بك مرتفع!",
+    "compatibilitySub": "ابدأ محادثة بالقيم التقليدية.",
+    "translate": "ترجمة إلى {lang}",
+    "original": "إظهار النص الأصلي",
+    "iceBreaker": "اقتراح كاسر الجليد بالذكاء الاصطناعي",
+    "typePlaceholder": "اكتب رسالة باحترام...",
+    "selectMatchTitle": "اختر تطابقاً",
+    "selectMatchSub": "تواصل مع شريكك المحتمل داخل عائلة بيتسب. مراسلة آمنة وفورية ومحفوظة الخصوصية.",
+    "encrypted": "مشفر",
+    "private": "خاص"
   },
   "Friendship": {
-    "addFriend": "Add Friend",
-    "requestSent": "Request Sent",
-    "pending": "Pending Approval",
-    "accept": "Accept Request",
-    "decline": "Decline Request",
-    "friends": "Friends",
-    "alreadyFriends": "You are already friends!",
-    "notification": "New Friend Request from {name}",
-    "noRequests": "No pending friend requests.",
-    "about": "About",
-    "interests": "Interests",
-    "contactInfo": "Contact Info",
-    "directEmail": "Direct Email",
-    "premiumOnly": "Premium Only",
-    "openChat": "Open Chat",
-    "startConnection": "Start Connection",
-    "upgradeToRead": "Upgrade to Premium to read full bio",
-    "noBio": "No bio available yet.",
-    "premiumFriendsOnly": "Premium or Friends Only",
-    "upgradeOrFriendSub": "Upgrade to Premium or be accepted as a friend to start a conversation.",
-    "upgradeNow": "Upgrade Now"
+    "addFriend": "إضافة صديق",
+    "requestSent": "تم إرسال الطلب",
+    "pending": "في انتظار الموافقة",
+    "accept": "قبول الطلب",
+    "decline": "رفض الطلب",
+    "friends": "أصدقاء",
+    "alreadyFriends": "أنتم أصدقاء بالفعل!",
+    "notification": "طلب صداقة جديد من {name}",
+    "noRequests": "لا توجد طلبات صداقة معلقة.",
+    "about": "عن",
+    "interests": "الاهتمامات",
+    "contactInfo": "معلومات الاتصال",
+    "directEmail": "البريد الإلكتروني المباشر",
+    "premiumOnly": "للمشتركين المميزين فقط",
+    "openChat": "فتح المحادثة",
+    "startConnection": "بدء التواصل",
+    "upgradeToRead": "قم بالترقية إلى الحساب الممتاز لقراءة السيرة الذاتية الكاملة",
+    "noBio": "لا توجد سيرة ذاتية متوفرة بعد.",
+    "premiumFriendsOnly": "للمشتركين المميزين أو الأصدقاء فقط",
+    "upgradeOrFriendSub": "قم بالترقية إلى الحساب الممتاز أو احصل على قبول كصديق لبدء المحادثة.",
+    "upgradeNow": "الترقية الآن"
   }
 }

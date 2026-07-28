@@ -86,7 +86,9 @@
     "workshops": "Seminaarrada",
     "profile": "Profile-ka",
     "wedding": "Qorsheynta Arooska",
-    "gifts": "Hadyadaha"
+    "gifts": "Hadyadaha",
+    "academy": "Akademiiga Beteseb",
+    "counseling": "Kulamada La-talinta"
   },
   "Dashboard": {
     "welcome": "Soo dhowow",
@@ -159,19 +161,19 @@
       "bioPlaceholder": "U sheeg kuwa kale wax ku saabsan noloshaada...",
       "interests": "Danta & Hiwaayadaha",
       "interestsPlaceholder": "Dhaqanka, Qoyska, Safarka, Cunto karinta...",
-      "saveChanges": "Save Changes",
-      "defaultCity": "Addis Ababa",
+      "saveChanges": "Kaydi Wax-ka-beddelka",
+      "defaultCity": "Caddis Abeba",
       "roles": {
-        "user": "Habesha Member",
-        "admin": "Beteseb Admin"
+        "user": "Xubinta Habesha",
+        "admin": "Maamulaha Beteseb"
       },
       "alerts": {
-        "avatarFailed": "Avatar upload failed",
-        "uploadFailed": "Upload failed",
-        "deleteFailed": "Delete failed",
-        "usernameTaken": "Username already taken. Please choose another.",
-        "updateSuccess": "Profile updated successfully!",
-        "updateFailed": "Update failed"
+        "avatarFailed": "Upload-ka sawirka wuu suurtagali waayay",
+        "uploadFailed": "Upload-ku wuu suurtagali waayay",
+        "deleteFailed": "Tiridu wey faashilantay",
+        "usernameTaken": "Magacan isticmaalaha waa la qaatay. Tafadhali dooro mid kale.",
+        "updateSuccess": "Profile-kaaga si successfully ah ayaa loo cusbooneysiiyay!",
+        "updateFailed": "Cusbooneysiintu wey faashilantay"
       }
     },
     "planner": {
@@ -329,16 +331,16 @@
     "trialStatus": "Xaaladda Tijaabada",
     "daysLeft": "{count} Maalmood Baa Hadhay",
     "paymentSuccess": {
-      "coinsTitle": "Coins Purchased!",
-      "coinsBody": "Your coins have been credited to your account. Enjoy sending gifts and unlocking features!",
-      "vipTitle": "VIP Access Activated!",
-      "vipBody": "Your VIP membership is now active. Enjoy exclusive access and premium features!",
-      "premiumTitle": "Premium Activated!",
-      "premiumBody": "Your premium subscription is now active. Explore all the exclusive features!"
+      "coinsTitle": "Qadaadadka Waa La Beecsaday!",
+      "coinsBody": "Qadaadadkaaga waxaa lagu shubay akownkaaga. Kuを楽し shubista hadyadaha iyo furida sifooyinka!",
+      "vipTitle": "VIP Access-ka Waa La Active-yeeyay!",
+      "vipBody": "Xubinnimadaada VIP-da waa active hadda. Ku kaydi helitaanka gaarka ah iyo sifooyinka premium-ka!",
+      "premiumTitle": "Premium-ka Waa La Active-yeeyay!",
+      "premiumBody": "Is-dortadaada premium-ka waa active hadda. Bahar sifooyinka gaarka ah oo dhan!"
     },
     "paymentError": {
-      "title": "Payment Verification Failed",
-      "body": "We could not verify your payment. Please contact support with your transaction reference."
+      "title": "Xaqiijinta Lacag Bixinta Wey Faashilantay",
+      "body": "Lacag bixintaada ma xaqiijin karin. Tafadhali la xiriir taageerada iyadoo la raacayo tixraacaaga."
     }
   },
   "Footer": {
@@ -355,7 +357,9 @@
     "admin": "Albaabka Amniga Admin",
     "copyright": "© 2026 Beteseb (ቤተሰብ). Isku keenida Habesha.",
     "address": "London, England / Harar, Itoobiya / Madiina, Sacuudi Carabiya",
-    "community": "Wararka Bulshada"
+    "community": "Wararka Bulshada",
+    "downloadApp": "Soo daji Abka",
+    "developer": "Waxaa sameeyay Nolawi Digital Hub"
   },
   "Auth": {
     "signIn": "Soo gal",
@@ -375,8 +379,8 @@
       "passwordCommon": "Fadlan isticmaal eray sir ah oo xoog badan. Kan waa mid aad caadi u ah."
     },
     "agreement": "Waxaan ogolaaday <terms>Terms of Service</terms> iyo <privacy>Privacy Policy</privacy> ee 'Beteseb'.",
-    "terms": "Terms of Service",
-    "privacy": "Privacy Policy"
+    "terms": "Shuruudaha Adeegga",
+    "privacy": "Siyaasadda Khaaska ah"
   },
   "Community": {
     "title": "La-talinta Qoyska & Bulshada",
@@ -455,27 +459,27 @@
       "subtitle": "Shanta Heerar ee Calaamadaha Kalsoonida",
       "description": "Xubnuhu waxay dhex maraan heerar xaqiijin si ay u helaan calaamado gaar ah.",
       "level0": {
-        "title": "Bronze Badge",
+        "title": "Biladda Nahaasta",
         "status": "Xubin Aan La Xaqiijin",
         "desc": "Diiwaangelinta aasaasiga ah oo kaliya. Daawasho kaliya, ma diri karo fariimo."
       },
       "level1": {
-        "title": "Silver Badge",
+        "title": "Biladda Lacagta",
         "status": "Xaqiijinta Aasaasiga Ah",
         "desc": "Ku soo galay Google/Apple ama xaqiijiyay email/tel iyo selfie 3 ilbiriqsi ah."
       },
       "level2": {
-        "title": "Gold Badge",
+        "title": "Biladda Dahabka",
         "status": "Aqoonsi La Xaqiijiyay",
         "desc": "Lagu xaqiijiyay baasaboor rasmi ah ama aqoonsiga qaranka."
       },
       "level3": {
-        "title": "Platinum Badge",
+        "title": "Biladda Platinum-ka",
         "status": "Bulshadu Marqaati Ka Tahay",
         "desc": "Xubin aqoonsigiisa la xaqiijiyay oo ay marqaati ka noqdeen xubnaha kale ee aaminka ah."
       },
       "level4": {
-        "title": "Diamond Badge",
+        "title": "Biladda Dheymanka",
         "status": "Astaanta Kalsoonida Sare",
         "desc": "Xaqiijiyay dhamaan oo leh premium firfircoon ama ku xiran mas'uulka qoyska."
       }
@@ -505,7 +509,7 @@
     "placeholder": "Wax i weydii...",
     "status": "Kaaliyaha Online-ka ah",
     "btn": {
-      "abushakir": "Abushakir",
+      "abushakir": "Abuushaakir",
       "pricing": "Qiimaha",
       "verified": "Xaqiijinta"
     },
@@ -645,7 +649,9 @@
     "step10_title": "Qadaadiicda Beteseb (Coins) & Nidaamka Casuumaada",
     "step10_desc": "Casuum asxaabtaada Beteseb si aad u hesho qadaadiic (Coins); u isticmaal qadaadiicda si aad u dallacdo profile-kaaga ama u furto adeegyo gaar ah.",
     "step11_title": "Diyaar ma u tahay guur dhab ah?",
-    "step11_desc": "Naga soo biir hadda; Sameyso koonto cusub ama gal middaada si aad u qaaddo tallaabada u horraysa ee nolosha qoyskaaga cusub!"
+    "step11_desc": "Naga soo biir hadda; Sameyso koonto cusub ama gal middaada si aad u qaaddo tallaabada u horraysa ee nolosha qoyskaaga cusub!",
+    "offlineTitle": "Xiriirka Internet Kama Jiro",
+    "offlineBtn": "OK"
   },
   "Academy": {
     "loading": "Soo rarida casharrada...",
@@ -711,15 +717,15 @@
         "t4": "Bakhaarka Xigmadda"
       }
     },
-    "general": "General Wisdom",
-    "premiumOnly": "Special Membership Only"
+    "general": "Xikmad Guud",
+    "premiumOnly": "Keliya Xubnaha Gaarka Ah"
   },
   "Constants": {
     "Religions": {
       "Orthodox": "Ortodoks",
       "Protestant": "Borotestaanka",
       "Catholic": "Kaatooligga",
-      "Muslim": "Muslim",
+      "Muslim": "Muslin",
       "Other": "Kuwo kale"
     },
     "Genders": {
@@ -750,7 +756,7 @@
     "Values": {
       "Traditional": "Dhaqan",
       "Modern": "Casri",
-      "Liberal": "Liberal",
+      "Liberal": "Liberaal",
       "Religious-Centric": "Diin-u-dhaxeeya"
     },
     "Conflict": {
@@ -760,28 +766,28 @@
       "Mediation Required": "Dhexdhexaadin ayaa loo baahan yahay"
     },
     "Months": {
-      "Meskerem": "Meskerem",
+      "Meskerem": "Meskarem",
       "Tikemt": "Tikemt",
-      "Hidar": "Hidar",
-      "Tahsas": "Tahsas",
-      "Tir": "Tir",
-      "Yekatit": "Yekatit",
-      "Megabit": "Megabit",
-      "Miazia": "Miazia",
-      "Genbot": "Genbot",
+      "Hidar": "Xidaar",
+      "Tahsas": "Tahsaas",
+      "Tir": "Tiir",
+      "Yekatit": "Yekaatiit",
+      "Megabit": "Magaabiit",
+      "Miazia": "Miyaasiya",
+      "Genbot": "Ginboot",
       "Sene": "Sene",
-      "Hamle": "Hamle",
-      "Nehase": "Nehase",
-      "Pagume": "Pagume"
+      "Hamle": "Xamle",
+      "Nehase": "Nahaase",
+      "Pagume": "Paguume"
     },
     "Locations": {
-      "Addis Ababa": "Addis Ababa",
-      "Dire Dawa": "Dire Dawa",
-      "Mekelle": "Mekelle",
-      "Adama": "Adama",
-      "Bahir Dar": "Bahir Dar",
+      "Addis Ababa": "Caddis Abeba",
+      "Dire Dawa": "Diri Dhabe",
+      "Mekelle": "Makelle",
+      "Adama": "Adaama",
+      "Bahir Dar": "Baxar Daar",
       "Gondar": "Gondar",
-      "Hawassa": "Hawassa",
+      "Hawassa": "Xawasa",
       "Jimma": "Jimma",
       "Jijiga": "Jijiga",
       "Other (International)": "Kuwo kale (Caalami)"
@@ -810,7 +816,7 @@
       "Travel Lover": "Jecel Socdaalka",
       "Education Priority": "Ahmiyadda Waxbarashada",
       "Financial Stability": "Deganaanshaha Maaliyadda",
-      "Traditional Values": "Traditional Values"
+      "Traditional Values": "Qiyam Dhaqameed"
     },
     "Countries": {
       "Ethiopia": "Itoobiya",
@@ -843,7 +849,7 @@
       "Switzerland": "Iswisarland",
       "Netherlands": "Nederland",
       "Belgium": "Biljam",
-      "Qatar": "Qatar",
+      "Qatar": "Qadar",
       "Kuwait": "Kuweyt",
       "Bahrain": "Baxreyn",
       "Oman": "Cumaan",
@@ -875,7 +881,7 @@
     "email": "Cinwaanka Iimaylka",
     "address": "Goobahaayaga",
     "hqLabel": "Xarunta Guud",
-    "hqAddress": "London, England",
+    "hqAddress": "London, Ingiiriiska",
     "branchLabel": "Xafiiska Laanta",
     "branchAddress": "Harar, Itoobiya",
     "phone1": "+44 7347 663219",
@@ -892,46 +898,46 @@
     }
   },
   "Chat": {
-    "loading": "Loading family chat...",
-    "title": "Matches",
-    "searchPlaceholder": "Search matches...",
-    "noMatches": "No matches yet. Keep exploring!",
-    "premiumTitle": "Premium Feature",
-    "premiumSub": "Direct messaging with your matches is a premium feature. Upgrade now to start your journey.",
-    "upgradeNow": "Upgrade Now",
-    "activeNow": "Active Now",
-    "compatibilityTitle": "Your Abushakir Compatibility is High!",
-    "compatibilitySub": "Start a conversation with traditional values.",
-    "translate": "Translate to {lang}",
-    "original": "Show Original",
-    "iceBreaker": "Suggest AI Ice-Breaker",
-    "typePlaceholder": "Type a message with respect...",
-    "selectMatchTitle": "Select a Match",
-    "selectMatchSub": "Connect with your potential partner within the Beteseb family. Secure, real-time, and privacy-focused messaging.",
-    "encrypted": "Encrypted",
-    "private": "Private"
+    "loading": "Wada-hadalka qoyska ayaa la soo gelinayaa...",
+    "title": "Is-fitiinada",
+    "searchPlaceholder": "Raadi is-fitiinada...",
+    "noMatches": "Waliina is-fitiin ma jiraan. Sii wad raadinta!",
+    "premiumTitle": "Sifada Premium-ka",
+    "premiumSub": "Fariinta tooska ah ee lammaanahaaga waa sifo premium ah. Cusboonaysii hadda si aad u start-gareeyso safarkaaga.",
+    "upgradeNow": "Cusboonaysii Hadda",
+    "activeNow": "Kuma Jira Hadda",
+    "compatibilityTitle": "Is-waafaq Abushakir-kaaga waa sarreeyaa!",
+    "compatibilitySub": "Ku billow wada-hadal qiyaas dhaqameed ah.",
+    "translate": "U tarjum {lang}",
+    "original": "Muuji Asalka",
+    "iceBreaker": "Soo jeedi AI Ice-Breaker",
+    "typePlaceholder": "Ku qor fariin si xushmad leh...",
+    "selectMatchTitle": "Dooro Lammaane",
+    "selectMatchSub": "Kula xiriir lammaanahaaga suurtagalka ah ee qoyska Beteseb. Fariimaha amniga ah, waqtiga dhabta ah, iyo nabadgelyada diiradda lagu saarayo.",
+    "encrypted": "Enkriibti ah",
+    "private": "Garaa ah"
   },
   "Friendship": {
-    "addFriend": "Add Friend",
-    "requestSent": "Request Sent",
-    "pending": "Pending Approval",
-    "accept": "Accept Request",
-    "decline": "Decline Request",
-    "friends": "Friends",
-    "alreadyFriends": "You are already friends!",
-    "notification": "New Friend Request from {name}",
-    "noRequests": "No pending friend requests.",
-    "about": "About",
-    "interests": "Interests",
-    "contactInfo": "Contact Info",
-    "directEmail": "Direct Email",
-    "premiumOnly": "Premium Only",
-    "openChat": "Open Chat",
-    "startConnection": "Start Connection",
-    "upgradeToRead": "Upgrade to Premium to read full bio",
-    "noBio": "No bio available yet.",
-    "premiumFriendsOnly": "Premium or Friends Only",
-    "upgradeOrFriendSub": "Upgrade to Premium or be accepted as a friend to start a conversation.",
-    "upgradeNow": "Upgrade Now"
+    "addFriend": "Ku dar Saaxiib",
+    "requestSent": "Codsigii Waa La Diray",
+    "pending": "Wuxuu Dhowraya Anshaxa",
+    "accept": "Aqbal Codsiga",
+    "decline": "Diid Codsiga",
+    "friends": "Saaxiibada",
+    "alreadyFriends": "Subhanallah, waa saaxiib noqoteen!",
+    "notification": "Codsi Saaxiibnimo Cusub oo ka yimid {name}",
+    "noRequests": "Ma jiraan codsiyo saaxiibnimo oo dhowrayo.",
+    "about": "Warbixin",
+    "interests": "Danta",
+    "contactInfo": "Xogta Lagula Xiriiro",
+    "directEmail": "Email-ka Tooska ah",
+    "premiumOnly": "Keliya Premium-ka",
+    "openChat": "Fura Wada-hadalka",
+    "startConnection": "Billow Xiriirka",
+    "upgradeToRead": "Kordhi Premium si aad u akhrido muujinta buuxda",
+    "noBio": "Warbixin ma tayari hadda.",
+    "premiumFriendsOnly": "Keliya Premium ama Saaxiibada",
+    "upgradeOrFriendSub": "Kordhi Premium ama lagaa aqbalo saaxiibnimo si aad u start-gareeyso wada-hadalka.",
+    "upgradeNow": "Cusboonaysii Hadda"
   }
 }

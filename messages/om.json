@@ -86,7 +86,9 @@
     "workshops": "Seminaaroota",
     "profile": "Piroofaayilii",
     "wedding": "Karoora Gaa'elaa",
-    "gifts": "Kennaawwan"
+    "gifts": "Kennaawwan",
+    "academy": "Akkaadaamii Beteseb",
+    "counseling": "Mata-dureewwan Gorsa"
   },
   "Dashboard": {
     "welcome": "Baga nagaan dhuftan",
@@ -159,19 +161,19 @@
       "bioPlaceholder": "Waa'ee keessan namoota biroof ibsaa...",
       "interests": "Fedhiifi Bashannana",
       "interestsPlaceholder": "Aadaa, Maatii, Imala, Bilcheessuu...",
-      "saveChanges": "Save Changes",
-      "defaultCity": "Addis Ababa",
+      "saveChanges": "Jijjiirama Galmeessi",
+      "defaultCity": "Finfinnee",
       "roles": {
-        "user": "Habesha Member",
-        "admin": "Beteseb Admin"
+        "user": "Miseensa Habashaa",
+        "admin": "Bulchaa Beteseb"
       },
       "alerts": {
-        "avatarFailed": "Avatar upload failed",
-        "uploadFailed": "Upload failed",
-        "deleteFailed": "Delete failed",
-        "usernameTaken": "Username already taken. Please choose another.",
-        "updateSuccess": "Profile updated successfully!",
-        "updateFailed": "Update failed"
+        "avatarFailed": "Fakkiin piroofaayilii ol-fe'uu hin dandamne",
+        "uploadFailed": "Fe'umsi hin milkaa'ine",
+        "deleteFailed": "Haqamuun hin milkaa'ine",
+        "usernameTaken": "Maqaan fayyadamaa kana dura qabatameera. Maaloo kan biraa filadhaa.",
+        "updateSuccess": "Piroofaayiliin keessan milkaa'inaan haaromeera!",
+        "updateFailed": "Haaromsuun hin milkaa'ine"
       }
     },
     "planner": {
@@ -323,16 +325,16 @@
       "match": "Wal-dorgommii"
     },
     "paymentSuccess": {
-      "coinsTitle": "Kooyinoonni Galanii!",
-      "coinsBody": "Kooyinoonni akkaawuntii kee keessatti galanii jiru. Kennaa erguu fi meeshaalee saaquu irratti fayyadami!",
-      "vipTitle": "Miseensummaa VIP Argatte!",
-      "vipBody": "Miseensummaan VIP kee amma hojjechaa jira. Fayyadamaa qulqulluu guutuu taatee jirta!",
-      "premiumTitle": "Premium Argatte!",
-      "premiumBody": "Miseensummaan premium kee amma hojjechaa jira. Meeshaalee mara sakatta'i!"
+      "coinsTitle": "Koyinoonni bitamaniiru!",
+      "coinsBody": "Koyinoonni keessan akkaanti keessanitti galaniiru. Kennaa erguufi tajaajila addaa banachuun gammadaa!",
+      "vipTitle": "Tajaajilli VIP banameera!",
+      "vipBody": "Miseensummaan VIP keessan amma hojiirra jira. Tajaajila addaafi dandeettii piriimiyamii fayyadamaa!",
+      "premiumTitle": "Piriimiyamiin banameera!",
+      "premiumBody": "Kaffaltiin piriimiyamii keessan amma hojiirra jira. Tajaajiloota addaa hunda daawwadhaa!"
     },
     "paymentError": {
-      "title": "Mirkaneessaan Kafaltii Hin Milkoofne",
-      "body": "Kafaltii kee mirkaneessuu hin dandeenye. Maaloo deeggarsa faayidaa transaction kee waliin quunnamii."
+      "title": "Mirkanneessi Kaffaltii Hin Milkaa'ine",
+      "body": "Kaffaltii keessan mirkaneessuu hin dandeenye. Maaloo lakk. daddabarsa keessan qabachuun deeggarsa qunnamaa."
     },
     "actionRequired": "Gocha Barbaachisaa",
     "searching": "Hiriyaa keessan isa gaarii barbaadaa jira...",
@@ -355,7 +357,9 @@
     "admin": "Bulchaa",
     "copyright": "© 2026 Beteseb (ቤተሰብ).",
     "address": "Landan, Ingilaand / Harar, Itoophiyaa / Madiinaa, Saawud Arabiyaa",
-    "community": "Hawaasa"
+    "community": "Hawaasa",
+    "downloadApp": "Appii buufadhu",
+    "developer": "Kan hojjete Nolawi Digital Hub"
   },
   "Auth": {
     "signIn": "Seenaa",
@@ -375,8 +379,8 @@
       "passwordCommon": "Maaloo jecha icitii cimaa fayyadamaa. Inni kun baay'ee beekamaadha."
     },
     "agreement": "Waliigaltee tajaajilaa <terms>Terms of Service</terms> fi imaammata dhuunfaa <privacy>Privacy Policy</privacy> 'Beteseb' waliin nan walii gala.",
-    "terms": "Terms of Service",
-    "privacy": "Privacy Policy"
+    "terms": "Seera Tajaajilaa",
+    "privacy": "Iccitii Seeraa"
   },
   "Community": {
     "title": "Gorsa Maatii fi Hawaasa",
@@ -398,7 +402,7 @@
     "topicQuestion": "\"Gaa'ela dhaloota dijitaalaa kana keessatti wantoonni murteessoo sadii maali jettu?\"",
     "topicJoin": "Xumura marii xumuraa xumuraa.",
     "joinBtn": "Marii Seeni",
-    "aiFilter": "AI Safety Filter Active",
+    "aiFilter": "Calala Qulqullinaa AI",
     "checking": "Sakatta'amaa jira...",
     "verifyToPostTitle": "Mirkaneessuun barbaachisaadha",
     "verifyToPostSub": "Marii hirmaachuuf eenyummaa keessan mirkaneessaa.",
@@ -455,27 +459,27 @@
       "subtitle": "Mallattoo Badhaasa Amanamummaa Shanan",
       "description": "Miseensonni sadarkaa mirkaneessaa dabruun mallattoo addaa argatu.",
       "level0": {
-        "title": "Bronze Badge",
+        "title": "Badhaasa Nahaasaa",
         "status": "Miseensa Hin Mirkanaayin",
         "desc": "Galmeessa bu'uraa qofa xumure. Ilaaluu qofa danda'a, ergaa wal-jijjiiruu hin danda'u."
       },
       "level1": {
-        "title": "Silver Badge",
+        "title": "Badhaasa Meetaa",
         "status": "Mirkaneessa Bu'uraa",
         "desc": "Google/Apple'n kan seene ykn email/bilbila mirkaneessee fi selfie sekondii 3 kan xumure."
       },
       "level2": {
-        "title": "Gold Badge",
+        "title": "Badhaasa Warqii",
         "status": "ID'n Mirkanaa'e",
         "desc": "Paaspoortii ykn eenyummaa biyyaalessaa rasmichaatiin kan mirkanaaye."
       },
       "level3": {
-        "title": "Platinum Badge",
+        "title": "Badhaasa Pilaatiiniyamii",
         "status": "Hawaasaan Kan Vouch Ta'e",
         "desc": "Miseensa ID'n mirkanaaye kan miseensota amanamoo birootiin dhugaa-ba'umsa argate."
       },
       "level4": {
-        "title": "Diamond Badge",
+        "title": "Badhaasa Daayimandii",
         "status": "Mallattoo Trust Olaanaa",
         "desc": "Mirkaneessa hunda xumuree premium kan kafale ykn maatii wajjin kan wal-qabate."
       }
@@ -505,7 +509,7 @@
     "placeholder": "Waan feetan gaafadhaa...",
     "status": "Gargaaraa Onlaayinii",
     "btn": {
-      "abushakir": "Abushakir",
+      "abushakir": "Abuushaakir",
       "pricing": "Kaffaltii",
       "verified": "Mirkaneessuu"
     },
@@ -554,8 +558,8 @@
       "spousePlaceholder": "Ibsi (Dirqama)...",
       "phone": "Bilbila",
       "phoneTab": "Bilbila",
-      "starSign": "Star Sign",
-      "unknown": "Unknown",
+      "starSign": "Mallattoo Urjii",
+      "unknown": "Kan Hin Beekamne",
       "abushakirBadge": "Abushakir Injiinii",
       "country": "Biyya",
       "countryPlaceholder": "Biyya Filadhu",
@@ -574,10 +578,10 @@
       "uploaded": "Fe'ameera!",
       "doc": "Waraqaa Eenyummaa",
       "idType": "Paaspoortii ama Waraqaa Eenyummaa",
-      "idCaptured": "ID Captured",
+      "idCaptured": "Waraqaan Waraaqaa Waraabameera",
       "takeSelfie": "Selfie Ka'i",
-      "livePhoto": "Live Photo Match",
-      "selfieCaptured": "Selfie Captured",
+      "livePhoto": "Suuraa Kallattii Wal-simsiisuu",
+      "selfieCaptured": "Selfie-n Waraabameera",
       "submitAI": "AI Mirkaneessi",
       "rejected": "Hin mirkanoofne. Maaloo irra deebi'ii yaali."
     },
@@ -645,7 +649,9 @@
     "step10_title": "Saantima Maatii (Beteseb Coin) fi Sirii Referral",
     "step10_desc": "Firoottan keessan gara maatiitti affeeruun (Referral Link) saantimoota argadhaa; saantimoota walitti qabamaniin piroofaayila keessan beeksisuuf (Boost) fi tajaajiloota addaa fayyadamuu.",
     "step11_title": "Gaa'ela Qulqulluuf Qophiidhaa?",
-    "step11_desc": "Amma nu wajjiin ta'aa; lakkoofsa herregaa keessan uumuun ykn seenuun gara jireenya maatii haaraa keessaniitti tarkaanfii jalqabaa fudhadhaa!"
+    "step11_desc": "Amma nu wajjiin ta'aa; lakkoofsa herregaa keessan uumuun ykn seenuun gara jireenya maatii haaraa keessaniitti tarkaanfii jalqabaa fudhadhaa!",
+    "offlineTitle": "Netwarkii Hin Jiru",
+    "offlineBtn": "Tole"
   },
   "Constants": {
     "Religions": {
@@ -693,30 +699,30 @@
       "Mediation Required": "Jaarsummaan"
     },
     "Months": {
-      "Meskerem": "Meskerem",
-      "Tikemt": "Tikemt",
-      "Hidar": "Hidar",
-      "Tahsas": "Tahsas",
-      "Tir": "Tir",
-      "Yekatit": "Yekatit",
-      "Megabit": "Megabit",
-      "Miazia": "Miazia",
-      "Genbot": "Genbot",
-      "Sene": "Sene",
-      "Hamle": "Hamle",
-      "Nehase": "Nehase",
-      "Pagume": "Pagume"
+      "Meskerem": "Mullata (Meskerem)",
+      "Tikemt": "Onkololeessa (Tikemt)",
+      "Hidar": "Sadaasa (Hidar)",
+      "Tahsas": "Muddee (Tahsas)",
+      "Tir": "Amajjii (Tir)",
+      "Yekatit": "Gurraandhala (Yekatit)",
+      "Megabit": "Bitootessa (Megabit)",
+      "Miazia": "Elba (Miazia)",
+      "Genbot": "Caamsaa (Genbot)",
+      "Sene": "Waxabajjii (Sene)",
+      "Hamle": "Adoolessa (Hamle)",
+      "Nehase": "Hagayya (Nehase)",
+      "Pagume": "Qaammee (Pagume)"
     },
     "Locations": {
       "Addis Ababa": "Finfinnee",
-      "Dire Dawa": "Dirree Dhawaa",
-      "Mekelle": "Maqalee",
+      "Dire Dawa": "Diri Dhabaa",
+      "Mekelle": "Maqale",
       "Adama": "Adaamaa",
       "Bahir Dar": "Baahir Daar",
       "Gondar": "Gondar",
-      "Hawassa": "Hawaasa",
+      "Hawassa": "Hawaasaa",
       "Jimma": "Jimmaa",
-      "Jijiga": "Jijigaa",
+      "Jijiga": "Jijiga",
       "Other (International)": "Alem"
     },
     "Jobs": {
@@ -736,7 +742,7 @@
       "Religious Compatibility": "Wal-simannaa Amantaa",
       "Family Oriented": "Maatiif dursa",
       "Career Focused": "Hojiif dursa",
-      "Traditional Values": "Qiyamka Aadaa",
+      "Traditional Values": "Duudhaalee Aadaa",
       "Modern Outlook": "Ilaalcha Amayyaa",
       "Healthy Lifestyle": "Jireenya Fayyaalessa",
       "Wants Children": "Ijoollee barbaada",
@@ -750,13 +756,13 @@
       "United States": "USA",
       "Canada": "Kaanaadaa",
       "United Kingdom": "UK",
-      "United Arab Emirates": "UAE",
+      "United Arab Emirates": "Imaraata Arabaa",
       "Saudi Arabia": "Saawudii",
       "Israel": "Israa'el",
       "Norway": "Noorway",
       "Sweden": "Siwiidin",
       "Kenya": "Keeniyaa",
-      "South Africa": "South Africa",
+      "South Africa": "Afrikaa Kibbaa",
       "Australia": "Awustiraaliyaa",
       "China": "Chaayinaa",
       "Japan": "Jaappaan",
@@ -766,9 +772,9 @@
       "Turkey": "Turkii",
       "Egypt": "Gibxi",
       "Sudan": "Sudaan",
-      "South Sudan": "South Sudan",
+      "South Sudan": "Sudaan Kibbaa",
       "Eritrea": "Eertiraa",
-      "Djibouti": "Djibouti",
+      "Djibouti": "Jibuutii",
       "Somalia": "Somaaliyaa",
       "Uganda": "Ugaandaa",
       "Tanzania": "Tanzaaniyaa",
@@ -849,8 +855,8 @@
         "t4": "Kuusaa Ogummaa"
       }
     },
-    "general": "General Wisdom",
-    "premiumOnly": "Special Membership Only"
+    "general": "Ogummaa Gamtaa",
+    "premiumOnly": "Miseensota Addaatiif Qofa"
   },
   "TopHeader": {
     "email": "betesebhub@gmail.com",
@@ -891,46 +897,46 @@
     }
   },
   "Chat": {
-    "loading": "Loading family chat...",
-    "title": "Matches",
-    "searchPlaceholder": "Search matches...",
-    "noMatches": "No matches yet. Keep exploring!",
-    "premiumTitle": "Premium Feature",
-    "premiumSub": "Direct messaging with your matches is a premium feature. Upgrade now to start your journey.",
-    "upgradeNow": "Upgrade Now",
-    "activeNow": "Active Now",
-    "compatibilityTitle": "Your Abushakir Compatibility is High!",
-    "compatibilitySub": "Start a conversation with traditional values.",
-    "translate": "Translate to {lang}",
-    "original": "Show Original",
-    "iceBreaker": "Suggest AI Ice-Breaker",
-    "typePlaceholder": "Type a message with respect...",
-    "selectMatchTitle": "Select a Match",
-    "selectMatchSub": "Connect with your potential partner within the Beteseb family. Secure, real-time, and privacy-focused messaging.",
-    "encrypted": "Encrypted",
-    "private": "Private"
+    "loading": "Haasaa maatii fe'aa jira...",
+    "title": "Walgitansaan",
+    "searchPlaceholder": "Walgitansaan barbaadi...",
+    "noMatches": "Hanga ammaatti walgitansaan hin jiru. Barbaaduu itti fufaa!",
+    "premiumTitle": "Tajaajila Piriimiyamii",
+    "premiumSub": "Walgitansaa keessan wajjin kallattiin ergaa waljijjiiruun tajaajila piriimiyamiiti. Amma haaromsa imala keessan jalqabaa.",
+    "upgradeNow": "Amma Haaromsaa",
+    "activeNow": "Amma Hojii On",
+    "compatibilityTitle": "Walgitansaan Abushakir keessan olaanaadha!",
+    "compatibilitySub": "Aadaafi duudhaa irratti hundaa'uun haasaa jalqabaa.",
+    "translate": "Gara {lang}tti hiiki",
+    "original": "Madaallii Jalqabaa Agarsiisi",
+    "iceBreaker": "Yad-yaada Haasaa AI",
+    "typePlaceholder": "Kabajaan ergaa barreessaa...",
+    "selectMatchTitle": "Walgitansaa filadhaa",
+    "selectMatchSub": "Maatii Beteseb keessatti hiriyaa keessan kaadhimamaa wajjin walqunnamaa. Eegumsa, yeroo ariifachiisaa fi iccitii kan eeggate.",
+    "encrypted": "Iccitiin Eegame",
+    "private": "Dhuunfaa"
   },
   "Friendship": {
-    "addFriend": "Add Friend",
-    "requestSent": "Request Sent",
-    "pending": "Pending Approval",
-    "accept": "Accept Request",
-    "decline": "Decline Request",
-    "friends": "Friends",
-    "alreadyFriends": "You are already friends!",
-    "notification": "New Friend Request from {name}",
-    "noRequests": "No pending friend requests.",
-    "about": "About",
-    "interests": "Interests",
-    "contactInfo": "Contact Info",
-    "directEmail": "Direct Email",
-    "premiumOnly": "Premium Only",
-    "openChat": "Open Chat",
-    "startConnection": "Start Connection",
-    "upgradeToRead": "Upgrade to Premium to read full bio",
-    "noBio": "No bio available yet.",
-    "premiumFriendsOnly": "Premium or Friends Only",
-    "upgradeOrFriendSub": "Upgrade to Premium or be accepted as a friend to start a conversation.",
-    "upgradeNow": "Upgrade Now"
+    "addFriend": "Hiriyaa Dabali",
+    "requestSent": "Gaaffiin Ergameera",
+    "pending": "Mirkanneessa Eegaa Jira",
+    "accept": "Gaaffii Fudhadhu",
+    "decline": "Gaaffii Didi",
+    "friends": "Hiriyoota",
+    "alreadyFriends": "Isin kani dura hiriyoota!",
+    "notification": "Gaaffii hiriyaa haarawa {name} irraa",
+    "noRequests": "Gaaffiin hiriyaa eegaa jiru hin jiru.",
+    "about": "Waa'ee",
+    "interests": "Fedhiilee",
+    "contactInfo": "Odeeffannoo Quunnamtii",
+    "directEmail": "Imeelii Kallattii",
+    "premiumOnly": "Piriimiyamii Qofaaf",
+    "openChat": "Haasaa Banii",
+    "startConnection": "Walqunnamtii Jalqabaa",
+    "upgradeToRead": "Odeeffannoo guutuu dubbisuuf gara Piriimiyamitti haaromsaa",
+    "noBio": "Odeeffannoon dhuunfaa hin jiru.",
+    "premiumFriendsOnly": "Piriimiyamii ykn Hiriyoota Qofaaf",
+    "upgradeOrFriendSub": "Haasaa jalqabuuf gara Piriimiyamitti haaromsaa ykn akka hiriyaatti fudhatama argadhaa.",
+    "upgradeNow": "Amma Haaromsaa"
   }
 }

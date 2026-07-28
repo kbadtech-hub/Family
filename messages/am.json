@@ -74,8 +74,8 @@
     "home": "መነሻ",
     "about": "ስለ እኛ",
     "classes": "ትምህርቶች",
-    "academy": "ቤተሰብ አካዳሚ",
-    "counseling": "የጋብቻ ካውንስሊንግ",
+    "academy": "የቤተሰብ አካዳሚ",
+    "counseling": "የምክር አገልግሎቶች",
     "signIn": "ግቡ",
     "signUp": "ይመዝገቡ",
     "login": "መግቢያ / መለያ መክፈቻ",
@@ -190,19 +190,19 @@
       "bioPlaceholder": "ስለራስዎ ለሌሎች ያጋሩ...",
       "interests": "ፍላጎቶች እና መዝናኛዎች",
       "interestsPlaceholder": "ባህል፣ ቤተሰብ፣ ጉዞ፣ ምግብ ማብሰል...",
-      "saveChanges": "ለውጦችን አስቀምጥ",
+      "saveChanges": "ለወጦችን አስቀምጥ",
       "defaultCity": "አዲስ አበባ",
       "roles": {
-        "user": "የቤተሰብ አባል",
-        "admin": "ቤተሰብ አድሚን"
+        "user": "የሐበሻ አባል",
+        "admin": "የቤተሰብ አድሚን"
       },
       "alerts": {
-        "avatarFailed": "የፕሮፋይል ፎቶ መጫን አልተሳካም",
+        "avatarFailed": "የፕሮፋይል ምስል መስቀል አልተሳካም",
         "uploadFailed": "መጫን አልተሳካም",
-        "deleteFailed": "መሰረዝ አልተሳካም",
-        "usernameTaken": "ይህ መለያ ስም አስቀድሞ ተይዟል። እባክዎ ሌላ ይምረጡ።",
-        "updateSuccess": "መገለጫዎ በትክክል ተስተካክሏል!",
-        "updateFailed": "ማስተካከል አልተሳካም"
+        "deleteFailed": "ማሰረዝ አልተሳካም",
+        "usernameTaken": "ይህ የተጠቃሚ ስም ተይዟል። እባክዎን ሌላ ይምረጡ።",
+        "updateSuccess": "ፕሮፋይልዎ በተሳካ ሁኔታ ተሻሽሏል!",
+        "updateFailed": "ማሻሻል አልተሳካም"
       },
       "enableAbushakir": "የአቡሻህር ባህላዊ የኮከብ ምልክት ተኳኋኝነትን አሳይ (Enable Abushakir Star Matching)",
       "abushakirHint": "*በኢትዮጵያ ዘመን አቆጣጠር መሠረት ተጨማሪ ባህላዊ/የቅርስ ተኳኋኝነት ስሌቶችን ይፈቅዳል።",
@@ -331,16 +331,16 @@
       "match": "ተኳኋኝነት"
     },
     "paymentSuccess": {
-      "coinsTitle": "ኮይኖቹ ገቡ!",
-      "coinsBody": "ኮይኖቹ ወደ አካውንቱ ገብተዋል። ስጦታ መላክ እና ባህሪያትን ለመክፈት ተጠቀምባቸው!",
-      "vipTitle": "VIP አባልነት ተሰጥቷል!",
-      "vipBody": "VIP አባልነትዎ አሁን ንቁ ነው። ልዩ ሙሉ ተጠቃሚ ሆነዋል!",
-      "premiumTitle": "ፕሪሚየም ተሰጥቷል!",
-      "premiumBody": "ፕሪሚየም አባልነትዎ አሁን ንቁ ነው። ሁሉንም ልዩ ባህሪያት ያሰሱ!"
+      "coinsTitle": "ኮይኖች ተገዝተዋል!",
+      "coinsBody": "ኮይኖችዎ ወደ መለያዎ ገብተዋል። ስጦታዎችን በመላክ እና አዳዲስ ባህሪያትን በመክፈት ይደሰቱ!",
+      "vipTitle": "የVIP አገልግሎት ተነቃቅቷል!",
+      "vipBody": "የVIP አባልነትዎ አሁን ንቁ ሆኗል። በልዩ አገልግሎቶች እና ፕሪሚየም ባህሪያት ይደሰቱ!",
+      "premiumTitle": "ፕሪሚየም ተነቃቅቷል!",
+      "premiumBody": "የፕሪሚየም ምዝገባዎ አሁን ንቁ ሆኗል። ሁሉንም ልዩ ባህሪያት ይጎብኙ!"
     },
     "paymentError": {
-      "title": "ክፍያ ማረጋገጫ አልተሳካም",
-      "body": "ክፍያዎን ማረጋገጥ አልቻልንም። እባክዎ ከትራንዛክሽን ማጣቀሻዎ ጋር ድጋፍን ያነጋግሩ።"
+      "title": "የክፍያ ማረጋገጫ አልተሳካም",
+      "body": "ክፍያዎን ማረጋገጥ አልቻልንም። እባክዎን የትራንዛክሽን ቁጥርዎን በመያዝ ድጋፍ ሰጪ ቡድንን ያነጋግሩ።"
     }
   },
   "Community": {
@@ -395,24 +395,24 @@
     }
   },
   "Chat": {
-    "loading": "የቤተሰብ ቻት በመጫን ላይ...",
-    "title": "ተዛማጆች",
-    "searchPlaceholder": "ተዛማጆችን ይፈልጉ...",
-    "noMatches": "እስካሁን ምንም ተዛማጅ የለም። መፈለግዎን ይቀጥሉ!",
-    "premiumTitle": "ፕሪሚየም ፊቸር",
-    "premiumSub": "ከተዛማጆችዎ ጋር መልዕክት መለዋወጥ ለፕሪሚየም አባላት ብቻ የተፈቀደ ነው። አሁኑኑ ያሻሽሉ።",
-    "upgradeNow": "አሁኑኑ ያሻሽሉ",
-    "activeNow": "አሁን አለ",
-    "compatibilityTitle": "የአቡሻኪር ተኳኋኝነትዎ ከፍተኛ ነው!",
-    "compatibilitySub": "በባህላዊ እሴቶች ውይይት ይጀምሩ።",
+    "loading": "የቤተሰብ ወግ በመጫን ላይ...",
+    "title": "የተጣመሩ",
+    "searchPlaceholder": "የተጣመሩትን ፈልግ...",
+    "noMatches": "እስካሁን የተጣመሩ የሉም። መፈለግዎን ይቀጥሉ!",
+    "premiumTitle": "የፕሪሚየም አገልግሎት",
+    "premiumSub": "ከተጣመሩ ሰዎች ጋር ቀጥታ መልእክት መለዋወጥ የፕሪሚየም አገልግሎት ነው። ጉዞዎን ለመጀመር አሁኑኑ ያሳድጉ።",
+    "upgradeNow": "አሁኑኑ ያሳድጉ",
+    "activeNow": "አሁን መስመር ላይ",
+    "compatibilityTitle": "የአቡሻኪር ስምምነትዎ ከፍተኛ ነው!",
+    "compatibilitySub": "በባህላዊ እሴቶች ላይ የተመሰረተ ወግ ይጀምሩ።",
     "translate": "ወደ {lang} ተርጉም",
-    "original": "ኦሪጅናል አሳይ",
-    "iceBreaker": "AI አይስ-ብሬከር ይጠቁሙ",
-    "typePlaceholder": "በትህትና መልዕክት ይጻፉ...",
-    "selectMatchTitle": "ተዛማጅ ይምረጡ",
-    "selectMatchSub": "ከአጋርዎ ጋር በቤተሰብ መድረክ ይገናኙ። አስተማማኝ፣ ፈጣን እና ደህንነቱ የተጠበቀ መልዕክት።",
-    "encrypted": "የተመሰጠረ",
-    "private": "የግል"
+    "original": "ዋናውን አሳይ",
+    "iceBreaker": "የAI መክፈቻ ጥያቄ ሀሳብ",
+    "typePlaceholder": "በአክብሮት መልእክት ይጻፉ...",
+    "selectMatchTitle": "የተጣመረ ሰው ይምረጡ",
+    "selectMatchSub": "በቤተሰብ ማህበረሰብ ውስጥ ከተመረጡ አጋርዎ ጋር ይገናኙ። የተጠበቀ፣ ፈጣን እና ምስጢራዊነት ያለው መልእክት።",
+    "encrypted": "የተጠበቀ",
+    "private": "ግላዊ"
   },
   "Academy": {
     "loading": "ትምህርቶች በመጫን ላይ...",
@@ -495,7 +495,9 @@
     "admin": "አስተዳዳሪ",
     "copyright": "© 2026 ቤተሰብ.",
     "address": "ለንደን፣ እንግሊዝ / ሐረር፣ ኢትዮጵያ / መዲና፣ ሳውዲ አረቢያ",
-    "community": "ማህበረሰብ"
+    "community": "ማህበረሰብ",
+    "downloadApp": "አፕሊኬሽኑን አውርድ",
+    "developer": "የተሰራው በ Nolawi Digital Hub"
   },
   "Auth": {
     "signIn": "ይግቡ",
@@ -738,7 +740,9 @@
     "step10_title": "የቤተሰብ ሳንቲም (Beteseb Coin) እና የሪፈራል ስርዓት",
     "step10_desc": "ወዳጆችዎን ወደ ቤተሰብ በመጋበዝ (Referral Link) ሳንቲሞችን ያግኙ፤ የተሰበሰቡ ሳንቲሞችን በመጠቀም ፕሮፋይልዎን ለማስተዋወቅ (Boost) እና ልዩ አገልግሎቶችን ለመጠቀም ይገለገሉባቸው።",
     "step11_title": "ለቁም ነገር ትዳር ዝግጁ ነዎት?",
-    "step11_desc": "አሁኑኑ ይቀላቀሉን፤ መለያዎን በመፍጠር ወይም በመግባት ወደ አዲሱ የቤተሰብ ህይወትዎ የመጀመሪያውን እርምጃ ይውሰዱ!"
+    "step11_desc": "አሁኑኑ ይቀላቀሉን፤ መለያዎን በመፍጠር ወይም በመግባት ወደ አዲሱ የቤተሰብ ህይወትዎ የመጀመሪያውን እርምጃ ይውሰዱ!",
+    "offlineTitle": "ግንኙነት ተቋርጧል",
+    "offlineBtn": "እሺ"
   },
   "TopHeader": {
     "email": "betesebhub@gmail.com",
@@ -813,13 +817,13 @@
     },
     "Locations": {
       "Addis Ababa": "አዲስ አበባ",
-      "Dire Dawa": "ድሬ ዳዋ",
+      "Dire Dawa": "ድሬዳዋ",
       "Mekelle": "መቀሌ",
       "Adama": "አዳማ",
       "Bahir Dar": "ባህር ዳር",
       "Gondar": "ጎንደር",
       "Hawassa": "ሀዋሳ",
-      "Jimma": "ጅማ",
+      "Jimma": "ጂማ",
       "Jijiga": "ጅጅጋ",
       "Other (International)": "ከሀገር ውጭ"
     },
@@ -879,7 +883,7 @@
       "Switzerland": "ስዊዘርላንድ",
       "Netherlands": "ኔዘርላንድስ",
       "Belgium": "ቤልጂየም",
-      "Qatar": "ኳታር",
+      "Qatar": "ካታር",
       "Kuwait": "ኩዌት",
       "Bahrain": "ባህሬን",
       "Oman": "ኦማን",
@@ -905,11 +909,11 @@
     "email": "ኢሜይል አድራሻ",
     "address": "አድራሻችን",
     "hqLabel": "ዋና መሥሪያ ቤት",
-    "hqAddress": "ለንደን፣ ኢንግላንድ",
-    "branchLabel": "",
-    "branchAddress": "",
+    "hqAddress": "ለንደን፣ እንግሊዝ",
+    "branchLabel": "ቅርንጫፍ ቢሮ",
+    "branchAddress": "አዲስ አበባ፣ ኢትዮጵያ",
     "phone1": "+447347663254",
-    "phone2": ""
+    "phone2": "+251 946 414018"
   },
   "Legal": {
     "Terms": {
@@ -922,26 +926,26 @@
     }
   },
   "Friendship": {
-    "addFriend": "ጓደኛ አድርግ",
+    "addFriend": "ወዳጅ ጨምር",
     "requestSent": "ጥያቄ ተልኳል",
-    "pending": "ጥያቄው በጥበቃ ላይ",
-    "accept": "ተቀበል",
-    "decline": "አትቀበል",
-    "friends": "ጓደኛሞች",
-    "alreadyFriends": "ቀድሞውኑ ጓደኛሞች ናችሁ!",
+    "pending": "ማረጋገጫ በመጠበቅ ላይ",
+    "accept": "ጥያቄውን ተቀበል",
+    "decline": "ጥያቄውን ውደቅ",
+    "friends": "ወዳጆች",
+    "alreadyFriends": "አስቀድመው ወዳጆች ናችሁ!",
     "notification": "አዲስ የጓደኝነት ጥያቄ ከ {name}",
-    "noRequests": "ምንም የጓደኝነት ጥያቄ የለም",
-    "about": "ስለ እኔ",
+    "noRequests": "ምንም የሚጠብቅ የጓደኝነት ጥያቄ የለም።",
+    "about": "ስለ",
     "interests": "ፍላጎቶች",
     "contactInfo": "የመገናኛ መረጃ",
     "directEmail": "ቀጥታ ኢሜይል",
-    "premiumOnly": "ለፕሪሚየም ብቻ",
-    "openChat": "ውይይት ጀምር",
+    "premiumOnly": "ለፕሪሚየም አባላት ብቻ",
+    "openChat": "ወግ ጀምር",
     "startConnection": "ግንኙነት ጀምር",
-    "upgradeToRead": "ሙሉውን ለማንበብ ፕሪሚየም ይሁኑ",
+    "upgradeToRead": "ሙሉ መግለጫውን ለማንበብ ወደ ፕሪሚየም ያሳድጉ",
     "noBio": "ምንም መግለጫ አልተጻፈም።",
-    "premiumFriendsOnly": "ለፕሪሚየም ወይም ለጓደኛሞች ብቻ",
-    "upgradeOrFriendSub": "ውይይት ለመጀመር የፕሪሚየም አባል ይሁኑ ወይም የጓደኝነት ጥያቄ ይላኩ።",
-    "upgradeNow": "አሁኑኑ ያሻሽሉ"
+    "premiumFriendsOnly": "ለፕሪሚየም ወይም ለወዳጆች ብቻ",
+    "upgradeOrFriendSub": "ወግ ለመጀመር ወደ ፕሪሚየም ያሳድጉ ወይም በወዳጅነት ተቀባይነት ያግኙ።",
+    "upgradeNow": "አሁኑኑ ያሳድጉ"
   }
 }

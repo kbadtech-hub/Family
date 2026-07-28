@@ -495,7 +495,9 @@
     "admin": "Admin Security Portal",
     "copyright": "© 2026 Beteseb (ቤተሰብ). Bringing Habesha Together.",
     "address": "London, England / Harar, Ethiopia / Medina, Saudi Arabia",
-    "community": "Community Feed"
+    "community": "Community Feed",
+    "downloadApp": "Download the App",
+    "developer": "Developed by Nolawi Digital Hub"
   },
   "Auth": {
     "signIn": "Sign In",
@@ -713,6 +715,8 @@
     "login": "Login",
     "signup": "Sign Up",
     "offlineError": "Please check your internet connection.",
+    "offlineTitle": "No Internet Connection",
+    "offlineBtn": "OK",
     "step1_title": "Choose Your Language / ቋንቋ ይምረጡ",
     "step1_desc": "Please select your preferred language to continue. / እባክዎን በመተግበሪያው ውስጥ መጠቀም የሚፈልጉትን ቋንቋ ይምረጡ።",
     "step2_title": "Welcome to Beteseb!",

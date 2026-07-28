@@ -314,7 +314,7 @@ export default function MobileOnboarding() {
 
             <div className="space-y-2">
               <h3 className="text-lg font-bold text-white leading-tight">
-                {locale === 'am' ? 'ግንኙነት ተቋርጧል' : 'No Internet Connection'}
+                {t('offlineTitle')}
               </h3>
               <p className="text-xs text-white/60 leading-relaxed px-2">
                 {t('offlineError')}
@@ -325,7 +325,7 @@ export default function MobileOnboarding() {
               onClick={() => setShowOfflineModal(false)}
               className="w-full py-4 rounded-[1.5rem] bg-white/10 hover:bg-white/15 border border-white/5 text-white font-bold text-xs uppercase tracking-widest transition-all active:scale-95 cursor-pointer"
             >
-              {locale === 'am' ? 'እሺ' : 'OK'}
+              {t('offlineBtn')}
             </button>
           </div>
         </div>

@@ -86,7 +86,9 @@
     "workshops": "ዎርክሾፓት",
     "profile": "ፕሮፋይል",
     "wedding": "መደብ መርዓ",
-    "gifts": "ወሃብቲ ህያብ"
+    "gifts": "ወሃብቲ ህያብ",
+    "academy": "ቤተሰብ አካደሚ",
+    "counseling": "ምክሪ ሰሲናት"
   },
   "Dashboard": {
     "welcome": "እንቋዕ ብደሓን መጻእኩም",
@@ -159,19 +161,19 @@
       "bioPlaceholder": "ብዛዕባ ርእስኻ ንኻልኦት ንገሮም...",
       "interests": "ተገዳስነትን ሓጎስን",
       "interestsPlaceholder": "ባህሊ፣ ሓዳር፣ ጉዕዞ፣ ምብሳል...",
-      "saveChanges": "Save Changes",
-      "defaultCity": "Addis Ababa",
+      "saveChanges": "ለውጥታትን ኣስቀምጥ",
+      "defaultCity": "አዲስ አበባ",
       "roles": {
-        "user": "Habesha Member",
-        "admin": "Beteseb Admin"
+        "user": "ኣባል ሓበሻ",
+        "admin": "ቤተሰብ ኣድሚን"
       },
       "alerts": {
-        "avatarFailed": "Avatar upload failed",
-        "uploadFailed": "Upload failed",
-        "deleteFailed": "Delete failed",
-        "usernameTaken": "Username already taken. Please choose another.",
-        "updateSuccess": "Profile updated successfully!",
-        "updateFailed": "Update failed"
+        "avatarFailed": "ስእሊ ፕሮፋይል ምጽዓን ኣይተኻእለን",
+        "uploadFailed": "ምጽዓን ኣይተኻእለን",
+        "deleteFailed": "ምስራዝ ኣይተኻእለን",
+        "usernameTaken": "እዚ መታወቂ ስም ተታሒዙ እዩ። እባክኹም ኻልእ ሕረዩ።",
+        "updateSuccess": "ፕሮፋይልካ ብዓወት ተመሓይሹ አሎ!",
+        "updateFailed": "ምምሕያሽ ኣይተኻእለን"
       }
     },
     "planner": {
@@ -329,16 +331,16 @@
     "trialStatus": "ኩነታት ፈተነ",
     "daysLeft": "{count} መዓልትታት ተሪፎም",
     "paymentSuccess": {
-      "coinsTitle": "Coins Purchased!",
-      "coinsBody": "Your coins have been credited to your account. Enjoy sending gifts and unlocking features!",
-      "vipTitle": "VIP Access Activated!",
-      "vipBody": "Your VIP membership is now active. Enjoy exclusive access and premium features!",
-      "premiumTitle": "Premium Activated!",
-      "premiumBody": "Your premium subscription is now active. Explore all the exclusive features!"
+      "coinsTitle": "ኮይናት ተዓዲጎም!",
+      "coinsBody": "ኮይናትካ ናብ ኣካውንትካ ኣትዮም ኣለው። ህያባት ብምልኣኽን ፍሉያት ኣገልግሎታት ብምክፋትን ተሓጎስ!",
+      "vipTitle": "VIP ኣገልግሎት ተበጊሱ ኣሎ!",
+      "vipBody": "VIP ኣባልነትካ ሕዚ ንቁ ኮይኑ ኣሎ። ብፍሉያት ኣገልግሎታትን ፕሪምየም መደባትን ተሓጎስ!",
+      "premiumTitle": "ፕሪምየም ተበጊሱ ኣሎ!",
+      "premiumBody": "ፕሪምየም ምዝገባኻ ሕዚ ንቁ ኮይኑ ኣሎ። ኩሎም ፍሉያት ኣገልግሎታት ዳህስስ!"
     },
     "paymentError": {
-      "title": "Payment Verification Failed",
-      "body": "We could not verify your payment. Please contact support with your transaction reference."
+      "title": "ምርግጋጽ ክፍሊት ኣይተኻእለን",
+      "body": "ክፍሊትካ ክነረጋግፅ ኣይከኣልናን። እባክኹም ናይ መወከሲ ቑፅሪ ብምሓዝ ሓገዝቲ ኣዘራርቡ።"
     }
   },
   "Footer": {
@@ -355,7 +357,9 @@
     "admin": "አመሓዳሪ",
     "copyright": "© 2026 ቤተሰብ።",
     "address": "ለንደን፡ እንግሊዝ / ሃረር፡ ኢትዮጵያ / መዲና፡ ሳውዲ ዓረብ",
-    "community": "ማሕበረሰብ"
+    "community": "ማሕበረሰብ",
+    "downloadApp": "ኣፕሊኬሽን ኣውርድ",
+    "developer": "ዝተሰርሐ ብ Nolawi Digital Hub"
   },
   "Auth": {
     "signIn": "እተዉ",
@@ -646,7 +650,9 @@
     "step10_title": "ሳንቲም ቤተሰብ (Beteseb Coin) እና ስርዓት ሪፈራል",
     "step10_desc": "ንፈተውትኹም ናይ ግብዣ ሊንክ (Referral Link) ብምልላክ ሳንቲም ረኽቡ፤ ዝተኣከቡ ሳንቲም ብምጥቃም ፕሮፋይልኩም ንምትእውዋቕ (Boost) ከምኡ እውን ፍሉያት ኣገልግሎታት ንምጥቃም ተገልገሉሎም።",
     "step11_title": "ንቁም ነገር ትዳር ድሉው ዲኹም?",
-    "step11_desc": "ሕዚ ይቀላቐሉና፤ አካውንትኩም ብምፍጣር ወይ ብምእታው ናብቲ ሓዱሽ ናይ ስድራቤት ህይወትኩም ቀዳማይ ስጉምቲ ውሰዱ!"
+    "step11_desc": "ሕዚ ይቀላቐሉና፤ አካውንትኩም ብምፍጣር ወይ ብምእታው ናብቲ ሓዱሽ ናይ ስድራቤት ህይወትኩም ቀዳማይ ስጉምቲ ውሰዱ!",
+    "offlineTitle": "ርክብ ኢንተርነት ተቋሪጹ",
+    "offlineBtn": "ሕራይ"
   },
   "Academy": {
     "loading": "ትምህርቲ ይጽዓን ኣሎ...",
@@ -712,8 +718,8 @@
         "t4": "መኽዘን ጥበብ"
       }
     },
-    "general": "General Wisdom",
-    "premiumOnly": "Special Membership Only"
+    "general": "ሓፈሻዊ ጥበብ",
+    "premiumOnly": "ንፍሉያት ኣባላት ጥራሕ"
   },
   "TopHeader": {
     "email": "betesebhub@gmail.com",
@@ -737,7 +743,7 @@
     "email": "አድራሻ ኢሜይል",
     "address": "አድራሻታትና",
     "hqLabel": "ቀንዲ ቤት ጽሕፈት",
-    "hqAddress": "ለንደን፡ እንግሊዝ",
+    "hqAddress": "ለንደን፣ እንግሊዝ",
     "branchLabel": "ጨንፈር ቤት ጽሕፈት",
     "branchAddress": "ሃረር፡ ኢትዮጵያ",
     "phone1": "+44 7347 663219",
@@ -799,27 +805,27 @@
       "Hidar": "ሕዳር",
       "Tahsas": "ታሕሳስ",
       "Tir": "ጥሪ",
-      "Yekatit": "ለካቲት",
+      "Yekatit": "የካቲት",
       "Megabit": "መጋቢት",
       "Miazia": "ሚያዝያ",
       "Genbot": "ግንቦት",
-      "Sene": "ሰነ",
-      "Hamle": "ሓምለ",
-      "Nehase": "ነሓሰ",
-      "Pagume": "ጳጉሜን"
+      "Sene": "ሰኔ",
+      "Hamle": "ሐምለ",
+      "Nehase": "ነሐሰ",
+      "Pagume": "ጳጉሜ"
     },
     "Locations": {
-      "Addis Ababa": "አዲስ ኣበባ",
+      "Addis Ababa": "አዲስ አበባ",
       "Asmara": "አስመራ",
       "Mekelle": "መቐለ",
       "Adama": "አዳማ",
-      "Bahir Dar": "ባህር ዳር",
+      "Bahir Dar": "ባሕር ዳር",
       "Gondar": "ጎንደር",
-      "Hawassa": "ሃዋሳ",
-      "Jimma": "ጅማ",
+      "Hawassa": "ሀዋሳ",
+      "Jimma": "ጂማ",
       "Jijiga": "ጅጅጋ",
       "Other (International)": "ካብ ሃገር ወጻኢ",
-      "Dire Dawa": "Dire Dawa"
+      "Dire Dawa": "ድሬዳዋ"
     },
     "Jobs": {
       "Technology & IT": "ተክኖሎጂን አይቲን",
@@ -838,7 +844,7 @@
       "Religious Compatibility": "ሃይማኖታዊ ተሳማዕነት",
       "Family Oriented": "ስድራቤት ዝቐድም",
       "Career Focused": "ስራሕ ዝቐድም",
-      "Traditional Values": "ባህላዊ ክብርታት",
+      "Traditional Values": "ባህላዊ እሴታት",
       "Modern Outlook": "ዘመናዊ ኣረኣእያ",
       "Healthy Lifestyle": "ጥዑይ ኣነባብራ",
       "Wants Children": "ውሉድ ዝደሊ",
@@ -873,7 +879,7 @@
       "Kuwait": "ኩዌት",
       "Kenya": "ኬንያ",
       "Canada": "ካናዳ",
-      "Qatar": "ቐጠር",
+      "Qatar": "ካታር",
       "Djibouti": "ጅቡቲ",
       "Jordan": "ዮርዳኖስ",
       "Germany": "ጀርመን",
@@ -899,46 +905,46 @@
     }
   },
   "Chat": {
-    "loading": "Loading family chat...",
-    "title": "Matches",
-    "searchPlaceholder": "Search matches...",
-    "noMatches": "No matches yet. Keep exploring!",
-    "premiumTitle": "Premium Feature",
-    "premiumSub": "Direct messaging with your matches is a premium feature. Upgrade now to start your journey.",
-    "upgradeNow": "Upgrade Now",
-    "activeNow": "Active Now",
-    "compatibilityTitle": "Your Abushakir Compatibility is High!",
-    "compatibilitySub": "Start a conversation with traditional values.",
-    "translate": "Translate to {lang}",
-    "original": "Show Original",
-    "iceBreaker": "Suggest AI Ice-Breaker",
-    "typePlaceholder": "Type a message with respect...",
-    "selectMatchTitle": "Select a Match",
-    "selectMatchSub": "Connect with your potential partner within the Beteseb family. Secure, real-time, and privacy-focused messaging.",
-    "encrypted": "Encrypted",
-    "private": "Private"
+    "loading": "ናይ ቤተሰብ ዕልል ይፅዕን ኣሎ...",
+    "title": "ተጣመርቲ",
+    "searchPlaceholder": "ተጣመርቲ ድለ...",
+    "noMatches": "ክሳብ ሕዚ እተጣመሩ የለዉን። ምድላይካ ቀፅል!",
+    "premiumTitle": "ፕሪምየም ኣገልግሎት",
+    "premiumSub": "ምስ እተጣመሩ ሰባት ብቀጥታ መልእኽቲ ምልዋጥ ናይ ፕሪምየም ኣገልግሎት እዩ። ጉዕዞኻ ንምጅማር ሕዚ ኣማህይሽ።",
+    "upgradeNow": "ሕዚ ኣማህይሽ",
+    "activeNow": "ሕዚ ኣብ መስመር",
+    "compatibilityTitle": "ናይ አቡሻኪር ምስማዕካ ላዕለዋይ እዩ!",
+    "compatibilitySub": "ብባህላዊ እሴታት እተመስረተ ዕልል ጀምር።",
+    "translate": "ናብ {lang} ተርጉም",
+    "original": "ዋና ኣርእስቲ ኣርእይ",
+    "iceBreaker": "ናይ AI መበገሲ ሓሳብ",
+    "typePlaceholder": "ብክብሪ መልእኽቲ ጽሓፍ...",
+    "selectMatchTitle": "እተጣመረ ሰብ ሕረይ",
+    "selectMatchSub": "ኣብ ናይ ቤተሰብ ማሕበረሰብ ምስ ተሓራይ ሓጋዚኻ ተራኸብ። እተሓለወ፣ ቀጥታን ምስጢራውነት እተሓለወን መልእኽቲ።",
+    "encrypted": "እተሓለወ",
+    "private": "ግላዊ"
   },
   "Friendship": {
-    "addFriend": "Add Friend",
-    "requestSent": "Request Sent",
-    "pending": "Pending Approval",
-    "accept": "Accept Request",
-    "decline": "Decline Request",
-    "friends": "Friends",
-    "alreadyFriends": "You are already friends!",
-    "notification": "New Friend Request from {name}",
-    "noRequests": "No pending friend requests.",
-    "about": "About",
-    "interests": "Interests",
-    "contactInfo": "Contact Info",
-    "directEmail": "Direct Email",
-    "premiumOnly": "Premium Only",
-    "openChat": "Open Chat",
-    "startConnection": "Start Connection",
-    "upgradeToRead": "Upgrade to Premium to read full bio",
-    "noBio": "No bio available yet.",
-    "premiumFriendsOnly": "Premium or Friends Only",
-    "upgradeOrFriendSub": "Upgrade to Premium or be accepted as a friend to start a conversation.",
-    "upgradeNow": "Upgrade Now"
+    "addFriend": "ዓርኪ ወስኽ",
+    "requestSent": "ሕቶ ተላኢኹ ኣሎ",
+    "pending": "ምርግጋፅ ይጽበ ኣሎ",
+    "accept": "ሕቶ ተቀበል",
+    "decline": "ሕቶ ኣይተቀበልን",
+    "friends": "ኣዕሩኽ",
+    "alreadyFriends": "ድሮ ኣዕሩኽ ኢኹም!",
+    "notification": "ሓዲሽ ናይ ዓርክነት ሕቶ ብ {name}",
+    "noRequests": "ዝኾነ ዝጽበ ናይ ዓርክነት ሕቶ የለን።",
+    "about": "ብዛዕባ",
+    "interests": "ተገዳስነት",
+    "contactInfo": "ሓበሬታ ርክብ",
+    "directEmail": "ቀጥታ ኢሜይል",
+    "premiumOnly": "ንፕሪምየም ጥራሕ",
+    "openChat": "ዕልል ጀምር",
+    "startConnection": "ርክብ ጀምር",
+    "upgradeToRead": "ምሉእ መግለፂ ንምብራህ ናብ ፕሪምየም ኣማህይሽ",
+    "noBio": "ዝኾነ መግለፂ ኣይተፅሓፈን።",
+    "premiumFriendsOnly": "ንፕሪምየም ወይ ንኣዕሩኽ ጥራሕ",
+    "upgradeOrFriendSub": "ዕልል ንምጅማር ናብ ፕሪምየም ኣማህይሽ ወይ ብዓርክነት ተቀባልነት ረከብ።",
+    "upgradeNow": "ሕዚ ኣማህይሽ"
   }
 }
