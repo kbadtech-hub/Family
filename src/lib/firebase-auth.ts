@@ -105,6 +105,11 @@ export async function signInWithGoogle(): Promise<SocialAuthResult> {
     return { success: true, isNewUser: syncRes.isNewUser, hasPhone: syncRes.hasPhone, firebaseUser };
   } catch (error: any) {
     console.error('[FirebaseAuth] Google Sign-In error:', error);
+    if (typeof window !== 'undefined' && !(window as any).Capacitor?.isNativePlatform?.()) {
+      console.log('[FirebaseAuth] Attempting Supabase OAuth fallback for Google...');
+      const fallbackRes = await fallbackToSupabaseOAuth('google');
+      if (fallbackRes.success) return fallbackRes;
+    }
     const message = translateFirebaseError(error);
     return { success: false, isNewUser: false, hasPhone: false, firebaseUser: null, error: message };
   }
@@ -150,6 +155,11 @@ export async function signInWithFacebook(): Promise<SocialAuthResult> {
     return { success: true, isNewUser: syncRes.isNewUser, hasPhone: syncRes.hasPhone, firebaseUser };
   } catch (error: any) {
     console.error('[FirebaseAuth] Facebook Sign-In error:', error);
+    if (typeof window !== 'undefined' && !(window as any).Capacitor?.isNativePlatform?.()) {
+      console.log('[FirebaseAuth] Attempting Supabase OAuth fallback for Facebook...');
+      const fallbackRes = await fallbackToSupabaseOAuth('facebook');
+      if (fallbackRes.success) return fallbackRes;
+    }
     const message = translateFirebaseError(error);
     return { success: false, isNewUser: false, hasPhone: false, firebaseUser: null, error: message };
   }
@@ -200,8 +210,29 @@ export async function signInWithApple(): Promise<SocialAuthResult> {
     return { success: true, isNewUser: syncRes.isNewUser, hasPhone: syncRes.hasPhone, firebaseUser };
   } catch (error: any) {
     console.error('[FirebaseAuth] Apple Sign-In error:', error);
+    if (typeof window !== 'undefined' && !(window as any).Capacitor?.isNativePlatform?.()) {
+      console.log('[FirebaseAuth] Attempting Supabase OAuth fallback for Apple...');
+      const fallbackRes = await fallbackToSupabaseOAuth('apple');
+      if (fallbackRes.success) return fallbackRes;
+    }
     const message = translateFirebaseError(error);
     return { success: false, isNewUser: false, hasPhone: false, firebaseUser: null, error: message };
+  }
+}
+
+async function fallbackToSupabaseOAuth(provider: 'google' | 'facebook' | 'apple'): Promise<SocialAuthResult> {
+  try {
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${origin}/auth/callback`,
+      },
+    });
+    if (error) throw error;
+    return { success: true, isNewUser: false, hasPhone: false, firebaseUser: null };
+  } catch (err: any) {
+    return { success: false, isNewUser: false, hasPhone: false, firebaseUser: null, error: err.message };
   }
 }
 

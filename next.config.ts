@@ -21,6 +21,13 @@ const nextConfig: NextConfig = {
         pathname: '/storage/v1/object/public/**',
       },
     ],
+  async rewrites() {
+    return [
+      {
+        source: '/__/auth/:path*',
+        destination: 'https://beteseb-89bae.firebaseapp.com/__/auth/:path*',
+      },
+    ];
   },
 };
 
