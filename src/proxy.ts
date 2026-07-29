@@ -5,33 +5,40 @@ import { createServerClient } from '@supabase/ssr';
 
 const intlMiddleware = createMiddleware(routing);
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // 1. Run next-intl middleware first to handle locales
   const response = intlMiddleware(request);
 
-  // 2. Auth protection
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
+  // 2. Auth protection safely wrapped in try-catch so it never crashes Edge runtime
+  let user: any = null;
+  try {
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) =>
+              request.cookies.set(name, value)
+            );
+            cookiesToSet.forEach(({ name, value, options }) => {
+              try {
+                response.cookies.set(name, value, options);
+              } catch (_) {}
+            });
+          },
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
+      }
+    );
 
-  // Get user session
-  const { data: { user } } = await supabase.auth.getUser();
+    const { data } = await supabase.auth.getUser();
+    user = data?.user || null;
+  } catch (err) {
+    console.error('[Proxy] Supabase auth check bypassed:', err);
+  }
 
   // Get current pathname
   const { pathname } = request.nextUrl;
@@ -49,10 +56,10 @@ export async function middleware(request: NextRequest) {
     const authHeader = request.headers.get('authorization');
     if (authHeader) {
       const authValue = authHeader.split(' ')[1];
-      const [user, pwd] = atob(authValue).split(':');
+      const [u, pwd] = atob(authValue).split(':');
 
       // NEW SECRET CREDENTIALS
-      if (user === 'Beteseb_Shield_Admin' && pwd === 'K0m-Secure-2026-!@#') {
+      if (u === 'Beteseb_Shield_Admin' && pwd === 'K0m-Secure-2026-!@#') {
         return response;
       }
     }
@@ -70,27 +77,21 @@ export async function middleware(request: NextRequest) {
      return NextResponse.redirect(new URL(`/${locale}/secure-beteseb-admin`, request.url));
   }
 
-  // 4. Regular Dashboard/Auth Protection
+  // Regular Dashboard/Auth Protection
   if (isDashboardRoute) {
-    // We allow the request to pass to the page. 
-    // The Dashboard page (Client Component) will handle the session check.
-    // This prevents the common 'Server vs Client' cookie sync redirect loop.
+    // Client components manage local dashboard state
   }
 
   // If user is logged in, don't let them go back to login
-  if (user && (isLoginRoute)) {
+  if (user && isLoginRoute) {
      return NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url));
   }
 
   return response;
 }
 
+export default proxy;
+
 export const config = {
-  // Match all pathnames except for
-  // - /api routes
-  // - /_next (Next.js internals)
-  // - /_static (inside /public)
-  // - all root files inside /public (e.g. /favicon.ico)
-  // - /__ (Firebase auth domain routes)
   matcher: ['/((?!api|auth|__|_next|_static|_vercel|[\\w-]+\\.\\w+).*)']
 };

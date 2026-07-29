@@ -39,13 +39,17 @@ type CheckState  = 'checking' | 'passed' | 'blocked';
  * Add to .env.local:  NEXT_PUBLIC_IPINFO_TOKEN=your_token_here
  */
 async function checkForVPN(): Promise<{ isVPN: boolean; country?: string; city?: string }> {
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timeoutId = controller ? setTimeout(() => controller.abort(), 6000) : null;
+
   try {
     const token = process.env.NEXT_PUBLIC_IPINFO_TOKEN || '';
     const url = token
       ? `https://ipinfo.io/json?token=${token}`
       : 'https://ipinfo.io/json';
 
-    const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+    const res = await fetch(url, { signal: controller ? controller.signal : undefined });
+    if (timeoutId) clearTimeout(timeoutId);
     if (!res.ok) return { isVPN: false };
 
     const data = await res.json();
@@ -69,6 +73,7 @@ async function checkForVPN(): Promise<{ isVPN: boolean; country?: string; city?:
 
     return { isVPN, country, city };
   } catch {
+    if (timeoutId) clearTimeout(timeoutId);
     // Network timeout or API unavailable — fail open (don't block the user)
     return { isVPN: false };
   }
