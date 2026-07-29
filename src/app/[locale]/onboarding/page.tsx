@@ -16,8 +16,10 @@ import {
   X,
   Upload,
   AlertCircle,
-  ShieldCheck
+  ShieldCheck,
+  Lock
 } from 'lucide-react';
+import { resolveLocationFromCoords } from '@/lib/location';
 import { calculateStarSign } from '@/lib/abushakir';
 import { simulateIdentityVerification, validateIdDocument } from '@/lib/verification';
 import { moderateImage } from '@/lib/moderation';
@@ -596,17 +598,37 @@ function OnboardingContent() {
               verification_status: data.verification_status || 'unverified'
             }));
 
-            // Pre-fill location selectors
-            if (data.location) {
-              const loc = typeof data.location === 'object' ? data.location : null;
-              if (loc) {
-                if (loc.country) setSelectedCountry(loc.country);
-                if (loc.region) setSelectedRegion(loc.region);
-                if (loc.city) setSelectedCity(loc.city);
-              } else if (typeof data.location === 'string') {
-                setSelectedCountry(data.location);
+            // Pre-fill location selectors (auto-populate from captured sign-up or profile location)
+            let countryToSet = '';
+            let regionToSet = '';
+            let cityToSet = '';
+
+            if (data.location && typeof data.location === 'object') {
+              countryToSet = data.location.country || '';
+              regionToSet = data.location.region || '';
+              cityToSet = data.location.city || '';
+            } else if (typeof data.location === 'string') {
+              countryToSet = data.location;
+            }
+
+            if ((!countryToSet || !regionToSet || !cityToSet) && data.registration_location) {
+              const regLoc = data.registration_location;
+              if (regLoc.country) {
+                if (!countryToSet) countryToSet = regLoc.country;
+                if (!regionToSet) regionToSet = regLoc.region || '';
+                if (!cityToSet) cityToSet = regLoc.city || '';
+              } else if (regLoc.lat && regLoc.lng) {
+                resolveLocationFromCoords(regLoc.lat, regLoc.lng).then(resolved => {
+                  setSelectedCountry(prev => prev || resolved.country);
+                  setSelectedRegion(prev => prev || resolved.region);
+                  setSelectedCity(prev => prev || resolved.city);
+                });
               }
             }
+
+            setSelectedCountry(countryToSet || 'Ethiopia');
+            setSelectedRegion(regionToSet || 'Addis Ababa');
+            setSelectedCity(cityToSet || 'Addis Ababa');
 
             // Pre-fill children status
             if (data.has_children) {
@@ -637,9 +659,24 @@ function OnboardingContent() {
           // Location captured - save to profile if user exists
           supabase.auth.getUser().then(({ data: { user } }) => {
             if (user) {
-              supabase.from('profiles').update({
-                registration_location: { lat: pos.coords.latitude, lng: pos.coords.longitude }
-              }).eq('id', user.id);
+              resolveLocationFromCoords(pos.coords.latitude, pos.coords.longitude).then(resolved => {
+                setSelectedCountry(prev => prev || resolved.country);
+                setSelectedRegion(prev => prev || resolved.region);
+                setSelectedCity(prev => prev || resolved.city);
+
+                supabase.from('profiles').update({
+                  registration_location: {
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude,
+                    ...resolved
+                  },
+                  location: {
+                    country: resolved.country,
+                    region: resolved.region,
+                    city: resolved.city
+                  }
+                }).eq('id', user.id);
+              });
             }
           });
         },
@@ -1099,24 +1136,28 @@ function OnboardingContent() {
                 />
               </div>
 
-              {/* Location Cascading Picker */}
-              <div className="space-y-4 bg-[#F8F9FA]/50 p-6 rounded-[2rem] border border-gray-150">
-                <span className="block text-xs font-black text-slate-600 uppercase tracking-widest mb-2 ml-1">
-                  {locale === 'am' ? 'የመኖሪያ አድራሻ (Location)' : locale === 'ti' ? 'ናይ መበቆል ኣድራሻ (Location)' : locale === 'om' ? 'Bakka Jireenyaa (Location)' : 'Location Details'}
-                </span>
+              {/* Location Cascading Picker (Locked & Read-Only) */}
+              <div className="space-y-4 bg-[#F8F9FA]/50 p-6 rounded-[2rem] border border-gray-150 relative">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-2 ml-1">
+                  <span className="block text-xs font-black text-slate-600 uppercase tracking-widest">
+                    {locale === 'am' ? 'የመኖሪያ አድራሻ (Location)' : locale === 'ti' ? 'ናይ መበቆል ኣድራሻ (Location)' : locale === 'om' ? 'Bakka Jireenyaa (Location)' : 'Location Details'}
+                  </span>
+                  <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 text-amber-700 border border-amber-500/20 rounded-full text-[10px] font-bold">
+                    <Lock size={12} className="text-amber-600 shrink-0" />
+                    <span>
+                      {locale === 'am' ? 'በተረጋገጠ አድራሻ የተቆለፈ (Locked)' : locale === 'ti' ? 'ብተረጋገፀ ኣድራሻ ዝተዓሸገ' : locale === 'om' ? 'Bakka Mirkanaa\'aan Cufame' : 'Locked via Verified Location'}
+                    </span>
+                  </div>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1">
                     <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider ml-1">
                       {locale === 'am' ? 'ሀገር' : locale === 'ti' ? 'ሃገር' : locale === 'om' ? 'Biyya' : 'Country'}
                     </label>
                     <CustomSelect
-                      value={selectedCountry}
-                      onChange={(val) => {
-                        setSelectedCountry(val);
-                        setSelectedRegion('');
-                        setSelectedCity('');
-                        updateField('location', val);
-                      }}
+                      value={selectedCountry || 'Ethiopia'}
+                      disabled={true}
+                      onChange={() => {}}
                       options={[
                         ...[...COUNTRIES]
                           .sort((a, b) => {
@@ -1133,10 +1174,11 @@ function OnboardingContent() {
                     {selectedCountry === 'Others' && (
                       <input
                         type="text"
+                        disabled
+                        readOnly
                         placeholder={locale === 'am' ? 'እባክዎ ሀገር ይጥቀሱ...' : 'Specify country...'}
                         value={customCountry}
-                        onChange={(e) => setCustomCountry(e.target.value)}
-                        className="w-full p-3 mt-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-primary focus:outline-none"
+                        className="w-full p-3 mt-2 bg-gray-100 border border-gray-200 rounded-xl text-xs font-semibold text-gray-500 cursor-not-allowed opacity-75 pointer-events-none"
                       />
                     )}
                   </div>
@@ -1146,12 +1188,9 @@ function OnboardingContent() {
                       {locale === 'am' ? 'ክልል/ግዛት' : locale === 'ti' ? 'ክፍለ ሃገር' : locale === 'om' ? 'Naannoo' : 'Region'}
                     </label>
                     <CustomSelect
-                      value={selectedRegion}
-                      disabled={!selectedCountry}
-                      onChange={(val) => {
-                        setSelectedRegion(val);
-                        setSelectedCity('');
-                      }}
+                      value={selectedRegion || 'Addis Ababa'}
+                      disabled={true}
+                      onChange={() => {}}
                       options={[
                         ...(selectedCountry && selectedCountry !== 'Others'
                           ? Object.keys(locationData[selectedCountry] || {}).map(region => ({ value: region, label: getTranslation(region, locale) }))
@@ -1164,10 +1203,11 @@ function OnboardingContent() {
                     {selectedRegion === 'Others' && (
                       <input
                         type="text"
+                        disabled
+                        readOnly
                         placeholder={locale === 'am' ? 'እባክዎ ክልል ይጥቀሱ...' : 'Specify region...'}
                         value={customRegion}
-                        onChange={(e) => setCustomRegion(e.target.value)}
-                        className="w-full p-3 mt-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-primary focus:outline-none"
+                        className="w-full p-3 mt-2 bg-gray-100 border border-gray-200 rounded-xl text-xs font-semibold text-gray-500 cursor-not-allowed opacity-75 pointer-events-none"
                       />
                     )}
                   </div>
@@ -1177,9 +1217,9 @@ function OnboardingContent() {
                       {locale === 'am' ? 'ከተማ' : locale === 'ti' ? 'ከተማ' : locale === 'om' ? 'Magaalaa' : 'City'}
                     </label>
                     <CustomSelect
-                      value={selectedCity}
-                      disabled={!selectedRegion}
-                      onChange={(val) => setSelectedCity(val)}
+                      value={selectedCity || 'Addis Ababa'}
+                      disabled={true}
+                      onChange={() => {}}
                       options={[
                         ...(selectedCountry && selectedRegion && selectedRegion !== 'Others'
                           ? (locationData[selectedCountry]?.[selectedRegion] || []).map(city => ({ value: city, label: getTranslation(city, locale) }))
@@ -1192,10 +1232,11 @@ function OnboardingContent() {
                     {selectedCity === 'Others' && (
                       <input
                         type="text"
+                        disabled
+                        readOnly
                         placeholder={locale === 'am' ? 'እባክዎ ከተማ ይጥቀሱ...' : 'Specify city...'}
                         value={customCity}
-                        onChange={(e) => setCustomCity(e.target.value)}
-                        className="w-full p-3 mt-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-primary focus:outline-none"
+                        className="w-full p-3 mt-2 bg-gray-100 border border-gray-200 rounded-xl text-xs font-semibold text-gray-500 cursor-not-allowed opacity-75 pointer-events-none"
                       />
                     )}
                   </div>

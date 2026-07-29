@@ -25,6 +25,7 @@ import { validatePassword } from '@/lib/password-validator';
 import { COUNTRIES } from '@/lib/countries';
 import ethiopianDate from 'ethiopian-date';
 import EulaGate from '@/components/EulaGate';
+import { resolveLocationFromCoords } from '@/lib/location';
 
 const getSlogan = (lang: string) => {
   switch (lang) {
@@ -262,6 +263,30 @@ function SignupContent() {
     }
 
     try {
+      let locationPayload: any = {};
+      if (locationCoords) {
+        try {
+          const resolved = await resolveLocationFromCoords(locationCoords.lat, locationCoords.lng);
+          locationPayload = {
+            registration_location: {
+              lat: locationCoords.lat,
+              lng: locationCoords.lng,
+              ...resolved
+            },
+            location: {
+              country: resolved.country,
+              region: resolved.region,
+              city: resolved.city
+            }
+          };
+        } catch (locErr) {
+          console.warn('Failed to resolve signup location coords:', locErr);
+          locationPayload = {
+            registration_location: { lat: locationCoords.lat, lng: locationCoords.lng }
+          };
+        }
+      }
+
       if (view === 'email') {
         // ── Email Signup via Supabase Auth (direct — no Firebase needed) ──────
         const { isValid, errorKey } = validatePassword(password);
@@ -283,6 +308,7 @@ function SignupContent() {
           birth_date: birthDate,
           onboarding_step: 1,
           onboarding_completed: false,
+          ...locationPayload
         }, { onConflict: 'id' }).select();
 
         // Handle referral link tracking
@@ -334,6 +360,7 @@ function SignupContent() {
           birth_date: birthDate,
           onboarding_step: 1,
           onboarding_completed: false,
+          ...locationPayload
         }, { onConflict: 'id' }).select();
 
         // Handle referral link tracking
