@@ -5,6 +5,7 @@ import { useRouter } from '@/i18n/routing';
 import { useSearchParams } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { supabase } from '@/lib/supabase';
+import { getApiEndpoint } from '@/lib/api-config';
 import { Mail, Loader2, ChevronRight, CheckCircle2 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -68,7 +69,7 @@ function VerifyOtpContent() {
     setErrorMsg('');
     try {
       // Direct call to our custom API route for robust custom OTP checks
-      const response = await fetch('/api/auth/verify-otp', {
+      const response = await fetch(getApiEndpoint('/api/auth/verify-otp'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email, token: otpValue })
@@ -107,7 +108,7 @@ function VerifyOtpContent() {
     try {
       const isEmail = email.includes('@');
       if (isEmail) {
-        await fetch('/api/auth/send-otp', {
+        await fetch(getApiEndpoint('/api/auth/send-otp'), {
           method: 'POST',
           body: JSON.stringify({ email: email, locale })
         });

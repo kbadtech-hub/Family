@@ -5,7 +5,7 @@ import { createServerClient } from '@supabase/ssr';
 
 const intlMiddleware = createMiddleware(routing);
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   // 1. Run next-intl middleware first to handle locales
   const response = intlMiddleware(request);
 
@@ -19,7 +19,7 @@ export async function proxy(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
+          cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
           cookiesToSet.forEach(({ name, value, options }) =>

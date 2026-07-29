@@ -31,6 +31,7 @@ import {
 } from 'firebase/auth';
 import { getFirebaseApp } from '@/lib/firebase';
 import { supabase } from '@/lib/supabase';
+import { getApiEndpoint } from '@/lib/api-config';
 
 // ─── Singleton Firebase Auth Instance ────────────────────────────────────────
 
@@ -228,7 +229,8 @@ async function syncFirebaseUserWithSupabase(firebaseUser: FirebaseUser): Promise
 
   let res: Response;
   try {
-    res = await fetch('/api/auth/firebase-sync', {
+    const endpoint = getApiEndpoint('/api/auth/firebase-sync');
+    res = await fetch(endpoint, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ idToken }),
