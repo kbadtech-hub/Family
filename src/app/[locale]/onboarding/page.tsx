@@ -713,7 +713,7 @@ function OnboardingContent() {
           });
         },
         () => { /* User denied - non-blocking */ },
-        { timeout: 8000 }
+        { timeout: 15000, enableHighAccuracy: true, maximumAge: 0 }
       );
     }
   }, [searchParams, router, geoRequested]);

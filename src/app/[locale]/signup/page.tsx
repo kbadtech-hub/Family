@@ -116,7 +116,7 @@ function SignupContent() {
       () => {
         setLocationStatus('denied');
       },
-      { timeout: 10000, enableHighAccuracy: false }
+      { timeout: 15000, enableHighAccuracy: true, maximumAge: 0 }
     );
   };
 
