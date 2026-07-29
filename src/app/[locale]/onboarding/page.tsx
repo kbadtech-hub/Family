@@ -19,7 +19,7 @@ import {
   ShieldCheck,
   Lock
 } from 'lucide-react';
-import { resolveLocationFromCoords } from '@/lib/location';
+import { resolveLocationFromCoords, detectUserLocation } from '@/lib/location';
 import { calculateStarSign } from '@/lib/abushakir';
 import { simulateIdentityVerification, validateIdDocument } from '@/lib/verification';
 import { moderateImage } from '@/lib/moderation';
@@ -254,6 +254,7 @@ function OnboardingContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isLocationLoading, setIsLocationLoading] = useState(false);
 
   // ── ID Document Pre-Validation State ─────────────────────────────────────────
   /** True once the doc-only API check passes for the currently uploaded ID */
@@ -617,18 +618,50 @@ function OnboardingContent() {
                 if (!countryToSet) countryToSet = regLoc.country;
                 if (!regionToSet) regionToSet = regLoc.region || '';
                 if (!cityToSet) cityToSet = regLoc.city || '';
-              } else if (regLoc.lat && regLoc.lng) {
-                resolveLocationFromCoords(regLoc.lat, regLoc.lng).then(resolved => {
-                  setSelectedCountry(prev => prev || resolved.country);
-                  setSelectedRegion(prev => prev || resolved.region);
-                  setSelectedCity(prev => prev || resolved.city);
-                });
               }
             }
 
-            setSelectedCountry(countryToSet || 'Ethiopia');
-            setSelectedRegion(regionToSet || 'Addis Ababa');
-            setSelectedCity(cityToSet || 'Addis Ababa');
+            if (countryToSet && regionToSet && cityToSet) {
+              setSelectedCountry(countryToSet);
+              setSelectedRegion(regionToSet);
+              setSelectedCity(cityToSet);
+            } else {
+              // Location data incomplete -> Perform real-time physical GPS/IP location detection
+              setIsLocationLoading(true);
+              detectUserLocation().then(detected => {
+                const finalCountry = countryToSet || detected.country;
+                const finalRegion = regionToSet || detected.region;
+                const finalCity = cityToSet || detected.city;
+
+                setSelectedCountry(finalCountry);
+                setSelectedRegion(finalRegion);
+                setSelectedCity(finalCity);
+                setIsLocationLoading(false);
+
+                // Auto-save resolved location back to profile so it's persisted permanently
+                supabase.from('profiles').update({
+                  registration_location: {
+                    ...(data.registration_location || {}),
+                    country: finalCountry,
+                    region: finalRegion,
+                    city: finalCity,
+                    lat: detected.lat,
+                    lng: detected.lng
+                  },
+                  location: {
+                    country: finalCountry,
+                    region: finalRegion,
+                    city: finalCity
+                  }
+                }).eq('id', user.id);
+              }).catch(err => {
+                console.warn('Auto location detection error:', err);
+                setSelectedCountry(countryToSet || 'Ethiopia');
+                setSelectedRegion(regionToSet || 'Addis Ababa');
+                setSelectedCity(cityToSet || 'Addis Ababa');
+                setIsLocationLoading(false);
+              });
+            }
 
             // Pre-fill children status
             if (data.has_children) {
@@ -651,18 +684,17 @@ function OnboardingContent() {
       setStep(parseInt(stepParam));
     }
 
-    // Request location permission on onboarding start
+    // Additional high-precision GPS check on onboarding start
     if (!geoRequested && navigator.geolocation) {
       setGeoRequested(true);
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          // Location captured - save to profile if user exists
           supabase.auth.getUser().then(({ data: { user } }) => {
             if (user) {
               resolveLocationFromCoords(pos.coords.latitude, pos.coords.longitude).then(resolved => {
-                setSelectedCountry(prev => prev || resolved.country);
-                setSelectedRegion(prev => prev || resolved.region);
-                setSelectedCity(prev => prev || resolved.city);
+                setSelectedCountry(resolved.country);
+                setSelectedRegion(resolved.region);
+                setSelectedCity(resolved.city);
 
                 supabase.from('profiles').update({
                   registration_location: {
@@ -1143,10 +1175,19 @@ function OnboardingContent() {
                     {locale === 'am' ? 'የመኖሪያ አድራሻ (Location)' : locale === 'ti' ? 'ናይ መበቆል ኣድራሻ (Location)' : locale === 'om' ? 'Bakka Jireenyaa (Location)' : 'Location Details'}
                   </span>
                   <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 text-amber-700 border border-amber-500/20 rounded-full text-[10px] font-bold">
-                    <Lock size={12} className="text-amber-600 shrink-0" />
-                    <span>
-                      {locale === 'am' ? 'በተረጋገጠ አድራሻ የተቆለፈ (Locked)' : locale === 'ti' ? 'ብተረጋገፀ ኣድራሻ ዝተዓሸገ' : locale === 'om' ? 'Bakka Mirkanaa\'aan Cufame' : 'Locked via Verified Location'}
-                    </span>
+                    {isLocationLoading ? (
+                      <>
+                        <Loader2 size={12} className="animate-spin text-amber-600 shrink-0" />
+                        <span>{locale === 'am' ? 'አድራሻዎን በማወቅ ላይ...' : 'Detecting your location...'}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Lock size={12} className="text-amber-600 shrink-0" />
+                        <span>
+                          {locale === 'am' ? 'በተረጋገጠ አድራሻ የተቆለፈ (Locked)' : locale === 'ti' ? 'ብተረጋገፀ ኣድራሻ ዝተዓሸገ' : locale === 'om' ? 'Bakka Mirkanaa\'aan Cufame' : 'Locked via Verified Location'}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
