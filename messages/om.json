@@ -670,15 +670,26 @@
       "Protestant": "Pirootestaantii",
       "Catholic": "Kaatoolikii",
       "Muslim": "Muslima",
+      "Secular / Atheist / Agnostic": "Amantaa Kan Hin Qabne",
+      "Spiritual but not religious": "Hafuurawaa (Spiritual)",
+      "Prefer not to say": "Ibsuu Hin Barbaadu",
       "Other": "Kan biraa"
+    },
+    "ReligionImportance": {
+      "Very Important": "Baay'ee Murteessaa",
+      "Somewhat Important": "Hanga Tokko Murteessaa",
+      "Not Important": "Xiyyeeffannoo Hin Qabu"
     },
     "Genders": {
       "Male": "Dhiira",
       "Female": "Dubartii"
     },
     "Marital": {
-      "Never Married": "Kan hin heerumne/fuune",
+      "Single": "Kan Hin Fuune/Heerumne (Single)",
+      "Never Married": "Kan Hin Fuune/Heerumne (Single)",
       "Divorced": "Kan hiike/tte",
+      "Separated": "Gargar kan ba'an",
+      "Widowed": "Jaarsi/Jaartiin kan irraa du'e",
       "Does Not Matter": "Waan wal hin simne"
     },
     "Children": {
@@ -686,9 +697,19 @@
       "No": "Ijoollee hin qabu",
       "Does Not Matter": "Waan wal hin simne"
     },
+    "ChildrenCount": {
+      "0": "Ijoollee Hin Qabu (0)",
+      "1": "1",
+      "2": "2",
+      "3": "3",
+      "More than 3": "3 Ol"
+    },
     "FutureChildren": {
       "Wants Children": "Ijoollee ni barbaada",
       "Does Not Want Children": "Ijoollee hin barbaadu",
+      "Open to kids / Not sure yet": "Fuulduratti kan murtaa'u",
+      "Want more kids": "Ijoollee dabalataa ni barbaada",
+      "Don't want more kids": "Ijoollee dabalataa hin barbaadu",
       "Does Not Matter": "Waan wal hin simne"
     },
     "Finance": {

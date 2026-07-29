@@ -763,15 +763,26 @@
       "Protestant": "Protestant",
       "Catholic": "Catholic",
       "Muslim": "Muslim",
+      "Secular / Atheist / Agnostic": "Secular / Atheist / Agnostic",
+      "Spiritual but not religious": "Spiritual but not religious",
+      "Prefer not to say": "Prefer not to say",
       "Other": "Other"
+    },
+    "ReligionImportance": {
+      "Very Important": "Very Important",
+      "Somewhat Important": "Somewhat Important",
+      "Not Important": "Not Important"
     },
     "Genders": {
       "Male": "Male",
       "Female": "Female"
     },
     "Marital": {
-      "Never Married": "Never Married",
+      "Single": "Single",
+      "Never Married": "Single",
       "Divorced": "Divorced",
+      "Separated": "Separated",
+      "Widowed": "Widowed",
       "Does Not Matter": "Does Not Matter"
     },
     "Children": {
@@ -779,9 +790,19 @@
       "No": "No children",
       "Does Not Matter": "Does Not Matter"
     },
+    "ChildrenCount": {
+      "0": "No children (0)",
+      "1": "1",
+      "2": "2",
+      "3": "3",
+      "More than 3": "More than 3"
+    },
     "FutureChildren": {
       "Wants Children": "Wants Children",
       "Does Not Want Children": "Does Not Want Children",
+      "Open to kids / Not sure yet": "Open to kids / Not sure yet",
+      "Want more kids": "Want more kids",
+      "Don't want more kids": "Don't want more kids",
       "Does Not Matter": "Does Not Matter"
     },
     "Finance": {

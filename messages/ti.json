@@ -766,15 +766,26 @@
       "Protestant": "ፕሮቴስታንት",
       "Catholic": "ካቶሊክ",
       "Muslim": "ሙስሊም",
+      "Secular / Atheist / Agnostic": "እምነት ዘይብሉ/ላ (Secular)",
+      "Spiritual but not religious": "መንፈሳዊ (Spiritual)",
+      "Prefer not to say": "ምግላጽ አይደልይን",
       "Other": "ካልእ"
+    },
+    "ReligionImportance": {
+      "Very Important": "ኣዝዩ ኣገዳሲ",
+      "Somewhat Important": "መጠነኛ ኣገዳሲ",
+      "Not Important": "ቦታ ዘይህቦ"
     },
     "Genders": {
       "Male": "ወዲ ተባዕታይ",
       "Female": "ጓል አንስተይቲ"
     },
     "Marital": {
-      "Never Married": "ካብዚ ንላዕሊ ዘይተመርዓወ/ት",
-      "Divorced": "ዝፈትሐ/ት",
+      "Single": "ዘይተመርዓወ/ት (Single)",
+      "Never Married": "ዘይተመርዓወ/ት (Single)",
+      "Divorced": "ዝፈትሐ/ት (Divorced)",
+      "Separated": "ዝተፈላለዩ (Separated)",
+      "Widowed": "በዓል/ቲ ቤቱ ዝሞቶ/ታ (Widowed)",
       "Does Not Matter": "ብዘየገድስ"
     },
     "Children": {
@@ -782,9 +793,19 @@
       "No": "ውሉድ የብለይን",
       "Does Not Matter": "ብዘየገድስ"
     },
+    "ChildrenCount": {
+      "0": "ውሉድ የብለይን (0)",
+      "1": "1",
+      "2": "2",
+      "3": "3",
+      "More than 3": "ካብ 3 ንላዕሊ"
+    },
     "FutureChildren": {
       "Wants Children": "ክወልድ ዝደሊ",
       "Does Not Want Children": "ክወልድ ዘይደሊ",
+      "Open to kids / Not sure yet": "ንወደፊት ዝርአ / ዘይተወሰነ",
+      "Want more kids": "ተወሳኺ ውሉድ ዝደሊ",
+      "Don't want more kids": "ተወሳኺ ውሉድ ዘይደሊ",
       "Does Not Matter": "ብዘየገድስ"
     },
     "PartnerChildren": {

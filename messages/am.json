@@ -767,15 +767,26 @@
       "Protestant": "ፕሮቴስታንት",
       "Catholic": "ካቶሊክ",
       "Muslim": "ሙስሊም",
+      "Secular / Atheist / Agnostic": "ሃይማኖት የለኝም (Secular / Agnostic)",
+      "Spiritual but not religious": "መንፈሳዊ (Spiritual but not religious)",
+      "Prefer not to say": "መግለጽ አልፈልግም",
       "Other": "ሌላ"
+    },
+    "ReligionImportance": {
+      "Very Important": "በጣም አስፈላጊ",
+      "Somewhat Important": "መካከለኛ አስፈላጊ",
+      "Not Important": "ቦታ አልሰጠውም"
     },
     "Genders": {
       "Male": "ወንድ",
       "Female": "ሴት"
     },
     "Marital": {
-      "Never Married": "ከዚህ በፊት ያላገባ/ች",
-      "Divorced": "ከዚህ በፊት አግብቶ/ታ የፈታ/ች",
+      "Single": "ያላገባ/ች (Single)",
+      "Never Married": "ያላገባ/ች (Single)",
+      "Divorced": "የተፋታ/ች (Divorced)",
+      "Separated": "የተለያየን (Separated)",
+      "Widowed": "ባለቤቱ/ቷ የሞተበት (Widowed)",
       "Does Not Matter": "ምርጫው ምንም ይሁን"
     },
     "Children": {
@@ -783,9 +794,19 @@
       "No": "ልጅ የለኝም",
       "Does Not Matter": "ምርጫው ምንም ይሁን"
     },
+    "ChildrenCount": {
+      "0": "ልጅ የለኝም (0)",
+      "1": "1",
+      "2": "2",
+      "3": "3",
+      "More than 3": "ከ 3 በላይ"
+    },
     "FutureChildren": {
       "Wants Children": "መውለድ የሚፈልግ/ግ",
       "Does Not Want Children": "መውለድ የማይፈልግ/ግ",
+      "Open to kids / Not sure yet": "ወደፊት ማየት እፈልጋለሁ / ገና ያልተወሰነ",
+      "Want more kids": "ተጨማሪ ልጅ እፈልጋለሁ",
+      "Don't want more kids": "ተጨማሪ ልጅ አልፈልግም",
       "Does Not Matter": "ምርጫው ምንም ይሁን"
     },
     "PartnerChildren": {

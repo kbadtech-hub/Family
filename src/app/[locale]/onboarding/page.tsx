@@ -25,6 +25,7 @@ import { simulateIdentityVerification, validateIdDocument } from '@/lib/verifica
 import { moderateImage } from '@/lib/moderation';
 import { 
   RELIGIONS, 
+  RELIGION_IMPORTANCE_OPTIONS,
   GENDERS, 
   FAMILY_VALUES,
   FINANCE_HABITS,
@@ -33,6 +34,7 @@ import {
   SPOUSE_REQUIREMENTS_TAGS,
   HAVE_CHILDREN_OPTIONS,
   FUTURE_CHILDREN_OPTIONS,
+  CHILDREN_OPTIONS,
   MARITAL_STATUS_MALE,
   MARITAL_STATUS_FEMALE,
   PARTNER_MARITAL_PREF_OPTIONS,
@@ -283,6 +285,7 @@ function OnboardingContent() {
     location: '',
     gender: '',
     religion: '',
+    religion_importance: 'Somewhat Important',
     education: '',
     job: '',
     marital_status: '',
@@ -1141,6 +1144,21 @@ function OnboardingContent() {
                 />
               </div>
 
+              {/* Religion Importance Sub-field (Matching Weight Engine) */}
+              <div className="space-y-2">
+                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center justify-between">
+                  <span>{locale === 'am' ? 'ሃይማኖት ለእርስዎ ምን ያህል አስፈላጊ ነው?' : locale === 'om' ? 'Amantaan Hammam Murteessaadha?' : locale === 'ti' ? 'እምነት ንዓኻትኩም ክንደይ ኣገዳሲ እዩ?' : 'Importance of Religion'}</span>
+                  <span className="text-[10px] text-primary font-bold">{locale === 'am' ? 'የማቺንግ ማጣሪያ' : 'Match Filter'}</span>
+                </label>
+                <CustomSelect
+                  value={formData.religion_importance}
+                  onChange={(val) => updateField('religion_importance', val)}
+                  options={RELIGION_IMPORTANCE_OPTIONS.map(opt => ({ value: opt, label: t_const(`ReligionImportance.${opt}`) }))}
+                  placeholder={locale === 'am' ? 'የሃይማኖት አስፈላጊነት' : 'Importance of Religion'}
+                  label={locale === 'am' ? 'የሃይማኖት አስፈላጊነት' : 'Importance of Religion'}
+                />
+              </div>
+
               {/* Marital Status Input */}
               <div className="space-y-2">
                 <label className="block text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
@@ -1307,12 +1325,10 @@ function OnboardingContent() {
                     <CustomSelect
                       value={childrenCount}
                       onChange={(val) => setChildrenCount(val)}
-                      options={[
-                        { value: '1', label: '1' },
-                        { value: '2', label: '2' },
-                        { value: '3', label: '3' },
-                        { value: 'More than 3', label: 'More than 3 / ከ 3 በላይ' }
-                      ]}
+                      options={CHILDREN_OPTIONS.map(c => ({
+                        value: c,
+                        label: t_const(`ChildrenCount.${c}`)
+                      }))}
                       placeholder={locale === 'am' ? 'የልጆች ብዛት' : 'Number of Children'}
                       label={locale === 'am' ? 'የልጆች ብዛት' : 'Number of Children'}
                     />

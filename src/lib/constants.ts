@@ -7,7 +7,16 @@ export const RELIGIONS = [
   'Protestant',
   'Catholic',
   'Muslim',
+  'Secular / Atheist / Agnostic',
+  'Spiritual but not religious',
+  'Prefer not to say',
   'Other'
+];
+
+export const RELIGION_IMPORTANCE_OPTIONS = [
+  'Very Important',
+  'Somewhat Important',
+  'Not Important'
 ];
 
 export const EDUCATION_LEVELS = [
@@ -20,18 +29,24 @@ export const EDUCATION_LEVELS = [
 ];
 
 export const MARITAL_STATUS_MALE = [
-  'Never Married',
-  'Divorced'
+  'Single',
+  'Divorced',
+  'Separated',
+  'Widowed'
 ];
 
 export const MARITAL_STATUS_FEMALE = [
-  'Never Married',
-  'Divorced'
+  'Single',
+  'Divorced',
+  'Separated',
+  'Widowed'
 ];
 
 export const PARTNER_MARITAL_PREF_OPTIONS = [
-  'Never Married',
+  'Single',
   'Divorced',
+  'Separated',
+  'Widowed',
   'Does Not Matter'
 ];
 
@@ -43,12 +58,18 @@ export const HAVE_CHILDREN_OPTIONS = [
 export const FUTURE_CHILDREN_OPTIONS = [
   'Wants Children',
   'Does Not Want Children',
+  'Open to kids / Not sure yet',
+  'Want more kids',
+  'Don\'t want more kids',
   'Does Not Matter'
 ];
 
 export const PARTNER_CHILDREN_PREF_OPTIONS = [
-  'Yes',
-  'No',
+  'Wants Children',
+  'Does Not Want Children',
+  'Open to kids / Not sure yet',
+  'Want more kids',
+  'Don\'t want more kids',
   'Does Not Matter'
 ];
 
@@ -80,7 +101,7 @@ export const FAMILY_VALUES = [
 ];
 
 export const CHILDREN_OPTIONS = [
-  '0', '1', '2', '3', '4', '5+'
+  '0', '1', '2', '3', 'More than 3'
 ];
 
 export const GENDERS = [
