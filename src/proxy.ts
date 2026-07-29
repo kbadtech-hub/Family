@@ -5,7 +5,7 @@ import { createServerClient } from '@supabase/ssr';
 
 const intlMiddleware = createMiddleware(routing);
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // 1. Run next-intl middleware first to handle locales
   const response = intlMiddleware(request);
 
@@ -37,7 +37,7 @@ export async function middleware(request: NextRequest) {
     const { data } = await supabase.auth.getUser();
     user = data?.user || null;
   } catch (err) {
-    console.error('[Middleware] Supabase auth check bypassed:', err);
+    console.error('[Proxy] Supabase auth check bypassed:', err);
   }
 
   // Get current pathname
@@ -90,7 +90,7 @@ export async function middleware(request: NextRequest) {
   return response;
 }
 
-export default middleware;
+export default proxy;
 
 export const config = {
   matcher: ['/((?!api|auth|__|_next|_static|_vercel|[\\w-]+\\.\\w+).*)']
