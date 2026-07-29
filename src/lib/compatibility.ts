@@ -109,3 +109,144 @@ export function calculateCompatibility(user: any, candidate: any): number {
   // Keep realistic bounds between 50% and 99%
   return Math.min(99, Math.max(50, Math.floor(score)));
 }
+
+/**
+ * Calculates Jaccard Similarity Index between two sets of tags.
+ * Formula: |A ∩ B| / |A ∪ B|
+ */
+export function calculateJaccardSimilarity(tagsA: string[] = [], tagsB: string[] = []): number {
+  if (!tagsA.length || !tagsB.length) return 0;
+  
+  const setA = new Set(tagsA.map(t => t.trim().toLowerCase()));
+  const setB = new Set(tagsB.map(t => t.trim().toLowerCase()));
+  
+  let intersectionCount = 0;
+  setA.forEach(tag => {
+    if (setB.has(tag)) intersectionCount++;
+  });
+  
+  const unionCount = new Set([...setA, ...setB]).size;
+  if (unionCount === 0) return 0;
+  
+  return intersectionCount / unionCount;
+}
+
+/**
+ * Computes Two-Way Directional Score from User A to User B
+ * Based on Beteseb1 100% Weighted Matrix
+ */
+export function calculateDirectionalScore(userA: any, prefA: any, userB: any, prefB: any): number {
+  let score = 0;
+
+  // Category A: Demographics & Life (25%)
+  if (userA.marital_status && userB.marital_status && userA.marital_status === userB.marital_status) {
+    score += 7.0;
+  }
+  const cityA = userA.city || userA.location?.city || '';
+  const cityB = userB.city || userB.location?.city || '';
+  const regionA = userA.region || userA.location?.region || '';
+  const regionB = userB.region || userB.location?.region || '';
+  if (cityA && cityB && cityA.toLowerCase() === cityB.toLowerCase()) {
+    score += 6.0;
+  } else if (regionA && regionB && regionA.toLowerCase() === regionB.toLowerCase()) {
+    score += 4.2;
+  } else {
+    score += 2.4;
+  }
+
+  const careerA = userA.career_category || userA.job_title || '';
+  const careerB = userB.career_category || userB.job_title || '';
+  if (careerA && careerB && careerA.toLowerCase() === careerB.toLowerCase()) {
+    score += 6.0;
+  } else {
+    score += 3.0;
+  }
+
+  const financeA = userA.financial_mindset || userA.finance_habit || '';
+  const financeB = userB.financial_mindset || userB.finance_habit || '';
+  if (financeA && financeB && financeA.toLowerCase() === financeB.toLowerCase()) {
+    score += 6.0;
+  } else {
+    score += 3.0;
+  }
+
+  // Category B: Personality & Dynamics (25%)
+  if (userA.family_values && userB.family_values && userA.family_values === userB.family_values) {
+    score += 7.5;
+  }
+  if (userA.conflict_resolution && userB.conflict_resolution) {
+    if (userA.conflict_resolution === userB.conflict_resolution) {
+      score += 7.5;
+    } else if (
+      (userA.conflict_resolution === 'immediate_discussion' && userB.conflict_resolution === 'cool_off_then_talk') ||
+      (userA.conflict_resolution === 'cool_off_then_talk' && userB.conflict_resolution === 'immediate_discussion')
+    ) {
+      score += 3.75;
+    }
+  }
+
+  const relImpA = userA.religious_importance_level || 'medium';
+  const relImpB = userB.religious_importance_level || 'medium';
+  score += relImpA === relImpB ? 5.0 : 2.5;
+
+  const childPrefA = userA.future_children || userA.child_preference || '';
+  const childPrefB = userB.future_children || userB.child_preference || '';
+  if (childPrefA && childPrefB) {
+    if (childPrefA === childPrefB) {
+      score += 5.0;
+    } else {
+      score -= 20.0; // Penalty
+    }
+  }
+
+  // Category C: Selected Key Preferences (35%) via Jaccard Index
+  const tagsA = userA.selected_tags || userA.spouse_requirements || [];
+  const tagsB = userB.selected_tags || userB.spouse_requirements || [];
+  const jaccard = calculateJaccardSimilarity(tagsA, tagsB);
+  score += jaccard * 35.0;
+
+  // Category D: Interests & Lifestyle (15%)
+  const habitsA = userA.lifestyle_habits || (userA.lifestyle ? [userA.lifestyle] : []);
+  const habitsB = userB.lifestyle_habits || (userB.lifestyle ? [userB.lifestyle] : []);
+  const habitsJaccard = calculateJaccardSimilarity(habitsA, habitsB);
+  score += habitsJaccard * 8.0;
+
+  const hobbiesA = userA.hobbies || [];
+  const hobbiesB = userB.hobbies || [];
+  const hobbiesJaccard = calculateJaccardSimilarity(hobbiesA, hobbiesB);
+  score += hobbiesJaccard * 7.0;
+
+  // Penalties
+  if (cityA && cityB && cityA.toLowerCase() !== cityB.toLowerCase() && !userA.relocation_intent && !userB.relocation_intent) {
+    score -= 15.0;
+  }
+  const acceptsChildrenB = prefB?.accepts_has_children ?? true;
+  if (userA.has_children === 'Yes' && !acceptsChildrenB) {
+    score -= 25.0;
+  }
+
+  return Math.max(0, score);
+}
+
+/**
+ * Two-Way Geometric Mean Compatibility Calculator
+ * Final Score = sqrt(Score_A_to_B * Score_B_to_A)
+ */
+export function calculateTwoWayGeometricMeanScore(
+  userA: any,
+  prefA: any,
+  userB: any,
+  prefB: any
+): { finalCompatibilityScore: number; scoreAtoB: number; scoreBtoA: number } {
+  const scoreAtoB = calculateDirectionalScore(userA, prefA, userB, prefB);
+  const scoreBtoA = calculateDirectionalScore(userB, prefB, userA, prefA);
+  
+  const finalCompatibilityScore = Number(Math.sqrt(scoreAtoB * scoreBtoA).toFixed(2));
+  
+  return {
+    finalCompatibilityScore,
+    scoreAtoB: Number(scoreAtoB.toFixed(2)),
+    scoreBtoA: Number(scoreBtoA.toFixed(2))
+  };
+}
+
