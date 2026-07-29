@@ -1596,31 +1596,21 @@ function OnboardingContent() {
                 </div>
               </div>
 
-              {/* 4. 6 Structured Relationship Goals */}
-              <div className="space-y-3 bg-white/80 backdrop-blur-md p-5 rounded-2xl border border-gray-150 shadow-sm">
-                <label className="text-xs font-black uppercase text-slate-600 tracking-wider block">
+              {/* 4. 6 Structured Relationship Goals (CustomSelect Dropdown) */}
+              <div className="space-y-2">
+                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
                   {t('fields.partnerRelationshipGoal')}
                 </label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-                  {PARTNER_RELATIONSHIP_GOAL_OPTIONS.map(goal => {
-                    const isSelected = formData.partner_intent === goal;
-                    return (
-                      <button
-                        key={goal}
-                        type="button"
-                        onClick={() => updateField('partner_intent', goal)}
-                        className={`p-3.5 rounded-xl border text-left transition-all flex items-center justify-between ${
-                          isSelected
-                            ? 'border-primary bg-primary/5 text-primary shadow-xs font-bold'
-                            : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 font-semibold'
-                        }`}
-                      >
-                        <span className="text-xs">{t_const(`RelationshipGoals.${goal}`) || goal}</span>
-                        {isSelected && <span className="w-2 h-2 rounded-full bg-primary" />}
-                      </button>
-                    );
-                  })}
-                </div>
+                <CustomSelect
+                  value={formData.partner_intent}
+                  onChange={(val) => updateField('partner_intent', val)}
+                  options={PARTNER_RELATIONSHIP_GOAL_OPTIONS.map(g => ({
+                    value: g,
+                    label: t_const(`RelationshipGoals.${g}`) || g
+                  }))}
+                  placeholder={t('fields.selectGoal')}
+                  label={t('fields.partnerRelationshipGoal')}
+                />
               </div>
             </div>
           </div>
