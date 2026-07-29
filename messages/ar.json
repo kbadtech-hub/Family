@@ -573,7 +573,13 @@
       "partnerAge": "نطاق العمر",
       "partnerCountry": "موقع الشريك",
       "partnerReligion": "دين الشريك",
-      "partnerIntent": "الحالة الاجتماعية والنية"
+      "partnerIntent": "الحالة الاجتماعية والنية",
+      "partnerReligionPref": "تفضيل دين الشريك",
+      "partnerRelationshipGoal": "هدف علاقة الشريك",
+      "selectReligion": "اختر الديانة",
+      "selectGoal": "اختر الهدف",
+      "specifyReligion": "حدد ديانة أخرى...",
+      "specifyGoal": "حدد هدفا آخر..."
     },
     "idVerification": {
       "title": "تأكيد الهوية",
@@ -794,6 +800,13 @@
       "Jordan": "الأردن",
       "India": "الهند",
       "Pakistan": "باكستان"
+    },
+    "RelationshipGoals": {
+      "Serious Partner/Marriage": "شريك جاد / زواج",
+      "Serious Relationship/Dating": "علاقة جادة / تعارف",
+      "Normal Friendship": "صداقة عادية",
+      "Passing Time/Learning and Understanding Marriage": "قضاء الوقت / التعلم وفهم الزواج",
+      "Others": "آخر"
     }
   },
   "Academy": {

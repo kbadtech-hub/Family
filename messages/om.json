@@ -573,7 +573,13 @@
       "partnerAge": "Umrii",
       "partnerCountry": "Biyya Hiriyyaa",
       "partnerReligion": "Amantaa Hiriyyaa",
-      "partnerIntent": "Haala fi Kaayyoo"
+      "partnerIntent": "Haala fi Kaayyoo",
+      "partnerReligionPref": "Filannoo Amantaa Hiriyyaa",
+      "partnerRelationshipGoal": "Galma Walitti Dhufeenya Hiriyyaa",
+      "selectReligion": "Amantaa Filadhu",
+      "selectGoal": "Galma Filadhu",
+      "specifyReligion": "Amantaa biraa ibsaa...",
+      "specifyGoal": "Galma biraa ibsaa..."
     },
     "idVerification": {
       "title": "Mirkaneessu Eenyummaa",
@@ -794,6 +800,13 @@
       "Jordan": "Joordaan",
       "India": "Indiyaa",
       "Pakistan": "Paakistaan"
+    },
+    "RelationshipGoals": {
+      "Serious Partner/Marriage": "Hiriyyaa Cimaa / Fuudha fi Heeruma",
+      "Serious Relationship/Dating": "Walitti Dhufeenya Cimaa / Walbaruu",
+      "Normal Friendship": "Hiriyaa Idilee",
+      "Passing Time/Learning and Understanding Marriage": "Yeroo Dabarsuu / Fuudha fi Heeruma Barachuu fi Hubachuu",
+      "Others": "Kan biraa"
     }
   },
   "Academy": {

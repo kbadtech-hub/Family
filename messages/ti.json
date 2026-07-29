@@ -574,7 +574,13 @@
       "partnerCountry": "ሃገር ኣጋር",
       "partnerReligion": "ሃይማኖት ኣጋር",
       "partnerIntent": "ኩነታት ሓዳርን ድሌትን",
-      "futureChildren": "ውሉድ ምውላድ"
+      "futureChildren": "ውሉድ ምውላድ",
+      "partnerReligionPref": "ምርጫ ሃይማኖት ኣጋር",
+      "partnerRelationshipGoal": "ዕላማ ርክብ ኣጋር",
+      "selectReligion": "ሃይማኖት ሕረይ",
+      "selectGoal": "ዕላማኻ ሕረይ",
+      "specifyReligion": "እባክዎ ካልእ ሃይማኖት ይጠቅሱ...",
+      "specifyGoal": "እባክዎ ካልእ ዕላማ ይጠቅሱ..."
     },
     "idVerification": {
       "title": "መንነት ምርግጋጽ",
@@ -897,6 +903,13 @@
       "China": "ቻይና",
       "Israel": "እስራኤል",
       "Uganda": "ኡጋንዳ"
+    },
+    "RelationshipGoals": {
+      "Serious Partner/Marriage": "ቁንጹል ኣጋር / ሓዳር",
+      "Serious Relationship/Dating": "ቁንጹል ርክብ / ምልላይ",
+      "Normal Friendship": "ልሙድ ዕርክነት",
+      "Passing Time/Learning and Understanding Marriage": "ግዜ ምሕላፍ / ብዛዕባ ሓዳር ምምሃርን ምርዳእን",
+      "Others": "ካልእ"
     }
   },
   "Legal": {

@@ -70,30 +70,30 @@ export default function CustomSelect({
   };
 
   return (
-    <div ref={containerRef} className={`relative w-full text-white ${className}`}>
+    <div ref={containerRef} className={`relative w-full text-slate-900 ${className}`}>
       {/* Trigger Button */}
       <button
         type="button"
         disabled={disabled}
         onClick={toggleOpen}
-        className={`w-full flex items-center justify-between p-4 bg-[#1E293B]/60 border rounded-2xl text-left transition-all font-bold text-xs select-none cursor-pointer ${
+        className={`w-full flex items-center justify-between p-4 bg-white border rounded-2xl text-left transition-all font-bold text-xs select-none cursor-pointer shadow-sm ${
           disabled ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.98]'
         } ${
-          isOpen ? 'border-[#E2725B] ring-2 ring-[#E2725B]/20' : 'border-white/10 hover:border-white/20'
+          isOpen ? 'border-[#E2725B] ring-2 ring-[#E2725B]/20' : 'border-gray-200 hover:border-gray-300'
         }`}
       >
-        <span className={selectedOption ? 'text-white' : 'text-white/40'}>
+        <span className={selectedOption ? 'text-slate-900 font-bold' : 'text-gray-400 font-medium'}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <ChevronDown 
           size={16} 
-          className={`text-white/40 transition-transform duration-200 ${isOpen ? 'rotate-180 text-[#E2725B]' : ''}`} 
+          className={`text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180 text-[#E2725B]' : ''}`} 
         />
       </button>
 
       {/* Web Dropdown Menu */}
       {!isNative && isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 z-[999] bg-[#1E293B] border border-white/10 rounded-2xl shadow-2xl max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute top-full left-0 right-0 mt-2 z-[999] bg-white border border-gray-200 rounded-2xl shadow-xl max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="p-1.5 space-y-0.5">
             {options.map((option) => {
               const isSelected = option.value === value;
@@ -105,7 +105,7 @@ export default function CustomSelect({
                   className={`w-full flex items-center justify-between p-3 rounded-xl text-left transition-all text-xs font-semibold select-none cursor-pointer ${
                     isSelected 
                       ? 'bg-[#E2725B]/10 text-[#E2725B] font-bold' 
-                      : 'text-white/80 hover:bg-white/5'
+                      : 'text-slate-700 hover:bg-slate-50'
                   }`}
                 >
                   <span>{option.label}</span>
@@ -122,13 +122,13 @@ export default function CustomSelect({
         <>
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 bg-black/60 z-[9999] backdrop-blur-sm animate-in fade-in duration-200"
+            className="fixed inset-0 bg-black/50 z-[9999] backdrop-blur-sm animate-in fade-in duration-200"
             onClick={() => setIsOpen(false)}
           />
           {/* Bottom Sheet */}
-          <div className="fixed bottom-0 left-0 right-0 z-[10000] bg-[#0F172A] border-t border-white/10 rounded-t-[2.5rem] px-6 pb-8 pt-4 max-h-[80vh] overflow-y-auto flex flex-col animate-in slide-in-from-bottom duration-300">
+          <div className="fixed bottom-0 left-0 right-0 z-[10000] bg-white border-t border-gray-200 rounded-t-[2.5rem] px-6 pb-8 pt-4 max-h-[80vh] overflow-y-auto flex flex-col animate-in slide-in-from-bottom duration-300 shadow-2xl">
             {/* Visual Drag Handle */}
-            <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-5 shrink-0" />
+            <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-5 shrink-0" />
             
             {/* Sheet Title */}
             <div className="flex items-center justify-between mb-4 shrink-0">
@@ -138,7 +138,7 @@ export default function CustomSelect({
               <button 
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 active:scale-90"
+                className="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-500 active:scale-90"
               >
                 <X size={16} />
               </button>
@@ -155,8 +155,8 @@ export default function CustomSelect({
                     onClick={() => handleSelect(option.value)}
                     className={`w-full flex items-center justify-between p-4 rounded-2xl border text-left transition-all active:scale-[0.98] select-none cursor-pointer ${
                       isSelected 
-                        ? 'border-[#E2725B] bg-[#E2725B]/10 text-white font-bold' 
-                        : 'border-white/5 bg-white/5 text-white/80 hover:bg-white/10'
+                        ? 'border-[#E2725B] bg-[#E2725B]/10 text-[#E2725B] font-bold' 
+                        : 'border-gray-200 bg-gray-50 text-slate-800 hover:bg-gray-100'
                     }`}
                   >
                     <span className="text-sm font-semibold">{option.label}</span>

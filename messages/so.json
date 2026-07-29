@@ -573,7 +573,13 @@
       "partnerAge": "Dhowr sano (Age Range)",
       "partnerCountry": "Goobta Lammaanaha",
       "partnerReligion": "Diinta Lammaanaha",
-      "partnerIntent": "Xaaladda Guurka & Ujeedada"
+      "partnerIntent": "Xaaladda Guurka & Ujeedada",
+      "partnerReligionPref": "Ujeedada Diinta Lammaanaha",
+      "partnerRelationshipGoal": "Hadaafka Xariirka Lammaanaha",
+      "selectReligion": "Dooro Diinta",
+      "selectGoal": "Dooro Hadaafka",
+      "specifyReligion": "Cadeey diin kale...",
+      "specifyGoal": "Cadeey hadaaf kale..."
     },
     "idVerification": {
       "title": "Xaqiijinta Aqoonsiga",
@@ -862,6 +868,13 @@
       "Jordan": "Urdun",
       "India": "Hindiya",
       "Pakistan": "Bakistaan"
+    },
+    "RelationshipGoals": {
+      "Serious Partner/Marriage": "Lammaana Dhabba / Guur",
+      "Serious Relationship/Dating": "Xariir Dhabba / Shukaansi",
+      "Normal Friendship": "Saaxiibtinimo Caadi ah",
+      "Passing Time/Learning and Understanding Marriage": "Waqti Dhabis / Barashada iyo Fahamka Guurka",
+      "Others": "Kuwa kale"
     }
   },
   "TopHeader": {

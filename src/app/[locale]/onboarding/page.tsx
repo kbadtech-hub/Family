@@ -33,7 +33,8 @@ import {
   FUTURE_CHILDREN_OPTIONS,
   MARITAL_STATUS_MALE,
   MARITAL_STATUS_FEMALE,
-  PARTNER_MARITAL_PREF_OPTIONS
+  PARTNER_MARITAL_PREF_OPTIONS,
+  PARTNER_RELATIONSHIP_GOAL_OPTIONS
 } from '@/lib/constants';
 import { COUNTRIES } from '@/lib/countries';
 import ethiopianDate from 'ethiopian-date';
@@ -1348,7 +1349,7 @@ function OnboardingContent() {
                           type="number" 
                           value={formData.partner_age_min} 
                           onChange={(e) => updateField('partner_age_min', parseInt(e.target.value))}
-                          className="w-full p-3 bg-muted rounded-xl font-bold"
+                          className="w-full p-3 bg-white border border-gray-200 text-slate-900 rounded-xl font-bold focus:outline-none"
                           min={18}
                           max={100}
                         />
@@ -1359,7 +1360,7 @@ function OnboardingContent() {
                           type="number" 
                           value={formData.partner_age_max} 
                           onChange={(e) => updateField('partner_age_max', parseInt(e.target.value))}
-                          className="w-full p-3 bg-muted rounded-xl font-bold"
+                          className="w-full p-3 bg-white border border-gray-200 text-slate-900 rounded-xl font-bold focus:outline-none"
                           min={18}
                           max={100}
                         />
@@ -1370,7 +1371,9 @@ function OnboardingContent() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider">Partner Religion Preference</label>
+                      <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider">
+                        {t('fields.partnerReligionPref')}
+                      </label>
                       <CustomSelect
                         value={showCustomPartnerReligion ? 'Others' : formData.partner_religion}
                         onChange={(val) => {
@@ -1384,24 +1387,26 @@ function OnboardingContent() {
                         }}
                         options={[
                           ...RELIGIONS.map(r => ({ value: r, label: t_const(`Religions.${r}`) || r })),
-                          { value: 'Others', label: 'Others / ሌላ' }
+                          { value: 'Others', label: t_const('Religions.Other') || (locale === 'am' ? 'ሌላ' : 'Others') }
                         ]}
-                        placeholder="Select Religion"
-                        label="Partner Religion Preference"
+                        placeholder={t('fields.selectReligion')}
+                        label={t('fields.partnerReligionPref')}
                       />
                       {showCustomPartnerReligion && (
                         <input
                           type="text"
-                          placeholder="Specify custom religion..."
+                          placeholder={t('fields.specifyReligion')}
                           value={customPartnerReligion}
                           onChange={(e) => setCustomPartnerReligion(e.target.value)}
-                          className="w-full p-3 mt-2 bg-muted rounded-xl text-xs font-semibold"
+                          className="w-full p-3 mt-2 bg-white border border-gray-200 text-slate-900 rounded-xl text-xs font-semibold focus:outline-none"
                         />
                       )}
                     </div>
 
                     <div>
-                      <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider">Partner Relationship Goal</label>
+                      <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider">
+                        {t('fields.partnerRelationshipGoal')}
+                      </label>
                       <CustomSelect
                         value={showCustomPartnerIntent ? 'Others' : formData.partner_intent}
                         onChange={(val) => {
@@ -1413,23 +1418,20 @@ function OnboardingContent() {
                             updateField('partner_intent', val);
                           }
                         }}
-                        options={[
-                          { value: 'Serious Partner/Marriage', label: 'Serious Partner / Marriage' },
-                          { value: 'Serious Relationship/Dating', label: 'Serious Relationship / Dating' },
-                          { value: 'Normal Friendship', label: 'Normal Friendship' },
-                          { value: 'Passing Time/Learning and Understanding Marriage', label: 'Passing Time / Learning and Understanding Marriage' },
-                          { value: 'Others', label: 'Others / ሌላ' }
-                        ]}
-                        placeholder="Select Goal"
-                        label="Partner Relationship Goal"
+                        options={PARTNER_RELATIONSHIP_GOAL_OPTIONS.map(g => ({
+                          value: g,
+                          label: t_const(`RelationshipGoals.${g}`) || g
+                        }))}
+                        placeholder={t('fields.selectGoal')}
+                        label={t('fields.partnerRelationshipGoal')}
                       />
                       {showCustomPartnerIntent && (
                         <input
                           type="text"
-                          placeholder="Specify custom goal..."
+                          placeholder={t('fields.specifyGoal')}
                           value={customPartnerIntent}
                           onChange={(e) => setCustomPartnerIntent(e.target.value)}
-                          className="w-full p-3 mt-2 bg-muted rounded-xl text-xs font-semibold"
+                          className="w-full p-3 mt-2 bg-white border border-gray-200 text-slate-900 rounded-xl text-xs font-semibold focus:outline-none"
                         />
                       )}
                     </div>

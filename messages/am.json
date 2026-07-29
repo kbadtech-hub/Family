@@ -660,7 +660,13 @@
       "partnerAge": "የእድሜ ክልል",
       "partnerCountry": "የአጋር ሀገር",
       "partnerReligion": "የአጋር ሃይማኖት",
-      "partnerIntent": "የጋብቻ ሁኔታና ፍላጎት"
+      "partnerIntent": "የጋብቻ ሁኔታና ፍላጎት",
+      "partnerReligionPref": "የአጋር ሃይማኖት ምርጫ",
+      "partnerRelationshipGoal": "የአጋር ግንኙነት ግብ",
+      "selectReligion": "ሃይማኖትን ምረጥ",
+      "selectGoal": "ግብህን ምረጥ",
+      "specifyReligion": "እባክዎ ሌላ ሃይማኖት ይጥቀሱ...",
+      "specifyGoal": "እባክዎ ሌላ ግብ ይጥቀሱ..."
     },
     "idVerification": {
       "title": "ማንነትን ማረጋገጥ",
@@ -896,6 +902,13 @@
       "Jordan": "ዮርዳኖስ",
       "India": "ህንድ",
       "Pakistan": "ፓኪስታን"
+    },
+    "RelationshipGoals": {
+      "Serious Partner/Marriage": "እውነተኛ አጋር / ጋብቻ",
+      "Serious Relationship/Dating": "እውነተኛ ግንኙነት / ዴቲንግ",
+      "Normal Friendship": "መደበኛ ጓደኝነት",
+      "Passing Time/Learning and Understanding Marriage": "ጊዜ ማሳለፍ / ስለ ጋብቻ መማር እና መረዳት",
+      "Others": "ሌላ"
     }
   },
   "CommunityHub": {

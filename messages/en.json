@@ -660,7 +660,13 @@
       "partnerAge": "Age Range",
       "partnerCountry": "Partner Location",
       "partnerReligion": "Partner Religion",
-      "partnerIntent": "Marital Status & Intent"
+      "partnerIntent": "Marital Status & Intent",
+      "partnerReligionPref": "Partner Religion Preference",
+      "partnerRelationshipGoal": "Partner Relationship Goal",
+      "selectReligion": "Select Religion",
+      "selectGoal": "Select Goal",
+      "specifyReligion": "Specify custom religion...",
+      "specifyGoal": "Specify custom goal..."
     },
     "idVerification": {
       "title": "Identity Verification",
@@ -887,6 +893,13 @@
       "Jordan": "Jordan",
       "India": "India",
       "Pakistan": "Pakistan"
+    },
+    "RelationshipGoals": {
+      "Serious Partner/Marriage": "Serious Partner / Marriage",
+      "Serious Relationship/Dating": "Serious Relationship / Dating",
+      "Normal Friendship": "Normal Friendship",
+      "Passing Time/Learning and Understanding Marriage": "Passing Time / Learning and Understanding Marriage",
+      "Others": "Others"
     }
   },
   "CommunityHub": {

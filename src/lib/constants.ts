@@ -135,3 +135,12 @@ export const PARTNER_INTENT_OPTIONS = [
   'Wants Children in Future',
   'Does Not Want Children'
 ];
+
+export const PARTNER_RELATIONSHIP_GOAL_OPTIONS = [
+  'Serious Partner/Marriage',
+  'Serious Relationship/Dating',
+  'Normal Friendship',
+  'Passing Time/Learning and Understanding Marriage',
+  'Others'
+];
+
