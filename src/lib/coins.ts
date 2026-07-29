@@ -21,8 +21,8 @@ export interface CoinPackage {
 }
 
 export const COIN_PACKAGES: CoinPackage[] = [
-  { id: 'coins_100',   baseCoins: 100,   bonusPercent: 0,  bonusCoins: 0,    coins: 100,   priceEtb: 30,   priceUsd: 0.15 },
-  { id: 'coins_500',   baseCoins: 500,   bonusPercent: 0,  bonusCoins: 0,    coins: 500,   priceEtb: 150,  priceUsd: 0.75 },
+  { id: 'coins_100',   baseCoins: 100,   bonusPercent: 0,  bonusCoins: 0,    coins: 100,   priceEtb: 30,   priceUsd: 1.00 },
+  { id: 'coins_500',   baseCoins: 500,   bonusPercent: 0,  bonusCoins: 0,    coins: 500,   priceEtb: 150,  priceUsd: 1.00 },
   { id: 'coins_1000',  baseCoins: 1000,  bonusPercent: 0,  bonusCoins: 0,    coins: 1000,  priceEtb: 300,  priceUsd: 1.50 },
   { id: 'coins_3000',  baseCoins: 3000,  bonusPercent: 3,  bonusCoins: 90,   coins: 3090,  priceEtb: 900,  priceUsd: 4.50,  discount: '+3% BONUS' },
   { id: 'coins_5000',  baseCoins: 5000,  bonusPercent: 5,  bonusCoins: 250,  coins: 5250,  priceEtb: 1500, priceUsd: 7.50,  discount: '+5% BONUS' },

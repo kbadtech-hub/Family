@@ -26,10 +26,16 @@ function sanitizeChapaTxRef(rawRef?: string): string {
   return cleanRef.slice(0, 50);
 }
 
+function cleanCustomizationText(text?: string, defaultText: string = 'Beteseb Payment'): string {
+  if (!text || typeof text !== 'string') return defaultText;
+  const clean = text.replace(/[^a-zA-Z0-9_\-\.\s]/g, '').trim();
+  return clean.length > 0 ? clean.slice(0, 100) : defaultText;
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
-    const { amount, currency, email, first_name, last_name, tx_ref, callback_url, return_url } = body;
+    const { amount, currency, email, first_name, last_name, tx_ref, callback_url, return_url, customization } = body;
 
     const chapaSecretKey = process.env.CHAPA_SECRET_KEY;
     const chapaSubAccountId = process.env.CHAPA_SUBACCOUNT_ID;
@@ -43,6 +49,12 @@ export async function POST(req: Request) {
       );
     }
     const finalAmount = Number(rawAmount.toFixed(2));
+    if (finalAmount < 1) {
+      return NextResponse.json(
+        { status: 'failed', message: 'Minimum transaction amount is 1.00.' },
+        { status: 400 }
+      );
+    }
 
     // 2. Currency validation (USD stays USD, ETB stays ETB — no automatic conversion)
     const finalCurrency = (currency && typeof currency === 'string' ? currency.trim().toUpperCase() : 'ETB');
@@ -83,6 +95,12 @@ export async function POST(req: Request) {
       });
     }
 
+    // 7. Customization text sanitization (Chapa allows ONLY letters, numbers, hyphens, underscores, spaces, and dots)
+    const defaultTitle = 'Beteseb Match';
+    const defaultDesc = finalCurrency === 'USD' ? 'Beteseb Payment USD' : 'Beteseb Payment ETB';
+    const customTitle = cleanCustomizationText(customization?.title, defaultTitle);
+    const customDesc = cleanCustomizationText(customization?.description, defaultDesc);
+
     const payload = {
       amount: finalAmount,
       currency: finalCurrency,
@@ -94,8 +112,8 @@ export async function POST(req: Request) {
       return_url: validReturnUrl,
       ...(chapaSubAccountId ? { subaccount_id: chapaSubAccountId } : {}),
       customization: {
-        title: "Beteseb Match",
-        description: finalCurrency === 'USD' ? "Beteseb Payment (USD)" : "Beteseb Payment (ETB)"
+        title: customTitle,
+        description: customDesc
       }
     };
 
@@ -137,6 +155,12 @@ export async function POST(req: Request) {
           .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : JSON.stringify(v)}`)
           .join('; ');
       }
+
+      // Format raw Laravel validation error strings into clean user-friendly messages
+      errorMsg = errorMsg
+        .replace(/validation\.min\.numeric/gi, 'The minimum transaction amount is 1.00')
+        .replace(/validation\.required/gi, 'Required field missing');
+
       return NextResponse.json({ status: 'failed', message: errorMsg }, { status: 400 });
     }
 
