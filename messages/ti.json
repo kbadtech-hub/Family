@@ -816,20 +816,29 @@
     "Finance": {
       "Spender": "አውጻኢ",
       "Saver": "ቆጣቢ",
-      "Balanced": "መጠነኛ",
-      "Frugal": "ቁጥብ"
+      "Balanced": "መጠነኛ ወጻኢ",
+      "Frugal": "ቁጥብ",
+      "Investor / Wealth Builder": "ኢንቨስት ዝገብር / ሃብቲ ዘኻዕብት",
+      "Planned Spender / Budgeter": "ብትልሚ ዝወጽእ",
+      "Prefer Not to Say": "ምግላጽ አይደልይን"
     },
     "Values": {
       "Traditional": "ባህላዊ",
       "Modern": "ዘመናዊ",
+      "Moderate / Balanced": "መጠነኛ / ዝተመጣጣነ",
       "Liberal": "ሊበራል",
-      "Religious-Centric": "ሃይማኖታዊ"
+      "Religious-Centric": "ሃይማኖታዊ",
+      "Individualistic": "ናይ ውልቂ ናጽነት ዝቐድም"
     },
     "Conflict": {
-      "Direct Discussion": "ምይይጥ",
+      "Direct & Open Discussion": "ቐጥተኛን ግልጽን ምይይጥ",
+      "Direct Discussion": "ቐጥተኛን ግልጽን ምይይጥ",
       "Indirect / Subtle": "ብተዘዋዋሪ",
-      "Silent Treatment": "ስቕታ",
-      "Mediation Required": "ሽምግልና"
+      "Take Time to Cool Off": "ግዜ ወሲድካ ምርጋእ",
+      "Communication via Text/Writing": "ብጽሑፍ ምይይጥ",
+      "Silent Treatment / Space": "ስቕታ / ዕረፍቲ ምውሳድ",
+      "Silent Treatment": "ስቕታ / ዕረፍቲ ምውሳድ",
+      "Mediation Required": "ብሽምግልና / ብ3ይ ወገን"
     },
     "Months": {
       "Meskerem": "መስከረም",
@@ -870,6 +879,12 @@
       "Service & Hospitality": "አገልግሎትን ሆስፒታሊቲን",
       "Government & Public Service": "መንግስትን ህዝባዊ አገልግሎትን",
       "Agriculture & Nature": "ሕርሻን ተፈጥሮን",
+      "Domestic Work & Caregiving": "ናይ ገዛ ውሽጥን ምክንኻንን ስራሕ",
+      "Self-employed / Entrepreneur": "ናይ ገዛእ ርእሲ ስራሕ / ፈጣሪ ስራሕ",
+      "Freelancer / Remote Worker": "ፍሪላንሰር / ናይ ርሑቕ ስራሕ",
+      "Student": "ተመሃራይ",
+      "Looking for Opportunities": "ስራሕ ዝደሊ",
+      "Retired": "በዓል ፔንሲዮን (ጡረተኛ)",
       "Other": "ካልእ"
     },
     "Requirements": {

@@ -80,24 +80,31 @@ export const LIVING_ARRANGEMENTS = [
 ];
 
 export const FINANCE_HABITS = [
-  'Spender',
   'Saver',
+  'Spender',
   'Balanced',
-  'Frugal'
+  'Frugal',
+  'Investor / Wealth Builder',
+  'Planned Spender / Budgeter',
+  'Prefer Not to Say'
 ];
 
 export const CONFLICT_RESOLUTIONS = [
-  'Direct Discussion',
+  'Direct & Open Discussion',
   'Indirect / Subtle',
-  'Silent Treatment',
+  'Take Time to Cool Off',
+  'Communication via Text/Writing',
+  'Silent Treatment / Space',
   'Mediation Required'
 ];
 
 export const FAMILY_VALUES = [
   'Traditional',
   'Modern',
+  'Moderate / Balanced',
   'Liberal',
-  'Religious-Centric'
+  'Religious-Centric',
+  'Individualistic'
 ];
 
 export const CHILDREN_OPTIONS = [
@@ -132,6 +139,12 @@ export const JOB_CATEGORIES = [
   'Service & Hospitality',
   'Government & Public Service',
   'Agriculture & Nature',
+  'Domestic Work & Caregiving',
+  'Self-employed / Entrepreneur',
+  'Freelancer / Remote Worker',
+  'Student',
+  'Looking for Opportunities',
+  'Retired',
   'Other'
 ];
 

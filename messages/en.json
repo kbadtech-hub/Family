@@ -809,18 +809,27 @@
       "Spender": "Spender",
       "Saver": "Saver",
       "Balanced": "Balanced",
-      "Frugal": "Frugal"
+      "Frugal": "Frugal",
+      "Investor / Wealth Builder": "Investor / Wealth Builder",
+      "Planned Spender / Budgeter": "Planned Spender / Budgeter",
+      "Prefer Not to Say": "Prefer Not to Say"
     },
     "Values": {
       "Traditional": "Traditional",
       "Modern": "Modern",
+      "Moderate / Balanced": "Moderate / Balanced",
       "Liberal": "Liberal",
-      "Religious-Centric": "Religious-Centric"
+      "Religious-Centric": "Religious-Centric",
+      "Individualistic": "Individualistic"
     },
     "Conflict": {
-      "Direct Discussion": "Direct Discussion",
+      "Direct & Open Discussion": "Direct & Open Discussion",
+      "Direct Discussion": "Direct & Open Discussion",
       "Indirect / Subtle": "Indirect / Subtle",
-      "Silent Treatment": "Silent Treatment",
+      "Take Time to Cool Off": "Take Time to Cool Off",
+      "Communication via Text/Writing": "Communication via Text/Writing",
+      "Silent Treatment / Space": "Silent Treatment / Space",
+      "Silent Treatment": "Silent Treatment / Space",
       "Mediation Required": "Mediation Required"
     },
     "Months": {
@@ -861,6 +870,12 @@
       "Service & Hospitality": "Service & Hospitality",
       "Government & Public Service": "Government & Public Service",
       "Agriculture & Nature": "Agriculture & Nature",
+      "Domestic Work & Caregiving": "Domestic Work & Caregiving",
+      "Self-employed / Entrepreneur": "Self-employed / Entrepreneur",
+      "Freelancer / Remote Worker": "Freelancer / Remote Worker",
+      "Student": "Student",
+      "Looking for Opportunities": "Looking for Opportunities",
+      "Retired": "Retired",
       "Other": "Other"
     },
     "Requirements": {

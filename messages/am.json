@@ -817,20 +817,29 @@
     "Finance": {
       "Spender": "አውጪ",
       "Saver": "ቆጣቢ",
-      "Balanced": "መካከለኛ",
-      "Frugal": "ቁጥብ"
+      "Balanced": "መካከለኛ ወጪ",
+      "Frugal": "ቁጥብ",
+      "Investor / Wealth Builder": "ኢንቨስት የሚያደርግ / ሀብት ገምቢ",
+      "Planned Spender / Budgeter": "የታቀደ ወጪ የሚያወጣ",
+      "Prefer Not to Say": "መግለጽ አልፈልግም"
     },
     "Values": {
       "Traditional": "ባህላዊ",
       "Modern": "ዘመናዊ",
+      "Moderate / Balanced": "መካከለኛ / የተመጣጠነ",
       "Liberal": "ሊበራል",
-      "Religious-Centric": "ሃይማኖታዊ"
+      "Religious-Centric": "ሃይማኖታዊ",
+      "Individualistic": "ግላዊ ነጻነትን የሚያስቀድም"
     },
     "Conflict": {
-      "Direct Discussion": "መወያየት",
+      "Direct & Open Discussion": "ቀጥተኛ እና ግልጽ ውይይት",
+      "Direct Discussion": "ቀጥተኛ እና ግልጽ ውይይት",
       "Indirect / Subtle": "በተዘዋዋሪ",
-      "Silent Treatment": "ዝምታ",
-      "Mediation Required": "ሽምግልና"
+      "Take Time to Cool Off": "ጊዜ ወስዶ ማሰብ / መረጋጋት",
+      "Communication via Text/Writing": "በጽሁፍ መነጋገር",
+      "Silent Treatment / Space": "ዝምታ / እፎይታ መውሰድ",
+      "Silent Treatment": "ዝምታ / እፎይታ መውሰድ",
+      "Mediation Required": "በሽምግልና / በ3ኛ ወገን"
     },
     "Months": {
       "Meskerem": "መስከረም",
@@ -870,6 +879,12 @@
       "Service & Hospitality": "አገልግሎት እና ሆስፒታሊቲ",
       "Government & Public Service": "መንግስት እና የህዝብ አገልግሎት",
       "Agriculture & Nature": "ግብርና እና ተፈጥሮ",
+      "Domestic Work & Caregiving": "የቤት ውስጥ እና የእንክብካቤ ሥራ",
+      "Self-employed / Entrepreneur": "የራሴን ሥራ የምሰራ / ስራ ፈጣሪ",
+      "Freelancer / Remote Worker": "ፍሪላንሰር / የርቀት ሥራ",
+      "Student": "ተማሪ",
+      "Looking for Opportunities": "ሥራ ፈላጊ",
+      "Retired": "በጡረታ ላይ ያለ/ች",
       "Other": "ሌላ"
     },
     "Requirements": {

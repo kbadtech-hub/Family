@@ -716,17 +716,26 @@
       "Spender": "Baasii baasu",
       "Saver": "Qusaatu",
       "Balanced": "Madaalawaa",
-      "Frugal": "Qusaatu"
+      "Frugal": "Qusaatu",
+      "Investor / Wealth Builder": "Invastarii / Qabeenya Uumaa",
+      "Planned Spender / Budgeter": "Karoraan Kan Baasu",
+      "Prefer Not to Say": "Ibsuu Hin Barbaadu"
     },
     "Values": {
       "Traditional": "Aadaa",
       "Modern": "Amayyaa",
+      "Moderate / Balanced": "Madaalawaa",
       "Liberal": "Liiberalii",
-      "Religious-Centric": "Amantaa irratti kan xiyyeeffate"
+      "Religious-Centric": "Amantaa irratti kan xiyyeeffate",
+      "Individualistic": "Bilisummaa Dhuunfaa"
     },
     "Conflict": {
-      "Direct Discussion": "Mariidhaan",
+      "Direct & Open Discussion": "Mariidhaan Kallattiin",
+      "Direct Discussion": "Mariidhaan Kallattiin",
       "Indirect / Subtle": "Icitidhaan",
+      "Take Time to Cool Off": "Yeroo Fudhachuudhaan",
+      "Communication via Text/Writing": "Barreeffamaan Mari'achuu",
+      "Silent Treatment / Space": "Callisuudhaan / Yeroo Fudhachuu",
       "Silent Treatment": "Callisuudhaan",
       "Mediation Required": "Jaarsummaan"
     },
@@ -743,19 +752,19 @@
       "Sene": "Waxabajjii (Sene)",
       "Hamle": "Adoolessa (Hamle)",
       "Nehase": "Hagayya (Nehase)",
-      "Pagume": "Qaammee (Pagume)"
+      "Pagume": "Phaagumee (Pagume)"
     },
     "Locations": {
       "Addis Ababa": "Finfinnee",
-      "Dire Dawa": "Diri Dhabaa",
-      "Mekelle": "Maqale",
+      "Dire Dawa": "Dirree Dawaa",
+      "Mekelle": "Meqelee",
       "Adama": "Adaamaa",
       "Bahir Dar": "Baahir Daar",
       "Gondar": "Gondar",
       "Hawassa": "Hawaasaa",
       "Jimma": "Jimmaa",
-      "Jijiga": "Jijiga",
-      "Other (International)": "Alem"
+      "Jijiga": "Jijjigaa",
+      "Other (International)": "Biyya Alaa"
     },
     "Jobs": {
       "Technology & IT": "Teknoolojii",
@@ -768,6 +777,12 @@
       "Service & Hospitality": "Tajaajila",
       "Government & Public Service": "Mootummaa",
       "Agriculture & Nature": "Qonnaa",
+      "Domestic Work & Caregiving": "Hojii Manaa fi Kunuunsa",
+      "Self-employed / Entrepreneur": "Hojii Dhuunfaa / Hojii Uumaa",
+      "Freelancer / Remote Worker": "Hojii Fagoo / Freelancer",
+      "Student": "Barataa",
+      "Looking for Opportunities": "Hojii Barbaadaa",
+      "Retired": "Sooramaa",
       "Other": "Kan biraa"
     },
     "Requirements": {
