@@ -437,7 +437,8 @@ export async function POST(req: Request) {
       });
     } else if (isCoins) {
       const coinAmt = parseFloat(String(txData?.amount || 0));
-      const amountCoins = resolveCoinAmount(planType, coinAmt, 'ETB');
+      const coinCurr = (txData?.currency as 'ETB' | 'USD') || 'ETB';
+      const amountCoins = resolveCoinAmount(planType, coinAmt, coinCurr === 'USD' ? 'USD' : 'ETB');
 
       await supabase.from('payments').insert({
         user_id: userId,

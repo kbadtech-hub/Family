@@ -110,7 +110,7 @@ export async function POST(req: Request) {
       tx_ref: safeTxRef,
       callback_url: validCallbackUrl,
       return_url: validReturnUrl,
-      ...(chapaSubAccountId ? { subaccount_id: chapaSubAccountId } : {}),
+      ...(chapaSubAccountId && finalCurrency === 'ETB' ? { subaccount_id: chapaSubAccountId } : {}),
       customization: {
         title: customTitle,
         description: customDesc
