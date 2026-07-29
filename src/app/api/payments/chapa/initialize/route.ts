@@ -1,56 +1,103 @@
 import { NextResponse } from 'next/server';
 
-function sanitizeChapaTxRef(rawRef: string): string {
-  if (!rawRef) return `tx_${Date.now()}`;
-  if (rawRef.length <= 50) return rawRef;
+function sanitizeChapaTxRef(rawRef?: string): string {
+  if (!rawRef) {
+    const ts = Date.now().toString(36);
+    const rand = Math.random().toString(36).substring(2, 5);
+    return `tx_${ts}_${rand}`.slice(0, 50);
+  }
+
+  const cleanRef = rawRef.replace(/[^a-zA-Z0-9_-]/g, '');
+  if (cleanRef.length <= 50) return cleanRef;
 
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
-  const match = rawRef.match(uuidRegex);
+  const match = cleanRef.match(uuidRegex);
 
   if (match) {
     const uuid = match[0]; // 36 chars
-    const remainder = rawRef.substring(uuid.length + 1); // e.g. "coins_1000-1777117623000"
+    const remainder = cleanRef.substring(uuid.length + 1);
     const remParts = remainder.split('-');
-    const plan = remParts[0].replace('coins_', 'c').replace('vip_', 'v');
-    const ts = (remParts[1] || Date.now().toString(36)).slice(-6);
-    const cleaned = `${uuid}-${plan}-${ts}`;
+    const plan = (remParts[0] || 'sub').replace('coins_', 'c').replace('vip_', 'v').replace('lifetime', 'lt').slice(0, 5);
+    const rand = Math.random().toString(36).substring(2, 5);
+    const cleaned = `${uuid}-${plan}-${rand}`;
     return cleaned.slice(0, 50);
   }
 
-  return rawRef.slice(0, 50);
+  return cleanRef.slice(0, 50);
 }
 
 export async function POST(req: Request) {
   try {
-    const { amount, currency, email, first_name, last_name, tx_ref, callback_url, return_url } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const { amount, currency, email, first_name, last_name, tx_ref, callback_url, return_url } = body;
 
     const chapaSecretKey = process.env.CHAPA_SECRET_KEY;
     const chapaSubAccountId = process.env.CHAPA_SUBACCOUNT_ID;
 
-    // Hard-enforce <= 50 characters for tx_ref
+    // 1. Amount validation & formatting
+    const rawAmount = Number(amount);
+    if (isNaN(rawAmount) || rawAmount <= 0) {
+      return NextResponse.json(
+        { status: 'failed', message: 'Invalid transaction amount. Amount must be a positive number.' },
+        { status: 400 }
+      );
+    }
+    const finalAmount = Number(rawAmount.toFixed(2));
+
+    // 2. Currency validation (USD stays USD, ETB stays ETB — no automatic conversion)
+    const finalCurrency = (currency && typeof currency === 'string' ? currency.trim().toUpperCase() : 'ETB');
+    if (!['ETB', 'USD'].includes(finalCurrency)) {
+      return NextResponse.json(
+        { status: 'failed', message: 'Invalid currency code. Supported currencies: ETB, USD.' },
+        { status: 400 }
+      );
+    }
+
+    // 3. Unique TxRef generation & sanitization (<= 50 chars)
     const safeTxRef = sanitizeChapaTxRef(tx_ref);
 
-    // Ensure email is valid and never causes Chapa email validation error
+    // 4. Strict Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const validEmail = (email && typeof email === 'string' && emailRegex.test(email.trim()) && !email.includes('example.com'))
       ? email.trim()
-      : `user_${safeTxRef.replace(/[^a-zA-Z0-9]/g, '').slice(0, 15)}@beteseb1.online`;
+      : `user_${safeTxRef.replace(/[^a-zA-Z0-9]/g, '').slice(-12)}@beteseb1.online`;
 
+    // 5. Name formatting
+    const validFirstName = (first_name && typeof first_name === 'string' && first_name.trim()) ? first_name.trim().slice(0, 30) : 'Beteseb';
+    const validLastName = (last_name && typeof last_name === 'string' && last_name.trim()) ? last_name.trim().slice(0, 30) : 'Member';
+
+    // 6. Callback & Return URL absolute path validation
+    const reqOrigin = req.headers.get('origin') || req.headers.get('referer')?.replace(/\/$/, '') || process.env.NEXT_PUBLIC_APP_URL || 'https://beteseb1.online';
+    const validCallbackUrl = callback_url ? (callback_url.startsWith('http') ? callback_url : `${reqOrigin}${callback_url}`) : `${reqOrigin}/api/payments/chapa/webhook`;
+    const validReturnUrl = return_url ? (return_url.startsWith('http') ? return_url : `${reqOrigin}${return_url}`) : `${reqOrigin}/am/dashboard?tab=payments&tx_ref=${safeTxRef}`;
+
+    // Demo Mode handling if CHAPA_SECRET_KEY is omitted
     if (!chapaSecretKey) {
-      console.warn("CHAPA_SECRET_KEY is not defined. Returning demo checkout URL.");
+      console.warn('[Chapa Init] CHAPA_SECRET_KEY is not defined. Returning demo checkout URL.');
       return NextResponse.json({
         status: 'success',
         message: 'Demo checkout initialized successfully',
         data: {
-          checkout_url: `${return_url || callback_url}?status=success&tx_ref=${safeTxRef}`
+          checkout_url: `${validReturnUrl}${validReturnUrl.includes('?') ? '&' : '?'}status=success&tx_ref=${safeTxRef}`
         }
       });
     }
 
-    // Pass currency and amount exactly as received — USD stays USD, ETB stays ETB.
-    // USD payments are NEVER converted to ETB; they go directly to Chapa in USD.
-    const finalCurrency = (currency || 'ETB').toUpperCase();
-    const finalAmount = Number(amount);
+    const payload = {
+      amount: finalAmount,
+      currency: finalCurrency,
+      email: validEmail,
+      first_name: validFirstName,
+      last_name: validLastName,
+      tx_ref: safeTxRef,
+      callback_url: validCallbackUrl,
+      return_url: validReturnUrl,
+      ...(chapaSubAccountId ? { subaccount_id: chapaSubAccountId } : {}),
+      customization: {
+        title: "Beteseb Match",
+        description: finalCurrency === 'USD' ? "Beteseb Payment (USD)" : "Beteseb Payment (ETB)"
+      }
+    };
 
     let response = await fetch('https://api.chapa.co/v1/transaction/initialize', {
       method: 'POST',
@@ -58,28 +105,16 @@ export async function POST(req: Request) {
         Authorization: `Bearer ${chapaSecretKey}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        amount: finalAmount,
-        currency: finalCurrency,
-        email: validEmail,
-        first_name: (first_name || 'Beteseb').slice(0, 30),
-        last_name: (last_name || 'Member').slice(0, 30),
-        tx_ref: safeTxRef,
-        callback_url,
-        return_url,
-        ...(chapaSubAccountId ? { subaccount_id: chapaSubAccountId } : {}),
-        customization: {
-          title: "Beteseb Match", // 13 chars <= 16 chars
-          description: finalCurrency === 'USD' ? "Beteseb Payment (USD)" : "Beteseb Payment"
-        }
-      })
+      body: JSON.stringify(payload)
     });
 
     let data = await response.json();
 
-    // Secondary fallback retry if needed (keep same currency — never downgrade to ETB)
+    // Retry once with a new unique retry tx_ref if initial request failed due to tx_ref collision
     if (data.status === 'failed' || !data.data?.checkout_url) {
-      console.warn("Chapa initial attempt failed. Retrying initialization...", data.message);
+      console.warn("[Chapa Init] Primary attempt failed. Retrying with fresh tx_ref...", data.message);
+      const retryTxRef = `${safeTxRef.slice(0, 42)}-r${Math.random().toString(36).slice(-3)}`;
+      const retryPayload = { ...payload, tx_ref: retryTxRef };
 
       response = await fetch('https://api.chapa.co/v1/transaction/initialize', {
         method: 'POST',
@@ -87,21 +122,7 @@ export async function POST(req: Request) {
           Authorization: `Bearer ${chapaSecretKey}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          amount: finalAmount,
-          currency: finalCurrency,
-          email: validEmail,
-          first_name: (first_name || 'Beteseb').slice(0, 30),
-          last_name: (last_name || 'Member').slice(0, 30),
-          tx_ref: safeTxRef,
-          callback_url,
-          return_url,
-          ...(chapaSubAccountId ? { subaccount_id: chapaSubAccountId } : {}),
-          customization: {
-            title: "Beteseb Match",
-            description: finalCurrency === 'USD' ? "Beteseb Payment (USD)" : "Beteseb Payment"
-          }
-        })
+        body: JSON.stringify(retryPayload)
       });
 
       data = await response.json();
@@ -121,7 +142,10 @@ export async function POST(req: Request) {
 
     return NextResponse.json(data);
   } catch (error: any) {
-    console.error("Chapa Initialization Error:", error);
-    return NextResponse.json({ status: 'failed', message: error?.message || 'Server error initializing payment' }, { status: 500 });
+    console.error("[Chapa Init Error]:", error);
+    return NextResponse.json(
+      { status: 'failed', message: error?.message || 'Server error initializing Chapa payment' },
+      { status: 500 }
+    );
   }
 }

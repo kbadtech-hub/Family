@@ -298,6 +298,7 @@ export default function GiftsView({ locale }: { locale: string }) {
       const packPrice = currency === 'ETB' ? selectedPack.priceEtb : selectedPack.priceUsd;
 
       const txRef = generateChapaTxRef(userId, selectedPack.id);
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'https://beteseb1.online';
       const response = await fetch('/api/payments/chapa/initialize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -308,14 +309,18 @@ export default function GiftsView({ locale }: { locale: string }) {
           first_name: (profile?.full_name || 'Beteseb User').split(' ')[0] || 'Beteseb',
           last_name: (profile?.full_name || 'Beteseb User').split(' ')[1] || 'User',
           tx_ref: txRef,
-          callback_url: window.location.origin + '/api/payments/chapa/webhook',
-          return_url: window.location.origin + `/${locale}/dashboard?tab=gifts&tx_ref=${txRef}`
+          callback_url: `${origin}/api/payments/chapa/webhook`,
+          return_url: `${origin}/${locale}/dashboard?tab=gifts&tx_ref=${txRef}`
         })
       });
 
       const data = await response.json();
       if (data.status === 'success' && data.data?.checkout_url) {
-        window.location.href = data.data.checkout_url;
+        if (typeof window !== 'undefined' && window.top) {
+          window.top.location.href = data.data.checkout_url;
+        } else if (typeof window !== 'undefined') {
+          window.location.href = data.data.checkout_url;
+        }
         return;
       }
 

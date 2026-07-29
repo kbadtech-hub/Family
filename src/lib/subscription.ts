@@ -162,8 +162,9 @@ export const BANK_DETAILS = {
  * Parsed on server by verify and webhook routes.
  */
 export function generateChapaTxRef(userId: string, planType: string): string {
-  const shortPlan = planType.replace('coins_', 'c').replace('vip_', 'v');
-  const ts = Date.now().toString(36).slice(-6);
-  const ref = `${userId}-${shortPlan}-${ts}`;
+  const shortPlan = planType.replace('coins_', 'c').replace('vip_', 'v').replace('lifetime', 'lt').slice(0, 8);
+  const ts = Date.now().toString(36).slice(-4);
+  const rand = Math.random().toString(36).substring(2, 5);
+  const ref = `${userId}-${shortPlan}-${ts}${rand}`;
   return ref.slice(0, 50);
 }

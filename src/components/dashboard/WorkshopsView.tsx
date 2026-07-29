@@ -145,7 +145,8 @@ export default function WorkshopsView({ currency, userTier }: { currency: 'ETB' 
         const lastName = nameParts.slice(1).join(' ') || 'User';
 
         const rawPrice = currency === 'ETB' ? 600 : 15;
-        const txRef = `cnsl_${userId.slice(0, 8)}_${Date.now().toString(36).slice(-6)}`;
+        const txRef = `cnsl_${userId.slice(0, 8)}_${Date.now().toString(36).slice(-4)}${Math.random().toString(36).substring(2, 5)}`;
+        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://beteseb1.online';
 
         const response = await fetch('/api/payments/chapa/initialize', {
           method: 'POST',
@@ -157,14 +158,18 @@ export default function WorkshopsView({ currency, userTier }: { currency: 'ETB' 
             first_name: firstName,
             last_name: lastName,
             tx_ref: txRef,
-            callback_url: window.location.origin + '/api/payments/chapa/webhook',
-            return_url: window.location.origin + `/dashboard?tab=workshops&status=success`
+            callback_url: `${origin}/api/payments/chapa/webhook`,
+            return_url: `${origin}/dashboard?tab=workshops&status=success`
           })
         });
 
         const data = await response.json();
         if (data.status === 'success' && data.data?.checkout_url) {
-          window.location.href = data.data.checkout_url;
+          if (typeof window !== 'undefined' && window.top) {
+            window.top.location.href = data.data.checkout_url;
+          } else if (typeof window !== 'undefined') {
+            window.location.href = data.data.checkout_url;
+          }
           return;
         } else {
           throw new Error(data.message || 'Failed to initialize Chapa payment.');

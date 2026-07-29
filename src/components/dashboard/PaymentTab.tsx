@@ -222,6 +222,7 @@ export default function PaymentTab() {
       const lastName = nameParts.slice(1).join(' ') || 'User';
 
       const txRef = generateChapaTxRef(userId, plan.id);
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'https://beteseb1.online';
       const response = await fetch('/api/payments/chapa/initialize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -232,14 +233,18 @@ export default function PaymentTab() {
           first_name: firstName,
           last_name: lastName,
           tx_ref: txRef,
-          callback_url: window.location.origin + '/api/payments/chapa/webhook',
-          return_url: window.location.origin + `/${locale}/dashboard?tab=payments&tx_ref=${txRef}`
+          callback_url: `${origin}/api/payments/chapa/webhook`,
+          return_url: `${origin}/${locale}/dashboard?tab=payments&tx_ref=${txRef}`
         })
       });
 
       const data = await response.json();
       if (data.status === 'success' && data.data?.checkout_url) {
-        window.location.href = data.data.checkout_url;
+        if (typeof window !== 'undefined' && window.top) {
+          window.top.location.href = data.data.checkout_url;
+        } else if (typeof window !== 'undefined') {
+          window.location.href = data.data.checkout_url;
+        }
         return;
       }
 
