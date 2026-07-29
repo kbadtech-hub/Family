@@ -41,6 +41,7 @@ import {
 import { COUNTRIES } from '@/lib/countries';
 import ethiopianDate from 'ethiopian-date';
 import CustomSelect from '@/components/ui/CustomSelect';
+import SpouseRequirementsSelector from '@/components/ui/SpouseRequirementsSelector';
 
 const locationData: Record<string, Record<string, string[]>> = {
   'Ethiopia': {
@@ -1356,18 +1357,12 @@ function OnboardingContent() {
                   placeholder={t('fields.conflictResolution')}
                   label={t('fields.conflictResolution')}
                />
-               <div className="col-span-full space-y-4">
-                  <span className="text-sm font-bold text-primary uppercase tracking-widest">{t('fields.spouseRequirements')}</span>
-                  <div className="flex flex-wrap gap-2">
-                    {SPOUSE_REQUIREMENTS_TAGS.map(tag => (
-                       <button key={tag} type="button" aria-label={t_const(`Requirements.${tag}`)} onClick={() => {
-                        const next = formData.spouse_requirements.includes(tag) ? formData.spouse_requirements.filter(t => t !== tag) : [...formData.spouse_requirements, tag];
-                        updateField('spouse_requirements', next);
-                      }} className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${formData.spouse_requirements.includes(tag) ? 'bg-primary text-white' : 'bg-muted text-gray-400'}`}>
-                        {t_const(`Requirements.${tag}`)}
-                       </button>
-                    ))}
-                  </div>
+               <div className="col-span-full pt-2">
+                  <SpouseRequirementsSelector 
+                    selectedRequirements={formData.spouse_requirements}
+                    onChange={(next) => updateField('spouse_requirements', next)}
+                    maxLimit={10}
+                  />
                </div>
             </div>
           </div>
@@ -2356,11 +2351,11 @@ function OnboardingContent() {
             {renderStep()}
 
             {step < 7 && (
-              <div className={`mt-12 flex justify-between gap-4 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
+              <div className={`mt-12 sticky bottom-2 z-40 bg-white/95 backdrop-blur-md p-3 rounded-2xl border border-gray-200/80 shadow-lg flex justify-between gap-4 ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
                 {step > 1 && (
                   <button 
                     onClick={prevStep}
-                    className="flex-1 px-6 py-3 rounded-xl border border-gray-200 text-gray-500 font-semibold hover:bg-gray-50 flex items-center justify-center gap-2"
+                    className="flex-1 px-6 py-3 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 flex items-center justify-center gap-2"
                   >
                     {locale === 'ar' ? <ChevronRight size={20} /> : <ChevronLeft size={20} />} {t('nav.back')}
                   </button>

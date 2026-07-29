@@ -114,18 +114,76 @@ export const JOB_CATEGORIES = [
   'Other'
 ];
 
-export const SPOUSE_REQUIREMENTS_TAGS = [
-  'Religious Compatibility',
-  'Family Oriented',
-  'Career Focused',
-  'Traditional Values',
-  'Modern Outlook',
-  'Healthy Lifestyle',
-  'Wants Children',
-  'Travel Lover',
-  'Education Priority',
-  'Financial Stability'
+export const MARRIAGE_CRITERIA_CATEGORIES = [
+  {
+    id: 'core_values',
+    icon: 'ShieldCheck',
+    tags: [
+      'Religious Compatibility',
+      'Traditional Values',
+      'Modern Outlook',
+      'Cultural & Heritage Minded',
+      'High Moral Integrity'
+    ]
+  },
+  {
+    id: 'family_future',
+    icon: 'Heart',
+    tags: [
+      'Family Oriented',
+      'Wants Children',
+      'Respects In-Laws & Extended Family',
+      'Shared Domestic Responsibilities',
+      'Open to Relocation'
+    ]
+  },
+  {
+    id: 'career_finances',
+    icon: 'Briefcase',
+    tags: [
+      'Career Focused',
+      'Financial Stability',
+      'Education Priority',
+      'Ambition & Mutual Growth',
+      'Business Minded'
+    ]
+  },
+  {
+    id: 'personality_eq',
+    icon: 'Smile',
+    tags: [
+      'Kind & Empathetic',
+      'Good Sense of Humor',
+      'Patience & Emotional Maturity',
+      'Open Communicator',
+      'Calm & Peaceful'
+    ]
+  },
+  {
+    id: 'lifestyle_habits',
+    icon: 'Sparkles',
+    tags: [
+      'Healthy Lifestyle',
+      'Fitness & Sports Enthusiast',
+      'Homebody / Cozy Life',
+      'Social & Outgoing',
+      'No Smoking / No Alcohol'
+    ]
+  },
+  {
+    id: 'interests_leisure',
+    icon: 'Compass',
+    tags: [
+      'Travel Lover',
+      'Pet Friendly',
+      'Minimalist Living',
+      'Art & Culture Enthusiast'
+    ]
+  }
 ];
+
+export const SPOUSE_REQUIREMENTS_TAGS = MARRIAGE_CRITERIA_CATEGORIES.flatMap(cat => cat.tags);
+
 
 export const PARTNER_INTENT_OPTIONS = [
   'Single and No Children',
