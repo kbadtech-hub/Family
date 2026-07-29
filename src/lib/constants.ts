@@ -229,10 +229,11 @@ export const PARTNER_INTENT_OPTIONS = [
 ];
 
 export const PARTNER_RELATIONSHIP_GOAL_OPTIONS = [
-  'Serious Partner/Marriage',
-  'Serious Relationship/Dating',
-  'Normal Friendship',
-  'Passing Time/Learning and Understanding Marriage',
-  'Others'
+  'Life Partner / Marriage',
+  'Long-term Relationship',
+  'Short-term Relationship',
+  'Platonic Friendship / Finding Friends',
+  'Learning & Preparing for Marriage',
+  'Casual / Socializing'
 ];
 

@@ -712,6 +712,14 @@
       "Don't want more kids": "Ijoollee dabalataa hin barbaadu",
       "Does Not Matter": "Waan wal hin simne"
     },
+    "RelationshipGoals": {
+      "Life Partner / Marriage": "Hiriyaa Jireenyaa / Fuudha fi Heeruma",
+      "Long-term Relationship": "Walitti Dhufeenya Yeroo Dheeraa",
+      "Short-term Relationship": "Walitti Dhufeenya Yeroo Gabaabaa",
+      "Platonic Friendship / Finding Friends": "Hiriyaa Qofa / Hiriyyoota Barbaaduu",
+      "Learning & Preparing for Marriage": "Fuudha fi Heeruma Barachuu fi Qopha'uu",
+      "Casual / Socializing": "Yeroo Dabarsuu / Bashannanuu"
+    },
     "Finance": {
       "Spender": "Baasii baasu",
       "Saver": "Qusaatu",

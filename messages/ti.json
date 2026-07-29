@@ -808,6 +808,14 @@
       "Don't want more kids": "ተወሳኺ ውሉድ ዘይደሊ",
       "Does Not Matter": "ብዘየገድስ"
     },
+    "RelationshipGoals": {
+      "Life Partner / Marriage": "ናይ ህይወት ብጸይ / ሓዳር",
+      "Long-term Relationship": "ናይ ነዊሕ ግዜ ርክብ",
+      "Short-term Relationship": "ናይ ሓጸር ግዜ ርክብ",
+      "Platonic Friendship / Finding Friends": "መደበኛ ሓደነት / ሓደ ምድላይ",
+      "Learning & Preparing for Marriage": "ብዛዕባ ሓዳር ምምሃርን ምድላውን",
+      "Casual / Socializing": "ግዜ ምሕላፍ / ምዝናዕ"
+    },
     "PartnerChildren": {
       "Yes": "ውሉድ ዘለዎ/ዋ",
       "No": "ውሉድ ዘይብሉ/ላ",

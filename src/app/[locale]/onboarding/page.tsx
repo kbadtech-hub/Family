@@ -17,7 +17,8 @@ import {
   Upload,
   AlertCircle,
   ShieldCheck,
-  Lock
+  Lock,
+  Search
 } from 'lucide-react';
 import { resolveLocationFromCoords, detectUserLocation } from '@/lib/location';
 import { calculateStarSign } from '@/lib/abushakir';
@@ -44,6 +45,7 @@ import { COUNTRIES } from '@/lib/countries';
 import ethiopianDate from 'ethiopian-date';
 import CustomSelect from '@/components/ui/CustomSelect';
 import SpouseRequirementsSelector from '@/components/ui/SpouseRequirementsSelector';
+import AgeRangeSlider from '@/components/ui/AgeRangeSlider';
 
 const locationData: Record<string, Record<string, string[]>> = {
   'Ethiopia': {
@@ -333,6 +335,9 @@ function OnboardingContent() {
   const [customPartnerIntent, setCustomPartnerIntent] = useState('');
   const [customRequirementText, setCustomRequirementText] = useState('');
   const [customPartnerCountry, setCustomPartnerCountry] = useState('');
+  const [partnerCountrySearch, setPartnerCountrySearch] = useState('');
+  const [partnerReligions, setPartnerReligions] = useState<string[]>(['Anywhere']);
+  const [partnerCities, setPartnerCities] = useState<string[]>([]);
 
   const searchParams = useSearchParams();
 
@@ -1387,150 +1392,237 @@ function OnboardingContent() {
         return (
           <div className="space-y-6">
             <h2 className="text-3xl font-bold text-accent italic">{t('fields.partnerPrefs')}</h2>
+            
             <div className="space-y-6">
-                <div className="space-y-2">
-                   <span className="text-sm font-bold text-gray-700">{t('fields.partnerCountry')}</span>
-                   <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 bg-muted/50 rounded-xl">
-                     {[{name:'Anywhere'}, ...[...COUNTRIES].sort((a, b) => {
-                         const nameA = locale === 'am' ? a.nameAm : a.name;
-                         const nameB = locale === 'am' ? b.nameAm : b.name;
-                         return nameA.localeCompare(nameB, locale);
-                       })].map(c => {
-                         const cleanName = c.name === 'Anywhere' 
-                           ? (locale === 'am' ? 'የትም ቦታ' : 'Anywhere') 
-                           : (locale === 'am' ? (c as any).nameAm : c.name);
-                         
-                         return (
-                           <button key={c.name} type="button" aria-label={cleanName} onClick={() => {
-                             if (c.name === 'Anywhere') return updateField('partner_countries', ['Anywhere']);
-                             const next = formData.partner_countries.filter(pc => pc !== 'Anywhere');
-                             updateField('partner_countries', formData.partner_countries.includes(c.name) ? next.filter(pc => pc !== c.name) : [...next, c.name].slice(0, 3));
-                           }} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${formData.partner_countries.includes(c.name) ? 'bg-primary text-white' : 'bg-white text-gray-400'}`}>
-                             {cleanName}
-                           </button>
-                         );
-                       })
-                     }
-                     <button type="button" onClick={() => {
-                       const next = formData.partner_countries.filter(pc => pc !== 'Anywhere');
-                       if (formData.partner_countries.includes('Others')) {
-                         updateField('partner_countries', next.filter(pc => pc !== 'Others'));
-                       } else {
-                          updateField('partner_countries', [...next, 'Others'].slice(0, 3));
-                       }
-                     }} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${formData.partner_countries.includes('Others') ? 'bg-primary text-white' : 'bg-white text-gray-400'}`}>
-                       {locale === 'am' ? 'ሌላ' : 'Others'}
-                     </button>
-                   </div>
-                   {formData.partner_countries.includes('Others') && (
-                     <input
-                       type="text"
-                       placeholder={locale === 'am' ? 'እባክዎ ሌላ አገር ይጥቀሱ...' : 'Specify other country...'}
-                       value={customPartnerCountry}
-                       onChange={(e) => setCustomPartnerCountry(e.target.value)}
-                       className="w-full p-3 mt-2 bg-muted rounded-xl text-xs font-semibold focus:outline-none"
-                     />
-                   )}
+              {/* 1. Country Selection (Searchable Multi-Select up to 5 + Removable Badges) */}
+              <div className="space-y-3 bg-white/80 backdrop-blur-md p-5 rounded-2xl border border-gray-150 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-black uppercase text-slate-600 tracking-wider">
+                    {t('fields.partnerCountry')}
+                  </label>
+                  <span className="text-[10px] font-bold text-slate-400">
+                    {formData.partner_countries.includes('Anywhere')
+                      ? (locale === 'am' ? 'የትም ቦታ' : 'Anywhere')
+                      : `${formData.partner_countries.length}/5 ${locale === 'am' ? 'አገራት' : 'Countries'}`}
+                  </span>
                 </div>
 
-                <div className="space-y-2">
-                   <span className="text-sm font-bold text-gray-700">{locale === 'am' ? 'የእድሜ ምርጫ (ከ - እስከ)' : 'Age Range Preference (From - To)'}</span>
-                   <div className="flex items-center gap-4">
-                      <div className="flex-1 space-y-1">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{locale === 'am' ? 'ቢያንስ' : 'Min Age'}</label>
-                        <input 
-                          type="number" 
-                          value={formData.partner_age_min} 
-                          onChange={(e) => updateField('partner_age_min', parseInt(e.target.value))}
-                          className="w-full p-3 bg-white border border-gray-200 text-slate-900 rounded-xl font-bold focus:outline-none"
-                          min={18}
-                          max={100}
-                        />
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{locale === 'am' ? 'ቢበዛ' : 'Max Age'}</label>
-                        <input 
-                          type="number" 
-                          value={formData.partner_age_max} 
-                          onChange={(e) => updateField('partner_age_max', parseInt(e.target.value))}
-                          className="w-full p-3 bg-white border border-gray-200 text-slate-900 rounded-xl font-bold focus:outline-none"
-                          min={18}
-                          max={100}
-                        />
-                      </div>
-                   </div>
+                {/* Country Search Bar */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder={locale === 'am' ? 'ሀገር በጽሁፍ ይፈልጉ...' : locale === 'om' ? 'Biyya barbaadi...' : locale === 'ti' ? 'ሃገር ብጽሑፍ ፈልግ...' : 'Search country...'}
+                    value={partnerCountrySearch}
+                    onChange={(e) => setPartnerCountrySearch(e.target.value)}
+                    className="w-full p-3 pl-9 bg-slate-50 border border-gray-200 text-slate-900 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
                 </div>
 
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider">
-                        {t('fields.partnerReligionPref')}
-                      </label>
-                      <CustomSelect
-                        value={showCustomPartnerReligion ? 'Others' : formData.partner_religion}
-                        onChange={(val) => {
-                          if (val === 'Others') {
-                            setShowCustomPartnerReligion(true);
-                            updateField('partner_religion', '');
-                          } else {
-                            setShowCustomPartnerReligion(false);
-                            updateField('partner_religion', val);
-                          }
-                        }}
-                        options={[
-                          ...RELIGIONS.map(r => ({ value: r, label: t_const(`Religions.${r}`) || r })),
-                          { value: 'Others', label: t_const('Religions.Other') || (locale === 'am' ? 'ሌላ' : 'Others') }
-                        ]}
-                        placeholder={t('fields.selectReligion')}
-                        label={t('fields.partnerReligionPref')}
-                      />
-                      {showCustomPartnerReligion && (
-                        <input
-                          type="text"
-                          placeholder={t('fields.specifyReligion')}
-                          value={customPartnerReligion}
-                          onChange={(e) => setCustomPartnerReligion(e.target.value)}
-                          className="w-full p-3 mt-2 bg-white border border-gray-200 text-slate-900 rounded-xl text-xs font-semibold focus:outline-none"
-                        />
-                      )}
-                    </div>
+                {/* Selected Country Badges with X Close buttons */}
+                {formData.partner_countries.length > 0 && !formData.partner_countries.includes('Anywhere') && (
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {formData.partner_countries.map(countryName => {
+                      const foundObj = COUNTRIES.find(c => c.name === countryName);
+                      const displayLbl = locale === 'am' ? (foundObj?.nameAm || countryName) : countryName;
+                      return (
+                        <span key={countryName} className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary text-white text-[11px] font-bold rounded-full shadow-xs">
+                          {displayLbl}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const remaining = formData.partner_countries.filter(c => c !== countryName);
+                              updateField('partner_countries', remaining.length === 0 ? ['Anywhere'] : remaining);
+                            }}
+                            className="hover:bg-white/20 rounded-full p-0.5"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
 
-                    <div>
-                      <label className="text-[10px] font-black uppercase text-gray-400 tracking-wider">
-                        {t('fields.partnerRelationshipGoal')}
-                      </label>
-                      <CustomSelect
-                        value={showCustomPartnerIntent ? 'Others' : formData.partner_intent}
-                        onChange={(val) => {
-                          if (val === 'Others') {
-                            setShowCustomPartnerIntent(true);
-                            updateField('partner_intent', '');
+                {/* Searchable Country Chips */}
+                <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto p-2 bg-slate-50/70 rounded-xl border border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => updateField('partner_countries', ['Anywhere'])}
+                    className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${
+                      formData.partner_countries.includes('Anywhere') ? 'bg-accent text-white shadow-xs' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    🌍 {locale === 'am' ? 'የትም ቦታ (Anywhere)' : 'Anywhere'}
+                  </button>
+
+                  {COUNTRIES.filter(c => {
+                    if (!partnerCountrySearch.trim()) return true;
+                    const q = partnerCountrySearch.toLowerCase();
+                    return c.name.toLowerCase().includes(q) || (c.nameAm && c.nameAm.toLowerCase().includes(q));
+                  })
+                  .sort((a, b) => {
+                    const nameA = locale === 'am' ? a.nameAm : a.name;
+                    const nameB = locale === 'am' ? b.nameAm : b.name;
+                    return nameA.localeCompare(nameB, locale);
+                  })
+                  .map(c => {
+                    const cleanName = locale === 'am' ? (c as any).nameAm : c.name;
+                    const isSelected = formData.partner_countries.includes(c.name);
+
+                    return (
+                      <button
+                        key={c.name}
+                        type="button"
+                        onClick={() => {
+                          const next = formData.partner_countries.filter(pc => pc !== 'Anywhere');
+                          if (isSelected) {
+                            const remaining = next.filter(pc => pc !== c.name);
+                            updateField('partner_countries', remaining.length === 0 ? ['Anywhere'] : remaining);
                           } else {
-                            setShowCustomPartnerIntent(false);
-                            updateField('partner_intent', val);
+                            if (next.length >= 5) return;
+                            updateField('partner_countries', [...next, c.name]);
                           }
                         }}
-                        options={PARTNER_RELATIONSHIP_GOAL_OPTIONS.map(g => ({
-                          value: g,
-                          label: t_const(`RelationshipGoals.${g}`) || g
-                        }))}
-                        placeholder={t('fields.selectGoal')}
-                        label={t('fields.partnerRelationshipGoal')}
-                      />
-                      {showCustomPartnerIntent && (
-                        <input
-                          type="text"
-                          placeholder={t('fields.specifyGoal')}
-                          value={customPartnerIntent}
-                          onChange={(e) => setCustomPartnerIntent(e.target.value)}
-                          className="w-full p-3 mt-2 bg-white border border-gray-200 text-slate-900 rounded-xl text-xs font-semibold focus:outline-none"
-                        />
-                      )}
-                    </div>
+                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${
+                          isSelected ? 'bg-primary text-white shadow-xs' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                        }`}
+                      >
+                        {cleanName}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Optional Dynamic City Preference */}
+              {!formData.partner_countries.includes('Anywhere') && formData.partner_countries.length > 0 && (
+                <div className="space-y-3 bg-white/80 backdrop-blur-md p-5 rounded-2xl border border-gray-150 shadow-sm animate-in slide-in-from-top-3 duration-300">
+                  <label className="text-xs font-black uppercase text-slate-600 tracking-wider block">
+                    🏢 {locale === 'am' ? 'ተመራጭ ከተማ (ከተፈለገ)' : 'Preferred City (Optional)'}
+                  </label>
+                  <p className="text-[11px] text-slate-500">
+                    {locale === 'am' ? 'የተወሰነ ከተማ ላይ ትኩረት ማድረግ ከፈለጉ ከተማዎችን ይምረጡ' : 'Select specific cities for pinpoint local matching'}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {['Addis Ababa', 'Harar', 'Hawassa', 'Bahir Dar', 'Dire Dawa', 'Mekelle', 'Adama', 'Gondar', 'Jimma', 'Minneapolis', 'Washington DC', 'London', 'Toronto'].map(cityName => {
+                      const isCitySel = partnerCities.includes(cityName);
+                      return (
+                        <button
+                          key={cityName}
+                          type="button"
+                          onClick={() => {
+                            if (isCitySel) {
+                              setPartnerCities(partnerCities.filter(c => c !== cityName));
+                            } else {
+                              setPartnerCities([...partnerCities, cityName]);
+                            }
+                          }}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                            isCitySel ? 'bg-accent text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
+                        >
+                          {cityName}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
-             </div>
+              )}
+
+              {/* 2. Interactive Age Range Slider */}
+              <AgeRangeSlider
+                minAge={formData.partner_age_min}
+                maxAge={formData.partner_age_max}
+                onChange={(min, max) => {
+                  updateField('partner_age_min', min);
+                  updateField('partner_age_max', max);
+                }}
+                locale={locale}
+              />
+
+              {/* 3. Multi-Select Partner Religion Preference */}
+              <div className="space-y-3 bg-white/80 backdrop-blur-md p-5 rounded-2xl border border-gray-150 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-black uppercase text-slate-600 tracking-wider">
+                    {t('fields.partnerReligionPref')}
+                  </label>
+                  <span className="text-[10px] font-bold text-slate-400">
+                    {locale === 'am' ? 'ባለብዙ ምርጫ' : 'Multi-Select'}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPartnerReligions(['Anywhere']);
+                      updateField('partner_religion', 'Does Not Matter');
+                    }}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                      partnerReligions.includes('Anywhere') || formData.partner_religion === 'Does Not Matter'
+                        ? 'bg-accent text-white shadow-xs'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    ✨ {locale === 'am' ? 'ምንም ይሁን (Any Religion)' : 'Does Not Matter'}
+                  </button>
+
+                  {RELIGIONS.map(r => {
+                    const isSel = partnerReligions.includes(r) || formData.partner_religion === r;
+                    return (
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => {
+                          const filterAny = partnerReligions.filter(x => x !== 'Anywhere');
+                          if (isSel) {
+                            const next = filterAny.filter(x => x !== r);
+                            setPartnerReligions(next.length === 0 ? ['Anywhere'] : next);
+                            updateField('partner_religion', next[0] || 'Does Not Matter');
+                          } else {
+                            const next = [...filterAny, r];
+                            setPartnerReligions(next);
+                            updateField('partner_religion', r);
+                          }
+                        }}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                          isSel ? 'bg-primary text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }`}
+                      >
+                        {t_const(`Religions.${r}`) || r}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 4. 6 Structured Relationship Goals */}
+              <div className="space-y-3 bg-white/80 backdrop-blur-md p-5 rounded-2xl border border-gray-150 shadow-sm">
+                <label className="text-xs font-black uppercase text-slate-600 tracking-wider block">
+                  {t('fields.partnerRelationshipGoal')}
+                </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                  {PARTNER_RELATIONSHIP_GOAL_OPTIONS.map(goal => {
+                    const isSelected = formData.partner_intent === goal;
+                    return (
+                      <button
+                        key={goal}
+                        type="button"
+                        onClick={() => updateField('partner_intent', goal)}
+                        className={`p-3.5 rounded-xl border text-left transition-all flex items-center justify-between ${
+                          isSelected
+                            ? 'border-primary bg-primary/5 text-primary shadow-xs font-bold'
+                            : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 font-semibold'
+                        }`}
+                      >
+                        <span className="text-xs">{t_const(`RelationshipGoals.${goal}`) || goal}</span>
+                        {isSelected && <span className="w-2 h-2 rounded-full bg-primary" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
           </div>
         );
       case 4: // ID Upload

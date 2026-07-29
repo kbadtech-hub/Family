@@ -809,6 +809,14 @@
       "Don't want more kids": "ተጨማሪ ልጅ አልፈልግም",
       "Does Not Matter": "ምርጫው ምንም ይሁን"
     },
+    "RelationshipGoals": {
+      "Life Partner / Marriage": "እውነተኛ አጋር / ጋብቻ",
+      "Long-term Relationship": "የረጅም ጊዜ ግንኙነት",
+      "Short-term Relationship": "የአጭር ጊዜ ግንኙነት",
+      "Platonic Friendship / Finding Friends": "መደበኛ ጓደኝነት / ጓደኛ ፍለጋ",
+      "Learning & Preparing for Marriage": "ስለ ጋብቻ መማር እና መረዳት",
+      "Casual / Socializing": "ጊዜ ማሳለፍ / መዝናናት"
+    },
     "PartnerChildren": {
       "Yes": "ልጅ ያለው/ላት",
       "No": "ልጅ የሌለው/ላት",

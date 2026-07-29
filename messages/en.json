@@ -805,6 +805,14 @@
       "Don't want more kids": "Don't want more kids",
       "Does Not Matter": "Does Not Matter"
     },
+    "RelationshipGoals": {
+      "Life Partner / Marriage": "Life Partner / Marriage",
+      "Long-term Relationship": "Long-term Relationship",
+      "Short-term Relationship": "Short-term Relationship",
+      "Platonic Friendship / Finding Friends": "Platonic Friendship / Finding Friends",
+      "Learning & Preparing for Marriage": "Learning & Preparing for Marriage",
+      "Casual / Socializing": "Casual / Socializing"
+    },
     "Finance": {
       "Spender": "Spender",
       "Saver": "Saver",
