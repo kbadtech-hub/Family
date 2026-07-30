@@ -1007,7 +1007,7 @@ function OnboardingContent() {
         }
         
         // Invalidate pre-calculated match cache so new compatibility logic recalculates
-        await supabase.from('user_match_cache').delete().eq('user_id', userId).catch(() => {});
+        await supabase.from('user_match_cache').delete().eq('user_id', userId);
 
         // Transition to Step 4 (Verification Screen)
         setStep(4);
