@@ -7,8 +7,6 @@ import { Link, useRouter, usePathname } from '@/i18n/routing';
 import { Menu, X, Globe, ChevronDown } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
-import ThemeToggle from '@/components/ui/ThemeToggle';
-
 interface SystemSettings {
   social_links?: Record<string, string>;
   contact_info?: Record<string, string>;
@@ -56,7 +54,7 @@ export default function Header() {
   };
 
   return (
-    <header className={`sticky top-0 left-0 w-full z-[100] transition-all duration-300 ${isScrolled ? 'bg-[var(--card)]/90 backdrop-blur-md shadow-sm py-3 border-b border-border' : 'bg-[var(--background)]/80 backdrop-blur-sm'}`}>
+    <header className={`sticky top-0 left-0 w-full z-[100] transition-all duration-300 ${isScrolled ? 'bg-white/90 backdrop-blur-md shadow-sm py-3 border-b border-border' : 'bg-[#FDFBF9]/50 backdrop-blur-sm'}`}>
 
       <div className={`max-w-7xl mx-auto px-6 flex justify-between items-center text-foreground transition-all duration-300 ${isScrolled ? 'py-4' : 'py-8'}`}>
         
@@ -81,15 +79,13 @@ export default function Header() {
             <Link href="/contact" className="text-base font-bold uppercase tracking-widest hover:text-primary transition-colors">{t('contact')}</Link>
           </nav>
 
-          <div className="flex items-center gap-5">
-             {/* Theme Switcher Toggle (Sun / Moon) */}
-             <ThemeToggle size="md" />
+          <div className="flex items-center gap-6">
 
              {/* Language Selector */}
              <div className="relative">
                 <button 
                   onClick={() => setIsLangOpen(!isLangOpen)}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-muted border border-border hover:border-primary transition-all font-bold text-xs uppercase tracking-widest text-foreground"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#F8F4F1] border border-border hover:border-primary transition-all font-bold text-xs uppercase tracking-widest"
                 >
                   <Globe size={16} className="text-primary" />
                   <span>{languages.find(l => l.id === locale)?.label}</span>
@@ -97,12 +93,12 @@ export default function Header() {
                 </button>
 
                 {isLangOpen && (
-                   <div className="absolute top-full right-0 mt-3 w-48 bg-[var(--card)] border border-border rounded-[1.5rem] shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 z-[110]">
+                   <div className="absolute top-full right-0 mt-3 w-48 bg-white border border-border rounded-[1.5rem] shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 z-[110]">
                       {languages.map(lang => (
                          <button 
                            key={lang.id}
                            onClick={() => handleLanguageChange(lang.id)}
-                           className={`w-full px-6 py-4 text-left text-sm font-bold hover:bg-muted hover:text-primary transition-all flex items-center justify-between ${locale === lang.id ? 'bg-muted text-primary' : 'text-foreground'}`}
+                           className={`w-full px-6 py-4 text-left text-sm font-bold hover:bg-[#F8F4F1] hover:text-primary transition-all flex items-center justify-between ${locale === lang.id ? 'bg-[#F8F4F1] text-primary' : 'text-foreground'}`}
                          >
                             {lang.label}
                             {locale === lang.id && <div className="w-2 h-2 rounded-full bg-primary" />}
@@ -123,15 +119,12 @@ export default function Header() {
         </div>
 
         {/* Public Mobile Actions */}
-        <div className="md:hidden flex items-center gap-3">
-           {/* Theme Switcher Toggle */}
-           <ThemeToggle size="sm" />
-
+        <div className="md:hidden flex items-center gap-4">
            {/* Mobile Language Selector */}
            <div className="relative">
               <button 
                 onClick={() => setIsLangOpen(!isLangOpen)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-muted border border-border font-bold text-[10px] uppercase tracking-widest text-foreground"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#F8F4F1] border border-border font-bold text-[10px] uppercase tracking-widest"
               >
                 <Globe size={14} className="text-primary" />
                 <span>{languages.find(l => l.id === locale)?.id}</span>
@@ -139,12 +132,12 @@ export default function Header() {
               </button>
 
               {isLangOpen && (
-                 <div className="absolute top-full right-0 mt-3 w-40 bg-[var(--card)] border border-border rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 z-[110]">
+                 <div className="absolute top-full right-0 mt-3 w-40 bg-white border border-border rounded-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 z-[110]">
                     {languages.map(lang => (
                        <button 
                          key={lang.id}
                          onClick={() => handleLanguageChange(lang.id)}
-                         className={`w-full px-5 py-3 text-left text-xs font-bold hover:bg-muted hover:text-primary transition-all flex items-center justify-between ${locale === lang.id ? 'bg-muted text-primary' : 'text-foreground'}`}
+                         className={`w-full px-5 py-3 text-left text-xs font-bold hover:bg-[#F8F4F1] hover:text-primary transition-all flex items-center justify-between ${locale === lang.id ? 'bg-[#F8F4F1] text-primary' : 'text-foreground'}`}
                        >
                           {lang.label}
                        </button>
@@ -161,7 +154,7 @@ export default function Header() {
 
       {/* Public Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 w-full bg-[var(--card)] border-b border-border p-10 space-y-8 flex flex-col items-center animate-in slide-in-from-top-4 duration-300 shadow-2xl text-foreground">
+        <div className="md:hidden absolute top-full left-0 w-full bg-white border-b border-border p-10 space-y-8 flex flex-col items-center animate-in slide-in-from-top-4 duration-300 shadow-2xl">
           <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="font-bold uppercase tracking-widest text-sm">{t('home')}</Link>
           <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="font-bold uppercase tracking-widest text-sm">{t('about')}</Link>
           <Link href="/community-hub" onClick={() => setIsMobileMenuOpen(false)} className="font-bold uppercase tracking-widest text-sm">{t('community')}</Link>

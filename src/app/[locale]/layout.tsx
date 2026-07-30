@@ -8,7 +8,6 @@ import "@/app/globals.css";
 import ConditionalLayout from "@/components/ConditionalLayout";
 import {UIProvider} from "@/context/UIContext";
 import {AuthProvider} from "@/context/AuthContext";
-import {ThemeProvider} from "@/context/ThemeContext";
 import Chatbot from "@/components/Chatbot";
 import SubscriptionObserver from "@/components/SubscriptionObserver";
 import AnimatedSplashScreen from "@/components/AnimatedSplashScreen";
@@ -82,30 +81,28 @@ export default async function LocaleLayout({
           src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js"
         ></script>
       </head>
-      <body className={`min-h-screen bg-[var(--background)] text-[var(--foreground)] ${locale === 'ar' ? 'font-arabic' : 'font-sans'} flex flex-col transition-colors duration-500`}>
+      <body className={`min-h-screen bg-white dark:bg-accent ${locale === 'ar' ? 'font-arabic' : 'font-sans'} flex flex-col transition-colors duration-500`}>
         <amp-auto-ads
           type="adsense"
           data-ad-client="ca-pub-4519221650297297"
         ></amp-auto-ads>
         <NextIntlClientProvider messages={messages}>
-          <ThemeProvider>
-            <FirebaseProvider>
-            <AuthProvider>
-              <UIProvider>
-                <AppLockGate>
-                <ConditionalLayout>
-                  {children}
-                  <Chatbot />
-                  <SubscriptionObserver />
-                  <AnimatedSplashScreen />
-                  <ZoomBlocker />
-                  <PrivacyBlurOverlay />
-                </ConditionalLayout>
-                </AppLockGate>
-              </UIProvider>
-            </AuthProvider>
-            </FirebaseProvider>
-          </ThemeProvider>
+          <FirebaseProvider>
+          <AuthProvider>
+            <UIProvider>
+              <AppLockGate>
+              <ConditionalLayout>
+                {children}
+                <Chatbot />
+                <SubscriptionObserver />
+                <AnimatedSplashScreen />
+                <ZoomBlocker />
+                <PrivacyBlurOverlay />
+              </ConditionalLayout>
+              </AppLockGate>
+            </UIProvider>
+          </AuthProvider>
+          </FirebaseProvider>
         </NextIntlClientProvider>
       </body>
     </html>
