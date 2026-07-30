@@ -78,19 +78,26 @@ export async function signInWithGoogle(): Promise<SocialAuthResult> {
 
     // Capacitor Native Sign-In
     if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.()) {
-      const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
-      const result = await FirebaseAuthentication.signInWithGoogle();
+      try {
+        const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+        const result = await FirebaseAuthentication.signInWithGoogle();
 
-      const cred = result.credential as any;
-      const idToken = cred?.idToken;
-      if (!idToken) throw new Error('No Google ID Token received from native Google login.');
+        const cred = result.credential as any;
+        const idToken = cred?.idToken;
+        if (!idToken) throw new Error('No Google ID Token received from native Google login.');
 
-      const credential = GoogleAuthProvider.credential(idToken);
-      const jsUser = await signInWithCredential(auth, credential);
-      const firebaseUser = jsUser.user;
+        const credential = GoogleAuthProvider.credential(idToken);
+        const jsUser = await signInWithCredential(auth, credential);
+        const firebaseUser = jsUser.user;
 
-      const syncRes = await syncFirebaseUserWithSupabase(firebaseUser);
-      return { success: true, isNewUser: syncRes.isNewUser, hasPhone: syncRes.hasPhone, firebaseUser };
+        const syncRes = await syncFirebaseUserWithSupabase(firebaseUser);
+        return { success: true, isNewUser: syncRes.isNewUser, hasPhone: syncRes.hasPhone, firebaseUser };
+      } catch (nativeErr: any) {
+        console.warn('[FirebaseAuth] Native Google Sign-In error, attempting fallback:', nativeErr);
+        const fallbackRes = await fallbackToSupabaseOAuth('google');
+        if (fallbackRes.success) return fallbackRes;
+        throw nativeErr;
+      }
     }
 
     const provider = new GoogleAuthProvider();
@@ -355,6 +362,14 @@ export function onFirebaseAuthStateChanged(
 
 function translateFirebaseError(error: any): string {
   if (!error) return 'An unknown authentication error occurred.';
+  
+  const rawMsg = (error && typeof error === 'object' && error.message) 
+    ? String(error.message) 
+    : (typeof error === 'string' ? error : '');
+  
+  if (rawMsg.toLowerCase().includes('no credential available') || rawMsg.toLowerCase().includes('getcredentialexception')) {
+    return 'Google Account credential prompt was dismissed or not found on device. Please select your Google account and try again.';
+  }
   
   // Extract error code if it's an object with a code property, or if it's a string. Otherwise, set code to undefined.
   const code = (error && typeof error === 'object' && 'code' in error) 

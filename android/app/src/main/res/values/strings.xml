@@ -7,4 +7,5 @@
     <!-- Facebook SDK: Replace YOUR_FACEBOOK_APP_ID and YOUR_CLIENT_TOKEN with real values from https://developers.facebook.com -->
     <string name="facebook_app_id">27582064921459036</string>
     <string name="facebook_client_token">YOUR_CLIENT_TOKEN</string>
+    <string name="default_web_client_id">258779403605-d9dv73nd3c8p89befh9qao8smqj6hmn6.apps.googleusercontent.com</string>
 </resources>
