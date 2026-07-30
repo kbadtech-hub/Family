@@ -996,7 +996,8 @@ function OnboardingContent() {
     try {
       if (userId) {
         const { error: finishError } = await supabase.from('profiles').update({ 
-          onboarding_completed: true
+          onboarding_completed: true,
+          has_updated_onboarding: true
         }).eq('id', userId);
 
         if (finishError) {
@@ -1005,6 +1006,9 @@ function OnboardingContent() {
           return;
         }
         
+        // Invalidate pre-calculated match cache so new compatibility logic recalculates
+        await supabase.from('user_match_cache').delete().eq('user_id', userId).catch(() => {});
+
         // Transition to Step 4 (Verification Screen)
         setStep(4);
         window.scrollTo({ top: 0, behavior: 'smooth' });

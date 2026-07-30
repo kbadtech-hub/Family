@@ -66,6 +66,7 @@ import { getUserTier, calculateCompletionRate } from '@/lib/tiers';
 import { unregisterPushNotifications } from '@/lib/push-notifications';
 import { moderateText } from '@/lib/moderation';
 import RewardTierPopupModal from '@/components/RewardTierPopupModal';
+import OnboardingUpdateModal from '@/components/OnboardingUpdateModal';
 
 function DashboardContent() {
   const t = useTranslations('Dashboard');
@@ -2480,6 +2481,9 @@ function DashboardContent() {
         isOpen={isNotificationOpen}
         onClose={() => setIsNotificationOpen(false)}
       />
+
+      {/* Global Onboarding Update Pop-Up Modal */}
+      <OnboardingUpdateModal />
     </div>
 
 
