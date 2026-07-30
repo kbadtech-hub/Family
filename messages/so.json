@@ -963,13 +963,13 @@
       "Art & Culture Enthusiast": "Farshaxanka & Dhaqanka Jecel"
     },
     "CriteriaCategories": {
-      "all": "Dhammaan Qeexitaannada",
-      "core_values": "Iimaanka & Qiyamka Buuxa",
+      "all": "Dhammaan Qaybaha",
+      "core_values": "Qiyamka Asaasiga & Iimaanka",
       "family_future": "Qoyska & Mustaqbalka",
       "career_finances": "Shaqada & Maaliyadda",
-      "personality_eq": "Sifada & Bisaylka Niyada",
-      "lifestyle_habits": "Hab-nololeedka & Caadooyinka",
-      "interests_leisure": "Danta & Madadaalada"
+      "personality_eq": "Shakhsiyada & Dareenka",
+      "lifestyle_habits": "Nolosha & Caadooyinka",
+      "interests_leisure": "Xiisaynta & Nasashada"
     },
     "Countries": {
       "Ethiopia": "Itoobiya",
@@ -1009,14 +1009,50 @@
       "Lebanon": "Lubnaan",
       "Jordan": "Urdun",
       "India": "Hindiya",
-      "Pakistan": "Bakistaan"
+      "Pakistan": "Bakistaan",
+      "Yemen": "Yemen",
+      "Iraq": "Iraq",
+      "Syria": "Syria",
+      "Iran": "Iran",
+      "Morocco": "Morocco",
+      "Algeria": "Algeria",
+      "Libya": "Libya",
+      "Tunisia": "Tunisia",
+      "Nigeria": "Nigeria",
+      "Ghana": "Ghana",
+      "Cameroon": "Cameroon",
+      "Angola": "Angola",
+      "Brazil": "Brazil",
+      "Argentina": "Argentina",
+      "Mexico": "Mexico",
+      "Spain": "Spain",
+      "Portugal": "Portugal",
+      "Greece": "Greece",
+      "Ireland": "Ireland",
+      "Austria": "Austria",
+      "Poland": "Poland",
+      "Ukraine": "Ukraine",
+      "New Zealand": "New Zealand",
+      "Singapore": "Singapore",
+      "Malaysia": "Malaysia",
+      "Indonesia": "Indonesia",
+      "South Korea": "South Korea",
+      "Bahamas": "Bahamas",
+      "Finland": "Finland",
+      "Denmark": "Denmark"
     },
     "RelationshipGoals": {
-      "Serious Partner/Marriage": "Lammaana Dhabba / Guur",
-      "Serious Relationship/Dating": "Xariir Dhabba / Shukaansi",
-      "Normal Friendship": "Saaxiibtinimo Caadi ah",
-      "Passing Time/Learning and Understanding Marriage": "Waqti Dhabis / Barashada iyo Fahamka Guurka",
-      "Others": "Kuwa kale"
+      "Serious Partner/Marriage": "Xaas / Guur",
+      "Serious Relationship/Dating": "Xiriir Dheeraa",
+      "Normal Friendship": "Saaxiibtinimo",
+      "Passing Time/Learning and Understanding Marriage": "Barashada Guurka",
+      "Others": "Kuwo kale",
+      "Life Partner / Marriage": "Xaas / Guur",
+      "Long-term Relationship": "Xiriir Dheeraa",
+      "Short-term Relationship": "Xiriir Gaaban",
+      "Platonic Friendship / Finding Friends": "Saaxiibtinimo",
+      "Learning & Preparing for Marriage": "Barashada Guurka",
+      "Casual / Socializing": "Wada Sheekaysi"
     },
     "ChildrenCount": {
       "0": "Caruur ma lahan (0)",
@@ -1024,15 +1060,6 @@
       "2": "2",
       "3": "3",
       "More than 3": "3 ka badan"
-    },
-    "CriteriaCategories": {
-      "all": "Dhammaan Qaybaha",
-      "core_values": "Qiyamka Asaasiga & Iimaanka",
-      "family_future": "Qoyska & Mustaqbalka",
-      "career_finances": "Shaqada & Maaliyadda",
-      "personality_eq": "Shakhsiyada & Dareenka",
-      "lifestyle_habits": "Nolosha & Caadooyinka",
-      "interests_leisure": "Xiisaynta & Nasashada"
     }
   },
   "TopHeader": {

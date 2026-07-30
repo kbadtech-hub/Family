@@ -357,13 +357,13 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
 
   const getTierBadge = (tier: string) => {
     switch (tier) {
-      case 'vip': return { label: 'VIP', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', emoji: 'ðŸ‘‘' };
-      case 'diamond': return { label: 'Diamond', color: 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20', emoji: 'ðŸ’Ž' };
-      case 'platinum': return { label: 'Platinum', color: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20', emoji: 'ðŸŒŸ' };
-      case 'gold': return { label: 'Gold', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', emoji: 'ðŸ¥‡' };
-      case 'silver': return { label: 'Silver', color: 'bg-slate-400/10 text-slate-600 border-slate-400/20', emoji: 'ðŸ¥ˆ' };
+      case 'vip': return { label: 'VIP', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', emoji: '👑' };
+      case 'diamond': return { label: 'Diamond', color: 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20', emoji: '💎' };
+      case 'platinum': return { label: 'Platinum', color: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20', emoji: '🌟' };
+      case 'gold': return { label: 'Gold', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', emoji: '🥇' };
+      case 'silver': return { label: 'Silver', color: 'bg-slate-400/10 text-slate-600 border-slate-400/20', emoji: '🥈' };
       case 'bronze':
-      default: return { label: 'Unverified', color: 'bg-orange-500/10 text-orange-600 border-orange-500/20', emoji: 'ðŸ¥‰' };
+      default: return { label: 'Unverified', color: 'bg-orange-500/10 text-orange-600 border-orange-500/20', emoji: '🥉' };
     }
   };
   const badge = getTierBadge(userTier);
@@ -1035,7 +1035,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                 </h4>
                 {userTier !== 'vip' && userTier !== 'diamond' && (
                   <span className="px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-700 text-[9px] font-black uppercase tracking-wider rounded-full flex items-center gap-1">
-                    <Lock size={10} /> {locale === 'am' ? 'á‹¨á•áˆªáˆšá‹¨áˆ áŠ áŒˆáˆáŒáˆŽá‰µ' : 'Premium Feature'}
+                    <Lock size={10} /> {locale === 'am' ? 'የፕሪሚየም አገልግሎት' : 'Premium Feature'}
                   </span>
                 )}
               </div>
@@ -1129,7 +1129,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                     className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary disabled:opacity-50"
                   />
                   <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
-                    {locale === 'am' ? 'á‰£áˆˆá‰á‰µ á‹¨áˆ˜áˆµáˆ˜áˆ­ áˆ‹á‹­ áˆáŠ”á‰³ áŠ áˆ³á‹­ (Show Last Seen Status)' : 'Show Last Seen Status'}
+                    {locale === 'am' ? 'የመጨረሻ የታዩበትን ሁኔታ አሳይ' : locale === 'ti' ? 'ኣብ መወዳእታ እተራእዩሉ ኩነታት ኣርእይ' : locale === 'om' ? 'Mul\'achuu Keessan Isa Dhumarratti Mul\'isaa' : locale === 'ar' ? 'إظهار حالة آخر ظهور' : locale === 'so' ? 'Muuji Xaaladda Ugu Dambaysay' : 'Show Last Seen Status'}
                     {!canAccessLastSeen && <Lock size={12} className="text-amber-500 group-hover:scale-110 transition-transform" />}
                   </span>
                 </label>
@@ -1152,7 +1152,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                     className="w-5 h-5 rounded-lg border-muted text-primary focus:ring-primary/20 accent-primary disabled:opacity-50"
                   />
                   <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
-                    {locale === 'am' ? 'á‹¨áˆ˜áˆá‹•áŠ­á‰µ áŠ•á‰£á‰¥ áˆáˆáŠ­á‰¶á‰½ (Enable Read Receipts)' : 'Enable Read Receipts'}
+                    {locale === 'am' ? 'የመልእክት ንባብ ማረጋገጫን አብራ' : locale === 'ti' ? 'ምልክት ንባብ መልእኽቲ ኣብርህ' : locale === 'om' ? 'Mallattoo Dubbisa Ergaa Eegaa' : locale === 'ar' ? 'تمكين مؤشرات قراءة الرسائل' : locale === 'so' ? 'Awood sii Akhrinta Farriinta' : 'Enable Read Receipts'}
                     {!canAccessReadReceipts && <Lock size={12} className="text-amber-500 group-hover:scale-110 transition-transform" />}
                   </span>
                 </label>

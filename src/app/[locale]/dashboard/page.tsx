@@ -409,10 +409,10 @@ function DashboardContent() {
         ? (gender === 'Female' ? 'border-pink-400 ring-2 ring-pink-300' : 'border-primary ring-2 ring-primary/30')
         : 'border-primary/20';
     return (
-      <div className="relative flex items-center justify-center shrink-0">
+      <div className="relative flex items-center justify-center shrink-0 pt-1.5 my-auto">
         {/* Crown / star above avatar for elevated users */}
         {hasElevatedTier && (
-          <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-[11px] animate-bounce z-10 drop-shadow">
+          <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[12px] z-20 drop-shadow-sm select-none">
             {isVipActive ? '👑' : '⭐'}
           </div>
         )}
@@ -425,12 +425,12 @@ function DashboardContent() {
         </div>
         {/* Small tier badge at bottom-right of avatar */}
         {isVipActive && (
-          <span className="absolute -bottom-1 -right-1 bg-amber-500 text-white text-[6px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wide border border-white shadow-sm leading-none">
+          <span className="absolute -bottom-1 -right-1 bg-amber-500 text-white text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wide border border-white shadow-md leading-none z-20">
             VIP
           </span>
         )}
         {!isVipActive && (isPremiumActive || isAdmin) && (
-          <span className="absolute -bottom-1 -right-1 bg-primary text-white text-[6px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wide border border-white shadow-sm leading-none">
+          <span className="absolute -bottom-1 -right-1 bg-primary text-white text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wide border border-white shadow-md leading-none z-20">
             PRO
           </span>
         )}

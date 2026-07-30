@@ -903,12 +903,17 @@
       "Does Not Matter": "ብዘየገድስ"
     },
     "RelationshipGoals": {
+      "Serious Partner/Marriage": "ናይ ህይወት ብጸይ / ሓዳር",
+      "Serious Relationship/Dating": "ናይ ነዊሕ እዋን ርክብ",
+      "Normal Friendship": "ዕርክነት መደላይ",
+      "Passing Time/Learning and Understanding Marriage": "ብዛዕባ ሓዳር ምምሃርን ምድላውን",
+      "Others": "ካልእ",
       "Life Partner / Marriage": "ናይ ህይወት ብጸይ / ሓዳር",
-      "Long-term Relationship": "ናይ ነዊሕ ግዜ ርክብ",
-      "Short-term Relationship": "ናይ ሓጸር ግዜ ርክብ",
-      "Platonic Friendship / Finding Friends": "መደበኛ ሓደነት / ሓደ ምድላይ",
+      "Long-term Relationship": "ናይ ነዊሕ እዋን ርክብ",
+      "Short-term Relationship": "ናይ ሓጺር እዋን ርክብ",
+      "Platonic Friendship / Finding Friends": "ዕርክነት መደላይ",
       "Learning & Preparing for Marriage": "ብዛዕባ ሓዳር ምምሃርን ምድላውን",
-      "Casual / Socializing": "ግዜ ምሕላፍ / ምዝናዕ"
+      "Casual / Socializing": "ተራ ዕላል / ምራኻብ"
     },
     "PartnerChildren": {
       "Yes": "ውሉድ ዘለዎ/ዋ",
@@ -1068,14 +1073,37 @@
       "South Sudan": "ደቡብ ሱዳን",
       "China": "ቻይና",
       "Israel": "እስራኤል",
-      "Uganda": "ኡጋንዳ"
-    },
-    "RelationshipGoals": {
-      "Serious Partner/Marriage": "ቁንጹል ኣጋር / ሓዳር",
-      "Serious Relationship/Dating": "ቁንጹል ርክብ / ምልላይ",
-      "Normal Friendship": "ልሙድ ዕርክነት",
-      "Passing Time/Learning and Understanding Marriage": "ግዜ ምሕላፍ / ብዛዕባ ሓዳር ምምሃርን ምርዳእን",
-      "Others": "ካልእ"
+      "Uganda": "ኡጋንዳ",
+      "Yemen": "Yemen",
+      "Iraq": "Iraq",
+      "Syria": "Syria",
+      "Iran": "Iran",
+      "Morocco": "Morocco",
+      "Algeria": "Algeria",
+      "Libya": "Libya",
+      "Tunisia": "Tunisia",
+      "Nigeria": "Nigeria",
+      "Ghana": "Ghana",
+      "Cameroon": "Cameroon",
+      "Angola": "Angola",
+      "Brazil": "Brazil",
+      "Argentina": "Argentina",
+      "Mexico": "Mexico",
+      "Spain": "Spain",
+      "Portugal": "Portugal",
+      "Greece": "Greece",
+      "Ireland": "Ireland",
+      "Austria": "Austria",
+      "Poland": "Poland",
+      "Ukraine": "Ukraine",
+      "New Zealand": "New Zealand",
+      "Singapore": "Singapore",
+      "Malaysia": "Malaysia",
+      "Indonesia": "Indonesia",
+      "South Korea": "South Korea",
+      "Bahamas": "Bahamas",
+      "Finland": "Finland",
+      "Denmark": "Denmark"
     }
   },
   "Legal": {
