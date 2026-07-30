@@ -10,7 +10,7 @@ interface PostCreationModalProps {
   currentUser: any;
   isOpen: boolean;
   onClose: () => void;
-  onPostSuccess: () => void;
+  onPostSuccess: (newPost?: any) => void;
 }
 
 export default function PostCreationModal({
@@ -99,13 +99,18 @@ export default function PostCreationModal({
     }
 
     // 2. Insert Post (Text-Only)
-    const { error } = await supabase.from('community_posts').insert({
+    const { data: newPost, error } = await supabase.from('community_posts').insert({
       author_id: currentUser.id,
       content: content.trim(),
       topic,
       dislike_count: 0,
       heart_count: 0
-    });
+    }).select(`
+      *,
+      profiles:author_id(id, full_name, avatar_url, role, tier, verification_status),
+      post_likes(count),
+      post_comments(*)
+    `).maybeSingle();
 
     if (error) {
       setErrorMsg(error.message);
@@ -113,7 +118,15 @@ export default function PostCreationModal({
     } else {
       setContent('');
       setIsSubmitting(false);
-      onPostSuccess();
+      onPostSuccess(newPost || {
+        author_id: currentUser.id,
+        content: content.trim(),
+        topic,
+        created_at: new Date().toISOString(),
+        profiles: currentUser?.profile || { full_name: 'Member', avatar_url: null, role: 'member' },
+        post_likes: [],
+        post_comments: []
+      });
       onClose();
     }
   };

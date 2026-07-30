@@ -137,6 +137,13 @@ export default function CommunityView({
     return isVipOrDiamond || isPlatinum || isGold || isAdminOrExpert;
   };
 
+  const handlePostSuccess = (newPost?: any) => {
+    if (newPost) {
+      setPosts(prev => [newPost, ...prev.filter(p => p.id !== newPost.id)]);
+    }
+    fetchPosts();
+  };
+
   const fetchPosts = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     let blockedIds: string[] = [];
@@ -145,14 +152,16 @@ export default function CommunityView({
         .from('blocks')
         .select('blocker_id, blocked_id')
         .or(`blocker_id.eq.${user.id},blocked_id.eq.${user.id}`);
-      blockedIds = (blockedData || []).map(b => b.blocker_id === user.id ? b.blocked_id : b.blocker_id);
+      blockedIds = (blockedData || [])
+        .map(b => b.blocker_id === user.id ? b.blocked_id : b.blocker_id)
+        .filter(id => id && id !== user.id);
     }
 
     let query = supabase
       .from('community_posts')
       .select(`
         *,
-        profiles!community_posts_author_id_fkey(id, full_name, avatar_url, role, tier, verification_status, is_vip_member),
+        profiles:author_id(id, full_name, avatar_url, role, tier, verification_status),
         post_likes(count),
         post_comments(
           *,
@@ -165,9 +174,38 @@ export default function CommunityView({
       query = query.not('author_id', 'in', `(${blockedIds.join(',')})`);
     }
 
-    const { data } = await query;
+    let { data, error } = await query;
+
+    if (error || !data) {
+      console.warn('[Community Feed] Primary query error, attempting resilient fallback:', error);
+      let fallbackQuery = supabase
+        .from('community_posts')
+        .select(`
+          *,
+          profiles(id, full_name, avatar_url, role, tier, verification_status),
+          post_likes(count),
+          post_comments(
+            *,
+            profiles(full_name, avatar_url)
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (blockedIds.length > 0) {
+        fallbackQuery = fallbackQuery.not('author_id', 'in', `(${blockedIds.join(',')})`);
+      }
+
+      const fallbackRes = await fallbackQuery;
+      data = fallbackRes.data;
+    }
+
     if (data) {
       const filteredData = data.map((post: any) => {
+        if (!post.profiles) {
+          post.profiles = (user && post.author_id === user.id && currentUser?.profile)
+            ? currentUser.profile
+            : { full_name: 'Community Member', avatar_url: null, role: 'member' };
+        }
         if (post.post_comments) {
           post.post_comments = post.post_comments.filter((comment: any) => !blockedIds.includes(comment.user_id || comment.author_id));
         }
@@ -190,7 +228,7 @@ export default function CommunityView({
         setSavedPostsState(savedMap);
       }
     }
-  }, []);
+  }, [currentUser]);
 
   useEffect(() => {
     const initPage = async () => {
@@ -588,7 +626,7 @@ export default function CommunityView({
         currentUser={currentUser}
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        onPostSuccess={fetchPosts}
+        onPostSuccess={handlePostSuccess}
       />
 
       {/* Edit Post Modal (1-time edit limit) */}
