@@ -1,0 +1,12 @@
+src\app\[locale]\onboarding\page.tsx:L359: partner_intent: '',
+src\app\[locale]\onboarding\page.tsx:L661: partner_intent: data.partner_intent || '',
+src\app\[locale]\onboarding\page.tsx:L833: if (!formData.partner_intent) return t('errors.partnerIntentRequired');
+src\app\[locale]\onboarding\page.tsx:L907: partner_intent: showCustomPartnerIntent ? customPartnerIntent : formData.partner_intent,
+src\app\[locale]\onboarding\page.tsx:L1657: {t('fields.partnerRelationshipGoal')}
+src\app\[locale]\onboarding\page.tsx:L1660: value={formData.partner_intent}
+src\app\[locale]\onboarding\page.tsx:L1661: onChange={(val) => updateField('partner_intent', val)}
+src\app\[locale]\onboarding\page.tsx:L1664: label: t_const(`RelationshipGoals.${g}`) || g
+src\app\[locale]\onboarding\page.tsx:L1667: label={t('fields.partnerRelationshipGoal')}
+src\app\[locale]\onboarding\page.tsx:L2164: <p><strong className="text-gray-900">{t('intentReview')}:</strong> {t_const(`RelationshipGoals.${formData.partner_intent}`) || formData.partner_intent || '-'}</p>
+src\lib\tiers.ts:L25: partner_intent?: string | null;
+src\lib\tiers.ts:L72: if (profile.partner_intent) score += 5;

@@ -1,0 +1,23 @@
+src\app\[locale]\onboarding\page.tsx:L42: PARTNER_RELATIONSHIP_GOAL_OPTIONS
+src\app\[locale]\onboarding\page.tsx:L353: spouse_requirements: [] as string[],
+src\app\[locale]\onboarding\page.tsx:L359: partner_intent: '',
+src\app\[locale]\onboarding\page.tsx:L655: spouse_requirements: data.spouse_requirements || [],
+src\app\[locale]\onboarding\page.tsx:L661: partner_intent: data.partner_intent || '',
+src\app\[locale]\onboarding\page.tsx:L828: if (!formData.spouse_requirements.length) return t('errors.requirementsRequired');
+src\app\[locale]\onboarding\page.tsx:L833: if (!formData.partner_intent) return t('errors.partnerIntentRequired');
+src\app\[locale]\onboarding\page.tsx:L898: spouse_requirements: formData.spouse_requirements,
+src\app\[locale]\onboarding\page.tsx:L907: partner_intent: showCustomPartnerIntent ? customPartnerIntent : formData.partner_intent,
+src\app\[locale]\onboarding\page.tsx:L1439: selectedRequirements={formData.spouse_requirements}
+src\app\[locale]\onboarding\page.tsx:L1440: onChange={(next) => updateField('spouse_requirements', next)}
+src\app\[locale]\onboarding\page.tsx:L1660: value={formData.partner_intent}
+src\app\[locale]\onboarding\page.tsx:L1661: onChange={(val) => updateField('partner_intent', val)}
+src\app\[locale]\onboarding\page.tsx:L1662: options={PARTNER_RELATIONSHIP_GOAL_OPTIONS.map(g => ({
+src\app\[locale]\onboarding\page.tsx:L1664: label: t_const(`RelationshipGoals.${g}`) || g
+src\app\[locale]\onboarding\page.tsx:L2164: <p><strong className="text-gray-900">{t('intentReview')}:</strong> {t_const(`RelationshipGoals.${formData.partner_intent}`) || formData.partner_intent || '-'}</p>
+src\lib\compatibility.ts:L203: const tagsA = userA.selected_tags || userA.spouse_requirements || [];
+src\lib\compatibility.ts:L204: const tagsB = userB.selected_tags || userB.spouse_requirements || [];
+src\lib\constants.ts:L231: export const PARTNER_RELATIONSHIP_GOAL_OPTIONS = [
+src\lib\tiers.ts:L24: spouse_requirements?: string[];
+src\lib\tiers.ts:L25: partner_intent?: string | null;
+src\lib\tiers.ts:L71: if (profile.spouse_requirements && profile.spouse_requirements.length > 0) score += 10;
+src\lib\tiers.ts:L72: if (profile.partner_intent) score += 5;

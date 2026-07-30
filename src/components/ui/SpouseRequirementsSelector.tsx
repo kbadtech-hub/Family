@@ -73,7 +73,51 @@ export default function SpouseRequirementsSelector({
       const translated = t_const(`Requirements.${tagId}`);
       if (translated && !translated.startsWith('Constants.')) return translated;
     } catch (_) {}
-    return tagId;
+
+    const tagTranslations: Record<string, Record<string, string>> = {
+      // Category 1: core_values
+      'Religious Compatibility': { am: 'የእምነት ተስማሚነት', en: 'Religious Compatibility', om: 'Waliigalteee Amantaa', ti: 'ስምምዕነት እምነት', ar: 'التوافق الديني', so: 'Is-afgaradka Diinta' },
+      'Traditional Values': { am: 'ባህላዊ እሴቶች', en: 'Traditional Values', om: 'Aadaa fi Safuu', ti: 'ባህላዊ እሴታት', ar: 'القيم التقليدية', so: 'Qiyamka Dhaqanka' },
+      'Modern Outlook': { am: 'ዘመናዊ አመለካከት', en: 'Modern Outlook', om: 'Aadaa Ammayyaa', ti: 'ዘመናዊ ኣተሓሳስባ', ar: 'النظرة الحديثة', so: 'Muuqaalka Casriga Ah' },
+      'Cultural & Heritage Minded': { am: 'ለባህል እና ቅርስ ትኩረት የሚሰጥ', en: 'Cultural & Heritage Minded', om: 'Aadaa fi Seenaa Kabaju', ti: 'ባህልን ቅርሰን ዘኽብር', ar: 'مهتم بالثقافة والتراث', so: 'Dhaqanka & Dhaxalka' },
+      'High Moral Integrity': { am: 'ከፍተኛ የሞራል ስነ-ምግባር', en: 'High Moral Integrity', om: 'Safuu fi Amala Gaarii', ti: 'ልዑል ሞራላዊ ስነ-ምግባር', ar: 'نزاهة أخلاقية عالية', so: 'Dhaqan Wanaagsan' },
+
+      // Category 2: family_future
+      'Family Oriented': { am: 'ለቤተሰብ ትኩረት የሚሰጥ', en: 'Family Oriented', om: 'Maatiif Iddoo Keessu', ti: 'ንቤተሰብ ቦታ ዝህብ', ar: 'مهتم بالأسرة', so: 'U Jualada Qoyska' },
+      'Wants Children': { am: 'ልጅ ይፈልጋል/ትፈልጋለች', en: 'Wants Children', om: 'Ijoolee Barbaaduu', ti: 'ቆልዑ ዝደሊ/ትደሊ', ar: 'يرغب في الأطفال', so: 'Wuxuu Rabbaa Ubad' },
+      'Respects In-Laws & Extended Family': { am: 'አማቶችን እና ዘመዶችን የሚያከብር', en: 'Respects In-Laws & Extended Family', om: 'Soddaa fi Maatii Kabajuu', ti: 'ሓሙኦትን ኣዝማድን ዘኽብር', ar: 'احترام الأقارب والعائلة الممتدة', so: 'Tixgelinta Qaraabada' },
+      'Shared Domestic Responsibilities': { am: 'የጋራ የቤት ውስጥ ኃላፊነቶች', en: 'Shared Domestic Responsibilities', om: 'Hojii Manaa Qoodachuu', ti: 'ናይ ሓባር ሓላፍነት ቤት', ar: 'المسؤوليات المنزلية المشتركة', so: 'Mas\'uuliyadda Guriga Dhexdiisa' },
+      'Open to Relocation': { am: 'ቦታ ለመቀየር ፈቃደኛ', en: 'Open to Relocation', om: 'Bakka Jijjiiruuf Eeyyamamaa', ti: 'ቦታ ንምቕያር ፍቓደኛ', ar: 'مستعد للانتقال', so: 'Diyar u ah U GUURISTA' },
+
+      // Category 3: career_finances
+      'Career Focused': { am: 'ለስራ ትኩረት የሚሰጥ', en: 'Career Focused', om: 'Hojiif Iddoo Keessu', ti: 'ንስራሕ ቦታ ዝህብ', ar: 'تركيز على الحياة المهنية', so: 'U Jualada Shaqada' },
+      'Financial Stability': { am: 'የፋይናንስ መረጋጋት', en: 'Financial Stability', om: 'Tasgabbii Faayinaansii', ti: 'ርግኣት ፋይናንስ', ar: 'الاستقرار المالي', so: 'Stablitida Maaliyadeed' },
+      'Education Priority': { am: 'ለትምህርት ቅድሚያ የሚሰጥ', en: 'Education Priority', om: 'Barumsaaf Dursa Kennuu', ti: 'ንትምህርቲ ቕድሚት ዝህብ', ar: 'أولوية التعليم', so: 'Amodda Waxbarashada' },
+      'Ambition & Mutual Growth': { am: 'ትልቅ አላማ እና የጋራ እድገት', en: 'Ambition & Mutual Growth', om: 'Kaayyoo Dheeraa fi Gudina Waliinii', ti: 'ዓብዪ ዕላማን ናይ ሓባር ዕብየትን', ar: 'الطموح والنمو المتبادل', so: 'Hambalyo & Koriin Wadajir Ah' },
+      'Business Minded': { am: 'የንግድ አመለካከት ያለው', en: 'Business Minded', om: 'Yaada Daldalaa Kan Qabu', ti: 'ናይ ንግዲ ኣተሓሳስባ ዘለዎ', ar: 'عقلية تجارية', so: 'Fikirka Ganacsiga' },
+
+      // Category 4: personality_eq
+      'Kind & Empathetic': { am: 'ደግ እና ሩህሩህ', en: 'Kind & Empathetic', om: 'Gaarii fi Gara-laafessa', ti: 'ደግን ሩህሩህን', ar: 'طيف ومتعاطف', so: 'Naxariis & Niyad-samaan' },
+      'Good Sense of Humor': { am: 'ጥሩ የቀልድ ስሜት ያለው', en: 'Good Sense of Humor', om: 'Kofalchiisaa fi Gammachiisaa', ti: 'ጽቡቕ ናይ ጸወታ ስምዒት ዘለዎ', ar: 'حس دعابة جيد', so: 'Qosol Wanaagsan' },
+      'Patience & Emotional Maturity': { am: 'ትግስተኛ እና ስሜትን የሚቆጣጠር', en: 'Patience & Emotional Maturity', om: 'Obsa fi Sammuu Bilchaataa', ti: 'ትዕግስትን ስሜታዊ ብስለትን', ar: 'الصبر والنمو العاطفي', so: 'Samir & Bisaylka Niyada' },
+      'Open Communicator': { am: 'ግልጽ ተወያይ', en: 'Open Communicator', om: 'Iftoominaan Mari\'atu', ti: 'ግልጺ ተዛራቢ', ar: 'متواصل صريح', so: 'Wada-hadalka Furan' },
+      'Calm & Peaceful': { am: 'ረጋ ያለ እና ሰላማዊ', en: 'Calm & Peaceful', om: 'Tasalii fi Nagaa Kan Qabu', ti: 'ረጋ ዝበለን ሰላማውን', ar: 'هادئ ومسالم', so: 'Dequn & Nabad' },
+
+      // Category 5: lifestyle_habits
+      'Healthy Lifestyle': { am: 'ጤናማ የአኗኗር ዘይቤ', en: 'Healthy Lifestyle', om: 'Akkaataa Jireenya Fayyaa', ti: 'ጥዕናዊ ኣተሓሳስባን ህይወትን', ar: 'نمط حياة صحي', so: 'Hab-nololeed Health' },
+      'Fitness & Sports Enthusiast': { am: 'የስፖርት እና አካል ብቃት አፍቃሪ', en: 'Fitness & Sports Enthusiast', om: 'Spoortii Kan Jaallatu', ti: 'ስፖርትን ኣካል ብቃትን ዘፍቅር', ar: 'متحمس للرياضة واللياقة', so: 'Ciyaaraha & Isportiga' },
+      'Homebody / Cozy Life': { am: 'ቤት መዋል የሚወድ / ረጋ ያለ ህይወት', en: 'Homebody / Cozy Life', om: 'Mana Ooluu Kan Jaallatu', ti: 'ቤት ምውዓል ዘፍቅር', ar: 'محب للمنزل والحياة الهادئة', so: 'Guriga Jooga' },
+      'Social & Outgoing': { am: 'ማህበራዊ እና ተግባቢ', en: 'Social & Outgoing', om: 'Nama Naannoo fi Hiriyaa Jaallatu', ti: 'ማሕበራዊን ተኣንጋድን', ar: 'اجتماعي ومنفتح', so: 'Bulsho & Wada-hadal' },
+      'No Smoking / No Alcohol': { am: 'ሱሰኛ ያልሆነ (ሲጋራ/አልኮል የማይጠጣ)', en: 'No Smoking / No Alcohol', om: 'Tamboos Ta\'e Alkoolii Kan Hin Faydadamne', ti: 'ትምባኾ ይኹን ኣልኮል ዘይሰቲ', ar: 'بدون تدخين / كحول', so: 'Bilaa Sigaar & Alkool' },
+
+      // Category 6: interests_leisure
+      'Travel Lover': { am: 'ጉዞ የሚወድ', en: 'Travel Lover', om: 'Imala Kan Jaallatu', ti: 'ጉዞ ዘፍቅር', ar: 'محب للسفر', so: 'Jocra Safarka' },
+      'Pet Friendly': { am: 'እንስሳትን የሚወድ', en: 'Pet Friendly', om: 'Bineelda Kan Jaallatu', ti: 'እንስሳት ዘፍቅር', ar: 'محب للحيوانات الأليفة', so: 'Jocra Xoolaha' },
+      'Minimalist Living': { am: 'ቀለል ያለ አኗኗር', en: 'Minimalist Living', om: 'Jireenya Salphaa', ti: 'ቀሊል ኣተሓሳስባ ህይወት', ar: 'حياة بسيطة', so: 'Nolasha Fudud' },
+      'Art & Culture Enthusiast': { am: 'የኪነ-ጥበብ እና ባህል አፍቃሪ', en: 'Art & Culture Enthusiast', om: 'Ogummaa fi Aadaa Kan Jaallatu', ti: 'ስነ-ጥበብን ባህልን ዘፍቅር', ar: 'شغوف بالفن والثقافة', so: 'Dhaqanka & Art-ka' }
+    };
+
+    return tagTranslations[tagId]?.[locale] || tagTranslations[tagId]?.['en'] || tagId;
   };
 
   const handleTagToggle = (tagId: string) => {

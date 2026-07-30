@@ -302,6 +302,70 @@ const getTranslation = (key: string, lang: string): string => {
   return dictionary[lang]?.[key] || key;
 };
 
+const getRelationshipGoalLabel = (goal: string, lang: string, t_const?: any): string => {
+  if (!goal) return '-';
+
+  if (t_const) {
+    try {
+      const translated = t_const(`RelationshipGoals.${goal}`);
+      if (translated && !translated.startsWith('Constants.')) return translated;
+    } catch (_) {}
+  }
+
+  const map: Record<string, Record<string, string>> = {
+    'Life Partner / Marriage': {
+      am: 'የህይወት አጋር / ጋብቻ',
+      en: 'Life Partner / Marriage',
+      ti: 'ናይ ህይወት ብጸይ / ሓዳር',
+      om: 'Hiriyaa Jireenyaa / Fuudhaa fi Heeruma',
+      so: 'Xaas / Guur',
+      ar: 'شريك الحياة / الزواج'
+    },
+    'Long-term Relationship': {
+      am: 'የረጅም ጊዜ ግንኙነት',
+      en: 'Long-term Relationship',
+      ti: 'ናይ ነዊሕ እዋን ርክብ',
+      om: 'Hariroo Yeroo Dheeraa',
+      so: 'Xiriir Dheeraa',
+      ar: 'علاقة طويلة الأجل'
+    },
+    'Short-term Relationship': {
+      am: 'የአጭር ጊዜ ግንኙነት',
+      en: 'Short-term Relationship',
+      ti: 'ናይ ሓጺር እዋን ርክብ',
+      om: 'Hariroo Yeroo Gabaabaa',
+      so: 'Xiriir Gaaban',
+      ar: 'علاقة قصيرة الأجل'
+    },
+    'Platonic Friendship / Finding Friends': {
+      am: 'ወዳጅነት / ጓደኝነት መፈለግ',
+      en: 'Platonic Friendship / Finding Friends',
+      ti: 'ዕርክነት መደላይ',
+      om: 'Hiriyaa Barbaaduu',
+      so: 'Saaxiibtinimo',
+      ar: 'صداقة / البحث عن أصدقاء'
+    },
+    'Learning & Preparing for Marriage': {
+      am: 'ለጋብቻ መማር እና መዘጋጀት',
+      en: 'Learning & Preparing for Marriage',
+      ti: 'ብዛዕባ ሓዳር ምምሃርን ምድላውን',
+      om: 'Fuudhaa fi Heerumaaf Qophaa\'uu',
+      so: 'Barashada Guurka',
+      ar: 'التعلم والاستعداد للزواج'
+    },
+    'Casual / Socializing': {
+      am: 'ተራ ውይይት / መገናኘት',
+      en: 'Casual / Socializing',
+      ti: 'ተራ ዕላል / ምራኻብ',
+      om: 'Waliin Haasa\'uu',
+      so: 'Wada Sheekaysi',
+      ar: 'دردشة / تواصل اجتماعي'
+    }
+  };
+
+  return map[goal]?.[lang] || map[goal]?.['en'] || goal;
+};
+
 function OnboardingContent() {
   const t = useTranslations('Onboarding');
   const t_const = useTranslations('Constants');
@@ -1661,7 +1725,7 @@ function OnboardingContent() {
                   onChange={(val) => updateField('partner_intent', val)}
                   options={PARTNER_RELATIONSHIP_GOAL_OPTIONS.map(g => ({
                     value: g,
-                    label: t_const(`RelationshipGoals.${g}`) || g
+                    label: getRelationshipGoalLabel(g, locale, t_const)
                   }))}
                   placeholder={t('fields.selectGoal')}
                   label={t('fields.partnerRelationshipGoal')}
@@ -2161,7 +2225,7 @@ function OnboardingContent() {
                   <div className="text-xs text-gray-600 space-y-1 font-medium">
                     <p><strong className="text-gray-900">{t('ageRangeReview')}:</strong> {formData.partner_age_min} - {formData.partner_age_max} {t('yearsUnit')}</p>
                     <p><strong className="text-gray-900">{t('religionReview')}:</strong> {t_const(`Religions.${formData.partner_religion}`) || formData.partner_religion || '-'}</p>
-                    <p><strong className="text-gray-900">{t('intentReview')}:</strong> {t_const(`RelationshipGoals.${formData.partner_intent}`) || formData.partner_intent || '-'}</p>
+                    <p><strong className="text-gray-900">{t('intentReview')}:</strong> {getRelationshipGoalLabel(formData.partner_intent, locale, t_const)}</p>
                   </div>
                 </div>
 
