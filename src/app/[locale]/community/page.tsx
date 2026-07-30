@@ -27,7 +27,6 @@ import { translator, SupportedLocale } from '@/lib/translator';
 import { toggleFollowUser, isFollowingUser, toggleSavePost, isPostSaved, repostPost } from '@/lib/social';
 import PostCreationModal from '@/components/PostCreationModal';
 import EditPostModal from '@/components/EditPostModal';
-import IceBreakSection from '@/components/IceBreakSection';
 
 interface Profile {
   id?: string;
@@ -615,9 +614,6 @@ function CommunityContent() {
                );
             })}
          </div>
-
-         {/* Ice Break Section (Discussion Topic) */}
-         <IceBreakSection currentUser={currentUser} locale={locale} />
 
       </main>
 
