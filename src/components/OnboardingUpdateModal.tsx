@@ -84,7 +84,7 @@ export default function OnboardingUpdateModal() {
       <div className="bg-white rounded-[2.5rem] p-8 md:p-10 max-w-md w-full shadow-2xl relative overflow-hidden border border-primary/20 animate-in zoom-in-95 duration-300">
         {/* Glow Effects */}
         <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-primary/20 to-pink-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-40 h-40 bg-secondary/20 rounded-full blur-3xl -ml-16 -mb-16 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-40 h-40 bg-primary/10 rounded-full blur-3xl -ml-16 -mb-16 pointer-events-none" />
 
         {/* Close Button */}
         <button

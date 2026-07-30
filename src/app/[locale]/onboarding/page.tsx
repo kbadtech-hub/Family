@@ -2263,7 +2263,7 @@ function OnboardingContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--secondary)] bg-opacity-10 py-12 px-4 flex items-center justify-center" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+    <div className="min-h-screen bg-white py-6 md:py-12 px-4 flex items-center justify-center" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       <div className="max-w-xl w-full">
         <div className="mb-8 flex justify-between items-center px-4">
           {(step === 4 || step === 5) ? (
@@ -2323,7 +2323,7 @@ function OnboardingContent() {
 
         <div className="bg-white rounded-[2.5rem] shadow-2xl p-8 md:p-12 border border-gray-100 relative overflow-hidden">
           <div className={`absolute top-0 ${locale === 'ar' ? 'left-0' : 'right-0'} w-32 h-32 bg-primary/5 rounded-full ${locale === 'ar' ? '-ml-16' : '-mr-16'} -mt-16 blur-3xl opacity-50`} />
-          <div className={`absolute bottom-0 ${locale === 'ar' ? 'right-0' : 'left-0'} w-32 h-32 bg-secondary/10 rounded-full ${locale === 'ar' ? '-mr-16' : '-ml-16'} -mb-16 blur-2xl opacity-40`} />
+          <div className={`absolute bottom-0 ${locale === 'ar' ? 'right-0' : 'left-0'} w-32 h-32 bg-primary/5 rounded-full ${locale === 'ar' ? '-mr-16' : '-ml-16'} -mb-16 blur-2xl opacity-40`} />
           
           <div className="relative">
             {/* ── ID Document Rejection Modal (Step 4 pre-screen) ── */}
@@ -2587,7 +2587,7 @@ function OnboardingContent() {
 export default function OnboardingPage() {
   const t = useTranslations('Onboarding');
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center font-bold text-accent italic">{t('loading')}</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center font-bold text-accent italic">{t('loading')}</div>}>
       <OnboardingContent />
     </Suspense>
   );
