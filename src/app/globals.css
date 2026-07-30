@@ -17,6 +17,20 @@
   --spacing-unit: 8px;
 }
 
+.dark,
+[data-theme="dark"] {
+  --background: #0F172A;   /* Deep Slate Navy */
+  --foreground: #F8FAFC;   /* Crisp off-white */
+  --primary: #E2725B;      /* Terracotta Accent */
+  --secondary: #334155;    /* Slate */
+  --accent: #F8FAFC;       /* Off-white */
+  --muted: #1E293B;        /* Dark Slate Surface */
+  
+  --card: #1E293B;         /* Dark Card surface */
+  --card-foreground: #F8FAFC;
+  --border: #334155;        /* Dark Slate Border */
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

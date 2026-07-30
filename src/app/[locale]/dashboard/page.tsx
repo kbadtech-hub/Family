@@ -38,6 +38,7 @@ import {
   Bell
 } from 'lucide-react';
 import NotificationDrawerModal from '@/components/NotificationDrawerModal';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 import { fetchUserNotifications } from '@/lib/notifications';
 import CommunityView from '@/components/dashboard/CommunityView';
 
@@ -1489,7 +1490,7 @@ function DashboardContent() {
 
 
   return (
-    <div className="min-h-screen bg-[#FDFBF9] flex flex-col md:flex-row overflow-x-hidden pb-20 md:pb-0" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] flex flex-col md:flex-row overflow-x-hidden pb-20 md:pb-0 transition-colors duration-300" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       {/* Sidebar - Desktop Only */}
       <aside className={`hidden md:flex md:w-64 bg-[#0F172A] text-white md:flex-col p-8 sticky top-0 md:h-screen z-50 ${locale === 'ar' ? 'md:border-l' : 'md:border-r'} border-white/5`}>
         <div className="flex items-center gap-4 mb-12 group cursor-pointer">
@@ -1587,21 +1588,24 @@ function DashboardContent() {
               />
               <div className="hidden sm:block h-6 w-[1px] bg-border" />
               <div className="hidden sm:block">
-                <h1 className="text-xl font-black text-[#0F172A] italic tracking-tight">{t('welcome')}</h1>
+                <h1 className="text-xl font-black text-foreground italic tracking-tight">{t('welcome')}</h1>
                 <p className="text-gray-400 font-bold text-[9px] uppercase tracking-widest">{t('subtitle')}</p>
               </div>
             </div>
 
-            {/* User Dashboard Header: Order (Left-to-Right): 1. Coin Balance -> 2. Notification Bell -> 3. Language Selector -> 4. Profile Avatar */}
+            {/* User Dashboard Header: Order (Left-to-Right): 1. Theme Switcher -> 2. Coin Balance -> 3. Notification Bell -> 4. Language Selector -> 5. Profile Avatar */}
             <div className="flex items-center gap-3">
               
-              {/* 1st (Far Left / መጀመሪያ): 🪙 Coin Balance Display */}
+              {/* ☀️ / 🌙 Theme Switcher Toggle (placed directly in front of Coin balance) */}
+              <ThemeToggle size="md" />
+
+              {/* 1st: 🪙 Coin Balance Display */}
               {profile && (
                 <button
                   id="btn-coin-balance-indicator"
                   onClick={() => setActiveTab('gifts')}
                   title={locale === 'am' ? 'የኮይን ሂሳብዎ — ይጫኑ ለማሳደግ' : 'Your Coin Balance — click to top up'}
-                  className="flex items-center gap-1.5 px-3 py-2 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-700 text-xs font-black shadow-sm hover:bg-amber-500/20 transition-all"
+                  className="flex items-center gap-1.5 px-3 py-2 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-700 dark:text-amber-300 text-xs font-black shadow-sm hover:bg-amber-500/20 transition-all"
                 >
                   <Coins size={15} className="text-amber-500 animate-pulse" />
                   <span className="tabular-nums">{(profile.coins ?? 0).toLocaleString()}</span>
