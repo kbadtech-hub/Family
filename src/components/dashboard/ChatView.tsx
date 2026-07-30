@@ -85,6 +85,29 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
   const [selectedMatch, setSelectedMatch] = useState<Profile | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  const [lastMessages, setLastMessages] = useState<Record<string, { content: string; created_at: string }>>({});
+
+  const handleSelectMatch = (match: Profile) => {
+    setSelectedMatch(match);
+    setUnreadCounts((prev) => ({ ...prev, [match.id]: 0 }));
+  };
+
+  const updateMatchOrderOnSend = (receiverId: string, content: string, createdAt: string) => {
+    setLastMessages((prev) => ({
+      ...prev,
+      [receiverId]: { content, created_at: createdAt }
+    }));
+    setMatches((prevMatches) => {
+      const idx = prevMatches.findIndex((m) => m.id === receiverId);
+      if (idx !== -1) {
+        const target = prevMatches[idx];
+        const rest = prevMatches.filter((m) => m.id !== receiverId);
+        return [target, ...rest];
+      }
+      return prevMatches;
+    });
+  };
   const [currentUser, setCurrentUser] = useState<SupabaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [friendRequests, setFriendRequests] = useState<any[]>([]);
@@ -288,7 +311,47 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
           .maybeSingle();
         if (wallet) setCoinBalance(Number(wallet.coin_balance));
 
-        // Also show some potential matches if no friends (with strict gender filtering)
+        // 1. Fetch message history for current user to find all chat partners, last messages, and unread counts
+        const { data: allUserMsgs } = await supabase
+          .from('messages')
+          .select('id, sender_id, receiver_id, content, created_at, is_read')
+          .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+          .order('created_at', { ascending: false });
+
+        const partnerIdsSet = new Set<string>();
+        const initialUnreads: Record<string, number> = {};
+        const initialLastMsgs: Record<string, { content: string; created_at: string }> = {};
+
+        (allUserMsgs || []).forEach(m => {
+          const partnerId = m.sender_id === user.id ? m.receiver_id : m.sender_id;
+          partnerIdsSet.add(partnerId);
+
+          if (!initialLastMsgs[partnerId]) {
+            initialLastMsgs[partnerId] = { content: m.content, created_at: m.created_at };
+          }
+
+          if (m.receiver_id === user.id && !m.is_read) {
+            initialUnreads[partnerId] = (initialUnreads[partnerId] || 0) + 1;
+          }
+        });
+
+        setUnreadCounts(initialUnreads);
+        setLastMessages(initialLastMsgs);
+
+        // 2. Fetch profiles for chat partners not in friendList to ensure active chat partners NEVER disappear
+        const partnerIds = Array.from(partnerIdsSet).filter(id => !blockedIds.includes(id));
+        const missingPartnerIds = partnerIds.filter(id => !friendList.some(f => f.id === id));
+
+        let chatPartnerProfiles: Profile[] = [];
+        if (missingPartnerIds.length > 0) {
+          const { data: partnersData } = await supabase
+            .from('profiles')
+            .select('*')
+            .in('id', missingPartnerIds);
+          if (partnersData) chatPartnerProfiles = partnersData as Profile[];
+        }
+
+        // 3. Potential matches query fallback
         let profilesQuery = supabase
           .from('profiles')
           .select('*')
@@ -306,8 +369,19 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
         
         const { data: profiles } = await profilesQuery.limit(20);
         
-        // Merge - prioritizing accepted friends
-        const merged = [...friendList, ...(profiles || []).filter(p => !friendList.find(f => f.id === p.id))];
+        // Combine: friendList + chatPartnerProfiles + extra profiles
+        const existingIds = new Set([...friendList.map(f => f.id), ...chatPartnerProfiles.map(p => p.id)]);
+        const extraProfiles = (profiles || []).filter(p => !existingIds.has(p.id));
+
+        let merged = [...friendList, ...chatPartnerProfiles, ...extraProfiles];
+
+        // Sort by last message timestamp (descending)
+        merged.sort((a, b) => {
+          const timeA = initialLastMsgs[a.id] ? new Date(initialLastMsgs[a.id].created_at).getTime() : 0;
+          const timeB = initialLastMsgs[b.id] ? new Date(initialLastMsgs[b.id].created_at).getTime() : 0;
+          return timeB - timeA;
+        });
+
         setMatches(merged);
 
         // Check if there is an active chat transition key
@@ -402,9 +476,9 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
 
     fetchMessages();
 
-    // Realtime subscription
+    // Global Realtime Subscription for incoming messages across all conversations
     const channel = supabase
-      .channel('realtime:messages')
+      .channel(`global_realtime_messages_${currentUser.id}`)
       .on(
         'postgres_changes',
         {
@@ -415,29 +489,72 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
         },
         (payload) => {
           const msg = payload.new as Message;
-          if (msg.sender_id === selectedMatch.id) {
-            setMessages((prev) => [...prev, msg]);
-            // Auto-mark as read since we're already in this chat room
-            const receiptsEnabled = userProfile?.enable_read_receipts !== false &&
-                                    userProfile?.hide_read_receipts !== true &&
-                                    selectedMatch?.enable_read_receipts !== false &&
-                                    selectedMatch?.hide_read_receipts !== true;
-            if (receiptsEnabled) {
-              supabase.from('messages').update({ is_read: true }).eq('id', msg.id);
+          const partnerId = msg.sender_id;
+
+          // 1. Update last message snippet & timestamp
+          setLastMessages((prev) => ({
+            ...prev,
+            [partnerId]: { content: msg.content, created_at: msg.created_at }
+          }));
+
+          // 2. Check if this message belongs to the currently active chat
+          setSelectedMatch((currentSelected) => {
+            if (currentSelected && currentSelected.id === partnerId) {
+              setMessages((prevMsgs) => {
+                if (prevMsgs.some((m) => m.id === msg.id)) return prevMsgs;
+                return [...prevMsgs, msg];
+              });
+
+              const receiptsEnabled = userProfile?.enable_read_receipts !== false &&
+                                      userProfile?.hide_read_receipts !== true &&
+                                      currentSelected?.enable_read_receipts !== false &&
+                                      currentSelected?.hide_read_receipts !== true;
+              if (receiptsEnabled) {
+                supabase.from('messages').update({ is_read: true }).eq('id', msg.id);
+              }
+
+              if (msg.content.includes('🪙')) {
+                supabase
+                  .from('user_wallets')
+                  .select('coin_balance')
+                  .eq('id', currentUser.id)
+                  .single()
+                  .then(({ data }) => {
+                    if (data) setCoinBalance(Number(data.coin_balance));
+                  });
+              }
+            } else {
+              // Increment unread count for background contact
+              setUnreadCounts((prev) => ({
+                ...prev,
+                [partnerId]: (prev[partnerId] || 0) + 1
+              }));
             }
-            
-            // Auto-refresh coin balance if it contains coin symbol
-            if (msg.content.includes('🪙')) {
+            return currentSelected;
+          });
+
+          // 3. Move active contact to top of sidebar matches list dynamically
+          setMatches((prevMatches) => {
+            const idx = prevMatches.findIndex((m) => m.id === partnerId);
+            if (idx !== -1) {
+              const target = prevMatches[idx];
+              const rest = prevMatches.filter((m) => m.id !== partnerId);
+              return [target, ...rest];
+            } else {
+              // Fetch missing profile if new user
               supabase
-                .from('user_wallets')
-                .select('coin_balance')
-                .eq('id', currentUser.id)
+                .from('profiles')
+                .select('*')
+                .eq('id', partnerId)
                 .single()
-                .then(({ data }) => {
-                  if (data) setCoinBalance(Number(data.coin_balance));
+                .then(({ data: newProf }) => {
+                  if (newProf) {
+                    setMatches((prev) => [newProf as Profile, ...prev]);
+                  }
                 });
+              return prevMatches;
             }
-          }
+          });
         }
       )
       .subscribe();
@@ -858,6 +975,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
     if (!error && data) {
       setMessages((prev) => [...prev, data]);
       setNewMessage('');
+      updateMatchOrderOnSend(selectedMatch.id, messageContent, data.created_at);
       
       // Increment messages_sent in daily_limits (optimized to reuse already fetched counter)
       if (limits.maxTexts !== Infinity && !isVipActive) {
@@ -1058,12 +1176,16 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
         if (error) { console.error("Voice upload error:", error); return; }
 
         const { data: { publicUrl } } = supabase.storage.from('chats').getPublicUrl(fileName);
-        await supabase.from('messages').insert({
+        const { data: inserted } = await supabase.from('messages').insert({
           sender_id: currentUser.id,
           receiver_id: selectedMatch.id,
           content: `[VOICE_NOTE]${publicUrl}[/VOICE_NOTE]`,
           is_read: false
-        });
+        }).select().single();
+
+        if (inserted) {
+          updateMatchOrderOnSend(selectedMatch.id, `[VOICE_NOTE]${publicUrl}[/VOICE_NOTE]`, inserted.created_at);
+        }
       };
 
       recorder.start();
@@ -1111,12 +1233,16 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
       if (error) throw error;
 
       const { data: { publicUrl } } = supabase.storage.from('chats').getPublicUrl(fileName);
-      await supabase.from('messages').insert({
+      const { data: inserted } = await supabase.from('messages').insert({
         sender_id: currentUser.id,
         receiver_id: selectedMatch.id,
         content: `[IMAGE]${publicUrl}[/IMAGE]`,
         is_read: false
-      });
+      }).select().single();
+
+      if (inserted) {
+        updateMatchOrderOnSend(selectedMatch.id, `[IMAGE]${publicUrl}[/IMAGE]`, inserted.created_at);
+      }
     } catch (err: any) {
       console.error("Image upload error:", err);
     }
@@ -1232,35 +1358,72 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
             {matches.length === 0 ? (
                <div className="p-8 text-center text-gray-400 text-sm">{t('noMatches')}</div>
             ) : (
-              matches.map((match) => (
-                <button
-                  key={match.id}
-                  onClick={() => setSelectedMatch(match)}
-                  className={`w-full flex items-center gap-4 p-4 rounded-[1.5rem] transition-all group ${
-                    selectedMatch?.id === match.id ? 'bg-primary/10 border-primary/20 bg-primary/5' : 'hover:bg-muted/30'
-                  }`}
-                >
-                  <div className="relative">
-                    <div className="w-12 h-12 rounded-2xl bg-secondary border-2 border-primary overflow-hidden">
-                      {match.avatar_url ? (
-                        <Image src={match.avatar_url} alt={match.full_name} width={48} height={48} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-primary"><User size={24} /></div>
+              matches.map((match) => {
+                const unreadCount = unreadCounts[match.id] || 0;
+                const lastMsg = lastMessages[match.id];
+                
+                let timeFormatted = '';
+                if (lastMsg?.created_at) {
+                  const msgDate = new Date(lastMsg.created_at);
+                  const isToday = new Date().toDateString() === msgDate.toDateString();
+                  timeFormatted = isToday 
+                    ? msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    : msgDate.toLocaleDateString([], { month: 'short', day: 'numeric' });
+                }
+
+                let snippet = lastMsg?.content || match.star_sign || 'Abushakir Match';
+                if (snippet.startsWith('[VOICE_NOTE]')) snippet = '🎵 Voice note';
+                else if (snippet.startsWith('[IMAGE]')) snippet = '📷 Image';
+                else if (snippet.startsWith('[MISSED_')) snippet = '📞 Missed call';
+
+                return (
+                  <button
+                    key={match.id}
+                    onClick={() => handleSelectMatch(match)}
+                    className={`w-full flex items-center gap-3 p-3.5 rounded-[1.5rem] transition-all group relative ${
+                      selectedMatch?.id === match.id ? 'bg-primary/10 border-primary/20 bg-primary/5' : 'hover:bg-muted/30'
+                    } ${unreadCount > 0 ? 'bg-amber-50/60 border border-amber-200/50 font-bold' : ''}`}
+                  >
+                    <div className="relative flex-shrink-0">
+                      <div className="w-12 h-12 rounded-2xl bg-secondary border-2 border-primary overflow-hidden">
+                        {match.avatar_url ? (
+                          <Image src={match.avatar_url} alt={match.full_name} width={48} height={48} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-primary"><User size={24} /></div>
+                        )}
+                      </div>
+                      {isOnline(match) && (
+                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
                       )}
                     </div>
-                    {isOnline(match) && (
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
-                    )}
-                  </div>
-                  <div className="flex-1 text-center md:text-left">
-                    <p className="font-bold text-accent group-hover:text-primary transition-colors flex items-center justify-center md:justify-start gap-1">
-                      {match.full_name}
-                      {match.is_verified && <CheckCircle2 size={12} className="text-primary fill-primary/10" />}
-                    </p>
-                    <p className="text-[10px] text-primary font-black uppercase tracking-widest">{match.star_sign || 'Abushakir Match'}</p>
-                  </div>
-                </button>
-              ))
+
+                    <div className="flex-1 text-left min-w-0">
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <p className="font-bold text-accent group-hover:text-primary transition-colors flex items-center gap-1 truncate text-sm">
+                          {match.full_name}
+                          {match.is_verified && <CheckCircle2 size={12} className="text-primary fill-primary/10 flex-shrink-0" />}
+                        </p>
+                        {timeFormatted && (
+                          <span className={`text-[10px] flex-shrink-0 ${unreadCount > 0 ? 'text-primary font-black' : 'text-gray-400'}`}>
+                            {timeFormatted}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between gap-2">
+                        <p className={`text-xs truncate ${unreadCount > 0 ? 'text-accent font-black' : 'text-gray-500'}`}>
+                          {snippet}
+                        </p>
+                        {unreadCount > 0 && (
+                          <span className="min-w-[20px] h-5 px-1.5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] font-black shadow-md flex-shrink-0 animate-pulse">
+                            {unreadCount > 99 ? '99+' : unreadCount}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })
             )}
           </div>
         </div>
