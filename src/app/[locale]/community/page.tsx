@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { supabase } from '@/lib/supabase';
 import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
@@ -12,10 +12,6 @@ import {
   Send, 
   MoreHorizontal, 
   Share2, 
-  CheckCircle2, 
-  Sparkles, 
-  BarChart2, 
-  X, 
   Languages,
   UserPlus,
   UserCheck,
@@ -24,9 +20,8 @@ import {
   ThumbsDown,
   Edit,
   Trash2,
-  Lock,
   PlusCircle,
-  HelpCircle
+  Clock
 } from 'lucide-react';
 import { translator, SupportedLocale } from '@/lib/translator';
 import { toggleFollowUser, isFollowingUser, toggleSavePost, isPostSaved, repostPost } from '@/lib/social';
@@ -43,6 +38,7 @@ interface Profile {
   is_premium?: boolean;
   is_verified?: boolean;
   verification_status?: string;
+  is_vip_member?: boolean;
 }
 
 interface PostComment {
@@ -77,15 +73,40 @@ interface CommunityUser {
   profile: Profile;
 }
 
+function formatPostDate(dateString: string, locale: string): string {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffSecs < 60) {
+    return locale === 'am' ? 'አሁን' : 'Just now';
+  } else if (diffMins < 60) {
+    return locale === 'am' ? `ከ${diffMins} ደቂቃ በፊት` : `${diffMins}m ago`;
+  } else if (diffHours < 24) {
+    return locale === 'am' ? `ከ${diffHours} ሰዓት በፊት` : `${diffHours}h ago`;
+  } else if (diffDays < 7) {
+    return locale === 'am' ? `ከ${diffDays} ቀን በፊት` : `${diffDays}d ago`;
+  } else {
+    return date.toLocaleDateString(locale === 'am' ? 'am-ET' : 'en-US', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  }
+}
+
 function CommunityContent() {
   const t = useTranslations('Community');
   const locale = useLocale();
   const router = useRouter();
 
-  
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [currentUser, setCurrentUser] = useState<CommunityUser | null>(null);
-  const [activeCategory, setActiveCategory] = useState('all');
 
   // Modals state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -96,6 +117,7 @@ function CommunityContent() {
   const [followingState, setFollowingState] = useState<Record<string, boolean>>({});
   const [savedPostsState, setSavedPostsState] = useState<Record<string, boolean>>({});
   const [dislikeState, setDislikeState] = useState<Record<string, boolean>>({});
+  const [expandedPostsState, setExpandedPostsState] = useState<Record<string, boolean>>({});
 
   // Comments state
   const [commentingOn, setCommentingOn] = useState<string | null>(null);
@@ -104,7 +126,6 @@ function CommunityContent() {
 
   const searchParams = useSearchParams();
   const [highlightedPost, setHighlightedPost] = useState<string | null>(searchParams.get('post'));
-  const [aiTopic, setAiTopic] = useState<string | null>(null);
 
   useEffect(() => {
     const postId = searchParams.get('post');
@@ -115,12 +136,17 @@ function CommunityContent() {
     }
   }, [searchParams]);
 
-  const categories = [
-    { id: 'all', label: t('categories.all'), icon: MessageCircle },
-    { id: 'success_story', label: t('categories.success_story'), icon: Heart },
-    { id: 'lesson_learned', label: t('categories.lesson_learned'), icon: Sparkles },
-    { id: 'expert_class', label: t('categories.expert_class'), icon: CheckCircle2 },
-  ];
+  // Authorization helper to check if current user is allowed to post
+  const canUserPost = (profile: Profile | undefined | null): boolean => {
+    if (!profile) return false;
+    const userTier = (profile.tier || '').toLowerCase();
+    const isVipOrDiamond = userTier === 'diamond' || userTier === 'vip' || Boolean(profile.is_vip_member);
+    const isPlatinum = userTier === 'platinum' || Boolean(profile.is_premium);
+    const isGold = userTier === 'gold' || profile.verification_status === 'verified';
+    const isAdminOrExpert = ['admin', 'super_admin', 'expert'].includes(profile.role || '');
+
+    return isVipOrDiamond || isPlatinum || isGold || isAdminOrExpert;
+  };
 
   const fetchPosts = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -137,7 +163,7 @@ function CommunityContent() {
       .from('community_posts')
       .select(`
         *,
-        profiles!community_posts_author_id_fkey(id, full_name, avatar_url, role, tier, verification_status),
+        profiles!community_posts_author_id_fkey(id, full_name, avatar_url, role, tier, verification_status, is_vip_member),
         post_likes(count),
         post_comments(
           *,
@@ -145,10 +171,6 @@ function CommunityContent() {
         )
       `)
       .order('created_at', { ascending: false });
-
-    if (activeCategory !== 'all') {
-      query = query.eq('category', activeCategory);
-    }
 
     if (blockedIds.length > 0) {
       query = query.not('author_id', 'in', `(${blockedIds.join(',')})`);
@@ -179,20 +201,6 @@ function CommunityContent() {
         setSavedPostsState(savedMap);
       }
     }
-  }, [activeCategory]);
-
-  const fetchAiTopic = useCallback(async () => {
-    const { data } = await supabase
-      .from('community_posts')
-      .select('content')
-      .eq('is_ai_generated', true)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    
-    if (data) {
-      setAiTopic(data.content);
-    }
   }, []);
 
   useEffect(() => {
@@ -206,11 +214,9 @@ function CommunityContent() {
       const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
       setCurrentUser({ ...user, profile: profile as Profile });
       fetchPosts();
-      fetchAiTopic();
     };
     initPage();
-  }, [fetchPosts, fetchAiTopic, router]);
-
+  }, [fetchPosts, router]);
 
   // Actions
   const handleFollowToggle = async (authorId: string, authorName: string) => {
@@ -294,21 +300,6 @@ function CommunityContent() {
     setPosts(prev => prev.map(p => p.id === post.id ? { ...p, content: translated } : p));
   };
 
-  const pollRef = useRef<(HTMLDivElement | null)[]>([]);
-
-  useEffect(() => {
-    const pollOptions = [
-      { label: "Daily Video Chat", percent: 45 },
-      { label: "Trust & Transparency", percent: 82 },
-      { label: "Future Plan", percent: 34 }
-    ];
-    pollOptions.forEach((opt, i) => {
-      if (pollRef.current[i]) {
-        pollRef.current[i]!.style.width = `${opt.percent}%`;
-      }
-    });
-  }, []);
-
   return (
     <div className="min-h-screen bg-[#F8F9FA]" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       {/* Header Bar */}
@@ -326,374 +317,309 @@ function CommunityContent() {
          </div>
       </header>
 
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 py-10 px-4">
+      {/* Main Single-Column News Feed Container */}
+      <main className="max-w-3xl mx-auto space-y-8 py-10 px-4">
          
-         {/* Left Sidebar: Categories & AI Topic */}
-         <aside className="lg:col-span-3 space-y-4">
-            <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-100 sticky top-28">
-               <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 px-2">
-                 {locale === 'am' ? 'ምድቦች' : 'Categories'}
-               </h4>
-               <nav className="space-y-2">
-                  {categories.map((cat) => (
-                     <button 
-                        key={cat.id}
-                        onClick={() => setActiveCategory(cat.id)}
-                        className={`w-full flex items-center gap-3 p-4 rounded-2xl transition-all font-bold text-sm ${
-                           activeCategory === cat.id ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105' : 'text-gray-500 hover:bg-muted'
-                        }`}
-                     >
-                        <cat.icon size={18} />
-                        {cat.label}
-                     </button>
-                  ))}
-               </nav>
+         {/* Authorization Integration: Facebook-Style Post Creation Trigger Box (Authorized Users Only) */}
+         {canUserPost(currentUser?.profile) && (
+           <div 
+             onClick={() => setIsCreateModalOpen(true)}
+             className="bg-white p-6 md:p-8 rounded-[3rem] shadow-xl border border-gray-100 cursor-pointer hover:border-primary/40 transition-all group animate-in fade-in duration-300"
+           >
+              <div className="flex gap-4 items-center mb-4">
+                 <Image 
+                   src={currentUser?.profile?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop'} 
+                   alt="User Avatar" 
+                   width={48} 
+                   height={48} 
+                   className="w-12 h-12 rounded-2xl object-cover shadow-sm border border-gray-100" 
+                 />
+                 <div className="flex-1 bg-muted/40 group-hover:bg-muted/70 rounded-2xl p-4 text-gray-500 font-medium text-sm transition-colors flex items-center justify-between">
+                    <span>{locale === 'am' ? 'ምን አዲስ ነገር አለ? ሃሳብዎን ያጋሩ...' : "What's on your mind? Share text post..."}</span>
+                    <PlusCircle size={20} className="text-primary group-hover:scale-110 transition-transform" />
+                 </div>
+              </div>
+              <div className="flex items-center justify-between pt-3 border-t border-gray-50 text-xs font-bold text-gray-400">
+                <span className="flex items-center gap-1.5">✍️ Text-Only Community Hub</span>
+                <span className="text-primary group-hover:underline">{locale === 'am' ? 'ፖስት ፃፍ' : 'Create Post'} &rarr;</span>
+              </div>
+           </div>
+         )}
 
-               <div className="mt-10 p-6 bg-secondary/10 rounded-3xl border border-secondary/20">
-                  <div className="flex items-center gap-2 text-secondary mb-2">
-                     <Sparkles size={18} />
-                     <span className="font-black text-xs uppercase tracking-widest">
-                       {locale === 'am' ? 'የዕለቱ የAI መወያያ አርዕስት' : 'AI Topic of the Day'}
-                     </span>
-                  </div>
-                  <p className="text-sm font-bold text-accent italic">
-                    &quot;{aiTopic || (locale === 'am' ? 'ባህላዊው የአቡሻኪር የቀን አቆጣጠር ዘመናዊ የፍቅር ግንኙነት ድካምን እንዴት ሊፈታ ይችላል?' : 'How can traditional Abushakir logic solve modern dating burnout?')}&quot;
-                  </p>
-               </div>
-            </div>
-         </aside>
+         {/* News Feed - Card Layout sorted ORDER BY created_at DESC with Lifetime Persistence */}
+         <div className="space-y-8">
+            {posts.map(post => {
+               const isAuthor = currentUser && post.author_id === currentUser.id;
+               const isFollowingAuthor = followingState[post.author_id];
+               const isSaved = savedPostsState[post.id];
+               const isDisliked = dislikeState[post.id];
 
-         {/* Center Feed */}
-         <main className="lg:col-span-6 space-y-8">
-            
-            {/* Facebook-Style Post Creation Trigger Box */}
-            <div 
-              onClick={() => setIsCreateModalOpen(true)}
-              className="bg-white p-6 md:p-8 rounded-[3rem] shadow-xl border border-gray-100 cursor-pointer hover:border-primary/40 transition-all group"
-            >
-               <div className="flex gap-4 items-center mb-4">
-                  <Image 
-                    src={currentUser?.profile?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop'} 
-                    alt="User Avatar" 
-                    width={48} 
-                    height={48} 
-                    className="w-12 h-12 rounded-2xl object-cover shadow-sm border border-gray-100" 
-                  />
-                  <div className="flex-1 bg-muted/40 group-hover:bg-muted/70 rounded-2xl p-4 text-gray-500 font-medium text-sm transition-colors flex items-center justify-between">
-                     <span>{currentUser ? (locale === 'am' ? 'ምን አዲስ ነገር አለ? ሃሳብዎን ያጋሩ...' : "What's on your mind? Share text post...") : 'Sign in to create a post'}</span>
-                     <PlusCircle size={20} className="text-primary group-hover:scale-110 transition-transform" />
-                  </div>
-               </div>
-               <div className="flex items-center justify-between pt-3 border-t border-gray-50 text-xs font-bold text-gray-400">
-                 <span className="flex items-center gap-1.5">✍️ Text-Only Community Hub</span>
-                 <span className="text-primary group-hover:underline">Create Post &rarr;</span>
-               </div>
-            </div>
+               // Character limit & "See More" logic
+               const isExpanded = expandedPostsState[post.id];
+               const maxCharLimit = 250;
+               const isLongPost = post.content && post.content.length > maxCharLimit;
+               const displayContent = (isLongPost && !isExpanded) 
+                 ? `${post.content.slice(0, maxCharLimit)}...` 
+                 : post.content;
 
-            {/* News Feed - Card Layout with High Contrast Black Text on White Cards */}
-            <div className="space-y-8">
-               {posts.map(post => {
-                  const isAuthor = currentUser && post.author_id === currentUser.id;
-                  const isFollowingAuthor = followingState[post.author_id];
-                  const isSaved = savedPostsState[post.id];
-                  const isDisliked = dislikeState[post.id];
-
-                  return (
-                    <div 
-                      key={post.id} 
-                      id={`post-${post.id}`}
-                      className={`bg-white rounded-[3rem] shadow-sm border border-gray-100 overflow-hidden group hover:shadow-2xl transition-all duration-500 ${
-                        highlightedPost === post.id ? 'border-primary border-4 scale-[1.02] shadow-2xl ring-4 ring-primary/10' : ''
-                      }`}
-                    >
-                       <div className="p-8">
-                          
-                          {/* Card Header: Author Info + Follow Button + 3-Dots Menu */}
-                          <div className="flex justify-between items-center mb-6">
-                             <div className="flex gap-4 items-center">
-                                <Image 
-                                  src={post.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop'} 
-                                  alt={`${post.profiles?.full_name || 'Author'}'s avatar`} 
-                                  width={56} 
-                                  height={56} 
-                                  className="w-14 h-14 rounded-2xl object-cover shadow-md border border-gray-100" 
-                                />
-                                <div>
-                                   <div className="flex items-center gap-3">
-                                      <p className="font-black text-gray-900 text-base">{post.profiles?.full_name || 'Community Member'}</p>
-                                      
-                                      {/* Author Follow Button (If not author) */}
-                                      {currentUser && !isAuthor && (
-                                        <button
-                                          onClick={() => handleFollowToggle(post.author_id, post.profiles?.full_name || 'Member')}
-                                          className={`px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
-                                            isFollowingAuthor 
-                                              ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' 
-                                              : 'bg-primary text-white shadow-sm hover:scale-105'
-                                          }`}
-                                        >
-                                          {isFollowingAuthor ? (
-                                            <>
-                                              <UserCheck size={12} />
-                                              <span>Following</span>
-                                            </>
-                                          ) : (
-                                            <>
-                                              <UserPlus size={12} />
-                                              <span>Follow</span>
-                                            </>
-                                          )}
-                                        </button>
-                                      )}
-                                   </div>
+               return (
+                 <div 
+                   key={post.id} 
+                   id={`post-${post.id}`}
+                   className={`bg-white rounded-[3rem] shadow-sm border border-gray-100 overflow-hidden group hover:shadow-2xl transition-all duration-500 ${
+                     highlightedPost === post.id ? 'border-primary border-4 scale-[1.02] shadow-2xl ring-4 ring-primary/10' : ''
+                   }`}
+                 >
+                    <div className="p-8">
+                       
+                       {/* Card Header: Author Info + Date/Time Tag + Follow Button + 3-Dots Menu */}
+                       <div className="flex justify-between items-center mb-6">
+                          <div className="flex gap-4 items-center">
+                             <Image 
+                               src={post.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop'} 
+                               alt={`${post.profiles?.full_name || 'Author'}'s avatar`} 
+                               width={56} 
+                               height={56} 
+                               className="w-14 h-14 rounded-2xl object-cover shadow-md border border-gray-100" 
+                             />
+                             <div>
+                                <div className="flex items-center gap-3">
+                                   <p className="font-black text-gray-900 text-base">{post.profiles?.full_name || 'Community Member'}</p>
                                    
-                                   <div className="flex items-center gap-2 mt-0.5">
-                                      <span className="text-xs text-gray-400 font-medium">
-                                        {new Date(post.created_at).toLocaleDateString()}
-                                      </span>
-                                      
-                                      {/* Edited Badge */}
-                                      {post.is_edited && (
-                                        <span className="text-[10px] font-black bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full border border-amber-200">
-                                          Edited / ተስተካክሏል
-                                        </span>
-                                      )}
-                                   </div>
+                                   {/* Author Follow Button (If not author) */}
+                                   {currentUser && !isAuthor && (
+                                     <button
+                                       onClick={() => handleFollowToggle(post.author_id, post.profiles?.full_name || 'Member')}
+                                       className={`px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
+                                         isFollowingAuthor 
+                                           ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' 
+                                           : 'bg-primary text-white shadow-sm hover:scale-105'
+                                       }`}
+                                     >
+                                       {isFollowingAuthor ? (
+                                         <>
+                                           <UserCheck size={12} />
+                                           <span>Following</span>
+                                         </>
+                                       ) : (
+                                         <>
+                                           <UserPlus size={12} />
+                                           <span>Follow</span>
+                                         </>
+                                       )}
+                                     </button>
+                                   )}
                                 </div>
-                             </div>
-
-                             {/* 3-Dots Menu (Post Owner Only: Edit 1x & Delete) */}
-                             <div className="relative">
-                                {isAuthor ? (
-                                  <button 
-                                    onClick={() => setActiveMenuPostId(activeMenuPostId === post.id ? null : post.id)}
-                                    aria-label="Post options" 
-                                    className="p-3 text-gray-400 hover:text-gray-900 transition-colors rounded-2xl hover:bg-muted"
-                                  >
-                                    <MoreHorizontal size={20} />
-                                  </button>
-                                ) : null}
-
-                                {activeMenuPostId === post.id && isAuthor && (
-                                  <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-100 rounded-2xl shadow-xl z-30 p-2 space-y-1 animate-in zoom-in-95">
-                                     <button
-                                       onClick={() => {
-                                         setEditingPost(post);
-                                         setActiveMenuPostId(null);
-                                       }}
-                                       disabled={(post.edit_count || 0) >= 1}
-                                       className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-gray-700 hover:bg-muted transition-colors flex items-center gap-2 disabled:opacity-40"
-                                     >
-                                       <Edit size={14} className="text-blue-500" />
-                                       <span>{(post.edit_count || 0) >= 1 ? 'Edited (Max 1)' : 'Edit Post (1x)'}</span>
-                                     </button>
-
-                                     <button
-                                       onClick={() => handleDeletePost(post.id)}
-                                       className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
-                                     >
-                                       <Trash2 size={14} />
-                                       <span>Delete Post</span>
-                                     </button>
-                                  </div>
-                                )}
-                             </div>
-                          </div>
-
-                          {/* Post Topic Tag & High Contrast Text */}
-                          <div className="space-y-4 mb-6">
-                             <span className="inline-block text-[10px] font-black bg-primary/10 text-primary px-3 py-1 rounded-full uppercase tracking-widest border border-primary/20">
-                                #{post.topic || post.category?.replace('_', ' ') || 'Marriage'}
-                             </span>
-
-                             {/* High Contrast Text: Black Text on White Background */}
-                             <p className="text-gray-900 leading-relaxed text-lg font-medium whitespace-pre-line">
-                               {post.content}
-                             </p>
-
-                             <button 
-                                onClick={() => translatePost(post)}
-                                className="flex items-center gap-1.5 text-[10px] font-black text-primary uppercase tracking-widest bg-primary/5 px-3 py-1 rounded-full hover:bg-primary hover:text-white transition-all mt-2"
-                             >
-                                <Languages size={12} /> {locale === 'am' ? 'ተርጉም' : 'Translate'}
-                             </button>
-                          </div>
-
-                          {/* Interactive Action Buttons Row */}
-                          <div className="flex items-center justify-between border-t border-gray-100 pt-6 flex-wrap gap-3">
-                             <div className="flex items-center gap-4 md:gap-6">
                                 
-                                {/* Like */}
-                                <button 
-                                   onClick={() => handleLike(post.id)}
-                                   aria-label="Like post"
-                                   className="flex items-center gap-1.5 text-gray-500 hover:text-red-500 transition-colors group/like"
-                                >
-                                   <Heart size={18} className="group-hover/like:fill-red-500 transition-all" /> 
-                                   <span className="font-bold text-xs">{post.post_likes?.[0]?.count || 0}</span>
-                                </button>
-
-                                {/* Dislike */}
-                                <button 
-                                   onClick={() => handleDislikeToggle(post.id)}
-                                   aria-label="Dislike post"
-                                   className={`flex items-center gap-1.5 transition-colors ${
-                                     isDisliked ? 'text-amber-600 font-bold' : 'text-gray-500 hover:text-amber-600'
-                                   }`}
-                                >
-                                   <ThumbsDown size={18} />
-                                </button>
-
-                                {/* Comment Drawer Toggle */}
-                                <button 
-                                   onClick={() => setCommentingOn(commentingOn === post.id ? null : post.id)}
-                                   aria-label="Comment on post"
-                                   className="flex items-center gap-1.5 text-gray-500 hover:text-primary transition-colors font-bold text-xs"
-                                >
-                                   <MessageCircle size={18} /> 
-                                   <span>{post.post_comments?.length || 0}</span>
-                                </button>
-
-                                {/* In-App Repost */}
-                                <button
-                                   onClick={() => handleRepost(post.id)}
-                                   className="flex items-center gap-1 text-gray-500 hover:text-emerald-600 transition-colors font-bold text-xs"
-                                   title="Recommend to friends"
-                                >
-                                   <Repeat size={18} />
-                                </button>
-
-                                {/* Save Post Button */}
-                                <button
-                                   onClick={() => handleSaveToggle(post.id)}
-                                   className={`flex items-center gap-1 transition-colors text-xs font-bold ${
-                                     isSaved ? 'text-primary' : 'text-gray-500 hover:text-primary'
-                                   }`}
-                                   title="Save post"
-                                >
-                                   <Bookmark size={18} className={isSaved ? 'fill-primary' : ''} />
-                                   <span className="hidden sm:inline">{isSaved ? 'Saved' : 'Save'}</span>
-                                </button>
-
+                                <div className="flex items-center gap-2 mt-1">
+                                   {/* Clear Date/Time Tag Label */}
+                                   <span className="text-xs text-primary font-bold bg-primary/10 px-2.5 py-0.5 rounded-full flex items-center gap-1 border border-primary/20">
+                                     <Clock size={12} />
+                                     {formatPostDate(post.created_at, locale)}
+                                   </span>
+                                   
+                                   {/* Edited Badge */}
+                                   {post.is_edited && (
+                                     <span className="text-[10px] font-black bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full border border-amber-200">
+                                       {locale === 'am' ? 'ተስተካክሏል' : 'Edited'}
+                                     </span>
+                                   )}
+                                </div>
                              </div>
-
-                             {/* External Share (Deep Link Generator) */}
-                             <button 
-                                onClick={() => handleExternalShare(post.id)}
-                                className="flex items-center gap-1.5 text-gray-500 hover:text-primary transition-colors font-bold text-xs uppercase tracking-widest bg-muted/50 px-3 py-1.5 rounded-xl border border-gray-100"
-                             >
-                                <Share2 size={16} /> 
-                                <span>Deep Link Share</span>
-                             </button>
                           </div>
 
-                          {/* Threaded Comments Section */}
-                          {commentingOn === post.id && (
-                             <div className="mt-8 pt-8 border-t border-gray-100 space-y-6 animate-in slide-in-from-top-4 duration-300">
-                                <div className="flex gap-3">
-                                   <input 
-                                      value={commentText}
-                                      onChange={(e) => setCommentText(e.target.value)}
-                                      placeholder={replyingToCommentId ? "Writing a reply..." : t('interactions.writeComment')}
-                                      className="flex-1 bg-muted/40 border border-gray-200 rounded-2xl px-6 py-3 text-sm font-medium focus:ring-primary focus:border-primary"
-                                   />
-                                   <button 
-                                      onClick={() => handleCommentSubmit(post.id, replyingToCommentId)}
-                                      aria-label="Send comment"
-                                      className="p-3 bg-primary text-white rounded-2xl hover:scale-105 transition-all shadow-lg shadow-primary/20"
-                                   >
-                                      <Send size={18} />
-                                   </button>
-                                </div>
+                          {/* 3-Dots Menu (Post Owner Only: Edit 1x & Delete) */}
+                          <div className="relative">
+                             {isAuthor ? (
+                               <button 
+                                 onClick={() => setActiveMenuPostId(activeMenuPostId === post.id ? null : post.id)}
+                                 aria-label="Post options" 
+                                 className="p-3 text-gray-400 hover:text-gray-900 transition-colors rounded-2xl hover:bg-muted"
+                               >
+                                 <MoreHorizontal size={20} />
+                               </button>
+                             ) : null}
 
-                                <div className="space-y-4">
-                                   {post.post_comments?.map((comment: PostComment) => (
-                                      <div key={comment.id} className="flex gap-4 group/comment">
-                                         <Image 
-                                           src={comment.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop'} 
-                                           alt="Commenter Avatar" 
-                                           width={40} 
-                                           height={40} 
-                                           className="w-10 h-10 rounded-xl object-cover shadow-sm" 
-                                         />
-                                         <div className="flex-1 bg-muted/30 p-4 rounded-[1.5rem] relative border border-gray-100">
-                                            <p className="text-xs font-black text-gray-900 mb-1">{comment.profiles?.full_name || 'Member'}</p>
-                                            <p className="text-sm text-gray-800 font-medium">{comment.content}</p>
-                                            
-                                            <div className="flex gap-4 mt-2">
-                                               <button 
-                                                 onClick={() => setReplyingToCommentId(comment.id)}
-                                                 className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline"
-                                               >
-                                                 {t('interactions.reply')}
-                                               </button>
-                                            </div>
+                             {activeMenuPostId === post.id && isAuthor && (
+                               <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-100 rounded-2xl shadow-xl z-30 p-2 space-y-1 animate-in zoom-in-95">
+                                  <button
+                                    onClick={() => {
+                                      setEditingPost(post);
+                                      setActiveMenuPostId(null);
+                                    }}
+                                    disabled={(post.edit_count || 0) >= 1}
+                                    className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-gray-700 hover:bg-muted transition-colors flex items-center gap-2 disabled:opacity-40"
+                                  >
+                                    <Edit size={14} className="text-blue-500" />
+                                    <span>{(post.edit_count || 0) >= 1 ? (locale === 'am' ? 'ተስተካክሏል (1x)' : 'Edited (Max 1)') : (locale === 'am' ? 'ማስተካከያ (1x)' : 'Edit Post (1x)')}</span>
+                                  </button>
+
+                                  <button
+                                    onClick={() => handleDeletePost(post.id)}
+                                    className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+                                  >
+                                    <Trash2 size={14} />
+                                    <span>{locale === 'am' ? 'ፖስቱን አጥፋ' : 'Delete Post'}</span>
+                                  </button>
+                               </div>
+                             )}
+                          </div>
+                       </div>
+
+                       {/* Post Topic Tag & High Contrast Text with See More */}
+                       <div className="space-y-4 mb-6">
+                          <span className="inline-block text-[10px] font-black bg-primary/10 text-primary px-3 py-1 rounded-full uppercase tracking-widest border border-primary/20">
+                             #{post.topic || post.category?.replace('_', ' ') || 'Marriage'}
+                          </span>
+
+                          {/* Text-Only Content Display with "See More" (ተጨማሪ ያንብቡ) expansion */}
+                          <div className="text-gray-900 leading-relaxed text-lg font-medium whitespace-pre-line">
+                            <span>{displayContent}</span>
+                            {isLongPost && (
+                              <button 
+                                onClick={() => setExpandedPostsState(prev => ({ ...prev, [post.id]: !prev[post.id] }))}
+                                className="inline-block text-sm font-bold text-primary hover:underline ml-2 cursor-pointer focus:outline-none"
+                              >
+                                {isExpanded 
+                                  ? (locale === 'am' ? 'ቀንስ' : 'See Less') 
+                                  : (locale === 'am' ? 'ተጨማሪ ያንብቡ' : 'See More')}
+                              </button>
+                            )}
+                          </div>
+
+                          <button 
+                             onClick={() => translatePost(post)}
+                             className="flex items-center gap-1.5 text-[10px] font-black text-primary uppercase tracking-widest bg-primary/5 px-3 py-1 rounded-full hover:bg-primary hover:text-white transition-all mt-2"
+                          >
+                             <Languages size={12} /> {locale === 'am' ? 'ተርጉም' : 'Translate'}
+                          </button>
+                       </div>
+
+                       {/* Interactive Action Buttons Row */}
+                       <div className="flex items-center justify-between border-t border-gray-100 pt-6 flex-wrap gap-3">
+                          <div className="flex items-center gap-4 md:gap-6">
+                             
+                             {/* Like */}
+                             <button 
+                                onClick={() => handleLike(post.id)}
+                                aria-label="Like post"
+                                className="flex items-center gap-1.5 text-gray-500 hover:text-red-500 transition-colors group/like"
+                             >
+                                <Heart size={18} className="group-hover/like:fill-red-500 transition-all" /> 
+                                <span className="font-bold text-xs">{post.post_likes?.[0]?.count || 0}</span>
+                             </button>
+
+                             {/* Dislike */}
+                             <button 
+                                onClick={() => handleDislikeToggle(post.id)}
+                                aria-label="Dislike post"
+                                className={`flex items-center gap-1.5 transition-colors ${
+                                  isDisliked ? 'text-amber-600 font-bold' : 'text-gray-500 hover:text-amber-600'
+                                }`}
+                             >
+                                <ThumbsDown size={18} />
+                             </button>
+
+                             {/* Comment Drawer Toggle */}
+                             <button 
+                                onClick={() => setCommentingOn(commentingOn === post.id ? null : post.id)}
+                                aria-label="Comment on post"
+                                className="flex items-center gap-1.5 text-gray-500 hover:text-primary transition-colors font-bold text-xs"
+                             >
+                                <MessageCircle size={18} /> 
+                                <span>{post.post_comments?.length || 0}</span>
+                             </button>
+
+                             {/* In-App Repost */}
+                             <button
+                                onClick={() => handleRepost(post.id)}
+                                className="flex items-center gap-1 text-gray-500 hover:text-emerald-600 transition-colors font-bold text-xs"
+                                title="Recommend to friends"
+                             >
+                                <Repeat size={18} />
+                             </button>
+
+                             {/* Save Post Button */}
+                             <button
+                                onClick={() => handleSaveToggle(post.id)}
+                                className={`flex items-center gap-1 transition-colors text-xs font-bold ${
+                                  isSaved ? 'text-primary' : 'text-gray-500 hover:text-primary'
+                                }`}
+                                title="Save post"
+                             >
+                                <Bookmark size={18} className={isSaved ? 'fill-primary' : ''} />
+                                <span className="hidden sm:inline">{isSaved ? 'Saved' : 'Save'}</span>
+                             </button>
+
+                          </div>
+
+                          {/* External Share (Deep Link Generator) */}
+                          <button 
+                             onClick={() => handleExternalShare(post.id)}
+                             className="flex items-center gap-1.5 text-gray-500 hover:text-primary transition-colors font-bold text-xs uppercase tracking-widest bg-muted/50 px-3 py-1.5 rounded-xl border border-gray-100"
+                          >
+                             <Share2 size={16} /> 
+                             <span>Deep Link Share</span>
+                          </button>
+                       </div>
+
+                       {/* Threaded Comments Section */}
+                       {commentingOn === post.id && (
+                          <div className="mt-8 pt-8 border-t border-gray-100 space-y-6 animate-in slide-in-from-top-4 duration-300">
+                             <div className="flex gap-3">
+                                <input 
+                                   value={commentText}
+                                   onChange={(e) => setCommentText(e.target.value)}
+                                   placeholder={replyingToCommentId ? "Writing a reply..." : t('interactions.writeComment')}
+                                   className="flex-1 bg-muted/40 border border-gray-200 rounded-2xl px-6 py-3 text-sm font-medium focus:ring-primary focus:border-primary"
+                                />
+                                <button 
+                                   onClick={() => handleCommentSubmit(post.id, replyingToCommentId)}
+                                   aria-label="Send comment"
+                                   className="p-3 bg-primary text-white rounded-2xl hover:scale-105 transition-all shadow-lg shadow-primary/20"
+                                >
+                                   <Send size={18} />
+                                </button>
+                             </div>
+
+                             <div className="space-y-4">
+                                {post.post_comments?.map((comment: PostComment) => (
+                                   <div key={comment.id} className="flex gap-4 group/comment">
+                                      <Image 
+                                        src={comment.profiles?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop'} 
+                                        alt="Commenter Avatar" 
+                                        width={40} 
+                                        height={40} 
+                                        className="w-10 h-10 rounded-xl object-cover shadow-sm" 
+                                      />
+                                      <div className="flex-1 bg-muted/30 p-4 rounded-[1.5rem] relative border border-gray-100">
+                                         <p className="text-xs font-black text-gray-900 mb-1">{comment.profiles?.full_name || 'Member'}</p>
+                                         <p className="text-sm text-gray-800 font-medium">{comment.content}</p>
+                                         
+                                         <div className="flex gap-4 mt-2">
+                                            <button 
+                                              onClick={() => setReplyingToCommentId(comment.id)}
+                                              className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline"
+                                            >
+                                              {t('interactions.reply')}
+                                            </button>
                                          </div>
                                       </div>
-                                   ))}
-                                </div>
+                                   </div>
+                                ))}
                              </div>
-                          )}
-                       </div>
+                          </div>
+                       )}
                     </div>
-                  );
-               })}
-            </div>
+                 </div>
+               );
+            })}
+         </div>
 
-            {/* Ice Break Section (Gold+ Tier Discussion Topic) */}
-            <IceBreakSection currentUser={currentUser} locale={locale} />
+         {/* Ice Break Section (Discussion Topic) */}
+         <IceBreakSection currentUser={currentUser} locale={locale} />
 
-         </main>
-
-         {/* Right Sidebar: Preserved Existing Sections (Family Poll & Trending Tags) */}
-         <aside className="lg:col-span-3 space-y-8">
-            
-            {/* Preserved Family Poll Section */}
-            <div className="bg-white p-8 rounded-[3rem] shadow-xl border border-gray-100 relative overflow-hidden group">
-               <div className="absolute top-0 left-0 w-2 h-full bg-secondary group-hover:w-4 transition-all" />
-               <div className="flex items-center gap-3 mb-6">
-                  <BarChart2 className="text-secondary" />
-                  <h4 className="text-lg font-black text-accent italic">
-                    {locale === 'am' ? 'የቤተሰብ የህዝብ አስተያየት' : 'Family Poll'}
-                  </h4>
-               </div>
-               <p className="font-bold text-accent mb-6 leading-relaxed">
-                 {locale === 'am' ? 'ለረጅም ርቀት የፍቅር ግንኙነት በጣም አስፈላጊው ባህሪ ምንድነው?' : 'What is the most important trait for a long-distance relationship?'}
-               </p>
-               <div className="space-y-3">
-                  {[
-                     { label: locale === 'am' ? 'የዕለታዊ የቪዲዮ ወሬ' : 'Daily Video Chat', percent: 45 },
-                     { label: locale === 'am' ? 'እምነት እና ግልጽነት' : 'Trust & Transparency', percent: 82 },
-                     { label: locale === 'am' ? 'የወደፊት እቅድ' : 'Future Plan', percent: 34 }
-                  ].map((opt, i) => (
-                     <button key={i} className="w-full p-4 rounded-2xl border border-gray-100 hover:border-secondary transition-all text-left relative overflow-hidden group/opt">
-                        <div className="relative z-10 flex justify-between items-center font-bold text-sm">
-                           <span>{opt.label}</span>
-                           <span className="text-secondary">{opt.percent}%</span>
-                        </div>
-                        <div 
-                          ref={el => { pollRef.current[i] = el; }}
-                          className="absolute inset-y-0 left-0 bg-secondary/5 transition-all group-hover/opt:bg-secondary/10" 
-                        />
-                     </button>
-                  ))}
-               </div>
-            </div>
-
-            {/* Preserved Trending Tags Section */}
-            <div className="bg-card p-8 rounded-[3rem] shadow-2xl border border-white/5">
-               <h4 className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-6">
-                 {locale === 'am' ? 'በብዛት የተጎበኙ መለያዎች' : 'Trending Tags'}
-               </h4>
-               <div className="flex flex-wrap gap-2">
-                  {(locale === 'am' ? ['#አቡሻኪር', '#የስኬትታሪኮች', '#የሐበሻሰርግ', '#የቤተሰብእሴቶች', '#የኢትዮጵያቅርስ'] : ['#Abushakir', '#SuccessStories', '#HabeshaWeddings', '#FamilyValues', '#EthiopianHeritage']).map(tag => (
-                     <span key={tag} className="text-[10px] font-black bg-white/5 hover:bg-primary hover:text-white px-4 py-2 rounded-full cursor-pointer transition-all border border-white/5">{tag}</span>
-                  ))}
-               </div>
-            </div>
-
-         </aside>
-      </div>
+      </main>
 
       {/* Post Creation Modal */}
       <PostCreationModal 
