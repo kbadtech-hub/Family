@@ -117,9 +117,9 @@ const getTranslation = (key: string, lang: string): string => {
   const dictionary: Record<string, Record<string, string>> = {
     am: {
       'Ethiopia': 'ኢትዮጵያ',
-      'USA': 'አሜሪካ (USA)',
+      'USA': 'አሜሪካ',
       'Canada': 'ካናዳ',
-      'United Kingdom': 'ዩናይትድ ኪንግደም (UK)',
+      'United Kingdom': 'ዩናይትድ ኪንግደም',
       'Australia': 'አውስትራሊያ',
       'Anywhere': 'የትም ቦታ',
       'Others': 'ሌላ',
@@ -131,21 +131,21 @@ const getTranslation = (key: string, lang: string): string => {
       'Tigray': 'ትግራይ',
       'Sidama': 'ሲዳማ',
       'South Ethiopia': 'ደቡብ ኢትዮጵያ',
-      'Minnesota': 'Minnesota (ሚኒሶታ)',
-      'Texas': 'Texas (ቴክሳስ)',
-      'Virginia': 'Virginia (ቨርጂኒያ)',
-      'California': 'California (ካሊፎርኒያ)',
-      'Washington': 'Washington (ዋሽንግተን)',
-      'Georgia': 'Georgia (ጆርጂያ)',
-      'Colorado': 'Colorado (ኮሎራዶ)',
-      'Ontario': 'Ontario (ኦንታሪዮ)',
-      'British Columbia': 'British Columbia (ብሪቲሽ ኮሎምቢያ)',
-      'Alberta': 'Alberta (አልበርታ)',
-      'Quebec': 'Quebec (ኩቤክ)',
-      'England': 'England (እንግሊዝ)',
-      'Scotland': 'Scotland (ስኮትላንድ)',
-      'New South Wales': 'New South Wales (ኒው ሳውዝ ዌልስ)',
-      'Queensland': 'Queensland (ኩዊንስላንድ)',
+      'Minnesota': 'ሚኒሶታ',
+      'Texas': 'ቴክሳስ',
+      'Virginia': 'ቨርጂኒያ',
+      'California': 'ካሊፎርኒያ',
+      'Washington': 'ዋሽንግተን',
+      'Georgia': 'ጆርጂያ',
+      'Colorado': 'ኮሎራዶ',
+      'Ontario': 'ኦንታሪዮ',
+      'British Columbia': 'ብሪቲሽ ኮሎምቢያ',
+      'Alberta': 'አልበርታ',
+      'Quebec': 'ኩቤክ',
+      'England': 'እንግሊዝ',
+      'Scotland': 'ስኮትላንድ',
+      'New South Wales': 'ኒው ሳውዝ ዌልስ',
+      'Queensland': 'ኩዊንስላንድ',
 
       'Adama': 'አዳማ',
       'Jimma': 'ጅማ',
@@ -160,51 +160,51 @@ const getTranslation = (key: string, lang: string): string => {
       'Yirgalem': 'ይርጋለም',
       'Arba Minch': 'አርባ ምንጭ',
       'Dila': 'ዲላ',
-      'Minneapolis': 'Minneapolis (ሚኒያፖሊስ)',
-      'St. Paul': 'St. Paul (ሴንት ፖል)',
-      'Rochester': 'Rochester (ሮቼስተር)',
-      'Houston': 'Houston (ሂውስተን)',
-      'Dallas': 'Dallas (ዳላስ)',
-      'Austin': 'Austin (ኦስቲን)',
-      'Fairfax': 'Fairfax (ፌርፋክስ)',
-      'Richmond': 'Richmond (ሪችመንድ)',
-      'Alexandria': 'Alexandria (አሌክሳንድሪያ)',
-      'Los Angeles': 'Los Angeles (ሎስ አንጀለስ)',
-      'San Jose': 'San Jose (ሳን ሆዜ)',
-      'San Diego': 'San Diego (ሳን ዲዬጎ)',
-      'Seattle': 'Seattle (ሲያትል)',
-      'Spokane': 'Spokane (ስፖካን)',
-      'Atlanta': 'Atlanta (አትላንታ)',
-      'Decatur': 'Decatur (ዲኬተር)',
-      'Denver': 'Denver (ዴንቨር)',
-      'Aurora': 'Aurora (ኦሮራ)',
-      'Toronto': 'Toronto (ቶሮንቶ)',
-      'Ottawa': 'Ottawa (ኦታዋ)',
-      'Mississauga': 'Mississauga (ሚሲሳጋ)',
-      'London': 'London (ለንደን)',
-      'Vancouver': 'Vancouver (ቫንኩቨር)',
-      'Victoria': 'Victoria (ቪክቶሪያ)',
-      'Burnaby': 'Burnaby (በርናቢ)',
-      'Calgary': 'Calgary (ካልጋሪ)',
-      'Edmonton': 'Edmonton (ኤድመንተን)',
-      'Montreal': 'Montreal (ሞንትሪያል)',
-      'Quebec City': 'Quebec City (ኩቤክ ሲቲ)',
-      'Birmingham': 'Birmingham (በርሚንግሃም)',
-      'Manchester': 'Manchester (ማንቸስተር)',
-      'Leeds': 'Leeds (ሊድስ)',
-      'Glasgow': 'Glasgow (ግላስጎው)',
-      'Edinburgh': 'Edinburgh (ኤዲንብራ)',
-      'Melbourne': 'Melbourne (ሜልበርን)',
-      'Geelong': 'Geelong (ጂሎንግ)',
-      'Sydney': 'Sydney (ሲድኒ)',
-      'Newcastle': 'Newcastle (ኒውካስል)',
-      'Brisbane': 'Brisbane (ብሪስቤን)'
+      'Minneapolis': 'ሚኒያፖሊስ',
+      'St. Paul': 'ሴንት ፖል',
+      'Rochester': 'ሮቼስተር',
+      'Houston': 'ሂውስተን',
+      'Dallas': 'ዳላስ',
+      'Austin': 'ኦስቲን',
+      'Fairfax': 'ፌርፋክስ',
+      'Richmond': 'ሪችመንድ',
+      'Alexandria': 'አሌክሳንድሪያ',
+      'Los Angeles': 'ሎስ አንጀለስ',
+      'San Jose': 'ሳን ሆዜ',
+      'San Diego': 'ሳን ዲዬጎ',
+      'Seattle': 'ሲያትል',
+      'Spokane': 'ስፖካን',
+      'Atlanta': 'አትላንታ',
+      'Decatur': 'ዲኬተር',
+      'Denver': 'ዴንቨር',
+      'Aurora': 'ኦሮራ',
+      'Toronto': 'ቶሮንቶ',
+      'Ottawa': 'ኦታዋ',
+      'Mississauga': 'ሚሲሳጋ',
+      'London': 'ለንደን',
+      'Vancouver': 'ቫንኩቨር',
+      'Victoria': 'ቪክቶሪያ',
+      'Burnaby': 'በርናቢ',
+      'Calgary': 'ካልጋሪ',
+      'Edmonton': 'ኤድመንተን',
+      'Montreal': 'ሞንትሪያል',
+      'Quebec City': 'ኩቤክ ሲቲ',
+      'Birmingham': 'በርሚንግሃም',
+      'Manchester': 'ማንቸስተር',
+      'Leeds': 'ሊድስ',
+      'Glasgow': 'ግላስጎው',
+      'Edinburgh': 'ኤዲንብራ',
+      'Melbourne': 'ሜልበርን',
+      'Geelong': 'ጂሎንግ',
+      'Sydney': 'ሲድኒ',
+      'Newcastle': 'ኒውካስል',
+      'Brisbane': 'ብሪስቤን'
     },
     ti: {
       'Ethiopia': 'ኢትዮጵያ',
-      'USA': 'አሜሪካ (USA)',
+      'USA': 'አሜሪካ',
       'Canada': 'ካናዳ',
-      'United Kingdom': 'ዓባይ ብሪታንያ (UK)',
+      'United Kingdom': 'ዓባይ ብሪታንያ',
       'Australia': 'አውስትራሊያ',
       'Anywhere': 'ኣብ ዝኾነ ቦታ',
       'Others': 'ካልእ',
@@ -214,12 +214,16 @@ const getTranslation = (key: string, lang: string): string => {
       'Oromia': 'ኦሮሚያ',
       'Amhara': 'ኣምሓራ',
       'Tigray': 'ትግራይ',
-      'Sidama': 'ሲማዳ',
+      'Sidama': 'ሲዳማ',
       'South Ethiopia': 'ደቡብ ኢትዮጵያ',
       
       'Mekelle': 'መቐለ',
       'Adigrat': 'ዓዲግራት',
-      'Axum': 'ኣኽሱም'
+      'Axum': 'ኣኽሱም',
+      'Bahir Dar': 'ባሕር ዳር',
+      'Gondar': 'ጎንደር',
+      'Hawassa': 'ሀዋሳ',
+      'Jimma': 'ጂማ'
     },
     om: {
       'Ethiopia': 'Itoophiyaa',
@@ -242,6 +246,56 @@ const getTranslation = (key: string, lang: string): string => {
       'Jimma': 'Jimmaa',
       'Bishoftu': 'Bishooftuu',
       'Hawassa': 'Hawaasaa'
+    },
+    ar: {
+      'Ethiopia': 'إثيوبيا',
+      'USA': 'الولايات المتحدة',
+      'Canada': 'كندا',
+      'United Kingdom': 'المملكة المتحدة',
+      'Australia': 'أستراليا',
+      'Anywhere': 'في أي مكان',
+      'Others': 'آخر',
+      
+      'Harar': 'هرر',
+      'Addis Ababa': 'أديس أبابا',
+      'Oromia': 'أوروميا',
+      'Amhara': 'أمهرا',
+      'Tigray': 'تيغراي',
+      'Sidama': 'سيداما',
+      'South Ethiopia': 'جنوب إثيوبيا',
+      
+      'Adama': 'أداما',
+      'Jimma': 'جيما',
+      'Bishoftu': 'بيشوفتو',
+      'Hawassa': 'هاواسا',
+      'Bahir Dar': 'بحر دار',
+      'Gondar': 'غوندار',
+      'Mekelle': 'ميكيلي'
+    },
+    so: {
+      'Ethiopia': 'Itoobiya',
+      'USA': 'Maraykanka',
+      'Canada': 'Kanada',
+      'United Kingdom': 'Boqortooyada Midowday',
+      'Australia': 'Awstaraaliya',
+      'Anywhere': 'Meel kasta',
+      'Others': 'Kuwo kale',
+      
+      'Harar': 'Harar',
+      'Addis Ababa': 'Caddis Abeba',
+      'Oromia': 'Oromiya',
+      'Amhara': 'Amhara',
+      'Tigray': 'Tigray',
+      'Sidama': 'Sidama',
+      'South Ethiopia': 'Koonfurta Itoobiya',
+      
+      'Adama': 'Adaama',
+      'Jimma': 'Jimma',
+      'Bishoftu': 'Bishooftuu',
+      'Hawassa': 'Xawasa',
+      'Bahir Dar': 'Baxar Daar',
+      'Gondar': 'Gondar',
+      'Mekelle': 'Makelle'
     }
   };
 
@@ -970,12 +1024,10 @@ function OnboardingContent() {
           <div className="space-y-8 animate-in slide-in-from-right duration-300">
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-black text-accent italic uppercase tracking-tighter leading-none">
-                {locale === 'am' ? 'የመገለጫ ፈጣን ማዋቀር' : 'Quick Profile Setup'}
+                {t('quickSetupTitle')}
               </h2>
               <p className="text-gray-500 font-medium italic text-xs max-w-sm mx-auto">
-                {locale === 'am' 
-                  ? 'እባክዎ መለያዎን ለመፍጠር የሚከተሉትን መሰረታዊ መረጃዎች ያሟሉ' 
-                  : 'Please complete the details below to initialize your account.'}
+                {t('quickSetupSubtitle')}
               </p>
             </div>
             
@@ -984,7 +1036,7 @@ function OnboardingContent() {
               {/* Profile Picture Uploader with Preview, Delete & Replace Controls */}
               <div className="space-y-3">
                 <label className="block text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
-                  {locale === 'am' ? 'የመገለጫ ፎቶ' : 'Profile Picture'}
+                  {t('profilePicture')}
                 </label>
                 <div className="flex items-center gap-6">
                   <div className="w-24 h-24 bg-muted border-2 border-primary/20 rounded-[2rem] overflow-hidden relative flex items-center justify-center shadow-inner group">
@@ -994,7 +1046,7 @@ function OnboardingContent() {
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-2">
                           <button
                             type="button"
-                            title={locale === 'am' ? 'ፎቶውን አስወግድ' : 'Delete Photo'}
+                            title={t('deletePhotoTitle')}
                             onClick={() => updateField('avatar_url', '')}
                             className="w-7 h-7 bg-red-600 hover:bg-red-700 text-white rounded-lg flex items-center justify-center shadow-md active:scale-95"
                           >
@@ -1010,9 +1062,9 @@ function OnboardingContent() {
                   <div className="flex flex-col gap-2">
                     <label className="cursor-pointer bg-primary/10 hover:bg-primary/20 text-primary px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-2">
                       {formData.avatar_url ? (
-                        <span>🔄 {locale === 'am' ? 'ፎቶውን ይቀይሩ' : 'Replace Photo'}</span>
+                        <span>🔄 {t('replacePhotoBtn')}</span>
                       ) : (
-                        <span>📷 {locale === 'am' ? 'ፎቶ ይጫኑ' : 'Upload Photo'}</span>
+                        <span>📷 {t('uploadPhotoBtn')}</span>
                       )}
                       <input 
                         type="file" 
@@ -1044,7 +1096,7 @@ function OnboardingContent() {
                         onClick={() => updateField('avatar_url', '')}
                         className="text-[10px] text-red-500 font-bold hover:underline self-start ml-2 flex items-center gap-1"
                       >
-                        🗑️ {locale === 'am' ? 'ፎቶውን አጥፋ' : 'Remove Avatar'}
+                        🗑️ {t('removeAvatar')}
                       </button>
                     )}
                   </div>
@@ -1054,17 +1106,17 @@ function OnboardingContent() {
               {/* Legal Name Input */}
               <div className="space-y-2">
                 <label className="block text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
-                  {locale === 'am' ? 'ህጋዊ ሙሉ ስም (በመታወቂያ/ፓስፖርት ላይ ያለ)' : 'Official Legal Full Name (As on Passport/ID)'}
+                  {t('officialName')}
                 </label>
                 <input 
                   type="text" 
                   value={formData.full_name}
                   onChange={(e) => updateField('full_name', e.target.value)}
                   className="w-full rounded-2xl border-gray-200 shadow-sm focus:border-primary focus:ring-primary p-4 bg-white text-sm font-semibold border" 
-                  placeholder={locale === 'am' ? 'ለምሳሌ፡ ዮናስ አበበ ከበደ' : 'e.g. Dawit Kebede Alemu'}
+                  placeholder={t('officialNamePlaceholder')}
                 />
                 <p className="text-[10px] text-gray-400 font-medium ml-1">
-                  {locale === 'am' ? '💡 እባክዎ ህጋዊ ሙሉ ስምዎን ያስገቡ (የጎግል/ፌስቡክ ስም አይወሰድም)' : '💡 Enter your official legal name (Google/Facebook names are not pre-populated)'}
+                  💡 {t('officialNameHint')}
                 </p>
               </div>
 
@@ -1086,7 +1138,7 @@ function OnboardingContent() {
               {!isBirthDatePreFilled ? (
                 <div className="space-y-3">
                   <label className="block text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
-                    {locale === 'am' ? 'የልደት ቀን' : 'Birth Date'}
+                    {t('fields.birthDate')}
                   </label>
                   <div className="flex gap-2 p-1.5 bg-[#F1F5F9] rounded-2xl w-fit border border-gray-150 shadow-sm">
                     <button type="button" onClick={() => updateField('calendar_type', 'gregorian')} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.calendar_type === 'gregorian' ? 'bg-white text-primary shadow-md' : 'text-gray-400'}`}>{t('calendar.gregorian')}</button>
@@ -1129,7 +1181,7 @@ function OnboardingContent() {
               ) : (
                 <div className="space-y-1 bg-[#F8F9FA]/40 p-4 rounded-2xl border border-gray-150">
                   <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider">
-                    {locale === 'am' ? 'የልደት ቀን' : 'Birth Date'}
+                    {t('fields.birthDate')}
                   </span>
                   <p className="text-sm font-bold text-accent">{formData.birth_date}</p>
                 </div>
@@ -1152,15 +1204,15 @@ function OnboardingContent() {
               {/* Religion Importance Sub-field (Matching Weight Engine) */}
               <div className="space-y-2">
                 <label className="block text-xs font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center justify-between">
-                  <span>{locale === 'am' ? 'ሃይማኖት ለእርስዎ ምን ያህል አስፈላጊ ነው?' : locale === 'om' ? 'Amantaan Hammam Murteessaadha?' : locale === 'ti' ? 'እምነት ንዓኻትኩም ክንደይ ኣገዳሲ እዩ?' : 'Importance of Religion'}</span>
-                  <span className="text-[10px] text-primary font-bold">{locale === 'am' ? 'የማቺንግ ማጣሪያ' : 'Match Filter'}</span>
+                  <span>{t('religionImportanceLabel')}</span>
+                  <span className="text-[10px] text-primary font-bold">{t('matchFilterLabel')}</span>
                 </label>
                 <CustomSelect
                   value={formData.religion_importance}
                   onChange={(val) => updateField('religion_importance', val)}
                   options={RELIGION_IMPORTANCE_OPTIONS.map(opt => ({ value: opt, label: t_const(`ReligionImportance.${opt}`) }))}
-                  placeholder={locale === 'am' ? 'የሃይማኖት አስፈላጊነት' : 'Importance of Religion'}
-                  label={locale === 'am' ? 'የሃይማኖት አስፈላጊነት' : 'Importance of Religion'}
+                  placeholder={t('religionImportanceLabel')}
+                  label={t('religionImportanceLabel')}
                 />
               </div>
 
@@ -1181,14 +1233,14 @@ function OnboardingContent() {
               {/* Future Children Input */}
               <div className="space-y-2">
                 <label className="block text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
-                  {locale === 'am' ? 'የልጅ እቅድ' : 'Future Children'}
+                  {t('futurChildrenLabel')}
                 </label>
                 <CustomSelect
                   value={formData.future_children}
                   onChange={(val) => updateField('future_children', val)}
                   options={FUTURE_CHILDREN_OPTIONS.map((o: string) => ({ value: o, label: t_const(`FutureChildren.${o}`) }))}
-                  placeholder={locale === 'am' ? 'የልጅ እቅድ' : 'Future Children'}
-                  label={locale === 'am' ? 'የልጅ እቅድ' : 'Future Children'}
+                  placeholder={t('futurChildrenLabel')}
+                  label={t('futurChildrenLabel')}
                 />
               </div>
 
@@ -1196,19 +1248,19 @@ function OnboardingContent() {
               <div className="space-y-4 bg-[#F8F9FA]/50 p-6 rounded-[2rem] border border-gray-150 relative">
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-2 ml-1">
                   <span className="block text-xs font-black text-slate-600 uppercase tracking-widest">
-                    {locale === 'am' ? 'የመኖሪያ አድራሻ (Location)' : locale === 'ti' ? 'ናይ መበቆል ኣድራሻ (Location)' : locale === 'om' ? 'Bakka Jireenyaa (Location)' : 'Location Details'}
+                    {t('locationDetails')}
                   </span>
                   <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 text-amber-700 border border-amber-500/20 rounded-full text-[10px] font-bold">
                     {isLocationLoading ? (
                       <>
                         <Loader2 size={12} className="animate-spin text-amber-600 shrink-0" />
-                        <span>{locale === 'am' ? 'አድራሻዎን በማወቅ ላይ...' : 'Detecting your location...'}</span>
+                        <span>{t('detectingLocation')}</span>
                       </>
                     ) : (
                       <>
                         <Lock size={12} className="text-amber-600 shrink-0" />
                         <span>
-                          {locale === 'am' ? 'በተረጋገጠ አድራሻ የተቆለፈ (Locked)' : locale === 'ti' ? 'ብተረጋገፀ ኣድራሻ ዝተዓሸገ' : locale === 'om' ? 'Bakka Mirkanaa\'aan Cufame' : 'Locked via Verified Location'}
+                          {t('lockedViaLocation')}
                         </span>
                       </>
                     )}
@@ -1217,7 +1269,7 @@ function OnboardingContent() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1">
                     <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider ml-1">
-                      {locale === 'am' ? 'ሀገር' : locale === 'ti' ? 'ሃገር' : locale === 'om' ? 'Biyya' : 'Country'}
+                      {t('fields.country')}
                     </label>
                     <CustomSelect
                       value={selectedCountry || 'Ethiopia'}
@@ -1226,22 +1278,22 @@ function OnboardingContent() {
                       options={[
                         ...[...COUNTRIES]
                           .sort((a, b) => {
-                            const nameA = locale === 'am' ? a.nameAm : a.name;
-                            const nameB = locale === 'am' ? b.nameAm : b.name;
+                            const nameA = t_const(`Countries.${a.name}`) || a.name;
+                            const nameB = t_const(`Countries.${b.name}`) || b.name;
                             return nameA.localeCompare(nameB, locale);
                           })
-                          .map(c => ({ value: c.name, label: locale === 'am' ? c.nameAm : c.name })),
-                        { value: 'Others', label: locale === 'am' ? 'ሌላ' : locale === 'ti' ? 'ካልእ' : locale === 'om' ? 'Kan biraa' : 'Others' }
+                          .map(c => ({ value: c.name, label: t_const(`Countries.${c.name}`) || c.name })),
+                        { value: 'Others', label: t('othersOption') }
                       ]}
-                      placeholder={locale === 'am' ? 'ሀገር ይምረጡ' : locale === 'ti' ? 'ሃገር ይምረጡ' : locale === 'om' ? 'Biyya Filadhu' : 'Select Country'}
-                      label={locale === 'am' ? 'ሀገር' : locale === 'ti' ? 'ሃገር' : locale === 'om' ? 'Biyya' : 'Country'}
+                      placeholder={t('fields.countryPlaceholder')}
+                      label={t('fields.country')}
                     />
                     {selectedCountry === 'Others' && (
                       <input
                         type="text"
                         disabled
                         readOnly
-                        placeholder={locale === 'am' ? 'እባክዎ ሀገር ይጥቀሱ...' : 'Specify country...'}
+                        placeholder={t('specifyCountry')}
                         value={customCountry}
                         className="w-full p-3 mt-2 bg-gray-100 border border-gray-200 rounded-xl text-xs font-semibold text-gray-500 cursor-not-allowed opacity-75 pointer-events-none"
                       />
@@ -1250,7 +1302,7 @@ function OnboardingContent() {
 
                   <div className="space-y-1">
                     <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider ml-1">
-                      {locale === 'am' ? 'ክልል/ግዛት' : locale === 'ti' ? 'ክፍለ ሃገር' : locale === 'om' ? 'Naannoo' : 'Region'}
+                      {locale === 'am' ? 'ክልል/ግዛት' : locale === 'ti' ? 'ክፍለ ሃገር' : locale === 'om' ? 'Naannoo' : locale === 'ar' ? 'المنطقة' : locale === 'so' ? 'Gobolka' : 'Region'}
                     </label>
                     <CustomSelect
                       value={selectedRegion || 'Addis Ababa'}
@@ -1260,17 +1312,17 @@ function OnboardingContent() {
                         ...(selectedCountry && selectedCountry !== 'Others'
                           ? Object.keys(locationData[selectedCountry] || {}).map(region => ({ value: region, label: getTranslation(region, locale) }))
                           : []),
-                        ...(selectedCountry ? [{ value: 'Others', label: locale === 'am' ? 'ሌላ' : locale === 'ti' ? 'ካልእ' : locale === 'om' ? 'Kan biraa' : 'Others' }] : [])
+                        ...(selectedCountry ? [{ value: 'Others', label: t('othersOption') }] : [])
                       ]}
-                      placeholder={locale === 'am' ? 'ክልል/ግዛት ይምረጡ' : locale === 'ti' ? 'ክፍለ ሃገር ይምረጡ' : locale === 'om' ? 'Naannoo Filadhu' : 'Select Region'}
-                      label={locale === 'am' ? 'ክልል/ግዛት' : locale === 'ti' ? 'ክፍለ ሃገር' : locale === 'om' ? 'Naannoo' : 'Region'}
+                      placeholder={t('specifyRegion')}
+                      label={locale === 'am' ? 'ክልል/ግዛት' : locale === 'ti' ? 'ክፍለ ሃገር' : locale === 'om' ? 'Naannoo' : locale === 'ar' ? 'المنطقة' : locale === 'so' ? 'Gobolka' : 'Region'}
                     />
                     {selectedRegion === 'Others' && (
                       <input
                         type="text"
                         disabled
                         readOnly
-                        placeholder={locale === 'am' ? 'እባክዎ ክልል ይጥቀሱ...' : 'Specify region...'}
+                        placeholder={t('specifyRegion')}
                         value={customRegion}
                         className="w-full p-3 mt-2 bg-gray-100 border border-gray-200 rounded-xl text-xs font-semibold text-gray-500 cursor-not-allowed opacity-75 pointer-events-none"
                       />
@@ -1279,7 +1331,7 @@ function OnboardingContent() {
 
                   <div className="space-y-1">
                     <label className="text-[9px] font-black uppercase text-gray-400 tracking-wider ml-1">
-                      {locale === 'am' ? 'ከተማ' : locale === 'ti' ? 'ከተማ' : locale === 'om' ? 'Magaalaa' : 'City'}
+                      {locale === 'am' ? 'ከተማ' : locale === 'ti' ? 'ከተማ' : locale === 'om' ? 'Magaalaa' : locale === 'ar' ? 'المدينة' : locale === 'so' ? 'Magaalada' : 'City'}
                     </label>
                     <CustomSelect
                       value={selectedCity || 'Addis Ababa'}
@@ -1289,17 +1341,17 @@ function OnboardingContent() {
                         ...(selectedCountry && selectedRegion && selectedRegion !== 'Others'
                           ? (locationData[selectedCountry]?.[selectedRegion] || []).map(city => ({ value: city, label: getTranslation(city, locale) }))
                           : []),
-                        ...(selectedRegion ? [{ value: 'Others', label: locale === 'am' ? 'ሌላ' : locale === 'ti' ? 'ካልእ' : locale === 'om' ? 'Kan biraa' : 'Others' }] : [])
+                        ...(selectedRegion ? [{ value: 'Others', label: t('othersOption') }] : [])
                       ]}
-                      placeholder={locale === 'am' ? 'ከተማ ይምረጡ' : locale === 'ti' ? 'ከተማ ይምረጡ' : locale === 'om' ? 'Magaalaa Filadhu' : 'Select City'}
-                      label={locale === 'am' ? 'ከተማ' : locale === 'ti' ? 'ከተማ' : locale === 'om' ? 'Magaalaa' : 'City'}
+                      placeholder={t('specifyCity')}
+                      label={locale === 'am' ? 'ከተማ' : locale === 'ti' ? 'ከተማ' : locale === 'om' ? 'Magaalaa' : locale === 'ar' ? 'المدينة' : locale === 'so' ? 'Magaalada' : 'City'}
                     />
                     {selectedCity === 'Others' && (
                       <input
                         type="text"
                         disabled
                         readOnly
-                        placeholder={locale === 'am' ? 'እባክዎ ከተማ ይጥቀሱ...' : 'Specify city...'}
+                        placeholder={t('specifyCity')}
                         value={customCity}
                         className="w-full p-3 mt-2 bg-gray-100 border border-gray-200 rounded-xl text-xs font-semibold text-gray-500 cursor-not-allowed opacity-75 pointer-events-none"
                       />
@@ -1318,14 +1370,14 @@ function OnboardingContent() {
                     className="w-5 h-5 rounded-lg border-gray-300 text-primary focus:ring-primary/20"
                   />
                   <span className="text-xs font-bold text-accent">
-                    {locale === 'am' ? 'ልጆች አሉኝ' : 'I have children'}
+                    {t('childrenCheck')}
                   </span>
                 </label>
 
                 {hasChildren && (
                   <div className="space-y-2 animate-in slide-in-from-top-4 duration-300">
                     <label className="text-[9px] font-black uppercase text-slate-500 tracking-wider ml-1">
-                      {locale === 'am' ? 'የልጆች ብዛት' : 'Number of Children'}
+                      {t('childrenCountLabel')}
                     </label>
                     <CustomSelect
                       value={childrenCount}
@@ -1334,8 +1386,8 @@ function OnboardingContent() {
                         value: c,
                         label: t_const(`ChildrenCount.${c}`)
                       }))}
-                      placeholder={locale === 'am' ? 'የልጆች ብዛት' : 'Number of Children'}
-                      label={locale === 'am' ? 'የልጆች ብዛት' : 'Number of Children'}
+                      placeholder={t('childrenCountLabel')}
+                      label={t('childrenCountLabel')}
                     />
                   </div>
                 )}
@@ -1394,7 +1446,6 @@ function OnboardingContent() {
             <h2 className="text-3xl font-bold text-accent italic">{t('fields.partnerPrefs')}</h2>
             
             <div className="space-y-6">
-              {/* 1. Country Selection (Searchable Multi-Select up to 5 + Removable Badges) */}
               <div className="space-y-3 bg-white/80 backdrop-blur-md p-5 rounded-2xl border border-gray-150 shadow-sm">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-black uppercase text-slate-600 tracking-wider">
@@ -1402,8 +1453,8 @@ function OnboardingContent() {
                   </label>
                   <span className="text-[10px] font-bold text-slate-400">
                     {formData.partner_countries.includes('Anywhere')
-                      ? (locale === 'am' ? 'የትም ቦታ' : 'Anywhere')
-                      : `${formData.partner_countries.length}/5 ${locale === 'am' ? 'አገራት' : 'Countries'}`}
+                      ? t('partnerAnywhereLabel')
+                      : t('partnerCountriesCount', { count: formData.partner_countries.length })}
                   </span>
                 </div>
 
@@ -1411,7 +1462,7 @@ function OnboardingContent() {
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder={locale === 'am' ? 'ሀገር በጽሁፍ ይፈልጉ...' : locale === 'om' ? 'Biyya barbaadi...' : locale === 'ti' ? 'ሃገር ብጽሑፍ ፈልግ...' : 'Search country...'}
+                    placeholder={t('searchCountryPlaceholder')}
                     value={partnerCountrySearch}
                     onChange={(e) => setPartnerCountrySearch(e.target.value)}
                     className="w-full p-3 pl-9 bg-slate-50 border border-gray-200 text-slate-900 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -1423,8 +1474,7 @@ function OnboardingContent() {
                 {formData.partner_countries.length > 0 && !formData.partner_countries.includes('Anywhere') && (
                   <div className="flex flex-wrap gap-1.5 pt-1">
                     {formData.partner_countries.map(countryName => {
-                      const foundObj = COUNTRIES.find(c => c.name === countryName);
-                      const displayLbl = locale === 'am' ? (foundObj?.nameAm || countryName) : countryName;
+                      const displayLbl = t_const(`Countries.${countryName}`) || countryName;
                       return (
                         <span key={countryName} className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary text-white text-[11px] font-bold rounded-full shadow-xs">
                           {displayLbl}
@@ -1453,21 +1503,22 @@ function OnboardingContent() {
                       formData.partner_countries.includes('Anywhere') ? 'bg-accent text-white shadow-xs' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
                     }`}
                   >
-                    🌍 {locale === 'am' ? 'የትም ቦታ (Anywhere)' : 'Anywhere'}
+                    🌍 {t('partnerAnywhereLabel')}
                   </button>
 
                   {COUNTRIES.filter(c => {
                     if (!partnerCountrySearch.trim()) return true;
                     const q = partnerCountrySearch.toLowerCase();
-                    return c.name.toLowerCase().includes(q) || (c.nameAm && c.nameAm.toLowerCase().includes(q));
+                    const translatedName = (t_const(`Countries.${c.name}`) || c.name).toLowerCase();
+                    return c.name.toLowerCase().includes(q) || translatedName.includes(q);
                   })
                   .sort((a, b) => {
-                    const nameA = locale === 'am' ? a.nameAm : a.name;
-                    const nameB = locale === 'am' ? b.nameAm : b.name;
+                    const nameA = t_const(`Countries.${a.name}`) || a.name;
+                    const nameB = t_const(`Countries.${b.name}`) || b.name;
                     return nameA.localeCompare(nameB, locale);
                   })
                   .map(c => {
-                    const cleanName = locale === 'am' ? (c as any).nameAm : c.name;
+                    const cleanName = t_const(`Countries.${c.name}`) || c.name;
                     const isSelected = formData.partner_countries.includes(c.name);
 
                     return (
@@ -1499,10 +1550,10 @@ function OnboardingContent() {
               {!formData.partner_countries.includes('Anywhere') && formData.partner_countries.length > 0 && (
                 <div className="space-y-3 bg-white/80 backdrop-blur-md p-5 rounded-2xl border border-gray-150 shadow-sm animate-in slide-in-from-top-3 duration-300">
                   <label className="text-xs font-black uppercase text-slate-600 tracking-wider block">
-                    🏢 {locale === 'am' ? 'ተመራጭ ከተማ (ከተፈለገ)' : 'Preferred City (Optional)'}
+                    🏢 {t('partnerCityOptionalLabel')}
                   </label>
                   <p className="text-[11px] text-slate-500">
-                    {locale === 'am' ? 'የተወሰነ ከተማ ላይ ትኩረት ማድረግ ከፈለጉ ከተማዎችን ይምረጡ' : 'Select specific cities for pinpoint local matching'}
+                    {t('partnerCityDesc')}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {['Addis Ababa', 'Harar', 'Hawassa', 'Bahir Dar', 'Dire Dawa', 'Mekelle', 'Adama', 'Gondar', 'Jimma', 'Minneapolis', 'Washington DC', 'London', 'Toronto'].map(cityName => {
@@ -1522,7 +1573,7 @@ function OnboardingContent() {
                             isCitySel ? 'bg-accent text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                           }`}
                         >
-                          {cityName}
+                          {getTranslation(cityName, locale)}
                         </button>
                       );
                     })}
@@ -1548,7 +1599,7 @@ function OnboardingContent() {
                     {t('fields.partnerReligionPref')}
                   </label>
                   <span className="text-[10px] font-bold text-slate-400">
-                    {locale === 'am' ? 'ባለብዙ ምርጫ' : 'Multi-Select'}
+                    {t('multiSelectLabel')}
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -1564,7 +1615,7 @@ function OnboardingContent() {
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                     }`}
                   >
-                    ✨ {locale === 'am' ? 'ምንም ይሁን (Any Religion)' : 'Does Not Matter'}
+                    ✨ {t('anyReligionBtn')}
                   </button>
 
                   {RELIGIONS.map(r => {
@@ -1642,7 +1693,7 @@ function OnboardingContent() {
                  <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-10">
                    <Loader2 size={32} className="animate-spin text-primary" />
                    <p className="text-[10px] font-black uppercase tracking-widest text-primary animate-pulse">
-                     {locale === 'am' ? 'ሰነዱን እያረጋገጥን ነው...' : 'Validating document...'}
+                     {t('validatingDoc')}
                    </p>
                  </div>
                )}
@@ -1717,12 +1768,12 @@ function OnboardingContent() {
                 {idDocValidated ? (
                   <>
                     <CheckCircle2 size={14} />
-                    <span>{locale === 'am' ? 'ሰነዱ ተረጋግጧል — ወደ ሰልፊ ማረጋገጫ ይቀጥሉ' : 'Document Verified — Proceed to Selfie'}</span>
+                    <span>{t('docVerifiedMsg')}</span>
                   </>
                 ) : (
                   <>
                     <AlertCircle size={14} />
-                    <span>{locale === 'am' ? 'ሰነዱ አልተረጋገጠም — ሌላ ፎቶ ይጫኑ' : 'Document Not Verified — Please Re-upload'}</span>
+                    <span>{t('docNotVerifiedMsg')}</span>
                   </>
                 )}
               </div>
@@ -1731,35 +1782,35 @@ function OnboardingContent() {
             {/* Trust & Security Explainer Box */}
             <div className="bg-slate-50 border border-slate-200/80 rounded-[2rem] p-6 text-left space-y-4 shadow-inner">
                <h4 className="font-extrabold text-xs text-accent uppercase tracking-wider flex items-center gap-2">
-                 🔒 {locale === 'am' ? 'ለምን መታወቂያ እና ሰልፊ ማረጋገጫ ያስፈልጋል?' : 'Why Identity Verification is Required'}
+                 🔒 {t('whyVerification')}
                </h4>
                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-gray-600">
                  <div className="flex gap-2.5 items-start bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
                    <span className="text-base">🤖</span>
                    <div>
-                     <p className="font-bold text-gray-900">{locale === 'am' ? 'የሰውነት ማረጋገጫ (Bot Defense)' : 'Human Verification'}</p>
-                     <p className="text-[11px] text-gray-500">{locale === 'am' ? 'ቦት ወይም የውሸት አካውንት አለመሆንዎን ለማረጋገጥ።' : 'To confirm you are a real human and prevent fake/bot accounts.'}</p>
+                     <p className="font-bold text-gray-900">{t('humanVerification')}</p>
+                     <p className="text-[11px] text-gray-500">{t('humanVerificationDesc')}</p>
                    </div>
                  </div>
                  <div className="flex gap-2.5 items-start bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
                    <span className="text-base">💳</span>
                    <div>
-                     <p className="font-bold text-gray-900">{locale === 'am' ? 'የገንዘብ ወጪና ትራንዛክሽን' : 'Financial Security'}</p>
-                     <p className="text-[11px] text-gray-500">{locale === 'am' ? 'ገንዘብ ወጪ ለማድረግ የስም እና የመታወቂያ መመሳሰል የግዴታ ነው።' : 'Required for safe money withdrawals and bank transactions.'}</p>
+                     <p className="font-bold text-gray-900">{t('financialSecurity')}</p>
+                     <p className="text-[11px] text-gray-500">{t('financialSecurityDesc')}</p>
                    </div>
                  </div>
                  <div className="flex gap-2.5 items-start bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
                    <span className="text-base">🎁</span>
                    <div>
-                     <p className="font-bold text-gray-900">{locale === 'am' ? 'ስጦታዎች እና ዲሊቨሪ' : 'Gifts & Services'}</p>
-                     <p className="text-[11px] text-gray-500">{locale === 'am' ? 'አካላዊ ስጦታዎች እና አገልግሎቶች ለተረጋገጠ ሰው ብቻ ይደርሳሉ።' : 'Ensures verified physical delivery of gifts and services.'}</p>
+                     <p className="font-bold text-gray-900">{t('giftsAndServices')}</p>
+                     <p className="text-[11px] text-gray-500">{t('giftsAndServicesDesc')}</p>
                    </div>
                  </div>
                  <div className="flex gap-2.5 items-start bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
                    <span className="text-base">🛡️</span>
                    <div>
-                     <p className="font-bold text-gray-900">{locale === 'am' ? 'የመረጃ ምስጢራዊነት ጥበቃ' : 'Data Privacy Guarantee'}</p>
-                     <p className="text-[11px] text-gray-500">{locale === 'am' ? 'መታወቂያዎ በTLS ተመስጥሮ ለአድሚን ፍተሻ ብቻ ይውላል፤ ለ3ኛ ወገን አይሰጥም።' : 'Encrypted with TLS, used solely for verification, and never shared.'}</p>
+                     <p className="font-bold text-gray-900">{t('dataPrivacy')}</p>
+                     <p className="text-[11px] text-gray-500">{t('dataPrivacyDesc')}</p>
                    </div>
                  </div>
                </div>
@@ -1776,7 +1827,7 @@ function OnboardingContent() {
                }}
                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-4 rounded-[1.5rem] font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 border border-slate-200"
             >
-               <span>{locale === 'am' ? 'ለጊዜው እለፍ (ወደ ዳሽቦርድ ሂድ • Silver Tier)' : 'Skip for Now (Continue to Dashboard as Silver Tier)'}</span>
+               <span>{t('skipNowBtn')}</span>
                <ChevronRight size={16} />
             </button>
            </div>
@@ -1789,16 +1840,10 @@ function OnboardingContent() {
                  <User size={40} className="text-primary" />
               </div>
               <h2 className="text-3xl font-black text-accent italic">
-                {locale === 'am' ? 'የቪዲዮ ሰልፊ ማረጋገጫ' : locale === 'ti' ? 'ናይ ቪድዮ ሰልፊ ምርግጋጽ' : locale === 'om' ? 'Mirkaneessa Viidiyoo Selfie' : 'Selfie Video Verification'}
+                {t('selfieTitle')}
               </h2>
               <p className="text-gray-500 max-w-sm mx-auto text-xs font-medium leading-relaxed">
-                {locale === 'am' 
-                  ? 'ካሜራዎ መለያዎን ለማረጋገጥ በጥብቅ ያስፈልጋል። እባክዎ ካሜራውን በመክፈት የ3 ሰከንድ ቀጥታ ቪዲዮ ይቅረጹ ወይም አጭር የሰልፊ ቪዲዮ ይጫኑ። የተመዘገበው ቪዲዮ ከላኩት መታወቂያ ጋር የሚስማማ መሆኑን ለማረጋገጥ ብቻ ያገለግላል።' 
-                  : locale === 'ti'
-                  ? 'ካሜራኹም መለያኹም ንምርግጋጽ ብጥብቂ የድሊ እዩ። በጃኹም ካሜራ ብምኽፋት ናይ 3 ሰከንድ ቪድዮ ሰልፊ ይቕረጹ ወይ ናይ ሰልፊ ቪድዮ ይጽዓኑ።'
-                  : locale === 'om'
-                  ? 'Koontaa kee mirkaneessuuf kaameraan kee baay\'ee barbaachisaadha. Maaloo kaameraa banuun viidiyoo selfii sekondii 3 waraabi ykn viidiyoo selfii gabaabaa fe\'i.'
-                  : 'Your camera is strictly required to capture your profile verification image and record identity verification media. Please record a 3-second live selfie video or upload a video file. Your camera is used solely to verify profile authenticity.'}
+                {t('selfieDesc')}
               </p>
             </div>
 
@@ -1812,7 +1857,7 @@ function OnboardingContent() {
             {cameraActive && !cameraError && (
               <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-green-50 border border-green-200 rounded-full text-green-700 text-[10px] font-bold uppercase tracking-widest animate-pulse">
                 <CheckCircle2 size={14} />
-                <span>{locale === 'am' ? 'ካሜራ ተፈቅዷል • በላይቭ ላይ ነው' : 'Camera Allowed • Live Stream Active'}</span>
+                <span>{t('cameraLiveMsg')}</span>
               </div>
             )}
 
@@ -1829,7 +1874,7 @@ function OnboardingContent() {
                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
                     <Camera size={32} className="text-primary group-hover:scale-110 transition-all" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                      {locale === 'am' ? 'ላይቭ ካሜራ ዝግጁ ነው' : locale === 'ti' ? 'ናይ ቀጥታ ካሜራ ጠፊኡ' : locale === 'om' ? 'Kaameraan dhaameera' : 'Live Camera Off'}
+                      {t('cameraOffMsg')}
                     </span>
                  </div>
                )}
@@ -1837,7 +1882,7 @@ function OnboardingContent() {
                {isRecording && (
                  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white z-10">
                     <p className="text-lg font-black tracking-widest animate-pulse uppercase">
-                      {locale === 'am' ? 'እየተቀረጸ ነው' : locale === 'ti' ? 'እየተቐረጸ እዩ' : locale === 'om' ? 'Waraabamaa jira' : 'Recording'}
+                      {t('recordingNow')}
                     </p>
                     <p className="text-5xl font-black mt-2 text-primary">{countdown}s</p>
                  </div>
@@ -1852,7 +1897,7 @@ function OnboardingContent() {
                   onClick={startCamera}
                   className="bg-primary text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
                 >
-                  {locale === 'am' ? 'ካሜራ ክፈት' : locale === 'ti' ? 'ካሜራ ክፈት' : locale === 'om' ? 'Kaameraa Bani' : 'Open Live Camera'}
+                  {t('openCameraBtn')}
                 </button>
               )}
 
@@ -1862,7 +1907,7 @@ function OnboardingContent() {
                   onClick={recordVideo}
                   className="bg-red-500 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-red-500/20 hover:scale-105 active:scale-95 transition-all animate-pulse"
                 >
-                  {locale === 'am' ? 'መቅረጽ ጀምር (3 ሰከንድ)' : locale === 'ti' ? 'ምቕራጽ ጀምር (3 ሰከንድ)' : locale === 'om' ? 'Waraabuu jalqabi (Sec 3)' : 'Record (3s)'}
+                  {t('startRecordBtn')}
                 </button>
               )}
 
@@ -1877,7 +1922,7 @@ function OnboardingContent() {
                   }}
                   className="bg-accent text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
                 >
-                  {locale === 'am' ? 'እንደገና ቅረጽ' : locale === 'ti' ? 'ከም ብሓዱሽ ቅረጽ' : locale === 'om' ? 'Deebisi waraabi' : 'Retake Video'}
+                  {t('retakeBtn')}
                 </button>
               )}
             </div>
@@ -1892,19 +1937,19 @@ function OnboardingContent() {
               }`}>
                  {isVerifying ? (
                    <p className="text-xs font-bold text-primary uppercase tracking-widest flex items-center justify-center gap-2 animate-pulse">
-                     <Loader2 className="animate-spin" size={14} /> {locale === 'am' || locale === 'ti' ? (locale === 'am' ? 'መረጃዎችዎን እያመሳከርን ነው...' : 'ሓበሬታታትኩም ነረጋግጽ ኣለና...') : 'Verifying Identity Match...'}
+                     <Loader2 className="animate-spin" size={14} /> {t('verifyingMsg')}
                    </p>
                  ) : formData.verification_status === 'verified' ? (
                     <div className="flex flex-col items-center gap-3">
                         <div className="flex items-center gap-2 bg-green-500 text-white px-6 py-2 rounded-full font-black uppercase tracking-widest text-[10px] shadow-lg shadow-green-200 animate-bounce">
-                           <CheckCircle2 size={16} /> {locale === 'am' ? 'መለያዎ ተረጋግጧል' : locale === 'ti' ? 'መለያኹም ተረጋጊጹ' : locale === 'om' ? 'Koontaan kee mirkanaa\'eera' : 'Account Verified'}
+                           <CheckCircle2 size={16} /> {t('accountVerifiedMsg')}
                         </div>
                         <p className="text-[10px] text-green-600 font-bold">{t('idVerification.idCaptured')}</p>
                      </div>
                  ) : errorMsg ? (
                     <div className="flex flex-col items-center gap-3">
                         <div className="flex items-center gap-2 bg-red-500 text-white px-6 py-2 rounded-full font-black uppercase tracking-widest text-[10px] shadow-lg shadow-red-200">
-                           <AlertCircle size={16} /> {locale === 'am' ? 'ማረጋገጫው አልተሳካም' : locale === 'ti' ? 'ምርግጋጽ ኣይተዓወተን' : locale === 'om' ? 'Mirkaneessi hin milkoofne' : 'Verification Failed'}
+                           <AlertCircle size={16} /> {t('verifyFailedMsg')}
                         </div>
                         <p className="text-[10px] text-red-600 font-medium px-4">{errorMsg}</p>
                         <button 
@@ -1912,7 +1957,7 @@ function OnboardingContent() {
                            onClick={() => setStep(1)} 
                            className="text-[10px] font-black text-primary uppercase tracking-widest underline mt-1 hover:text-primary/80 transition-colors"
                          >
-                            {locale === 'am' ? 'ስም ወይም የልደት ቀን ለማስተካከል ወደ ደረጃ 1 ይመለሱ' : locale === 'ti' ? 'ስም ወይስ እለት ልደት ንምስትኽኻል ናብ ደረጃ 1 ተመለሱ' : locale === 'om' ? 'Maqaa ykn guyyaa dhalootaa sirreessuuf gara tarkaanfii 1ffaatti deebi\'i' : 'Return to Step 1 to correct profile details'}
+                            {t('returnToStep1Btn')}
                          </button>
                     </div>
                  ) : null}
@@ -1924,7 +1969,7 @@ function OnboardingContent() {
                onClick={() => router.push('/dashboard')}
                className="w-full mt-6 bg-slate-100 hover:bg-slate-200 text-gray-600 py-4 rounded-[1.5rem] font-bold text-xs uppercase tracking-widest transition-all"
              >
-                {locale === 'am' ? 'ወደ ዳሽቦርድ ይመለሱ' : locale === 'ti' ? 'ናብ ዳሽቦርድ ተመለሱ' : locale === 'om' ? 'Gara Daashboordiitti deebi\'i' : 'Back to Dashboard'}
+                {t('backToDashboardBtn')}
              </button>
            </div>
          );
@@ -1935,9 +1980,7 @@ function OnboardingContent() {
                 <h2 className="text-3xl font-black text-accent italic">{t('gallery')}</h2>
                 <p className="text-gray-500">{t('gallerySubtitle')}</p>
                 <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-2xl text-[10px] text-amber-800 dark:text-amber-400 font-bold uppercase tracking-wider max-w-sm mx-auto leading-relaxed">
-                   ⚠️ {locale === 'am' 
-                     ? 'ጥብቅ መመሪያ፡ እባክዎ የእርስዎን ትክክለኛ ፎቶ ብቻ ይጫኑ። የካርቱን፣ ተፈጥሮ (ልክ እንደ መልክዓ ምድር)፣ ወይም የታዋቂ ሰዎች ፎቶዎችን መጫን በጥብቅ የተከለከለ ነው!' 
-                     : 'Strict Guidelines: Only upload authentic photos of yourself. Cartoons, landscapes, or celebrity photos are strictly blocked!'}
+                   ⚠️ {t('galleryStrictWarning')}
                 </div>
              </div>
              <div className="grid grid-cols-3 gap-3">
@@ -1947,14 +1990,14 @@ function OnboardingContent() {
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-2 p-2">
                          <button 
                             type="button" 
-                            title={locale === 'am' ? 'ፎቶውን አስወግድ (Delete)' : 'Delete Photo'} 
+                            title={t('deletePhotoTitle')} 
                             onClick={() => updateField('gallery_photos', formData.gallery_photos.filter((_, idx) => idx !== i))} 
                             className="w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-xl flex items-center justify-center shadow-lg transition-transform active:scale-95"
                          >
                             <X size={16} />
                          </button>
                          <label 
-                            title={locale === 'am' ? 'ፎቶውን ይቀይሩ (Replace)' : 'Replace Photo'}
+                            title={t('replacePhotoBtn')}
                             className="w-8 h-8 bg-primary hover:bg-primary/90 text-white rounded-xl flex items-center justify-center shadow-lg cursor-pointer transition-transform active:scale-95"
                          >
                             <span className="text-xs">🔄</span>
@@ -1978,9 +2021,7 @@ function OnboardingContent() {
                                            updatedPhotos[i] = publicUrl;
                                            updateField('gallery_photos', updatedPhotos);
                                         } else {
-                                           setErrorMsg(locale === 'am' 
-                                              ? `ምስሉ ውድቅ ተደርጓል፡ ${moderationResult.reason || 'የካርቱን፣ ተፈጥሮ ወይም የታዋቂ ሰዎች ምስሎች አይፈቀዱም።'}` 
-                                              : `Image rejected: ${moderationResult.reason || 'Cartoons, landscapes, or celebrity photos are not allowed.'}`);
+                                           setErrorMsg(t('imageRejectedMsg', { reason: moderationResult.reason || '' }));
                                         }
                                      }
                                   } catch (err: any) {
@@ -2016,9 +2057,7 @@ function OnboardingContent() {
                           if (moderationResult.approved) {
                             urls.push(publicUrl);
                           } else {
-                            setErrorMsg(locale === 'am' 
-                              ? `ምስሉ ውድቅ ተደርጓል፡ ${moderationResult.reason || 'የካርቱን፣ ተፈጥሮ ወይም የታዋቂ ሰዎች ምስሎች አይፈቀዱም።'}`
-                              : `Image rejected: ${moderationResult.reason || 'Cartoons, landscapes, or celebrity photos are not allowed.'}`);
+                            setErrorMsg(t('imageRejectedMsg', { reason: moderationResult.reason || '' }));
                           }
                           } catch (modErr) {
                             console.error("Image moderation call failed:", modErr);
@@ -2035,9 +2074,9 @@ function OnboardingContent() {
           </div>
         );
       case 7:
-        const activeCountryName = selectedCountry === 'Others' ? customCountry : selectedCountry;
-        const activeRegionName = selectedRegion === 'Others' ? customRegion : selectedRegion;
-        const activeCityName = selectedCity === 'Others' ? customCity : selectedCity;
+        const activeCountryName = selectedCountry === 'Others' ? customCountry : (t_const(`Countries.${selectedCountry}`) || selectedCountry);
+        const activeRegionName = selectedRegion === 'Others' ? customRegion : (getTranslation(selectedRegion, locale) || selectedRegion);
+        const activeCityName = selectedCity === 'Others' ? customCity : (getTranslation(selectedCity, locale) || selectedCity);
         return (
           <div className="space-y-8 text-center animate-in zoom-in duration-500">
              <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center shadow-lg shadow-green-500/10">
@@ -2045,15 +2084,15 @@ function OnboardingContent() {
              </div>
              
              <div className="space-y-2">
-               <h2 className="text-3xl md:text-4xl font-extrabold text-accent italic tracking-tight">{t('finishTitle')}</h2>
-               <p className="text-xs md:text-sm text-gray-500 max-w-md mx-auto font-medium">{t('finishSubtitle')}</p>
+                <h2 className="text-3xl md:text-4xl font-extrabold text-accent italic tracking-tight">{t('finishTitle')}</h2>
+                <p className="text-xs md:text-sm text-gray-500 max-w-md mx-auto font-medium">{t('finishSubtitle')}</p>
              </div>
 
              {/* ── Profile Summary Review Card ── */}
              <div className="bg-[#FDFBF9] rounded-[2rem] p-6 border border-gray-200/80 text-left space-y-5 shadow-inner">
                 <div className="flex items-center justify-between border-b border-gray-200 pb-3">
                   <h3 className="font-extrabold text-xs uppercase tracking-wider text-accent flex items-center gap-2">
-                    📋 {locale === 'am' ? 'የገባውን መረጃ ማጠቃለያ ያረጋግጡ' : 'Review & Confirm Your Information'}
+                    📋 {t('reviewAndConfirm')}
                   </h3>
                   <span className="text-[10px] font-bold text-gray-400">Step 1-6</span>
                 </div>
@@ -2062,21 +2101,21 @@ function OnboardingContent() {
                 <div className="bg-white rounded-2xl p-4 border border-gray-100 space-y-2 relative group hover:border-primary/30 transition-all">
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-bold text-primary uppercase tracking-wider">
-                      👤 {locale === 'am' ? 'መሰረታዊ መረጃ' : 'Basic Profile'}
+                      👤 {t('basicProfileLabel')}
                     </span>
                     <button
                       type="button"
                       onClick={() => setStep(1)}
                       className="text-[10px] font-extrabold text-primary hover:underline bg-primary/5 px-3 py-1 rounded-full"
                     >
-                      ✏️ {locale === 'am' ? 'አስተካክል' : 'Edit'}
+                      ✏️ {t('editBtn')}
                     </button>
                   </div>
                   <div className="text-xs text-gray-600 space-y-1 font-medium">
-                    <p><strong className="text-gray-900">{locale === 'am' ? 'ስም' : 'Name'}:</strong> {formData.full_name || '-'}</p>
-                    <p><strong className="text-gray-900">{locale === 'am' ? 'ልደት' : 'Birth Date'}:</strong> {formData.birth_date || '-'}</p>
-                    <p><strong className="text-gray-900">{locale === 'am' ? 'ጾታ & ሃይማኖት' : 'Gender & Religion'}:</strong> {formData.gender || '-'} • {formData.religion || '-'}</p>
-                    <p><strong className="text-gray-900">{locale === 'am' ? 'ቦታ' : 'Location'}:</strong> {activeCountryName || '-'}, {activeRegionName || '-'}, {activeCityName || '-'}</p>
+                    <p><strong className="text-gray-900">{t('nameReview')}:</strong> {formData.full_name || '-'}</p>
+                    <p><strong className="text-gray-900">{t('birthReview')}:</strong> {formData.birth_date || '-'}</p>
+                    <p><strong className="text-gray-900">{t('genderReligionReview')}:</strong> {t_const(`Genders.${formData.gender}`) || formData.gender || '-'} • {t_const(`Religions.${formData.religion}`) || formData.religion || '-'}</p>
+                    <p><strong className="text-gray-900">{t('locationReview')}:</strong> {activeCountryName || '-'}, {activeRegionName || '-'}, {activeCityName || '-'}</p>
                   </div>
                 </div>
 
@@ -2084,20 +2123,20 @@ function OnboardingContent() {
                 <div className="bg-white rounded-2xl p-4 border border-gray-100 space-y-2 relative group hover:border-primary/30 transition-all">
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-bold text-primary uppercase tracking-wider">
-                      💼 {locale === 'am' ? 'ሙያ እና እሴቶች' : 'Career & Values'}
+                      💼 {t('careerValuesLabel')}
                     </span>
                     <button
                       type="button"
                       onClick={() => setStep(2)}
                       className="text-[10px] font-extrabold text-primary hover:underline bg-primary/5 px-3 py-1 rounded-full"
                     >
-                      ✏️ {locale === 'am' ? 'አስተካክል' : 'Edit'}
+                      ✏️ {t('editBtn')}
                     </button>
                   </div>
                   <div className="text-xs text-gray-600 space-y-1 font-medium">
-                    <p><strong className="text-gray-900">{locale === 'am' ? 'ስራ' : 'Job'}:</strong> {formData.job || '-'}</p>
-                    <p><strong className="text-gray-900">{locale === 'am' ? 'የገንዘብ ልማድ' : 'Finance Habit'}:</strong> {formData.finance_habit || '-'}</p>
-                    <p><strong className="text-gray-900">{locale === 'am' ? 'የቤተሰብ እሴት' : 'Family Values'}:</strong> {formData.family_value || '-'}</p>
+                    <p><strong className="text-gray-900">{t('jobReview')}:</strong> {t_const(`Jobs.${formData.job}`) || formData.job || '-'}</p>
+                    <p><strong className="text-gray-900">{t('financeReview')}:</strong> {t_const(`Finance.${formData.finance_habit}`) || formData.finance_habit || '-'}</p>
+                    <p><strong className="text-gray-900">{t('valuesReview')}:</strong> {t_const(`Values.${formData.family_value}`) || formData.family_value || '-'}</p>
                   </div>
                 </div>
 
@@ -2105,20 +2144,20 @@ function OnboardingContent() {
                 <div className="bg-white rounded-2xl p-4 border border-gray-100 space-y-2 relative group hover:border-primary/30 transition-all">
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-bold text-primary uppercase tracking-wider">
-                      ❤️ {locale === 'am' ? 'የተጣማሪ መስፈርት' : 'Partner Preferences'}
+                      ❤️ {t('partnerPrefLabel')}
                     </span>
                     <button
                       type="button"
                       onClick={() => setStep(3)}
                       className="text-[10px] font-extrabold text-primary hover:underline bg-primary/5 px-3 py-1 rounded-full"
                     >
-                      ✏️ {locale === 'am' ? 'አስተካክል' : 'Edit'}
+                      ✏️ {t('editBtn')}
                     </button>
                   </div>
                   <div className="text-xs text-gray-600 space-y-1 font-medium">
-                    <p><strong className="text-gray-900">{locale === 'am' ? 'የእድሜ ክልል' : 'Age Range'}:</strong> {formData.partner_age_min} - {formData.partner_age_max} {locale === 'am' ? 'ዓመት' : 'years'}</p>
-                    <p><strong className="text-gray-900">{locale === 'am' ? 'ሃይማኖት' : 'Religion'}:</strong> {formData.partner_religion || '-'}</p>
-                    <p><strong className="text-gray-900">{locale === 'am' ? 'አላማ' : 'Intent'}:</strong> {formData.partner_intent || '-'}</p>
+                    <p><strong className="text-gray-900">{t('ageRangeReview')}:</strong> {formData.partner_age_min} - {formData.partner_age_max} {t('yearsUnit')}</p>
+                    <p><strong className="text-gray-900">{t('religionReview')}:</strong> {t_const(`Religions.${formData.partner_religion}`) || formData.partner_religion || '-'}</p>
+                    <p><strong className="text-gray-900">{t('intentReview')}:</strong> {t_const(`RelationshipGoals.${formData.partner_intent}`) || formData.partner_intent || '-'}</p>
                   </div>
                 </div>
 
@@ -2127,14 +2166,14 @@ function OnboardingContent() {
                   <div className="bg-white rounded-2xl p-4 border border-gray-100 space-y-2 relative group hover:border-primary/30 transition-all">
                     <div className="flex justify-between items-center">
                       <span className="text-xs font-bold text-primary uppercase tracking-wider">
-                        🖼️ {locale === 'am' ? 'የጋለሪ ፎቶዎች' : 'Gallery Photos'} ({formData.gallery_photos.length})
+                        🖼️ {t('galleryPhotosLabel')} ({formData.gallery_photos.length})
                       </span>
                       <button
                         type="button"
                         onClick={() => setStep(6)}
                         className="text-[10px] font-extrabold text-primary hover:underline bg-primary/5 px-3 py-1 rounded-full"
                       >
-                        ✏️ {locale === 'am' ? 'አስተካክል' : 'Edit'}
+                        ✏️ {t('editBtn')}
                       </button>
                     </div>
                     <div className="flex gap-2 overflow-x-auto pt-1">
@@ -2147,7 +2186,7 @@ function OnboardingContent() {
              </div>
 
              <button onClick={handleFinish} disabled={isSubmitting} className="w-full btn-primary py-5 text-xs font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 hover:shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-3">
-                {isSubmitting ? <Loader2 className="animate-spin" /> : (locale === 'am' ? 'ወደ ቬሪፊኬሽን ሂድ (ቀጣይ) 🛡️' : locale === 'ti' ? 'ናብ ምርግጋጽ ይኺዱ (ቀጻሊ) 🛡️' : locale === 'om' ? 'Gara Mirkaneessaatti Tarikaa 🛡️' : 'Proceed to Verification 🛡️')}
+                {isSubmitting ? <Loader2 className="animate-spin" /> : t('proceedVerify')}
              </button>
           </div>
         );
@@ -2234,10 +2273,10 @@ function OnboardingContent() {
                     {/* Title */}
                     <div className="space-y-1">
                       <h3 className="text-xl font-extrabold text-gray-900 tracking-tight">
-                        {locale === 'am' ? 'ማንነት ማረጋገጫ ሰነድ ውድቅ ተደርጓል' : 'ID Document Rejected'}
+                        {t('idDocRejectedTitle')}
                       </h3>
                       <p className="text-[10px] font-bold uppercase tracking-widest text-red-500">
-                        {locale === 'am' ? 'ወደ ሰልፊ ደረጃ ማለፍ አልተፈቀደም' : 'Access to Selfie Step Denied'}
+                        {t('selfieDenied')}
                       </p>
                     </div>
 
@@ -2253,7 +2292,7 @@ function OnboardingContent() {
                       {/* Primary: re-upload a different ID */}
                       <label className="w-full bg-primary hover:bg-primary/90 text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-primary/20 cursor-pointer flex items-center justify-center gap-2">
                         <Upload size={14} />
-                        <span>{locale === 'am' ? 'ሌላ ፎቶ ይጫኑ' : 'Upload Different ID Photo'}</span>
+                        <span>{t('uploadDifferentIdBtn')}</span>
                         <input
                           type="file"
                           accept="image/*"
@@ -2316,7 +2355,7 @@ function OnboardingContent() {
                         }}
                         className="w-full bg-slate-100 hover:bg-slate-200 text-gray-700 py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all"
                       >
-                        {locale === 'am' ? 'ወደ ደረጃ 1 ተመልሰው ስም / ልደት ቀን ያስተካክሉ' : 'Go to Step 1 & Fix Name / Birth Date'}
+                        {t('goStep1FixBtn')}
                       </button>
                     </div>
                   </div>
@@ -2335,25 +2374,19 @@ function OnboardingContent() {
                     </div>
                     <h3 className="text-xl font-extrabold text-gray-900 tracking-tight mb-3">
                       {mismatchDetails.type === 'name' 
-                        ? (locale === 'am' ? 'የስም አለመመሳሰል ተገኝቷል' : 'Full Name Mismatch')
+                        ? t('nameMismatchTitle')
                         : mismatchDetails.type === 'birth_date'
-                        ? (locale === 'am' ? 'የልደት ቀን አለመመሳሰል ተገኝቷል' : 'Birth Date Mismatch')
-                        : (locale === 'am' ? 'የማንነት መረጃ አለመመሳሰል ተገኝቷል' : 'Identity Mismatch Detected')}
+                        ? t('birthMismatchTitle')
+                        : t('bothMismatchTitle')}
                     </h3>
                     
                     <div className="bg-red-50/70 p-4 rounded-2xl border border-red-100 text-left mb-6 text-xs space-y-2">
                       <p className="text-gray-700 leading-relaxed font-medium">
                         {mismatchDetails.type === 'name' 
-                          ? (locale === 'am' 
-                              ? `በመዝገባ ሰዓት ያስገቡት ስም ("${formData.full_name}") ከመታወቂያው ላይ ካለው ስም ጋር አይመሳሰልም። እባክዎን ስምዎን ያስተካክሉ ወይም ትክክለኛውን መታወቂያ ይጫኑ።`
-                              : `The registered name ("${formData.full_name}") does not match the name extracted from your ID document. Please correct your profile name or upload matching ID.`)
+                          ? t('nameMismatchDesc', { name: formData.full_name })
                           : mismatchDetails.type === 'birth_date'
-                          ? (locale === 'am'
-                              ? `በመዝገባ ሰዓት ያስገቡት የልደት ቀን ("${formData.birth_date}") ከመታወቂያው ላይ ካለው የልደት ቀን ጋር አይመሳሰልም። እባክዎን የልደት ቀንዎን ያስተካክሉ ወይም ትክክለኛውን መታወቂያ ይጫኑ።`
-                              : `The registered birth date ("${formData.birth_date}") does not match the birth date on your ID document. Please correct your profile birth date or upload matching ID.`)
-                          : (locale === 'am'
-                              ? `በመዝገባ ሰዓት ያስገቡት ስም ("${formData.full_name}") እና የልደት ቀን ("${formData.birth_date}") ከመታወቂያው ላይ ካለው መረጃ ጋር አይመሳሰሉም። እባክዎን መረጃዎን ያስተካክሉ ወይም ትክክለኛውን መታወቂያ ይጫኑ።`
-                              : `Both registered name ("${formData.full_name}") and birth date ("${formData.birth_date}") do not match your ID document.`)}
+                          ? t('birthMismatchDesc', { date: formData.birth_date })
+                          : t('bothMismatchDesc', { name: formData.full_name, date: formData.birth_date })}
                       </p>
                       {mismatchDetails.message && (
                         <p className="text-[10px] text-red-600 font-semibold italic border-t border-red-100 pt-2">
@@ -2377,10 +2410,10 @@ function OnboardingContent() {
                         className="w-full bg-primary hover:bg-primary/95 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30"
                       >
                         {mismatchDetails.type === 'name'
-                          ? (locale === 'am' ? 'ወደ ኦንቦርዲንግ ተመለስና ስም አስተካክል' : 'Go to Step 1 & Correct Name')
+                          ? t('goFixNameBtn')
                           : mismatchDetails.type === 'birth_date'
-                          ? (locale === 'am' ? 'ወደ ኦንቦርዲንግ ተመለስና የልደት ቀን አስተካክል' : 'Go to Step 1 & Correct Birth Date')
-                          : (locale === 'am' ? 'ወደ ኦንቦርዲንግ ተመለስና መረጃ አስተካክል' : 'Go to Step 1 & Correct Profile Info')}
+                          ? t('goFixBirthBtn')
+                          : t('goFixBothBtn')}
                       </button>
 
                       <button
@@ -2398,7 +2431,7 @@ function OnboardingContent() {
                         }}
                         className="w-full bg-slate-100 hover:bg-slate-200 text-gray-700 py-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all"
                       >
-                        {locale === 'am' ? 'መታወቂያ እንደገና ይጫኑ' : 'Re-upload ID Document'}
+                        {t('reuploadIdBtn')}
                       </button>
                     </div>
                   </div>
@@ -2420,12 +2453,10 @@ function OnboardingContent() {
                   
                   <div className="space-y-2">
                     <h3 className="text-xl font-black italic text-accent">
-                      {locale === 'am' ? 'መረጃዎቹን በትክክል ተቀብለናል!' : 'Information Received Successfully!'}
+                      {t('receivedTitle')}
                     </h3>
                     <p className="text-xs text-gray-500 font-semibold leading-relaxed">
-                      {locale === 'am'
-                        ? 'መታወቂያዎን እና የቀጥታ ሰልፊ መረጃዎን በሚገባ ተቀብለናል። አጣርተን ቬሪፋይ እስክናደርግልዎ ድረስ እባክዎን በትዕግስት ይጠብቁን። እባክዎን ወደ ዳሽቦርድ ይመለሱ።'
-                        : 'We have received your ID document and live selfie verification. Please wait patiently while we verify your information. Please return to the dashboard.'}
+                      {t('receivedBody')}
                     </p>
                   </div>
 
@@ -2434,7 +2465,7 @@ function OnboardingContent() {
                     onClick={() => router.push('/dashboard')}
                     className="w-full py-4 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-2"
                   >
-                    {locale === 'am' ? 'ወደ ዳሽቦርድ ይሂዱ' : 'Go to Dashboard'} <ChevronRight size={16} />
+                    {t('goToDashboardBtn')} <ChevronRight size={16} />
                   </button>
                 </div>
               </div>

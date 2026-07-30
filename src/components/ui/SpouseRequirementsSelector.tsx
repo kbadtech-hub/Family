@@ -37,6 +37,7 @@ export default function SpouseRequirementsSelector({
   maxLimit = 10
 }: SpouseRequirementsSelectorProps) {
   const t = useTranslations('Onboarding');
+  const t_const = useTranslations('Constants');
   const locale = useLocale();
 
   const [activeCategoryId, setActiveCategoryId] = useState<string>('all');
@@ -49,19 +50,19 @@ export default function SpouseRequirementsSelector({
   // Localized string helper fallback
   const getCategoryTitle = (catId: string) => {
     try {
-      const translated = t(`CriteriaCategories.${catId}`);
-      if (translated && !translated.startsWith('Onboarding.')) return translated;
+      const translated = t_const(`CriteriaCategories.${catId}`);
+      if (translated && !translated.startsWith('Constants.')) return translated;
     } catch (_) {}
 
     // Fallbacks
     const fallbackTitles: Record<string, Record<string, string>> = {
-      all: { am: 'ሁሉም ምድቦች', en: 'All Categories', om: 'Gosa Hunda', ti: 'ኩሎም ምድባት' },
-      core_values: { am: 'እምነት እና መሠረታዊ እሴቶች', en: 'Core Values & Faith', om: 'Amantaa fi Safuu', ti: 'እምነትን መሠረታዊ እሴታትን' },
-      family_future: { am: 'ቤተሰብ እና የነገ ህይወት', en: 'Family & Future', om: 'Maatii fi Gara Fuulduraa', ti: 'ቤተሰብን ናይ ፅባሕ ህይወትን' },
-      career_finances: { am: 'ስራ እና ፋይናንስ', en: 'Career & Finances', om: 'Hojii fi Faayinaansii', ti: 'ስራሕን ፋይናንስን' },
-      personality_eq: { am: 'ስብዕና እና ባህሪ', en: 'Personality & Emotional Intelligence', om: 'Amala fi Sammuu', ti: 'ባህርይን ስብእናን' },
-      lifestyle_habits: { am: 'የአኗኗር ዘይቤ እና ልማዶች', en: 'Lifestyle & Habits', om: 'Akkaataa Jireenyaa', ti: 'ኣተሓሳስባን ልምድን' },
-      interests_leisure: { am: 'ፍላጎት እና መዝናኛ', en: 'Interests & Leisure', om: 'Bashannana fi Fedhii', ti: 'ተገዳስነትን መዘናግዕን' }
+      all: { am: 'ሁሉም ምድቦች', en: 'All Categories', om: 'Gosa Hunda', ti: 'ኩሎም ምድባት', ar: 'جميع الفئات', so: 'Dhammaan Qeexitaannada' },
+      core_values: { am: 'እምነት እና መሠረታዊ እሴቶች', en: 'Core Values & Faith', om: 'Amantaa fi Safuu', ti: 'እምነትን መሠረታዊ እሴታትን', ar: 'الإيمان والقيم الأساسية', so: 'Iimaanka & Qiyamka Buuxa' },
+      family_future: { am: 'ቤተሰብ እና የነገ ህይወት', en: 'Family & Future', om: 'Maatii fi Gara Fuulduraa', ti: 'ቤተሰብን ናይ ፅባሕ ህይወትን', ar: 'العائلة والمستقبل', so: 'Qoyska & Mustaqbalka' },
+      career_finances: { am: 'ስራ እና ፋይናንስ', en: 'Career & Finances', om: 'Hojii fi Faayinaansii', ti: 'ስራሕን ፋይናንስን', ar: 'العمل والمالية', so: 'Shaqada & Maaliyadda' },
+      personality_eq: { am: 'ስብዕና እና ባህሪ', en: 'Personality & Emotional Intelligence', om: 'Amala fi Sammuu', ti: 'ባህርይን ስብእናን', ar: 'الشخصية والذكاء العاطفي', so: 'Sifada & Bisaylka Niyada' },
+      lifestyle_habits: { am: 'የአኗኗር ዘይቤ እና ልማዶች', en: 'Lifestyle & Habits', om: 'Akkaataa Jireenyaa', ti: 'ኣተሓሳስባን ልምድን', ar: 'نمط الحياة والعادات', so: 'Hab-nololeedka & Caadooyinka' },
+      interests_leisure: { am: 'ፍላጎት እና መዝናኛ', en: 'Interests & Leisure', om: 'Bashannana fi Fedhii', ti: 'ተገዳስነትን መዘናግዕን', ar: 'الاهتمامات والترفيه', so: 'Danta & Madadaalada' }
     };
 
     return fallbackTitles[catId]?.[locale] || fallbackTitles[catId]?.['en'] || catId;
@@ -69,8 +70,8 @@ export default function SpouseRequirementsSelector({
 
   const getTagLabel = (tagId: string) => {
     try {
-      const translated = t(`Requirements.${tagId}`);
-      if (translated && !translated.startsWith('Onboarding.')) return translated;
+      const translated = t_const(`Requirements.${tagId}`);
+      if (translated && !translated.startsWith('Constants.')) return translated;
     } catch (_) {}
     return tagId;
   };
