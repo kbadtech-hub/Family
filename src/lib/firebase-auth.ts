@@ -96,7 +96,8 @@ export async function signInWithGoogle(): Promise<SocialAuthResult> {
         console.warn('[FirebaseAuth] Native Google Sign-In error, attempting fallback:', nativeErr);
         const fallbackRes = await fallbackToSupabaseOAuth('google');
         if (fallbackRes.success) return fallbackRes;
-        throw nativeErr;
+        const message = translateFirebaseError(fallbackRes.error ? { message: fallbackRes.error } : nativeErr);
+        return { success: false, isNewUser: false, hasPhone: false, firebaseUser: null, error: message };
       }
     }
 
@@ -135,19 +136,27 @@ export async function signInWithFacebook(): Promise<SocialAuthResult> {
 
     // Capacitor Native Sign-In
     if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.()) {
-      const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
-      const result = await FirebaseAuthentication.signInWithFacebook();
+      try {
+        const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+        const result = await FirebaseAuthentication.signInWithFacebook();
 
-      const cred = result.credential as any;
-      const accessToken = cred?.accessToken;
-      if (!accessToken) throw new Error('No Facebook Access Token received from native Facebook login.');
+        const cred = result.credential as any;
+        const accessToken = cred?.accessToken;
+        if (!accessToken) throw new Error('No Facebook Access Token received from native Facebook login.');
 
-      const credential = FacebookAuthProvider.credential(accessToken);
-      const jsUser = await signInWithCredential(auth, credential);
-      const firebaseUser = jsUser.user;
+        const credential = FacebookAuthProvider.credential(accessToken);
+        const jsUser = await signInWithCredential(auth, credential);
+        const firebaseUser = jsUser.user;
 
-      const syncRes = await syncFirebaseUserWithSupabase(firebaseUser);
-      return { success: true, isNewUser: syncRes.isNewUser, hasPhone: syncRes.hasPhone, firebaseUser };
+        const syncRes = await syncFirebaseUserWithSupabase(firebaseUser);
+        return { success: true, isNewUser: syncRes.isNewUser, hasPhone: syncRes.hasPhone, firebaseUser };
+      } catch (nativeErr: any) {
+        console.warn('[FirebaseAuth] Native Facebook Sign-In error, attempting fallback:', nativeErr);
+        const fallbackRes = await fallbackToSupabaseOAuth('facebook');
+        if (fallbackRes.success) return fallbackRes;
+        const message = translateFirebaseError(fallbackRes.error ? { message: fallbackRes.error } : nativeErr);
+        return { success: false, isNewUser: false, hasPhone: false, firebaseUser: null, error: message };
+      }
     }
 
     const provider = new FacebookAuthProvider();
@@ -185,24 +194,32 @@ export async function signInWithApple(): Promise<SocialAuthResult> {
 
     // Capacitor Native Sign-In
     if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform?.()) {
-      const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
-      const result = await FirebaseAuthentication.signInWithApple();
+      try {
+        const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+        const result = await FirebaseAuthentication.signInWithApple();
 
-      const cred = result.credential as any;
-      const idToken = cred?.idToken;
-      const rawNonce = cred?.rawNonce;
-      if (!idToken) throw new Error('No Apple ID Token received from native Apple login.');
+        const cred = result.credential as any;
+        const idToken = cred?.idToken;
+        const rawNonce = cred?.rawNonce;
+        if (!idToken) throw new Error('No Apple ID Token received from native Apple login.');
 
-      const provider = new OAuthProvider('apple.com');
-      const credential = provider.credential({
-        idToken: idToken,
-        rawNonce: rawNonce
-      });
-      const jsUser = await signInWithCredential(auth, credential);
-      const firebaseUser = jsUser.user;
+        const provider = new OAuthProvider('apple.com');
+        const credential = provider.credential({
+          idToken: idToken,
+          rawNonce: rawNonce
+        });
+        const jsUser = await signInWithCredential(auth, credential);
+        const firebaseUser = jsUser.user;
 
-      const syncRes = await syncFirebaseUserWithSupabase(firebaseUser);
-      return { success: true, isNewUser: syncRes.isNewUser, hasPhone: syncRes.hasPhone, firebaseUser };
+        const syncRes = await syncFirebaseUserWithSupabase(firebaseUser);
+        return { success: true, isNewUser: syncRes.isNewUser, hasPhone: syncRes.hasPhone, firebaseUser };
+      } catch (nativeErr: any) {
+        console.warn('[FirebaseAuth] Native Apple Sign-In error, attempting fallback:', nativeErr);
+        const fallbackRes = await fallbackToSupabaseOAuth('apple');
+        if (fallbackRes.success) return fallbackRes;
+        const message = translateFirebaseError(fallbackRes.error ? { message: fallbackRes.error } : nativeErr);
+        return { success: false, isNewUser: false, hasPhone: false, firebaseUser: null, error: message };
+      }
     }
 
     const provider = new OAuthProvider('apple.com');
@@ -367,8 +384,18 @@ function translateFirebaseError(error: any): string {
     ? String(error.message) 
     : (typeof error === 'string' ? error : '');
   
-  if (rawMsg.toLowerCase().includes('no credential available') || rawMsg.toLowerCase().includes('getcredentialexception')) {
+  const lowerMsg = rawMsg.toLowerCase();
+  
+  if (lowerMsg.includes('unsupported provider') || lowerMsg.includes('provider is not enabled') || lowerMsg.includes('validation_failed')) {
+    return 'Google Sign-In via fallback provider is currently disabled in Supabase settings. Please try logging in with your Phone Number or Email, or ensure Google Provider is enabled in Supabase/Firebase dashboard.';
+  }
+
+  if (lowerMsg.includes('no credential available') || lowerMsg.includes('getcredentialexception')) {
     return 'Google Account credential prompt was dismissed or not found on device. Please select your Google account and try again.';
+  }
+
+  if (rawMsg.includes('10:') || rawMsg.includes('12500') || lowerMsg.includes('developer_error')) {
+    return 'Native Google Sign-In failed on this device (Google Play Services SHA-1 configuration issue). Please sign in using Phone or Email, or update Google Play Services.';
   }
   
   // Extract error code if it's an object with a code property, or if it's a string. Otherwise, set code to undefined.
