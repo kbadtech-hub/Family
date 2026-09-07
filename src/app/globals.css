@@ -4,14 +4,32 @@
   --background: #FFFFFF;
   --foreground: #0F172A;
   
-  --primary: #E2725B;      /* Terracotta */
+  --primary: #FF6B6B;      /* Beteseb Coral */
   --secondary: #D2B48C;    /* Beige */
-  --accent: #0F172A;       /* Navy */
-  --muted: #F8F4F1;        /* Warm Off-white */
+  --accent: #0B1226;       /* Beteseb Navy */
+  --muted: #FBF7F2;        /* Beteseb Cream */
   
   --card: #FFFFFF;
   --card-foreground: #0F172A;
   --border: #F0EBE2;
+
+  /* Beteseb Design Tokens (Phase 1 — Single Source of Truth) */
+  --beteseb-coral: #FF6B6B;
+  --beteseb-coral-deep: #E85A4F;
+  --beteseb-navy: #0B1226;
+  --beteseb-navy-soft: #151E3A;
+  --beteseb-gold: #E8B14D;
+  --beteseb-cream: #FBF7F2;
+  --beteseb-ink: #1C1B1F;
+  --beteseb-mist: #8B93A7;
+
+  --radius-card: 20px;
+  --shadow-elevated: 0 20px 60px -15px rgba(11,18,38,0.35);
+  --glow-gold: 0 0 24px rgba(232,177,77,0.35);
+
+  --ease-cinematic: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-moment: 500ms;
 
   /* Spacing Scale */
   --spacing-unit: 8px;
@@ -27,6 +45,23 @@
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-border: var(--border);
+
+  --color-beteseb-coral: var(--beteseb-coral);
+  --color-beteseb-coral-deep: var(--beteseb-coral-deep);
+  --color-beteseb-navy: var(--beteseb-navy);
+  --color-beteseb-navy-soft: var(--beteseb-navy-soft);
+  --color-beteseb-gold: var(--beteseb-gold);
+  --color-beteseb-cream: var(--beteseb-cream);
+  --color-beteseb-ink: var(--beteseb-ink);
+  --color-beteseb-mist: var(--beteseb-mist);
+
+  --radius-card: var(--radius-card);
+  --shadow-elevated: var(--shadow-elevated);
+  --glow-gold: var(--glow-gold);
+
+  --ease-cinematic: var(--ease-cinematic);
+  --duration-fast: var(--duration-fast);
+  --duration-moment: var(--duration-moment);
 }
 
 body {
@@ -104,11 +139,20 @@ p, span, div {
 /* Admin Specific Overrides */
 .admin-light {
    --background: #F8FAFC;
-   --foreground: #0F172A;
+   --foreground: var(--beteseb-navy);
    --card: #FFFFFF;
-   --card-foreground: #0F172A;
+   --card-foreground: var(--beteseb-navy);
    --border: #E2E8F0;
    --muted: #F1F5F9;
+}
+
+.dark {
+  --background: var(--beteseb-navy);
+  --foreground: #F8FAFC;
+  --card: var(--beteseb-navy-soft);
+  --card-foreground: #F8FAFC;
+  --border: rgba(255, 255, 255, 0.1);
+  --muted: rgba(255, 255, 255, 0.05);
 }
 
 /* ── Mobile Zoom Lock ──────────────────────────────────────────────────────────
