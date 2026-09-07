@@ -1724,7 +1724,7 @@ function DashboardContent() {
 
         {/* Onboarding Incomplete Banner */}
         {profile && !profile.onboarding_completed && (
-          <div className="mb-10 bg-gradient-to-r from-accent via-slate-900 to-primary p-8 md:p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden group border border-amber-500/30">
+          <div className="mb-10 ambient-glow-shift bg-gradient-to-r from-accent via-slate-900 to-primary p-8 md:p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden group border border-amber-500/30">
             <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:scale-110 transition-transform duration-700" />
             <div className="relative flex flex-col md:flex-row items-center justify-between gap-8">
                <div className="space-y-4 text-center md:text-left">
@@ -2021,7 +2021,7 @@ function DashboardContent() {
                   {!isPremium && (
                     <div
                       onClick={() => setShowBenefitsModal('premium')}
-                      className="w-full cursor-pointer group relative overflow-hidden rounded-[2.5rem] p-8 text-white shadow-2xl shadow-primary/25 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] select-none"
+                      className="w-full ambient-glow-shift cursor-pointer group relative overflow-hidden rounded-[2.5rem] p-8 text-white shadow-2xl shadow-primary/25 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] select-none"
                       style={{ background: 'linear-gradient(135deg, #C2410C 0%, #EA580C 40%, #FB923C 100%)' }}
                     >
                       {/* decorative circles */}
@@ -2085,7 +2085,7 @@ function DashboardContent() {
                   {/* ── VIP CARD (Visible for all non-VIP users) ── */}
                   <div
                     onClick={() => setShowBenefitsModal('vip')}
-                    className="w-full cursor-pointer group relative overflow-hidden rounded-[2.5rem] p-8 text-white shadow-2xl shadow-amber-500/30 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] select-none"
+                    className="w-full ambient-glow-shift cursor-pointer group relative overflow-hidden rounded-[2.5rem] p-8 text-white shadow-2xl shadow-amber-500/30 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] select-none"
                     style={{ background: 'linear-gradient(135deg, #92400E 0%, #B45309 40%, #D97706 70%, #F59E0B 100%)' }}
                   >
                     <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
@@ -2310,7 +2310,7 @@ function DashboardContent() {
           <div className="relative w-full max-w-lg max-h-[90vh] flex flex-col animate-in slide-in-from-bottom-6 sm:zoom-in-95 duration-300">
 
             {/* Card shell */}
-            <div className={`rounded-[3rem] overflow-hidden shadow-2xl flex flex-col max-h-[90vh] ${
+            <div className={`rounded-[3rem] overflow-hidden shadow-2xl flex flex-col max-h-[90vh] ambient-glow-shift ${
               showBenefitsModal === 'vip'
                 ? 'bg-gradient-to-b from-[#92400E] to-[#1C0A00]'
                 : 'bg-gradient-to-b from-[#9A3412] to-[#1C0700]'

@@ -606,7 +606,7 @@ export default function FinancialTracker() {
       {/* Financial Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Total ETB Revenue Card */}
-        <div className="bg-card p-6 rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden group">
+        <div className="bg-card admin-stat-float p-6 rounded-[2.5rem] border border-border relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform" />
           <div className="flex justify-between items-start mb-4">
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">{isAm ? 'አጠቃላይ የብር ገቢ (ETB)' : 'Total ETB Revenue (ETB)'}</span>
@@ -624,7 +624,7 @@ export default function FinancialTracker() {
         </div>
 
         {/* Total USD Revenue Card */}
-        <div className="bg-card p-6 rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden group">
+        <div className="bg-card admin-stat-float p-6 rounded-[2.5rem] border border-border relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform" />
           <div className="flex justify-between items-start mb-4">
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-sky-400">Total USD Revenue ($)</span>
@@ -642,7 +642,7 @@ export default function FinancialTracker() {
         </div>
 
         {/* Subscriptions Card */}
-        <div className="bg-card p-6 rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden group">
+        <div className="bg-card admin-stat-float p-6 rounded-[2.5rem] border border-border relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform" />
           <div className="flex justify-between items-start mb-4">
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400">VIP & Premium Subscriptions</span>
@@ -663,7 +663,7 @@ export default function FinancialTracker() {
         </div>
 
         {/* Coin Sales Card */}
-        <div className="bg-card p-6 rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden group">
+        <div className="bg-card admin-stat-float p-6 rounded-[2.5rem] border border-border relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform" />
           <div className="flex justify-between items-start mb-4">
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-yellow-500">Coin Economy Sales</span>

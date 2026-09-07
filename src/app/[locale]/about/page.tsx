@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Heart, Target, Users, ShieldCheck, Globe, ArrowRight, Sparkles } from 'lucide-react';
+import { Heart, Target, Users, ShieldCheck, Globe, ArrowRight, Sparkles, Award, Crown, Gem } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { useTranslations, useLocale } from 'next-intl';
 import { supabase } from '@/lib/supabase';
@@ -138,51 +138,79 @@ export default function AboutPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
           {[
             { 
               level: 'Level 0', 
               badge: t('badges.level0.title'), 
               status: t('badges.level0.status'), 
               desc: t('badges.level0.desc'),
-              color: 'border-amber-700 bg-amber-50/50 text-amber-900' 
+              color: 'border-amber-700/40 bg-amber-50/50 text-amber-900',
+              icon: Award,
+              medallionBg: 'radial-gradient(circle at 30% 30%, #D97706 0%, #B45309 45%, #78350F 100%)'
             },
             { 
               level: 'Level 1', 
               badge: t('badges.level1.title'), 
               status: t('badges.level1.status'), 
               desc: t('badges.level1.desc'),
-              color: 'border-slate-400 bg-slate-50/50 text-slate-800' 
+              color: 'border-slate-300 bg-slate-50/50 text-slate-800',
+              icon: Award,
+              medallionBg: 'radial-gradient(circle at 30% 30%, #F1F5F9 0%, #94A3B8 50%, #475569 100%)'
             },
             { 
               level: 'Level 2', 
               badge: t('badges.level2.title'), 
               status: t('badges.level2.status'), 
               desc: t('badges.level2.desc'),
-              color: 'border-yellow-500 bg-yellow-50/50 text-yellow-800' 
+              color: 'border-amber-400/60 bg-amber-50/50 text-yellow-900',
+              icon: Crown,
+              medallionBg: 'radial-gradient(circle at 30% 30%, #FEF08A 0%, #F59E0B 45%, #B45309 100%)'
             },
             { 
               level: 'Level 3', 
               badge: t('badges.level3.title'), 
               status: t('badges.level3.status'), 
               desc: t('badges.level3.desc'),
-              color: 'border-emerald-500 bg-emerald-50/50 text-emerald-950' 
+              color: 'border-emerald-400/60 bg-emerald-50/50 text-emerald-950',
+              icon: ShieldCheck,
+              medallionBg: 'radial-gradient(circle at 30% 30%, #A7F3D0 0%, #10B981 45%, #065F46 100%)'
             },
             { 
               level: 'Level 4', 
               badge: t('badges.level4.title'), 
               status: t('badges.level4.status'), 
               desc: t('badges.level4.desc'),
-              color: 'border-indigo-600 bg-indigo-50/50 text-indigo-900' 
+              color: 'border-indigo-400/60 bg-indigo-50/50 text-indigo-950',
+              icon: Gem,
+              medallionBg: 'radial-gradient(circle at 30% 30%, #C7D2FE 0%, #6366F1 45%, #3730A3 100%)'
             }
-          ].map((item, index) => (
-            <div key={index} className={`p-6 rounded-[2rem] border-2 ${item.color} space-y-4 hover:scale-105 transition-all duration-300`}>
-              <div className="text-[10px] font-black uppercase tracking-widest opacity-60">{item.level}</div>
-              <h4 className="text-lg font-black italic">{item.badge}</h4>
-              <p className="text-xs font-black uppercase tracking-wider">{item.status}</p>
-              <p className="text-[11px] font-medium leading-relaxed opacity-80">{item.desc}</p>
-            </div>
-          ))}
+          ].map((item, index) => {
+            const ItemIcon = item.icon;
+            return (
+              <div 
+                key={index} 
+                className={`p-6 rounded-[2.5rem] border-2 ${item.color} space-y-4 medallion-3d relative overflow-hidden bg-white/80 shadow-md backdrop-blur-xs flex flex-col items-center text-center select-none`}
+              >
+                {/* 3D-styled Medallion Disc */}
+                <div 
+                  className="w-16 h-16 rounded-full medallion-3d-disc flex items-center justify-center p-1 shrink-0"
+                  style={{ background: item.medallionBg }}
+                >
+                  <div className="w-full h-full rounded-full border border-white/40 flex items-center justify-center shadow-inner">
+                    <ItemIcon size={24} className="text-white drop-shadow-md" />
+                  </div>
+                </div>
+
+                <div className="space-y-1 w-full">
+                  <div className="text-[10px] font-black uppercase tracking-widest opacity-60">{item.level}</div>
+                  <h4 className="text-lg font-black italic">{item.badge}</h4>
+                  <p className="text-xs font-black uppercase tracking-wider">{item.status}</p>
+                </div>
+                <p className="text-[11px] font-medium leading-relaxed opacity-80">{item.desc}</p>
+              </div>
+            );
+          })}
         </div>
       </section>
 

@@ -294,7 +294,7 @@ export default function UserAnalytics() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
           {/* Silver Level */}
-          <div className="bg-card p-6 rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden group">
+          <div className="bg-card admin-stat-float p-6 rounded-[2.5rem] border border-border relative overflow-hidden group">
             <div className="flex justify-between items-center mb-3">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300">Silver Level</span>
               <Award className="text-slate-400 shrink-0" size={22} />
@@ -309,7 +309,7 @@ export default function UserAnalytics() {
           </div>
 
           {/* Gold Level */}
-          <div className="bg-card p-6 rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden group">
+          <div className="bg-card admin-stat-float p-6 rounded-[2.5rem] border border-border relative overflow-hidden group">
             <div className="flex justify-between items-center mb-3">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-yellow-400">Gold Level</span>
               <Award className="text-yellow-400 shrink-0" size={22} />
@@ -324,7 +324,7 @@ export default function UserAnalytics() {
           </div>
 
           {/* Platinum Level */}
-          <div className="bg-card p-6 rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden group">
+          <div className="bg-card admin-stat-float p-6 rounded-[2.5rem] border border-border relative overflow-hidden group">
             <div className="flex justify-between items-center mb-3">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400">Platinum Level</span>
               <ShieldCheck className="text-indigo-400 shrink-0" size={22} />
@@ -339,7 +339,7 @@ export default function UserAnalytics() {
           </div>
 
           {/* Diamond Level */}
-          <div className="bg-card p-6 rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden group">
+          <div className="bg-card admin-stat-float p-6 rounded-[2.5rem] border border-border relative overflow-hidden group">
             <div className="flex justify-between items-center mb-3">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">Diamond Level</span>
               <Gem className="text-cyan-400 shrink-0" size={22} />
@@ -354,7 +354,7 @@ export default function UserAnalytics() {
           </div>
 
           {/* VIP Level */}
-          <div className="bg-card p-6 rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden group">
+          <div className="bg-card admin-stat-float p-6 rounded-[2.5rem] border border-border relative overflow-hidden group">
             <div className="flex justify-between items-center mb-3">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400">VIP Level</span>
               <Crown className="text-amber-400 shrink-0" size={22} />

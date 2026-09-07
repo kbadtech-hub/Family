@@ -314,6 +314,113 @@ p, span, div {
   }
 }
 
+  /* ── Phase 5: Hero Trust Badge Cluster 3D Parallax ────────────────────── */
+  .hero-trust-parallax {
+    perspective: 1000px;
+  }
+  .hero-trust-card {
+    transition: transform var(--duration-moment) var(--ease-cinematic), box-shadow var(--duration-moment) var(--ease-cinematic);
+    will-change: transform;
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0);
+  }
+  .hero-trust-parallax:hover .hero-trust-card {
+    transform: perspective(1000px) rotateX(5deg) rotateY(-5deg) translateZ(10px);
+    box-shadow: 0 16px 36px -8px rgba(11, 18, 38, 0.12);
+  }
+
+  /* ── Phase 5: Ambient Glow Shift for Hero & VIP Cards ──────────────────── */
+  .ambient-glow-shift {
+    position: relative;
+    overflow: hidden;
+  }
+  .ambient-glow-shift::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 40%, transparent 65%);
+    pointer-events: none;
+    transform: translate3d(0, 0, 0);
+    animation: ambientGlowShift 8s ease-in-out infinite alternate;
+    will-change: transform, opacity;
+  }
+  @keyframes ambientGlowShift {
+    0% {
+      transform: translate3d(-8%, -8%, 0) scale(0.96);
+      opacity: 0.6;
+    }
+    50% {
+      transform: translate3d(8%, 8%, 0) scale(1.04);
+      opacity: 0.95;
+    }
+    100% {
+      transform: translate3d(-4%, 6%, 0) scale(1);
+      opacity: 0.7;
+    }
+  }
+
+  /* ── Phase 5: Admin Dashboard Stat Cards 3D Floating Panel ─────────────── */
+  .admin-stat-float {
+    box-shadow: 
+      0 1px 2px rgba(11, 18, 38, 0.04),
+      0 6px 16px -2px rgba(11, 18, 38, 0.07),
+      0 16px 32px -8px rgba(11, 18, 38, 0.1),
+      inset 0 1.5px 0 0 rgba(255, 255, 255, 0.6);
+    transition: transform var(--duration-fast) var(--ease-cinematic), box-shadow var(--duration-fast) var(--ease-cinematic);
+  }
+  .dark .admin-stat-float {
+    box-shadow: 
+      0 1px 2px rgba(0, 0, 0, 0.2),
+      0 6px 16px -2px rgba(0, 0, 0, 0.3),
+      0 20px 40px -10px rgba(0, 0, 0, 0.45),
+      inset 0 1.5px 0 0 rgba(255, 255, 255, 0.1);
+  }
+  .admin-stat-float:hover {
+    transform: translateY(-3px);
+    box-shadow: 
+      0 2px 4px rgba(11, 18, 38, 0.04),
+      0 10px 24px -2px rgba(11, 18, 38, 0.09),
+      0 24px 48px -10px rgba(11, 18, 38, 0.14),
+      inset 0 1.5px 0 0 rgba(255, 255, 255, 0.85);
+  }
+  .dark .admin-stat-float:hover {
+    transform: translateY(-3px);
+    box-shadow: 
+      0 2px 4px rgba(0, 0, 0, 0.2),
+      0 10px 24px -2px rgba(0, 0, 0, 0.35),
+      0 28px 56px -10px rgba(0, 0, 0, 0.55),
+      inset 0 1.5px 0 0 rgba(255, 255, 255, 0.18);
+  }
+
+  /* ── Phase 5: Trust Ladder 3D Medallions (Bronze→Diamond on /about) ────── */
+  .medallion-3d {
+    perspective: 800px;
+    transform-style: preserve-3d;
+    transition: transform var(--duration-moment) var(--ease-cinematic), box-shadow var(--duration-moment) var(--ease-cinematic);
+  }
+  .medallion-3d-disc {
+    position: relative;
+    border-radius: 9999px;
+    box-shadow: 
+      0 8px 20px -4px rgba(11, 18, 38, 0.2),
+      inset 0 2px 3px 0 rgba(255, 255, 255, 0.5),
+      inset 0 -2px 3px 0 rgba(0, 0, 0, 0.35);
+    transition: transform var(--duration-moment) var(--ease-cinematic), box-shadow var(--duration-moment) var(--ease-cinematic);
+    will-change: transform;
+  }
+  .medallion-3d:hover {
+    transform: perspective(800px) rotateX(6deg) rotateY(-6deg) scale(1.03);
+  }
+  .medallion-3d:hover .medallion-3d-disc {
+    box-shadow: 
+      0 16px 32px -4px rgba(11, 18, 38, 0.28),
+      inset 0 2px 4px 0 rgba(255, 255, 255, 0.7),
+      inset 0 -2px 4px 0 rgba(0, 0, 0, 0.45);
+    transform: translateZ(10px);
+  }
+
 /* ── Universal Button Active Micro-interaction ────────────────────────── */
 button:not(:disabled):active,
 [role="button"]:not([aria-disabled="true"]):active {
@@ -358,6 +465,23 @@ a.bg-primary:hover {
     transform: none !important;
   }
   .card-metric:hover {
+    transform: none !important;
+  }
+  .ambient-glow-shift::before {
+    animation: none !important;
+  }
+  .hero-trust-parallax:hover .hero-trust-card,
+  .hero-trust-card {
+    transform: none !important;
+  }
+  .admin-stat-float:hover,
+  .admin-stat-float {
+    transform: none !important;
+  }
+  .medallion-3d:hover,
+  .medallion-3d,
+  .medallion-3d:hover .medallion-3d-disc,
+  .medallion-3d-disc {
     transform: none !important;
   }
 }
