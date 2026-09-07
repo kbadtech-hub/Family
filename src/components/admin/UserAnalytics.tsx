@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { getUserTier, TrustTier } from '@/lib/tiers';
 import {
@@ -19,7 +20,8 @@ import {
   Sparkles,
   Crown,
   PieChart,
-  ChevronRight
+  ChevronRight,
+  Gem
 } from 'lucide-react';
 
 interface UserProfileAnalytics {
@@ -40,6 +42,10 @@ interface UserProfileAnalytics {
 }
 
 export default function UserAnalytics() {
+  const params = useParams();
+  const locale = (params?.locale as string) || 'en';
+  const isAm = locale === 'am';
+
   const [profiles, setProfiles] = useState<UserProfileAnalytics[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -235,17 +241,17 @@ export default function UserAnalytics() {
     const tier = getUserTier(profile as any, Boolean(profile.has_vouched));
     switch (tier) {
       case 'vip':
-        return <span className="px-3 py-1 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1">👑 VIP Tier</span>;
+        return <span className="px-3 py-1 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5"><Crown size={12} className="text-amber-500 shrink-0" /> VIP Tier</span>;
       case 'diamond':
-        return <span className="px-3 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1">💎 Diamond</span>;
+        return <span className="px-3 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5"><Gem size={12} className="text-cyan-400 shrink-0" /> Diamond</span>;
       case 'platinum':
-        return <span className="px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1">🛡️ Platinum</span>;
+        return <span className="px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5"><ShieldCheck size={12} className="text-indigo-400 shrink-0" /> Platinum</span>;
       case 'gold':
-        return <span className="px-3 py-1 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1">🥇 Gold</span>;
+        return <span className="px-3 py-1 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5"><Award size={12} className="text-yellow-500 shrink-0" /> Gold</span>;
       case 'silver':
-        return <span className="px-3 py-1 bg-slate-400/10 text-slate-300 border border-slate-400/20 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1">🥈 Silver</span>;
+        return <span className="px-3 py-1 bg-slate-400/10 text-slate-300 border border-slate-400/20 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5"><Award size={12} className="text-slate-300 shrink-0" /> Silver</span>;
       default:
-        return <span className="px-3 py-1 bg-amber-800/10 text-amber-600 border border-amber-800/20 rounded-full text-[10px] font-bold uppercase">🥉 Bronze</span>;
+        return <span className="px-3 py-1 bg-amber-800/10 text-amber-600 border border-amber-800/20 rounded-full text-[10px] font-bold uppercase flex items-center gap-1.5"><Award size={12} className="text-amber-600 shrink-0" /> Bronze</span>;
     }
   };
 
@@ -258,8 +264,14 @@ export default function UserAnalytics() {
             <Users size={28} />
           </div>
           <div>
-            <h2 className="text-3xl font-black italic tracking-tight text-accent">ገፅ ሁለት፡ የተጠቃሚዎች እና ኦንቦርዲንግ አናሊቲክስ</h2>
-            <p className="text-xs text-gray-400 font-medium">User Tiers (Silver to Diamond/VIP), Onboarding/KYC Funnel & Geographic Diaspora Distribution</p>
+            <h2 className="text-3xl font-black italic tracking-tight text-accent">
+              {isAm ? 'ገፅ ሁለት፡ የተጠቃሚዎች እና ኦንቦርዲንግ አናሊቲክስ' : 'Page 2: User & Onboarding Analytics'}
+            </h2>
+            <p className="text-xs text-gray-400 font-medium">
+              {isAm
+                ? 'የተጠቃሚዎች ደረጃ (ከሲልቨር እስከ ዳይመንድ/ቪአይፒ)፣ የኦንቦርዲንግ/KYC ሂደት እና የዳያስፖራ ስርጭት'
+                : 'User Tiers (Silver to Diamond/VIP), Onboarding/KYC Funnel & Geographic Diaspora Distribution'}
+            </p>
           </div>
         </div>
 
@@ -275,7 +287,9 @@ export default function UserAnalytics() {
       <div className="space-y-4">
         <div className="flex items-center gap-3">
           <Award className="text-primary" size={24} />
-          <h3 className="text-xl font-bold uppercase tracking-wider text-accent">1. የተጠቃሚዎች ደረጃ (User Tiers & Levels Breakdown)</h3>
+          <h3 className="text-xl font-bold uppercase tracking-wider text-accent">
+            {isAm ? '1. የተጠቃሚዎች ደረጃ ዝርዝር' : '1. User Tiers & Levels Breakdown'}
+          </h3>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
@@ -283,7 +297,7 @@ export default function UserAnalytics() {
           <div className="bg-card p-6 rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden group">
             <div className="flex justify-between items-center mb-3">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300">Silver Level</span>
-              <span className="text-xl">🥈</span>
+              <Award className="text-slate-400 shrink-0" size={22} />
             </div>
             <h4 className="text-3xl font-black text-foreground">{metrics.silverCount}</h4>
             <p className="text-[11px] text-gray-400 font-bold mt-1">
@@ -298,7 +312,7 @@ export default function UserAnalytics() {
           <div className="bg-card p-6 rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden group">
             <div className="flex justify-between items-center mb-3">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-yellow-400">Gold Level</span>
-              <span className="text-xl">🥇</span>
+              <Award className="text-yellow-400 shrink-0" size={22} />
             </div>
             <h4 className="text-3xl font-black text-foreground">{metrics.goldCount}</h4>
             <p className="text-[11px] text-yellow-400 font-bold mt-1">
@@ -313,7 +327,7 @@ export default function UserAnalytics() {
           <div className="bg-card p-6 rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden group">
             <div className="flex justify-between items-center mb-3">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400">Platinum Level</span>
-              <span className="text-xl">🛡️</span>
+              <ShieldCheck className="text-indigo-400 shrink-0" size={22} />
             </div>
             <h4 className="text-3xl font-black text-foreground">{metrics.platinumCount}</h4>
             <p className="text-[11px] text-indigo-400 font-bold mt-1">
@@ -328,7 +342,7 @@ export default function UserAnalytics() {
           <div className="bg-card p-6 rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden group">
             <div className="flex justify-between items-center mb-3">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-400">Diamond Level</span>
-              <span className="text-xl">💎</span>
+              <Gem className="text-cyan-400 shrink-0" size={22} />
             </div>
             <h4 className="text-3xl font-black text-foreground">{metrics.diamondCount}</h4>
             <p className="text-[11px] text-cyan-400 font-bold mt-1">
@@ -343,7 +357,7 @@ export default function UserAnalytics() {
           <div className="bg-card p-6 rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden group">
             <div className="flex justify-between items-center mb-3">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400">VIP Level</span>
-              <span className="text-xl">👑</span>
+              <Crown className="text-amber-400 shrink-0" size={22} />
             </div>
             <h4 className="text-3xl font-black text-foreground">{metrics.vipCount}</h4>
             <p className="text-[11px] text-amber-400 font-bold mt-1">
@@ -361,8 +375,14 @@ export default function UserAnalytics() {
         <div className="flex items-center gap-3">
           <ShieldCheck className="text-primary" size={24} />
           <div>
-            <h3 className="text-xl font-bold uppercase tracking-wider text-accent">2. የምዝገባ እና የኦንቦርዲንግ ሁኔታ (Onboarding & KYC Funnel)</h3>
-            <p className="text-xs text-gray-400 font-medium">Conversion pipeline from initial registration to admin identity approval</p>
+            <h3 className="text-xl font-bold uppercase tracking-wider text-accent">
+              {isAm ? '2. የምዝገባ እና የኦንቦርዲንግ ሁኔታ' : '2. Onboarding & KYC Funnel'}
+            </h3>
+            <p className="text-xs text-gray-400 font-medium">
+              {isAm
+                ? 'ከመጀመሪያ ምዝገባ ጀምሮ እስከ ማረጋገጫ ድረስ ያለው ሂደት'
+                : 'Conversion pipeline from initial registration to admin identity approval'}
+            </p>
           </div>
         </div>
 
@@ -428,8 +448,12 @@ export default function UserAnalytics() {
           <div className="flex items-center gap-3">
             <Globe className="text-primary" size={24} />
             <div>
-              <h3 className="text-lg font-bold uppercase tracking-wider text-accent">3. የጂኦግራፊ አናሊሲስ (Location Split)</h3>
-              <p className="text-xs text-gray-400 font-medium">Domestic Ethiopia vs Foreign Diaspora</p>
+              <h3 className="text-lg font-bold uppercase tracking-wider text-accent">
+                {isAm ? '3. የጂኦግራፊ አናሊሲስ' : '3. Geographic Location Split'}
+              </h3>
+              <p className="text-xs text-gray-400 font-medium">
+                {isAm ? 'የሀገር ውስጥ እና የውጭ ዳያስፖራ' : 'Domestic Ethiopia vs Foreign Diaspora'}
+              </p>
             </div>
           </div>
 
@@ -437,7 +461,9 @@ export default function UserAnalytics() {
             {/* Domestic */}
             <div className="p-6 bg-background rounded-3xl border border-border space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-xs font-black uppercase text-emerald-400 tracking-wider">🇪🇹 የሀገር ውስጥ (Domestic)</span>
+                <span className="text-xs font-black uppercase text-emerald-400 tracking-wider flex items-center gap-1.5">
+                  <MapPin size={14} /> {isAm ? 'የሀገር ውስጥ' : 'Domestic (Ethiopia)'}
+                </span>
                 <span className="text-xs font-black text-foreground">{metrics.domesticCount} users</span>
               </div>
               <div className="w-full bg-card rounded-full h-3 overflow-hidden">
@@ -451,7 +477,9 @@ export default function UserAnalytics() {
             {/* Diaspora */}
             <div className="p-6 bg-background rounded-3xl border border-border space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-xs font-black uppercase text-sky-400 tracking-wider">🌍 የውጭ ሀገር (Diaspora)</span>
+                <span className="text-xs font-black uppercase text-sky-400 tracking-wider flex items-center gap-1.5">
+                  <Globe size={14} /> {isAm ? 'የውጭ ሀገር (ዳያስፖራ)' : 'Diaspora (International)'}
+                </span>
                 <span className="text-xs font-black text-foreground">{metrics.diasporaCount} users</span>
               </div>
               <div className="w-full bg-card rounded-full h-3 overflow-hidden">

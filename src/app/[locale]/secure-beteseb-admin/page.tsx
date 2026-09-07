@@ -17,6 +17,8 @@ import {
   Users, 
   ShieldCheck, 
   Lock,
+  Unlock,
+  Clock,
   Plus,
   Layout,
   Video,
@@ -46,7 +48,26 @@ import {
   MapPin,
   Phone,
   DollarSign,
-  TrendingUp
+  TrendingUp,
+  CreditCard,
+  Building2,
+  Share2,
+  Radio,
+  Key,
+  GraduationCap,
+  Bot,
+  UserCheck,
+  Headphones,
+  Smartphone,
+  Download,
+  Volume2,
+  VolumeX,
+  Crown,
+  RefreshCw,
+  Star,
+  Receipt,
+  Award,
+  Gem
 } from 'lucide-react';
 
 interface UserProfile {
@@ -176,9 +197,9 @@ const ADMIN_HUBS = [
     label: 'Analytics & Financial',
     icon: DollarSign,
     subTabs: [
-      { id: 'financial_tracker', label: '💰 Financial Ledger' },
-      { id: 'user_analytics', label: '📊 User Analytics' },
-      { id: 'stats', label: '📈 Growth Stats' },
+      { id: 'financial_tracker', label: 'Financial Ledger', icon: Receipt },
+      { id: 'user_analytics', label: 'User Analytics', icon: BarChart3 },
+      { id: 'stats', label: 'Growth Stats', icon: TrendingUp },
     ]
   },
   {
@@ -186,11 +207,11 @@ const ADMIN_HUBS = [
     label: 'Revenue & Payments',
     icon: Heart,
     subTabs: [
-      { id: 'payments', label: '💳 Payment Approvals' },
-      { id: 'welcome_rewards', label: '🎁 Welcoming & Rewards' },
-      { id: 'referral_mgmt', label: '🎁 Referral & Withdrawals' },
-      { id: 'pricing', label: '🪙 Pricing & Packages' },
-      { id: 'banks', label: '🏦 Bank Accounts' },
+      { id: 'payments', label: 'Payment Approvals', icon: CreditCard },
+      { id: 'welcome_rewards', label: 'Welcoming & Rewards', icon: Gift },
+      { id: 'referral_mgmt', label: 'Referral & Withdrawals', icon: Share2 },
+      { id: 'pricing', label: 'Pricing & Packages', icon: Coins },
+      { id: 'banks', label: 'Bank Accounts', icon: Building2 },
     ]
   },
   {
@@ -198,10 +219,10 @@ const ADMIN_HUBS = [
     label: 'Verification & Safety',
     icon: ShieldCheck,
     subTabs: [
-      { id: 'verification', label: '🆔 ID & Selfie KYC' },
-      { id: 'vouching', label: '🤝 Vouch Reviews' },
-      { id: 'reports', label: '🚨 Safety Reports' },
-      { id: 'fraud', label: '🤖 AI Fraud Scorer' },
+      { id: 'verification', label: 'ID & Selfie KYC', icon: ShieldCheck },
+      { id: 'vouching', label: 'Vouch Reviews', icon: UserCheck },
+      { id: 'reports', label: 'Safety Reports', icon: ShieldAlert },
+      { id: 'fraud', label: 'AI Fraud Scorer', icon: Bot },
     ]
   },
   {
@@ -209,12 +230,12 @@ const ADMIN_HUBS = [
     label: 'CMS & Content',
     icon: Layout,
     subTabs: [
-      { id: 'cms', label: '🖥️ Global CMS' },
-      { id: 'marketplace_cms', label: '🎓 Academy & Vendors' },
-      { id: 'posts', label: '📰 Articles & News' },
-      { id: 'lessons', label: '🎬 Lessons' },
-      { id: 'gifts', label: '🎁 Gifts Catalog' },
-      { id: 'social', label: '🌐 Social & App Links' },
+      { id: 'cms', label: 'Global CMS', icon: Layout },
+      { id: 'marketplace_cms', label: 'Academy & Vendors', icon: GraduationCap },
+      { id: 'posts', label: 'Articles & News', icon: FileText },
+      { id: 'lessons', label: 'Lessons', icon: Film },
+      { id: 'gifts', label: 'Gifts Catalog', icon: Gift },
+      { id: 'social', label: 'Social & App Links', icon: Globe },
     ]
   },
   {
@@ -222,9 +243,9 @@ const ADMIN_HUBS = [
     label: 'Communication & Support',
     icon: MessageSquare,
     subTabs: [
-      { id: 'support', label: '🎧 Support Tickets' },
-      { id: 'bookings', label: '📅 Counselor Bookings' },
-      { id: 'messaging', label: '📢 Broadcasts & DMs' },
+      { id: 'support', label: 'Support Tickets', icon: Headphones },
+      { id: 'bookings', label: 'Counselor Bookings', icon: Calendar },
+      { id: 'messaging', label: 'Broadcasts & DMs', icon: Radio },
     ]
   },
   {
@@ -232,9 +253,9 @@ const ADMIN_HUBS = [
     label: 'Staff & Security',
     icon: Users,
     subTabs: [
-      { id: 'staff', label: '👥 Staff & Roles' },
-      { id: 'security', label: '🔑 Master Key & Passwords' },
-      { id: 'business', label: '⚙️ Business Settings' },
+      { id: 'staff', label: 'Staff & Roles', icon: Users },
+      { id: 'security', label: 'Master Key & Passwords', icon: Key },
+      { id: 'business', label: 'Business Settings', icon: SettingsIcon },
     ]
   }
 ];
@@ -539,7 +560,7 @@ export default function AdminPortal() {
           {
             id: String(Date.now()),
             type: 'verification',
-            title: '🛡️ አዲስ የማንነት ማረጋገጫ (New Verification)',
+            title: 'አዲስ የማንነት ማረጋገጫ (New Verification)',
             subtitle: 'አዲስ መታወቂያ እና ሰልፊ ለመገምገም ደርሷል',
             time: new Date().toLocaleTimeString()
           },
@@ -554,7 +575,7 @@ export default function AdminPortal() {
           {
             id: String(Date.now()),
             type: 'payment',
-            title: '💳 አዲስ ክፍያ (New Payment Request)',
+            title: 'አዲስ ክፍያ (New Payment Request)',
             subtitle: `አዲስ ክፍያ ተፈጽሟል፦ ${payload.new.amount} ${payload.new.currency}`,
             time: new Date().toLocaleTimeString()
           },
@@ -569,7 +590,7 @@ export default function AdminPortal() {
           {
             id: String(Date.now()),
             type: 'support',
-            title: '📩 አዲስ የእርዳታ ጥያቄ (New Support Ticket)',
+            title: 'አዲስ የእርዳታ ጥያቄ (New Support Ticket)',
             subtitle: payload.new.subject || 'ደንበኛ የእርዳታ ጥያቄ ልኳል',
             time: new Date().toLocaleTimeString()
           },
@@ -584,7 +605,7 @@ export default function AdminPortal() {
           {
             id: String(Date.now()),
             type: 'counseling',
-            title: '📅 አዲስ የካውንስሊንግ ቀጠሮ (Counselor Booking)',
+            title: 'አዲስ የካውንስሊንግ ቀጠሮ (Counselor Booking)',
             subtitle: 'አዲስ የምክር አገልግሎት ቀጠሮ ተይዟል',
             time: new Date().toLocaleTimeString()
           },
@@ -616,7 +637,7 @@ export default function AdminPortal() {
                 ...genuinelyNew.map((v: any) => ({
                   id: v.id,
                   type: 'verification',
-                  title: '🛡️ አዲስ የማንነት ማረጋገጫ (New Verification)',
+                  title: 'አዲስ የማንነት ማረጋገጫ (New Verification)',
                   subtitle: `${v.profiles?.full_name || 'Unknown'} — ማረጋገጫ ጠብቋል`,
                   time: new Date().toLocaleTimeString()
                 })),
@@ -934,8 +955,8 @@ export default function AdminPortal() {
       }
 
       showToast(locale === 'am' 
-        ? '🚀 የሲስተም ይዘቶች በተሳካ ሁኔታ በዳታቤዝ፣ በዌብሳይት እና በሞባይል አፕሊኬሽኑ ላይ ቀጥታ (Live) ተተግበዋል!' 
-        : '🚀 CMS Content & Social Links Deployed Live Successfully!',
+        ? 'የሲስተም ይዘቶች በተሳካ ሁኔታ በዳታቤዝ፣ በዌብሳይት እና በሞባይል አፕሊኬሽኑ ላይ ቀጥታ (Live) ተተግበዋል!' 
+        : 'CMS Content & Social Links Deployed Live Successfully!',
         'success'
       );
     } catch (err: any) {
@@ -987,8 +1008,8 @@ export default function AdminPortal() {
       setSelectedVerification(null);
 
       showToast(status === 'verified'
-        ? (locale === 'am' ? '✅ ማረጋገጫ ጸድቋል! ተጠቃሚው ማሳወቂያ ይደርሰዋል።' : '✅ Verification approved!')
-        : (locale === 'am' ? '❌ ማረጋገጫ ውድቅ ተደርጓል!' : '❌ Verification rejected!'),
+        ? (locale === 'am' ? 'ማረጋገጫ ጸድቋል! ተጠቃሚው ማሳወቂያ ይደርሰዋል።' : 'Verification approved!')
+        : (locale === 'am' ? 'ማረጋገጫ ውድቅ ተደርጓል!' : 'Verification rejected!'),
         'success'
       );
     } catch (err: any) {
@@ -1903,9 +1924,10 @@ export default function AdminPortal() {
                     setDeferredPwaPrompt(null);
                   }
                 }}
-                className="px-3 py-2 bg-gradient-to-r from-red-600 to-amber-500 text-white rounded-xl font-bold text-[10px] uppercase tracking-wider shadow-lg flex items-center gap-1"
+                className="px-3 py-2 bg-gradient-to-r from-red-600 to-amber-500 text-white rounded-xl font-bold text-[10px] uppercase tracking-wider shadow-lg flex items-center gap-1.5"
               >
-                📲 ጫን
+                <Download size={14} className="shrink-0" />
+                <span>ጫን</span>
               </button>
             )}
 
@@ -1932,8 +1954,9 @@ export default function AdminPortal() {
         {/* PWA App Install Banner in Sidebar */}
         {deferredPwaPrompt && (
           <div className="mb-6 p-4 bg-gradient-to-br from-primary/20 to-amber-500/10 rounded-2xl border border-primary/30 space-y-2">
-            <p className="text-[10px] font-extrabold uppercase text-amber-400 tracking-wider">
-              📲 ዌብ አፑን ወደ ስልክዎ ይጫኑ (Add to Home Screen)
+            <p className="text-[10px] font-extrabold uppercase text-amber-400 tracking-wider flex items-center gap-1.5">
+              <Smartphone size={14} className="shrink-0 text-amber-400" />
+              <span>ዌብ አፑን ወደ ስልክዎ ይጫኑ (Add to Home Screen)</span>
             </p>
             <button
               onClick={async () => {
@@ -1975,8 +1998,11 @@ export default function AdminPortal() {
                           : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-semibold'
                       }`}
                     >
-                      <span className="truncate">{sub.label}</span>
-                      {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+                      <div className="flex items-center gap-2.5 truncate">
+                        <sub.icon size={16} className="shrink-0 text-current" />
+                        <span className="truncate">{sub.label}</span>
+                      </div>
+                      {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse shrink-0" />}
                     </button>
                   );
                 })}
@@ -2014,7 +2040,9 @@ export default function AdminPortal() {
                   className={`p-2 rounded-xl text-xs font-bold ${soundEnabled ? 'bg-emerald-500/10 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}
                   title="Toggle alert sound"
                 >
-                  {soundEnabled ? '🔊 Sound On' : '🔇 Muted'}
+                  <span className="flex items-center gap-1.5">
+                    {soundEnabled ? <><Volume2 size={14} className="shrink-0" /> <span>Sound On</span></> : <><VolumeX size={14} className="shrink-0" /> <span>Muted</span></>}
+                  </span>
                 </button>
                 <button
                   onClick={() => setShowAlertsDrawer(false)}
@@ -2034,7 +2062,13 @@ export default function AdminPortal() {
                 realtimeAlerts.map(alert => (
                   <div key={alert.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
                     <div className="flex justify-between items-center">
-                      <span className="font-bold text-xs text-primary">{alert.title}</span>
+                      <span className="font-bold text-xs text-primary flex items-center gap-1.5">
+                        {alert.type === 'verification' && <ShieldCheck size={14} className="shrink-0 text-primary" />}
+                        {alert.type === 'payment' && <CreditCard size={14} className="shrink-0 text-emerald-500" />}
+                        {alert.type === 'support' && <MessageSquare size={14} className="shrink-0 text-blue-500" />}
+                        {alert.type === 'counseling' && <Calendar size={14} className="shrink-0 text-amber-500" />}
+                        <span>{alert.title}</span>
+                      </span>
                       <span className="text-[9px] text-slate-400">{alert.time}</span>
                     </div>
                     <p className="text-xs text-slate-700 font-medium">{alert.subtitle}</p>
@@ -2077,7 +2111,8 @@ export default function AdminPortal() {
                       : 'bg-slate-100/80 text-slate-700 hover:bg-slate-200 hover:text-slate-900'
                   }`}
                 >
-                  {sub.label}
+                  <sub.icon size={15} className="shrink-0 text-current" />
+                  <span>{sub.label}</span>
                 </button>
               ))}
             </div>
@@ -2122,7 +2157,10 @@ export default function AdminPortal() {
                 <p className="text-4xl font-black italic text-accent">
                   {users.filter(u => (u as any).is_vip_member || (u as any).role === 'vip' || ((u as any).premium_until && new Date((u as any).premium_until) > new Date())).length}
                 </p>
-                <p className="text-[10px] text-amber-400 font-bold">👑 Active Subscriptions</p>
+                <p className="text-[10px] text-amber-400 font-bold flex items-center gap-1.5">
+                  <Crown size={12} className="text-beteseb-gold shrink-0" />
+                  <span>Active Subscriptions</span>
+                </p>
               </div>
             </div>
 
@@ -2599,7 +2637,7 @@ export default function AdminPortal() {
                   placeholder="https://play.google.com/store/apps/details?id=..."
                 />
                 <p className="text-xs text-foreground/30 font-medium">
-                  {cmsForm.play_store_url ? '✅ Link set — badge opens Play Store' : '⏳ Empty — badge shows Coming Soon modal'}
+                  {cmsForm.play_store_url ? <span className="flex items-center gap-1 text-emerald-500"><CheckCircle2 size={12} className="shrink-0" /><span>Link set — badge opens Play Store</span></span> : <span className="flex items-center gap-1 text-slate-400"><Clock size={12} className="shrink-0" /><span>Empty — badge shows Coming Soon modal</span></span>}
                 </p>
               </label>
 
@@ -2617,7 +2655,7 @@ export default function AdminPortal() {
                   placeholder="https://apps.apple.com/us/app/..."
                 />
                 <p className="text-xs text-foreground/30 font-medium">
-                  {cmsForm.app_store_url ? '✅ Link set — badge opens App Store' : '⏳ Empty — badge shows Coming Soon modal'}
+                  {cmsForm.app_store_url ? <span className="flex items-center gap-1 text-emerald-500"><CheckCircle2 size={12} className="shrink-0" /><span>Link set — badge opens App Store</span></span> : <span className="flex items-center gap-1 text-slate-400"><Clock size={12} className="shrink-0" /><span>Empty — badge shows Coming Soon modal</span></span>}
                 </p>
               </label>
             </div>
@@ -2996,7 +3034,7 @@ export default function AdminPortal() {
                             <span className="text-xs font-bold text-foreground block">{item.name}</span>
                             <span className="text-[10px] font-medium text-foreground/40 block">{item.desc}</span>
                             <span className={`text-[9px] font-black uppercase tracking-wider inline-block px-2 py-0.5 rounded-full ${isLocked ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
-                              {isLocked ? '🔒 Locked (ይቆለፋል)' : '🔓 Unlocked (ክፍት ነው)'}
+                              {isLocked ? <span className="flex items-center gap-1 text-amber-500"><Lock size={12} className="shrink-0" /><span>Locked (ይቆለፋል)</span></span> : <span className="flex items-center gap-1 text-emerald-500"><Unlock size={12} className="shrink-0" /><span>Unlocked (ክፍት ነው)</span></span>}
                             </span>
                           </div>
 
@@ -3443,7 +3481,7 @@ export default function AdminPortal() {
                               disabled={chapaSyncing}
                               className="w-full py-3 bg-primary text-white font-bold rounded-xl text-xs uppercase tracking-wider hover:opacity-90 disabled:opacity-50 transition-all shadow-sm flex items-center justify-center gap-2"
                            >
-                              {chapaSyncing ? 'Syncing with Chapa...' : '🔄 Sync All Chapa Dashboard Payments'}
+                              {chapaSyncing ? (<><RefreshCw size={14} className="animate-spin shrink-0 inline mr-2" /><span>Syncing with Chapa...</span></>) : (<><RefreshCw size={14} className="shrink-0 inline mr-2" /><span>Sync All Chapa Dashboard Payments</span></>)}
                            </button>
                         </div>
                         {chapaSyncResult && (
@@ -4370,7 +4408,7 @@ export default function AdminPortal() {
                 {/* 2. Gift Catalog List */}
                 <div className="bg-card p-8 rounded-[3rem] shadow-2xl border border-white/5 space-y-6 lg:col-span-2">
                    <h3 className="text-lg font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                      🎨 Active Catalog List
+                      Active Catalog List
                    </h3>
                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                       {adminCatalog.map(item => (
@@ -4439,7 +4477,7 @@ export default function AdminPortal() {
                                   </div>
                                   {gift.delivery_details?.proof_of_delivery && (
                                      <div className="mt-2 text-[9px] text-green-600 font-bold flex items-center gap-1.5 uppercase">
-                                        ✅ Proof Uploaded: <a href={gift.delivery_details.proof_of_delivery} target="_blank" rel="noreferrer" className="underline hover:text-primary normal-case">{gift.delivery_details.proof_of_delivery}</a>
+                                        Proof Uploaded: <a href={gift.delivery_details.proof_of_delivery} target="_blank" rel="noreferrer" className="underline hover:text-primary normal-case">{gift.delivery_details.proof_of_delivery}</a>
                                      </div>
                                   )}
                                </div>
@@ -4942,12 +4980,12 @@ export default function AdminPortal() {
                         <tr key={vendor.id} className="align-middle">
                           <td className="py-4">
                             <p className="font-bold text-accent">{vendor.name}</p>
-                            <p className="text-[10px] text-yellow-600 font-semibold">★ {vendor.rating} Ratings</p>
+                            <p className="text-[10px] text-yellow-600 font-semibold flex items-center gap-1"><Star size={12} className="fill-yellow-500 text-yellow-500 shrink-0" /><span>{vendor.rating} Ratings</span></p>
                           </td>
                           <td className="py-4">
                             <span className="px-2 py-0.5 bg-yellow-500/10 text-yellow-600 rounded text-[9px] font-bold uppercase">{vendor.category}</span>
                           </td>
-                          <td className="py-4">📍 {vendor.location}</td>
+                          <td className="py-4"><span className="flex items-center gap-1"><MapPin size={13} className="text-primary shrink-0" />{vendor.location}</span></td>
                           <td className="py-4 font-mono">{vendor.contact}</td>
                           <td className="py-4 text-right">
                             <div className="flex gap-2 justify-end">
@@ -5041,7 +5079,7 @@ export default function AdminPortal() {
                             <p className="text-[10px] text-gray-500">ID: {user.id?.substring(0, 8)}</p>
                           </td>
                           <td className="py-4 max-w-xs">
-                            <p className="font-bold text-gray-400">📍 {typeof (user as any).location === 'string' ? (user as any).location : JSON.stringify((user as any).location)}</p>
+                            <p className="font-bold text-gray-400 flex items-center gap-1"><MapPin size={13} className="text-primary shrink-0" />{typeof (user as any).location === 'string' ? (user as any).location : JSON.stringify((user as any).location)}</p>
                             <p className="text-[10px] text-gray-500 leading-normal italic mt-1">&quot;{(user as any).bio || 'No bio written'}&quot;</p>
                             <span className={`text-sm font-black ${
                               score >= 60 ? 'text-red-500' :
@@ -5523,25 +5561,29 @@ export default function AdminPortal() {
                 <label className="text-[10px] font-black uppercase tracking-widest text-primary block">Granular Feature Permissions</label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {[
-                    { key: 'can_view_financials', label: '💰 View Financial Ledger & Revenue' },
-                    { key: 'can_verify_kyc', label: '🆔 Perform ID & Selfie KYC Approvals' },
-                    { key: 'can_manage_cms', label: '🖥️ Edit CMS & Pricing Packages' },
-                    { key: 'can_moderate_support', label: '🎧 Manage Support Tickets & Reports' },
-                    { key: 'can_manage_staff', label: '👥 Full Super Admin Staff Control' },
-                  ].map(p => (
-                    <label key={p.key} className="flex items-center gap-3 p-3 bg-background rounded-xl border border-white/5 cursor-pointer hover:border-primary/30">
-                      <input
-                        type="checkbox"
-                        checked={(newStaffForm.permissions as any)[p.key] || false}
-                        onChange={(e) => setNewStaffForm({
-                          ...newStaffForm,
-                          permissions: { ...newStaffForm.permissions, [p.key]: e.target.checked }
-                        })}
-                        className="accent-primary w-4 h-4 rounded"
-                      />
-                      <span className="text-xs font-bold text-foreground/80">{p.label}</span>
-                    </label>
-                  ))}
+                    { key: 'can_view_financials', label: 'View Financial Ledger & Revenue', icon: DollarSign },
+                    { key: 'can_verify_kyc', label: 'Perform ID & Selfie KYC Approvals', icon: ShieldCheck },
+                    { key: 'can_manage_cms', label: 'Edit CMS & Pricing Packages', icon: Layout },
+                    { key: 'can_moderate_support', label: 'Manage Support Tickets & Reports', icon: Headphones },
+                    { key: 'can_manage_staff', label: 'Full Super Admin Staff Control', icon: Users },
+                  ].map(p => {
+                    const PermIcon = p.icon;
+                    return (
+                      <label key={p.key} className="flex items-center gap-3 p-3 bg-background rounded-xl border border-white/5 cursor-pointer hover:border-primary/30">
+                        <input
+                          type="checkbox"
+                          checked={(newStaffForm.permissions as any)[p.key] || false}
+                          onChange={(e) => setNewStaffForm({
+                            ...newStaffForm,
+                            permissions: { ...newStaffForm.permissions, [p.key]: e.target.checked }
+                          })}
+                          className="accent-primary w-4 h-4 rounded"
+                        />
+                        <PermIcon size={16} className="text-primary shrink-0" />
+                        <span className="text-xs font-bold text-foreground/80">{p.label}</span>
+                      </label>
+                    );
+                  })}
                 </div>
               </div>
 

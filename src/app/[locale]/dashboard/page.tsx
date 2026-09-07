@@ -33,6 +33,15 @@ import {
   BarChart2,
   User,
   Crown,
+  Zap,
+  FileText,
+  EyeOff,
+  BellOff,
+  Gem,
+  Infinity as InfinityIcon,
+  RefreshCw,
+  Star,
+  Award,
   Loader2,
   Wallet,
   Bell
@@ -344,12 +353,12 @@ function DashboardContent() {
 
   const getTierIcon = (tier: string) => {
     switch (tier) {
-      case 'diamond': return '💎';
-      case 'platinum': return '🌟';
-      case 'gold': return '🥇';
-      case 'silver': return '🥈';
+      case 'diamond': return <Gem size={14} className="text-cyan-400 shrink-0 inline" />;
+      case 'platinum': return <ShieldCheck size={14} className="text-indigo-400 shrink-0 inline" />;
+      case 'gold': return <Award size={14} className="text-yellow-400 shrink-0 inline" />;
+      case 'silver': return <Award size={14} className="text-slate-300 shrink-0 inline" />;
       case 'bronze':
-      default: return '🥉';
+      default: return <Award size={14} className="text-amber-700 shrink-0 inline" />;
     }
   };
 
@@ -413,7 +422,7 @@ function DashboardContent() {
         {/* Crown / star above avatar for elevated users */}
         {hasElevatedTier && (
           <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[12px] z-20 drop-shadow-sm select-none">
-            {isVipActive ? '👑' : '⭐'}
+            {isVipActive ? <Crown size={12} className="text-beteseb-gold fill-beteseb-gold" /> : <Star size={12} className="text-beteseb-gold fill-beteseb-gold" />}
           </div>
         )}
         <div className={`${sizeClass} rounded-full overflow-hidden flex items-center justify-center bg-muted transition-all border-2 ${borderClass}`}>
@@ -1718,7 +1727,7 @@ function DashboardContent() {
             <div className="relative flex flex-col md:flex-row items-center justify-between gap-8">
                <div className="space-y-4 text-center md:text-left">
                   <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-500/20 text-amber-300 rounded-full text-[10px] font-black uppercase tracking-widest border border-amber-500/40">
-                     ✨ {locale === 'am' ? 'ኦንቦርዲንግ አልተጠናቀቀም' : 'Onboarding Pending'}
+                     <Sparkles size={14} className="text-current shrink-0" /> {locale === 'am' ? 'ኦንቦርዲንግ አልተጠናቀቀም' : 'Onboarding Pending'}
                   </div>
                   <h2 className="text-3xl font-black italic tracking-tighter text-white">
                     {locale === 'am' ? 'የመገለጫ እና የተጣማሪ መስፈርትዎን ያሟሉ' : 'Complete Your Profile & Preferences'}
@@ -1733,7 +1742,7 @@ function DashboardContent() {
                  onClick={() => router.push('/onboarding')}
                  className="bg-primary hover:bg-primary/90 text-white px-10 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all shrink-0 flex items-center gap-3"
                >
-                  {locale === 'am' ? '🚀 ኦንቦርዲንግ ጀምር' : '🚀 Start Onboarding'} <ChevronRight size={20} />
+                  <><Sparkles size={16} className="text-current shrink-0 inline mr-2" />{locale === 'am' ? 'ኦንቦርዲንግ ጀምር' : 'Start Onboarding'}</> <ChevronRight size={20} />
                </button>
             </div>
           </div>
@@ -1758,16 +1767,16 @@ function DashboardContent() {
                   </p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-2 text-[11px] font-bold text-amber-200">
                      <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
-                        <span>💍</span> {locale === 'am' ? 'የትዳር አጋር ማች' : 'Matching'}
+                        <Heart size={14} className="text-current shrink-0" /> {locale === 'am' ? 'የትዳር አጋር ማች' : 'Matching'}
                      </div>
                      <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
-                        <span>💬</span> {locale === 'am' ? 'ቻት እና ጥሪ' : 'Chat & Calls'}
+                        <MessageCircle size={14} className="text-current shrink-0" /> {locale === 'am' ? 'ቻት እና ጥሪ' : 'Chat & Calls'}
                      </div>
                      <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
-                        <span>🎁</span> {locale === 'am' ? 'ስጦታዎችና አካዳሚ' : 'Gifts & Academy'}
+                        <Gift size={14} className="text-current shrink-0" /> {locale === 'am' ? 'ስጦታዎችና አካዳሚ' : 'Gifts & Academy'}
                      </div>
                      <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
-                        <span>👥</span> {locale === 'am' ? 'ኮሚኒቲና ምክር' : 'Community & Counseling'}
+                        <Users size={14} className="text-current shrink-0" /> {locale === 'am' ? 'ኮሚኒቲና ምክር' : 'Community & Counseling'}
                      </div>
                   </div>
                </div>
@@ -1824,7 +1833,7 @@ function DashboardContent() {
               onClick={() => router.push('/onboarding?step=4')}
               className="bg-red-500 hover:bg-red-600 text-white px-10 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs shadow-xl shadow-red-500/10 hover:scale-105 active:scale-95 transition-all shrink-0 flex items-center gap-2"
             >
-              🔄 {locale === 'am' ? 'እንደገና አስገባ (Retry Verification)' : 'Retry Verification'}
+              <RefreshCw size={14} className="text-current shrink-0 inline mr-1" /> {locale === 'am' ? 'እንደገና አስገባ (Retry Verification)' : 'Retry Verification'}
             </button>
           </div>
         )}
@@ -1974,23 +1983,23 @@ function DashboardContent() {
                           </p>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-semibold text-white/95">
                             <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-xl backdrop-blur-sm">
-                              <span>♾️</span>
+                              <InfinityIcon size={16} className="text-current shrink-0" />
                               <span>{locale === 'am' ? 'ያልተገደበ የትዳር አጋር ማግኘት' : 'Unlimited Matching Feed'}</span>
                             </div>
                             <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-xl backdrop-blur-sm">
-                              <span>💬</span>
+                              <MessageCircle size={16} className="text-current shrink-0" />
                               <span>{locale === 'am' ? 'የቀጥታ ጽሑፍ ውይይት (ከዕጩዎች ጋር)' : 'Direct Private Chat'}</span>
                             </div>
                             <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-xl backdrop-blur-sm">
-                              <span>📋</span>
+                              <FileText size={16} className="text-current shrink-0" />
                               <span>{locale === 'am' ? 'የሰዎች ሙሉ ዝርዝር መረጃና ባዮ' : 'Full Profile Bios & Details'}</span>
                             </div>
                             <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-xl backdrop-blur-sm">
-                              <span>🎓</span>
+                              <GraduationCap size={16} className="text-current shrink-0" />
                               <span>{locale === 'am' ? 'የባለሙያ ክፍሎችና ወርክሾፖች' : 'Access to Expert Classes'}</span>
                             </div>
                             <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-xl backdrop-blur-sm sm:col-span-2">
-                              <span>⚡</span>
+                              <Zap size={16} className="text-current shrink-0" />
                               <span>{locale === 'am' ? 'ቅድሚያ የሚሰጠው የደንበኞች ድጋፍ' : 'Priority Customer Care'}</span>
                             </div>
                           </div>
@@ -2020,7 +2029,7 @@ function DashboardContent() {
                       <div className="flex justify-between items-center w-full border-b border-white/15 pb-4">
                         <span className="text-sm font-black uppercase tracking-wider text-yellow-200 flex items-center gap-1.5">
                           <Crown size={20} className="text-yellow-200 fill-yellow-200/30" />
-                          {locale === 'am' ? 'የቪ.አይ.ፒ (VIP) ልዩ አባልነት' : 'VIP Elite Membership'} 👑
+                          {locale === 'am' ? 'የቪ.አይ.ፒ (VIP) ልዩ አባልነት' : 'VIP Elite Membership'}
                         </span>
                         <div className="text-white/95 font-black text-right">
                           <span className="text-lg leading-none">{isEthiopiaUser ? '299 ብር ከ 98 ሳንቲም' : '$12.99'}</span>
@@ -2035,23 +2044,23 @@ function DashboardContent() {
                         </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-semibold text-white/95">
                           <div className="flex items-center gap-2 bg-black/20 border border-yellow-400/20 px-3 py-2 rounded-xl backdrop-blur-sm">
-                            <span>👑</span>
+                            <Crown size={16} className="text-yellow-200 shrink-0" />
                             <span>{locale === 'am' ? 'የወርቅ አክሊል ባጅ (Golden Crown)' : 'Golden Crown Status'}</span>
                           </div>
                           <div className="flex items-center gap-2 bg-black/20 border border-yellow-400/20 px-3 py-2 rounded-xl backdrop-blur-sm">
-                            <span>👻</span>
+                            <EyeOff size={16} className="text-yellow-200 shrink-0" />
                             <span>{locale === 'am' ? 'Ghost Mode — ሙሉ የፎቶና ስም ድብቅነት' : 'Ghost Mode & Incognito'}</span>
                           </div>
                           <div className="flex items-center gap-2 bg-black/20 border border-yellow-400/20 px-3 py-2 rounded-xl backdrop-blur-sm">
-                            <span>🔕</span>
+                            <BellOff size={16} className="text-yellow-200 shrink-0" />
                             <span>{locale === 'am' ? 'የመስመር ላይ መገኘትንና የታየ ምልክትን መደበቅ' : 'Hide Online Status & Receipts'}</span>
                           </div>
                           <div className="flex items-center gap-2 bg-black/20 border border-yellow-400/20 px-3 py-2 rounded-xl backdrop-blur-sm">
-                            <span>🛡️</span>
+                            <ShieldCheck size={16} className="text-yellow-200 shrink-0" />
                             <span>{locale === 'am' ? 'ማን እንዳያችሁ የመቆጣጠር መብት' : 'Control Profile Visibility'}</span>
                           </div>
                           <div className="flex items-center gap-2 bg-black/20 border border-yellow-400/20 px-3 py-2 rounded-xl backdrop-blur-sm sm:col-span-2">
-                            <span>💎</span>
+                            <Gem size={16} className="text-yellow-200 shrink-0" />
                             <span>{locale === 'am' ? 'ሁሉንም የዳይመንድ ጥቅሞች ያካትታል' : 'Includes All Diamond Benefits'}</span>
                           </div>
                         </div>
@@ -2262,8 +2271,8 @@ function DashboardContent() {
                     </div>
                     <h2 className="text-2xl font-black italic tracking-tighter text-white">
                       {showBenefitsModal === 'vip'
-                        ? (locale === 'am' ? 'ቪ.አይ.ፒ አባልነት 👑' : 'VIP Status 👑')
-                        : (locale === 'am' ? 'የዳይመንድ (ፕሪሚየም) አባልነት 💎' : 'Diamond (Premium) Membership 💎')}
+                        ? (locale === 'am' ? 'ቪ.አይ.ፒ አባልነት' : 'VIP Status')
+                        : (locale === 'am' ? 'የዳይመንድ (ፕሪሚየም) አባልነት' : 'Diamond (Premium) Membership')}
                     </h2>
                     <div className="flex items-baseline gap-1 mt-0.5">
                       <span className="text-white font-black text-lg">
@@ -2295,26 +2304,29 @@ function DashboardContent() {
                 </p>
 
                 {(showBenefitsModal === 'premium' ? [
-                  { icon: '♾️', title: locale === 'am' ? 'ያልተገደበ ዕጩ ምግብ' : 'Unlimited Matching Feed', sub: locale === 'am' ? 'የዕለቱን ገደብ ያለፉ ሁሉንም መገለጫዎች ያስሱ።' : 'Bypass daily card limits and explore all profiles freely.' },
-                  { icon: '💬', title: locale === 'am' ? 'ቀጥታ የጽሑፍ ቻት' : 'Direct Private Chat', sub: locale === 'am' ? 'ከዕጩዎቻቸው ጋር ያለ ጊዜ ወሰን ቀጥታ ቻት ጀምሩ።' : 'Start instant conversations with matches — no wait limits.' },
-                  { icon: '📋', title: locale === 'am' ? 'ሙሉ የፕሮፋይል ዝርዝሮች' : 'Full Profile Bios & Details', sub: locale === 'am' ? 'የተደበቁ መረጃዎችን፣ ባዮ እና ምርጫዎችን ይክፈቱ።' : 'Reveal blurred traits, full bios, and personal preferences.' },
-                  { icon: '🎓', title: locale === 'am' ? 'የባለሙያ ክፍሎች' : 'Expert Academy Classes', sub: locale === 'am' ? 'ሁሉንም ወርክሾፖች እና ሴሚናሮች ያለ ኮይን ይድረሱ።' : 'Access all workshops and seminars without spending coins.' },
-                  { icon: '⚡', title: locale === 'am' ? 'ቅድሚያ የደንበኛ ድጋፍ' : 'Priority Customer Support', sub: locale === 'am' ? 'ቅሬታዎ ቀዳሚ ትኩረት ያገኛል።' : 'Your support tickets are handled with top priority.' }
+                  { icon: InfinityIcon, title: locale === 'am' ? 'ያልተገደበ ዕጩ ምግብ' : 'Unlimited Matching Feed', sub: locale === 'am' ? 'የዕለቱን ገደብ ያለፉ ሁሉንም መገለጫዎች ያስሱ።' : 'Bypass daily card limits and explore all profiles freely.' },
+                  { icon: MessageCircle, title: locale === 'am' ? 'ቀጥታ የጽሑፍ ቻት' : 'Direct Private Chat', sub: locale === 'am' ? 'ከዕጩዎቻቸው ጋር ያለ ጊዜ ወሰን ቀጥታ ቻት ጀምሩ።' : 'Start instant conversations with matches — no wait limits.' },
+                  { icon: FileText, title: locale === 'am' ? 'ሙሉ የፕሮፋይል ዝርዝሮች' : 'Full Profile Bios & Details', sub: locale === 'am' ? 'የተደበቁ መረጃዎችን፣ ባዮ እና ምርጫዎችን ይክፈቱ።' : 'Reveal blurred traits, full bios, and personal preferences.' },
+                  { icon: GraduationCap, title: locale === 'am' ? 'የባለሙያ ክፍሎች' : 'Expert Academy Classes', sub: locale === 'am' ? 'ሁሉንም ወርክሾፖች እና ሴሚናሮች ያለ ኮይን ይድረሱ።' : 'Access all workshops and seminars without spending coins.' },
+                  { icon: Zap, title: locale === 'am' ? 'ቅድሚያ የደንበኛ ድጋፍ' : 'Priority Customer Support', sub: locale === 'am' ? 'ቅሬታዎ ቀዳሚ ትኩረት ያገኛል።' : 'Your support tickets are handled with top priority.' }
                 ] : [
-                  { icon: '👑', title: locale === 'am' ? 'የወርቅ አክሊል ባጅ' : 'Golden Crown Badge', sub: locale === 'am' ? 'በሁሉም ቦታ መገለጫዎ ላይ ሚያምር ዘውድ ይጨምሩ።' : 'Stand out with an elegant crown on your avatar across the platform.' },
-                  { icon: '👻', title: locale === 'am' ? 'Ghost Mode — ሙሉ ድብቅ' : 'Ghost Mode — Full Incognito', sub: locale === 'am' ? 'ፎቶዎን ሙሉ በሙሉ ብዥ ያድርጉ እና ስምዎን ይደብቁ።' : 'Completely blur your avatar and hide your full name from others.' },
-                  { icon: '🔕', title: locale === 'am' ? 'Online ሁኔታን ደብቁ' : 'Hide Online Status', sub: locale === 'am' ? 'ንቁ መሆንዎ፣ ታይቷል ምልክት እና ጽሑፍ ሁኔታን ደብቁ።' : 'Conceal your active status, typing state, and read receipts.' },
-                  { icon: '🔍', title: locale === 'am' ? 'ማን እንዳያችሁ ይቆጣጠሩ' : 'Control Who Views You', sub: locale === 'am' ? 'የፕሮፋይልዎን ታይነት ሙሉ በሙሉ ያስተዳድሩ።' : 'Manage profile visibility and who can discover you.' },
-                  { icon: '💎', title: locale === 'am' ? 'ሁሉም ፕሪሚየም ጥቅሞች' : 'All Premium Benefits Included', sub: locale === 'am' ? 'ያልተገደበ ዕጩ፣ ቀጥታ ቻት እና ሁሉም ፕሪሚየም ፊቸሮች።' : 'Enjoy the complete Premium feature set plus exclusive VIP perks.' }
-                ]).map((b, i) => (
-                  <div key={i} className="flex items-start gap-3 bg-white/5 border border-white/10 rounded-2xl px-4 py-3">
-                    <span className="text-lg shrink-0 mt-0.5">{b.icon}</span>
-                    <div>
-                      <p className="text-[11px] font-black text-white uppercase tracking-wide">{b.title}</p>
-                      <p className="text-[10px] text-white/50 font-medium leading-snug mt-0.5">{b.sub}</p>
+                  { icon: Crown, title: locale === 'am' ? 'የወርቅ አክሊል ባጅ' : 'Golden Crown Badge', sub: locale === 'am' ? 'በሁሉም ቦታ መገለጫዎ ላይ ሚያምር ዘውድ ይጨምሩ።' : 'Stand out with an elegant crown on your avatar across the platform.' },
+                  { icon: EyeOff, title: locale === 'am' ? 'Ghost Mode — ሙሉ ድብቅ' : 'Ghost Mode — Full Incognito', sub: locale === 'am' ? 'ፎቶዎን ሙሉ በሙሉ ብዥ ያድርጉ እና ስምዎን ይደብቁ።' : 'Completely blur your avatar and hide your full name from others.' },
+                  { icon: BellOff, title: locale === 'am' ? 'Online ሁኔታን ደብቁ' : 'Hide Online Status', sub: locale === 'am' ? 'ንቁ መሆንዎ፣ ታይቷል ምልክት እና ጽሑፍ ሁኔታን ደብቁ።' : 'Conceal your active status, typing state, and read receipts.' },
+                  { icon: ShieldCheck, title: locale === 'am' ? 'ማን እንዳያችሁ ይቆጣጠሩ' : 'Control Who Views You', sub: locale === 'am' ? 'የፕሮፋይልዎን ታይነት ሙሉ በሙሉ ያስተዳድሩ።' : 'Manage profile visibility and who can discover you.' },
+                  { icon: Gem, title: locale === 'am' ? 'ሁሉም ፕሪሚየም ጥቅሞች' : 'All Premium Benefits Included', sub: locale === 'am' ? 'ያልተገደበ ዕጩ፣ ቀጥታ ቻት እና ሁሉም ፕሪሚየም ፊቸሮች።' : 'Enjoy the complete Premium feature set plus exclusive VIP perks.' }
+                ]).map((b, i) => {
+                  const BIcon = b.icon;
+                  return (
+                    <div key={i} className="flex items-start gap-3 bg-white/5 border border-white/10 rounded-2xl px-4 py-3">
+                      <BIcon size={18} className="text-beteseb-coral shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-[11px] font-black text-white uppercase tracking-wide">{b.title}</p>
+                        <p className="text-[10px] text-white/50 font-medium leading-snug mt-0.5">{b.sub}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* ── Action Buttons ── */}
@@ -2341,7 +2353,7 @@ function DashboardContent() {
                     onClick={() => setShowBenefitsModal('vip')}
                     className="w-full py-3.5 rounded-2xl font-black uppercase tracking-widest text-[10px] border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-all"
                   >
-                    {locale === 'am' ? '👑 ቪ.አይ.ፒ ጥቅሞችን ይመልከቱ' : '👑 View VIP Benefits Instead'}
+                    <><Crown size={15} className="inline mr-1.5 text-beteseb-gold" />{locale === 'am' ? 'ቪ.አይ.ፒ ጥቅሞችን ይመልከቱ' : 'View VIP Benefits Instead'}</>
                   </button>
                 )}
                 {showBenefitsModal === 'vip' && (
@@ -2349,7 +2361,7 @@ function DashboardContent() {
                     onClick={() => setShowBenefitsModal('premium')}
                     className="w-full py-3.5 rounded-2xl font-black uppercase tracking-widest text-[10px] border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-all"
                   >
-                    {locale === 'am' ? '💎 የዳይመንድ ጥቅሞችን ይመልከቱ' : '💎 View Diamond Benefits Instead'}
+                    <><Gem size={15} className="inline mr-1.5 text-cyan-400" />{locale === 'am' ? 'የዳይመንድ ጥቅሞችን ይመልከቱ' : 'View Diamond Benefits Instead'}</>
                   </button>
                 )}
               </div>
@@ -2391,7 +2403,7 @@ function DashboardContent() {
                 ? 'bg-primary/10 border-primary/20 text-primary' 
                 : 'bg-red-50 border-red-200 text-red-500'
             }`}>
-              {paymentNoticeModal.type === 'vip' ? '👑' : paymentNoticeModal.type === 'coins' ? '🪙' : paymentNoticeModal.type === 'premium' ? '⭐' : '❌'}
+              {paymentNoticeModal.type === 'vip' ? <Crown size={28} className="text-beteseb-gold" /> : paymentNoticeModal.type === 'coins' ? <Coins size={28} className="text-beteseb-gold" /> : paymentNoticeModal.type === 'premium' ? <Star size={28} className="text-beteseb-gold" /> : <X size={28} className="text-red-500" />}
             </div>
             <div className="space-y-2">
               <h3 className="text-xl font-black italic text-accent">
@@ -2439,7 +2451,7 @@ function DashboardContent() {
                   </div>
                   <div>
                     <p className="text-[9px] font-black uppercase tracking-widest text-amber-500 mb-0.5">
-                      🎁 {locale === 'am' ? 'ስጦታ ደረሰዎት!' : 'Gift Received!'}
+                      <><Gift size={16} className="inline mr-1.5 text-primary" />{locale === 'am' ? 'ስጦታ ደረሰዎት!' : 'Gift Received!'}</>
                     </p>
                     <h4 className="text-sm font-black text-gray-900 leading-tight">
                       {locale === 'am'

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import {
   DollarSign,
@@ -17,6 +18,7 @@ import {
   CheckCircle,
   Clock,
   AlertTriangle,
+  RotateCcw,
   User,
   ExternalLink,
   BookOpen,
@@ -24,7 +26,10 @@ import {
   Gift,
   Key,
   PieChart,
-  ArrowUpRight
+  ArrowUpRight,
+  Bot,
+  Smartphone,
+  Lock
 } from 'lucide-react';
 
 export interface FinancialTransaction {
@@ -45,6 +50,11 @@ export interface FinancialTransaction {
 }
 
 export default function FinancialTracker() {
+  const params = useParams();
+  const locale = (params?.locale as string) || 'en';
+  const isAm = locale === 'am';
+  const etbSymbol = isAm ? 'ብር ' : 'ETB ';
+
   const [transactions, setTransactions] = useState<FinancialTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -542,7 +552,7 @@ export default function FinancialTracker() {
       case 'failed':
         return <span className="px-3 py-1 bg-red-500/10 text-red-500 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1"><AlertTriangle size={12} /> Failed</span>;
       case 'refunded':
-        return <span className="px-3 py-1 bg-purple-500/10 text-purple-400 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1">↩️ Refunded</span>;
+        return <span className="px-3 py-1 bg-purple-500/10 text-purple-400 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1"><RotateCcw size={12} /> Refunded</span>;
       default:
         return <span className="px-3 py-1 bg-gray-500/10 text-gray-400 rounded-full text-[10px] font-bold uppercase">{status}</span>;
     }
@@ -558,8 +568,14 @@ export default function FinancialTracker() {
               <DollarSign size={28} />
             </div>
             <div>
-              <h2 className="text-3xl font-black italic tracking-tight text-accent">ገፅ አንድ፡ የፋይናንስ እና የገቢ መዝገብ መከታተያ</h2>
-              <p className="text-xs text-gray-400 font-medium">Financial Auditability, Revenue Ledger & Gateway Analytics (Chapa, Play Store, App Store)</p>
+              <h2 className="text-3xl font-black italic tracking-tight text-accent">
+                {isAm ? 'ገፅ አንድ፡ የፋይናንስ እና የገቢ መዝገብ መከታተያ' : 'Page 1: Financial & Revenue Ledger'}
+              </h2>
+              <p className="text-xs text-gray-400 font-medium">
+                {isAm
+                  ? 'የፋይናንስ ኦዲት፣ የገቢ መዝገብ እና የክፍያ መንገዶች አናሊቲክስ (Chapa, Play Store, App Store)'
+                  : 'Financial Auditability, Revenue Ledger & Gateway Analytics (Chapa, Play Store, App Store)'}
+              </p>
             </div>
           </div>
         </div>
@@ -593,17 +609,17 @@ export default function FinancialTracker() {
         <div className="bg-card p-6 rounded-[2.5rem] border border-border shadow-2xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform" />
           <div className="flex justify-between items-start mb-4">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">Total ETB Revenue (ብር)</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">{isAm ? 'አጠቃላይ የብር ገቢ (ETB)' : 'Total ETB Revenue (ETB)'}</span>
             <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400">
               <TrendingUp size={16} />
             </div>
           </div>
           <h3 className="text-3xl font-black italic tracking-tight text-foreground">
-            ብር {metrics.totalGrossEtb.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {etbSymbol}{metrics.totalGrossEtb.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </h3>
           <div className="mt-4 pt-3 border-t border-border/50 flex justify-between text-[11px] font-bold">
-            <span className="text-gray-400">Fee: ብር {metrics.totalFeeEtb.toLocaleString()}</span>
-            <span className="text-emerald-400">Net: ብር {metrics.totalNetEtb.toLocaleString()}</span>
+            <span className="text-gray-400">Fee: {etbSymbol}{metrics.totalFeeEtb.toLocaleString()}</span>
+            <span className="text-emerald-400">Net: {etbSymbol}{metrics.totalNetEtb.toLocaleString()}</span>
           </div>
         </div>
 
@@ -635,14 +651,14 @@ export default function FinancialTracker() {
             </div>
           </div>
           <h3 className="text-2xl font-black italic tracking-tight text-foreground">
-            ብር {(metrics.vipRevenueEtb + metrics.premiumRevenueEtb).toLocaleString()}
+            {etbSymbol}{(metrics.vipRevenueEtb + metrics.premiumRevenueEtb).toLocaleString()}
           </h3>
           <p className="text-xs text-amber-400 font-bold mt-1">
             + ${(metrics.vipRevenueUsd + metrics.premiumRevenueUsd).toLocaleString()} USD
           </p>
           <div className="mt-3 pt-2 border-t border-border/50 text-[10px] font-bold text-gray-400 flex justify-between">
-            <span>VIP: ብር {metrics.vipRevenueEtb.toLocaleString()}</span>
-            <span>Premium: ብር {metrics.premiumRevenueEtb.toLocaleString()}</span>
+            <span>VIP: {etbSymbol}{metrics.vipRevenueEtb.toLocaleString()}</span>
+            <span>Premium: {etbSymbol}{metrics.premiumRevenueEtb.toLocaleString()}</span>
           </div>
         </div>
 
@@ -656,14 +672,14 @@ export default function FinancialTracker() {
             </div>
           </div>
           <h3 className="text-2xl font-black italic tracking-tight text-foreground">
-            ብር {metrics.coinsRevenueEtb.toLocaleString()}
+            {etbSymbol}{metrics.coinsRevenueEtb.toLocaleString()}
           </h3>
           <p className="text-xs text-yellow-500 font-bold mt-1">
             + ${metrics.coinsRevenueUsd.toLocaleString()} USD
           </p>
           <div className="mt-3 pt-2 border-t border-border/50 text-[10px] font-bold text-gray-400 flex justify-between">
-            <span>Courses: ብር {metrics.coursesRevenueEtb.toLocaleString()}</span>
-            <span>Counseling: ብር {metrics.counselingRevenueEtb.toLocaleString()}</span>
+            <span>Courses: {etbSymbol}{metrics.coursesRevenueEtb.toLocaleString()}</span>
+            <span>Counseling: {etbSymbol}{metrics.counselingRevenueEtb.toLocaleString()}</span>
           </div>
         </div>
       </div>
@@ -682,24 +698,24 @@ export default function FinancialTracker() {
           {/* Chapa */}
           <div className="p-6 bg-background rounded-3xl border border-emerald-800/20 space-y-3 relative overflow-hidden">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase text-emerald-400 tracking-wider">🟢 Chapa Gateway</span>
+              <span className="text-xs font-black uppercase text-emerald-400 tracking-wider flex items-center gap-1.5"><CreditCard size={14} /> Chapa Gateway</span>
               <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full font-extrabold">Active Primary</span>
             </div>
             <div className="space-y-1">
-              <p className="text-2xl font-black text-foreground">ብር {metrics.gatewayChapaEtb.toLocaleString()}</p>
+              <p className="text-2xl font-black text-foreground">{etbSymbol}{metrics.gatewayChapaEtb.toLocaleString()}</p>
               <p className="text-xs font-bold text-emerald-400">+ ${metrics.gatewayChapaUsd.toLocaleString()} USD</p>
             </div>
-            <p className="text-[10px] text-gray-400">Estimated Chapa Fee (3.5%): ብር {(metrics.gatewayChapaEtb * 0.035).toFixed(2)}</p>
+            <p className="text-[10px] text-gray-400">Estimated Chapa Fee (3.5%): {etbSymbol}{(metrics.gatewayChapaEtb * 0.035).toFixed(2)}</p>
           </div>
 
           {/* Play Store */}
           <div className="p-6 bg-background rounded-3xl border border-sky-800/20 space-y-3 relative overflow-hidden">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase text-sky-400 tracking-wider">🤖 Google Play Store</span>
+              <span className="text-xs font-black uppercase text-sky-400 tracking-wider flex items-center gap-1.5"><Bot size={14} /> Google Play Store</span>
               <span className="text-[10px] bg-sky-500/10 text-sky-400 px-3 py-1 rounded-full font-extrabold">In-App Purchase</span>
             </div>
             <div className="space-y-1">
-              <p className="text-2xl font-black text-foreground">ብር {metrics.gatewayPlayStoreEtb.toLocaleString()}</p>
+              <p className="text-2xl font-black text-foreground">{etbSymbol}{metrics.gatewayPlayStoreEtb.toLocaleString()}</p>
               <p className="text-xs font-bold text-sky-400">+ ${metrics.gatewayPlayStoreUsd.toLocaleString()} USD</p>
             </div>
             <p className="text-[10px] text-gray-400">Estimated Google Fee (15%): ${ (metrics.gatewayPlayStoreUsd * 0.15).toFixed(2) }</p>
@@ -708,11 +724,11 @@ export default function FinancialTracker() {
           {/* App Store */}
           <div className="p-6 bg-background rounded-3xl border border-indigo-800/20 space-y-3 relative overflow-hidden">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase text-indigo-400 tracking-wider">🍎 Apple App Store</span>
+              <span className="text-xs font-black uppercase text-indigo-400 tracking-wider flex items-center gap-1.5"><Smartphone size={14} /> Apple App Store</span>
               <span className="text-[10px] bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full font-extrabold">In-App Purchase</span>
             </div>
             <div className="space-y-1">
-              <p className="text-2xl font-black text-foreground">ብር {metrics.gatewayAppStoreEtb.toLocaleString()}</p>
+              <p className="text-2xl font-black text-foreground">{etbSymbol}{metrics.gatewayAppStoreEtb.toLocaleString()}</p>
               <p className="text-xs font-bold text-indigo-400">+ ${metrics.gatewayAppStoreUsd.toLocaleString()} USD</p>
             </div>
             <p className="text-[10px] text-gray-400">Estimated Apple Fee (15%): ${ (metrics.gatewayAppStoreUsd * 0.15).toFixed(2) }</p>
@@ -773,7 +789,7 @@ export default function FinancialTracker() {
               className="px-4 py-3 bg-background border border-border rounded-2xl text-xs font-bold text-foreground"
             >
               <option value="all">All Currencies</option>
-              <option value="ETB">ETB (ኢትዮጵያ ብር)</option>
+              <option value="ETB">{isAm ? 'ETB (የኢትዮጵያ ብር)' : 'ETB (Ethiopian Birr)'}</option>
               <option value="USD">USD ($)</option>
               <option value="COINS">Coins Economy</option>
             </select>
@@ -859,7 +875,7 @@ export default function FinancialTracker() {
                           <span className="text-[10px] text-gray-400">{tx.user_email_snapshot}</span>
                         )}
                         {tx.user_name_snapshot.startsWith('Deleted User') && (
-                          <span className="text-[9px] text-red-400 font-extrabold uppercase mt-0.5">🔒 Account Deleted — Ledger Retained</span>
+                          <span className="text-[9px] text-red-400 font-extrabold uppercase mt-0.5 flex items-center gap-1"><Lock size={10} /> Account Deleted — Ledger Retained</span>
                         )}
                       </div>
                     </td>
@@ -872,15 +888,15 @@ export default function FinancialTracker() {
                     <td className="p-5">{formatSourceBadge(tx.revenue_source)}</td>
                     <td className="p-5">{formatGatewayBadge(tx.payment_gateway)}</td>
                     <td className="p-5 font-black text-foreground">
-                      {tx.currency === 'ETB' ? 'ብር ' : tx.currency === 'USD' ? '$' : '🪙 '}
+                      {tx.currency === 'ETB' ? etbSymbol : tx.currency === 'USD' ? '$' : '🪙 '}
                       {Number(tx.gross_amount).toLocaleString()}
                     </td>
                     <td className="p-5 text-gray-400">
-                      {tx.currency === 'ETB' ? 'ብር ' : tx.currency === 'USD' ? '$' : ''}
+                      {tx.currency === 'ETB' ? etbSymbol : tx.currency === 'USD' ? '$' : ''}
                       {Number(tx.gateway_fee).toLocaleString()}
                     </td>
                     <td className="p-5 font-black text-emerald-400">
-                      {tx.currency === 'ETB' ? 'ብር ' : tx.currency === 'USD' ? '$' : ''}
+                      {tx.currency === 'ETB' ? etbSymbol : tx.currency === 'USD' ? '$' : ''}
                       {Number(tx.net_amount).toLocaleString()}
                     </td>
                     <td className="p-5">{formatStatusBadge(tx.payment_status)}</td>
@@ -1039,7 +1055,7 @@ export default function FinancialTracker() {
                     onChange={(e) => setManualForm({ ...manualForm, currency: e.target.value })}
                     className="w-full p-3 bg-background border border-border rounded-xl text-xs font-bold text-foreground"
                   >
-                    <option value="ETB">ETB (ብር)</option>
+                    <option value="ETB">{isAm ? 'ETB (ብር)' : 'ETB (Birr)'}</option>
                     <option value="USD">USD ($)</option>
                   </select>
                 </div>

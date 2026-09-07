@@ -2,7 +2,7 @@ import {NextIntlClientProvider} from 'next-intl';
 import {getMessages, setRequestLocale} from 'next-intl/server';
 import {notFound} from 'next/navigation';
 import {routing} from '@/i18n/routing';
-import {Poppins, Noto_Sans_Ethiopic, Noto_Sans_Arabic} from "next/font/google";
+import {Poppins, Noto_Sans_Ethiopic, Noto_Sans_Arabic, Fraunces} from "next/font/google";
 import type { Viewport } from 'next';
 import "@/app/globals.css";
 import ConditionalLayout from "@/components/ConditionalLayout";
@@ -20,6 +20,13 @@ const poppins = Poppins({
   variable: "--font-poppins",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+});
+
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  weight: ["600", "700", "800", "900"],
+  display: "swap"
 });
 
 const notoEthiopic = Noto_Sans_Ethiopic({
@@ -64,7 +71,7 @@ export default async function LocaleLayout({
   const direction = locale === 'ar' ? 'rtl' : 'ltr';
 
   return (
-    <html lang={locale} dir={direction} className={`${poppins.variable} ${notoEthiopic.variable} ${notoArabic.variable} antialiased`}>
+    <html lang={locale} dir={direction} className={`${poppins.variable} ${notoEthiopic.variable} ${notoArabic.variable} ${fraunces.variable} antialiased`}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
         <link rel="manifest" href="/manifest.json" />

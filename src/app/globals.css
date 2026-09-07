@@ -62,13 +62,15 @@
   --ease-cinematic: var(--ease-cinematic);
   --duration-fast: var(--duration-fast);
   --duration-moment: var(--duration-moment);
+
+  --font-display: var(--font-fraunces), serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-poppins), var(--font-noto-ethiopic), sans-serif;
-  font-weight: 300; /* Minimalist default */
+  font-weight: 400; /* Minimalist default weight 400 for balanced visual weight */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
@@ -80,29 +82,35 @@ body {
   word-wrap: break-word;
 }
 
+.font-display {
+  font-family: var(--font-fraunces), var(--font-noto-ethiopic), serif;
+}
+
 .font-arabic {
   font-family: var(--font-noto-arabic), sans-serif;
 }
 
-/* Minimalism: Lighter Weights for a Professional Feel */
+/* Typography Scale (Phase 3 Standardized Scale) */
 h1 {
-  @apply font-semibold tracking-tighter text-3xl md:text-5xl lg:text-6xl leading-tight;
+  font-family: var(--font-fraunces), var(--font-noto-ethiopic), serif;
+  @apply font-semibold tracking-tight text-[28px] md:text-[40px] leading-tight;
 }
 
 h2 {
-  @apply font-semibold tracking-tight text-2xl md:text-4xl leading-snug;
+  font-family: var(--font-fraunces), var(--font-noto-ethiopic), serif;
+  @apply font-semibold tracking-tight text-[20px] md:text-[28px] leading-snug;
 }
 
 h3 {
-  @apply font-medium text-xl md:text-3xl tracking-tight;
+  @apply font-medium text-[16px] md:text-[20px] tracking-tight;
 }
 
 h4 {
-  @apply font-medium text-lg md:text-2xl;
+  @apply font-medium text-[14px] md:text-[16px];
 }
 
 p, span, div {
-   @apply font-normal text-sm md:text-base leading-relaxed;
+   @apply font-normal text-[14px] md:text-[16px] leading-relaxed;
 }
 
 /* Branding Text - Kept slightly bolder for distinction */
