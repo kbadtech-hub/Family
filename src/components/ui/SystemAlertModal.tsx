@@ -111,14 +111,14 @@ export default function SystemAlertModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 modal-backdrop-cinematic animate-in fade-in duration-150">
       <div 
-        className="bg-white dark:bg-slate-900 text-[#0F172A] dark:text-slate-100 border-2 border-primary/30 rounded-[2.5rem] shadow-2xl max-w-md w-full p-8 text-center space-y-6 relative animate-in zoom-in-95 duration-200 overflow-hidden"
+        className="bg-card text-card-foreground border border-primary/20 rounded-[var(--radius-card)] shadow-2xl max-w-md w-full p-8 text-center space-y-6 relative overflow-hidden modal-content-cinematic"
         onClick={(e) => e.stopPropagation()}
       >
         <button 
           onClick={handleCancel}
-          className="absolute top-5 right-5 p-2 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition-all"
+          className="absolute top-5 right-5 p-2 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 hover:bg-muted transition-all"
           aria-label="Close modal"
         >
           <X size={20} />
@@ -127,10 +127,10 @@ export default function SystemAlertModal({
         {getIcon()}
 
         <div className="space-y-2">
-          <h3 className="text-xl font-black tracking-tight">
+          <h3 className="text-xl font-bold tracking-tight text-foreground font-display">
             {title || getDefaultTitle()}
           </h3>
-          <p className="text-sm font-medium text-gray-600 dark:text-slate-300 leading-relaxed break-words whitespace-pre-wrap">
+          <p className="text-sm font-normal text-gray-600 dark:text-slate-300 leading-relaxed break-words whitespace-pre-wrap">
             {message}
           </p>
         </div>
@@ -147,7 +147,7 @@ export default function SystemAlertModal({
               }}
               placeholder={placeholder || 'አንድ ነገር ይጻፉ...'}
               autoFocus
-              className="w-full px-5 py-3.5 rounded-2xl border-2 border-primary/30 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-primary font-medium text-sm transition-all"
+              className="input-cinematic"
             />
           </div>
         )}
@@ -156,7 +156,7 @@ export default function SystemAlertModal({
           {(isConfirm || isPrompt) && (
             <button
               onClick={handleCancel}
-              className="flex-1 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-200 py-3.5 px-6 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-slate-700 transition-all active:scale-95 cursor-pointer"
+              className="flex-1 btn-secondary text-xs uppercase tracking-widest cursor-pointer"
             >
               {cancelText || 'ሰርዝ (Cancel)'}
             </button>
@@ -164,8 +164,8 @@ export default function SystemAlertModal({
           <button
             onClick={handleConfirm}
             className={`flex-1 ${
-              type === 'error' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-primary hover:opacity-95'
-            } text-white py-3.5 px-6 rounded-full font-bold text-xs uppercase tracking-widest hover:shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer`}
+              type === 'error' ? 'bg-rose-600 hover:bg-rose-700 text-white rounded-full py-3.5 px-6 font-semibold text-xs uppercase tracking-widest' : 'btn-primary text-xs uppercase tracking-widest'
+            } flex items-center justify-center gap-2 cursor-pointer`}
           >
             <ShieldCheck size={16} />
             {actionText || (isConfirm ? 'አረጋግጥ (Confirm)' : 'እሺ (OK)')}

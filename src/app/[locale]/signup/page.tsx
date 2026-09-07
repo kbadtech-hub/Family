@@ -19,7 +19,9 @@ import {
   Phone, 
   Globe, 
   User, 
-  ArrowLeft 
+  ArrowLeft,
+  MapPin,
+  ArrowDown 
 } from 'lucide-react';
 import { validatePassword } from '@/lib/password-validator';
 import { COUNTRIES } from '@/lib/countries';
@@ -520,26 +522,43 @@ function SignupContent() {
                 <p className="font-medium leading-relaxed">{toast.message}</p>
               </div>
             )}
-            {/* Location Status Banner */}
+            {/* Cinematic Full-Screen Location Verification Loader */}
             {locationStatus === 'requesting' && (
-              <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded-2xl flex items-center gap-3 text-blue-700 text-xs animate-in fade-in slide-in-from-top-2">
-                <Loader2 size={16} className="animate-spin flex-shrink-0" />
-                <span className="font-bold">{locale === 'am' ? '📍 ቦታዎን በማወቅ ላይ...' : '📍 Detecting your location...'}</span>
+              <div className="fixed inset-0 z-50 modal-backdrop-cinematic flex items-center justify-center p-4">
+                <div className="modal-content-cinematic p-8 max-w-sm w-full text-center space-y-4 border border-white/10 shadow-2xl animate-in zoom-in-95 duration-200">
+                  <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mx-auto">
+                    <MapPin size={32} className="animate-bounce" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <h3 className="text-lg font-bold text-foreground font-display">
+                      {locale === 'am' ? 'የመገኛ ቦታ ማረጋገጫ' : 'Verifying Your Location'}
+                    </h3>
+                    <p className="text-xs text-gray-400 max-w-xs mx-auto leading-relaxed">
+                      {locale === 'am'
+                        ? 'ለትዳር አጋር ምርጫ እና ለአካባቢ ተስማሚ አገልግሎት የመገኛ ቦታዎን ደህንነቱ በተጠበቀ መንገድ በማረጋገጥ ላይ...'
+                        : 'Securely verifying your geographical node to optimize marriage matching for your location...'}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center gap-2 pt-2 text-xs font-semibold text-primary">
+                    <Loader2 size={16} className="animate-spin" />
+                    <span>{locale === 'am' ? 'እባክዎ ጥቂት ሰከንዶች ይጠብቁ...' : 'Detecting your coordinates...'}</span>
+                  </div>
+                </div>
               </div>
             )}
             {locationStatus === 'granted' && (
-              <div className="mb-4 p-3 bg-green-50 border border-green-100 rounded-2xl flex items-center gap-3 text-green-700 text-xs animate-in fade-in">
-                <CheckCircle2 size={16} className="flex-shrink-0" />
-                <span className="font-bold">{locale === 'am' ? '✅ ቦታ ተረጋግጧል' : '✅ Location verified'}</span>
+              <div className="mb-4 p-3.5 bg-emerald-50 border border-emerald-200/80 rounded-2xl flex items-center gap-3 text-emerald-800 text-xs animate-in fade-in">
+                <CheckCircle2 size={18} className="text-emerald-600 flex-shrink-0" />
+                <span className="font-bold">{locale === 'am' ? 'የመገኛ ቦታ ተረጋግጧል' : 'Location securely verified'}</span>
               </div>
             )}
             {locationStatus === 'denied' && (
-              <div className="mb-4 p-3 bg-amber-50 border border-amber-100 rounded-2xl flex items-start gap-3 text-amber-800 text-xs animate-in fade-in">
-                <span className="text-sm flex-shrink-0">⚠️</span>
-                <div>
-                  <p className="font-bold">{locale === 'am' ? 'ቦታ ፍቃድ አልተሰጠም' : 'Location permission denied'}</p>
-                  <p className="text-amber-600 mt-0.5">{locale === 'am' ? 'የቦታ ሎኬሽን ሳይረጋገጥ ምዝገባ ሊቆም ይችላል።' : 'Registration may be limited without location access.'}</p>
-                  <button onClick={requestLocation} className="mt-1 text-primary font-bold underline">{locale === 'am' ? 'ደግሞ ሞክር' : 'Try again'}</button>
+              <div className="mb-4 p-3.5 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3 text-amber-900 text-xs animate-in fade-in">
+                <AlertCircle size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="font-bold">{locale === 'am' ? 'የቦታ ፍቃድ አልተሰጠም' : 'Location permission denied'}</p>
+                  <p className="text-amber-700 text-[11px] mt-0.5 leading-relaxed">{locale === 'am' ? 'የቦታ ሎኬሽን ሳይረጋገጥ ምዝገባ ሊገደብ ይችላል።' : 'Registration matching accuracy may be limited without location.'}</p>
+                  <button onClick={requestLocation} className="mt-1 text-primary font-bold text-xs underline hover:text-primary/80">{locale === 'am' ? 'ደግሞ ሞክር' : 'Try again'}</button>
                 </div>
               </div>
             )}
@@ -711,8 +730,9 @@ function SignupContent() {
                   </div>
 
                   {showReadError && (
-                    <p className="text-[10px] text-red-500 font-bold text-center mt-2 animate-bounce">
-                      ⚠️ {showReadError}
+                    <p className="text-[10px] text-red-500 font-bold text-center mt-2 animate-bounce flex items-center justify-center gap-1">
+                      <AlertCircle size={14} />
+                      <span>{showReadError}</span>
                     </p>
                   )}
                 </div>
@@ -721,7 +741,7 @@ function SignupContent() {
               /* ── Phone Verification Gate (for Social/Email users without phone) ── */
               <form onSubmit={handleVerifyGatePhone} className="space-y-5">
                 <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-center">
-                  <span className="text-2xl block mb-2">🔐</span>
+                  <Lock size={26} className="text-amber-700 mx-auto mb-2" />
                   <p className="text-amber-800 text-xs font-bold">
                     {locale === 'am'
                       ? 'ደህንነትዎን ለማረጋገጥ ስልክ ቁጥርዎን ያስገቡ'
@@ -1017,9 +1037,10 @@ function SignupContent() {
                   <button
                     type="button"
                     onClick={() => { setError(''); setView('phone'); }}
-                    className="w-full text-[11px] font-bold text-primary hover:underline text-center pt-3 block"
+                    className="w-full text-[11px] font-bold text-primary hover:underline text-center pt-3 flex items-center justify-center gap-1.5"
                   >
-                    {locale === 'am' ? '📲 በስልክ ቁጥር ለመመዝገብ እዚህ ይጫኑ' : '📲 Register with Phone Number instead'}
+                    <Phone size={13} />
+                    <span>{locale === 'am' ? 'በስልክ ቁጥር ለመመዝገብ እዚህ ይጫኑ' : 'Register with Phone Number instead'}</span>
                   </button>
                 )}
 
@@ -1027,9 +1048,10 @@ function SignupContent() {
                   <button
                     type="button"
                     onClick={() => { setError(''); setView('email'); }}
-                    className="w-full text-[11px] font-bold text-primary hover:underline text-center pt-3 block"
+                    className="w-full text-[11px] font-bold text-primary hover:underline text-center pt-3 flex items-center justify-center gap-1.5"
                   >
-                    {locale === 'am' ? '✉️ በኢሜይል አድራሻ ለመመዝገብ እዚህ ይጫኑ' : '✉️ Register with Email Address instead'}
+                    <Mail size={13} />
+                    <span>{locale === 'am' ? 'በኢሜይል አድራሻ ለመመዝገብ እዚህ ይጫኑ' : 'Register with Email Address instead'}</span>
                   </button>
                 )}
               </form>
@@ -1079,10 +1101,20 @@ function SignupContent() {
                     )}
                   </div>
                   <div className="mt-6 flex justify-between items-center">
-                    <span className="text-[10px] font-bold text-primary uppercase tracking-wider animate-pulse">
+                    <span className="text-[10px] font-bold text-primary uppercase tracking-wider animate-pulse flex items-center gap-1.5">
                       {((readingTab === 'eula' && eulaRead) || (readingTab === 'terms' && termsPrivacyRead)) 
-                        ? (locale === 'am' ? 'የተነበበ - አሁን መስማማት ይችላሉ ✅' : 'Read - You can now check the box ✅') 
-                        : (locale === 'am' ? 'ለማረጋገጥ ወደ ታች ይሂዱ ⬇️' : 'Scroll to bottom to read ⬇️')}
+                        ? (
+                          <>
+                            <span>{locale === 'am' ? 'የተነበበ - አሁን መስማማት ይችላሉ' : 'Read - You can now check the box'}</span>
+                            <CheckCircle2 size={13} className="text-emerald-600 inline" />
+                          </>
+                        ) 
+                        : (
+                          <>
+                            <span>{locale === 'am' ? 'ለማረጋገጥ ወደ ታች ይሂዱ' : 'Scroll to bottom to read'}</span>
+                            <ArrowDown size={13} className="inline" />
+                          </>
+                        )}
                     </span>
                     <button 
                       type="button" 

@@ -20,6 +20,7 @@ import {
   MessageCircle,
   Send,
   Star,
+  Trophy,
 } from 'lucide-react';
 import FeatureGate from '@/components/dashboard/FeatureGate';
 
@@ -242,10 +243,11 @@ export default function AcademyDashboardView() {
                   {examResult ? (
                     <div className={`p-8 rounded-[2rem] text-center space-y-4 ${examResult.passed ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
                       <div className={`text-5xl font-black ${examResult.passed ? 'text-green-600' : 'text-red-600'}`}>{examResult.score}%</div>
-                      <p className="font-black text-lg">{examResult.passed ? (t('እንኳን ደስ አለህ! ፈተናውን አልፈሃል! 🎉', 'Congratulations! You passed! 🎉')) : t('አልፈሽም። ድጋሚ ሞክር።', 'Did not pass. Please try again.')}</p>
+                      <p className="font-black text-lg">{examResult.passed ? (t('እንኳን ደስ አለህ! ፈተናውን አልፈሃል!', 'Congratulations! You passed!')) : t('አልፈሽም። ድጋሚ ሞክር።', 'Did not pass. Please try again.')}</p>
                       {examResult.passed && (
-                        <button onClick={() => setShowCert(true)} className="btn-primary px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest">
-                          🏆 {t('የምስክር ወረቀት ይውሰዱ', 'Get Certificate')}
+                        <button onClick={() => setShowCert(true)} className="btn-primary px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest inline-flex items-center gap-2">
+                          <Trophy size={14} />
+                          <span>{t('የምስክር ወረቀት ይውሰዱ', 'Get Certificate')}</span>
                         </button>
                       )}
                       {!examResult.passed && (
@@ -367,7 +369,9 @@ export default function AcademyDashboardView() {
         {showCert && (
           <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[200] flex items-center justify-center p-4" onClick={() => setShowCert(false)}>
             <div className="bg-white max-w-lg w-full p-10 rounded-[3rem] border-4 border-primary text-center space-y-6 animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
-              <div className="text-5xl">🏆</div>
+              <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center text-amber-500 mx-auto shadow-md">
+                <Trophy size={32} />
+              </div>
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">{t('ቤተሰብ አካዳሚ', 'Beteseb Academy')}</p>
               <h3 className="text-2xl font-black italic text-accent">{t('ኮርሱን አጠናቀቁ!', 'Course Completed!')}</h3>
               <p className="text-sm text-gray-500">{t(activeCourse.title_am, activeCourse.title)}</p>

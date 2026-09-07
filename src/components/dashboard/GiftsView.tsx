@@ -466,21 +466,24 @@ export default function GiftsView({ locale }: { locale: string }) {
       <div className="flex bg-white rounded-3xl p-1.5 border border-muted shadow-sm max-w-md">
          <button 
            onClick={() => setActiveSubTab('received')}
-           className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all ${activeSubTab === 'received' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-accent'}`}
+           className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center gap-1.5 ${activeSubTab === 'received' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-accent'}`}
          >
-            📥 {locale === 'am' ? 'የደረሱኝ ስጦታዎች' : 'Received'}
+            <ArrowDownLeft size={13} className="shrink-0" />
+            <span>{locale === 'am' ? 'የደረሱኝ ስጦታዎች' : 'Received'}</span>
          </button>
          <button 
            onClick={() => setActiveSubTab('sent')}
-           className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all ${activeSubTab === 'sent' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-accent'}`}
+           className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center gap-1.5 ${activeSubTab === 'sent' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-accent'}`}
          >
-            📤 {locale === 'am' ? 'የላክኳቸው' : 'Sent'}
+            <ArrowUpRight size={13} className="shrink-0" />
+            <span>{locale === 'am' ? 'የላክኳቸው' : 'Sent'}</span>
          </button>
          <button 
            onClick={() => setActiveSubTab('topup')}
-           className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all ${activeSubTab === 'topup' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-accent'}`}
+           className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center gap-1.5 ${activeSubTab === 'topup' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-accent'}`}
          >
-            🪙 {locale === 'am' ? 'የሳንቲም ጥቅሎች' : 'Packs'}
+            <Coins size={13} className="shrink-0" />
+            <span>{locale === 'am' ? 'የሳንቲም ጥቅሎች' : 'Packs'}</span>
          </button>
       </div>
 
@@ -488,10 +491,17 @@ export default function GiftsView({ locale }: { locale: string }) {
       {activeSubTab === 'received' && (
          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {receivedGifts.length === 0 ? (
-               <div className="col-span-full bg-white p-12 rounded-[2.5rem] border border-muted text-center space-y-4">
-                  <Gift className="text-gray-300 mx-auto" size={48} />
-                  <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
-                     {locale === 'am' ? 'ምንም የደረሶት ስጦታ የለም።' : 'No received gifts yet.'}
+               <div className="col-span-full empty-state-cinematic space-y-3 my-4">
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-sm">
+                     <Gift size={28} />
+                  </div>
+                  <h4 className="text-base font-bold text-foreground font-display">
+                     {locale === 'am' ? 'እስካሁን ምንም የደረሶት ስጦታ የለም' : 'No received gifts yet'}
+                  </h4>
+                  <p className="text-xs text-gray-400 max-w-sm leading-relaxed">
+                     {locale === 'am'
+                        ? 'ከሌሎች አባላት የሚላኩ ስጦታዎች በዚህ ገጽ ላይ ይታያሉ። የእርስዎን መገለጫ በማሟላት የበለጠ ተደራሽ ይሁኑ።'
+                        : 'Gifts sent to you from admirers and matches will appear here. Keep your profile updated and active.'}
                   </p>
                </div>
             ) : (
@@ -589,10 +599,17 @@ export default function GiftsView({ locale }: { locale: string }) {
       {activeSubTab === 'sent' && (
          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {sentGifts.length === 0 ? (
-               <div className="col-span-full bg-white p-12 rounded-[2.5rem] border border-muted text-center space-y-4">
-                  <Gift className="text-gray-300 mx-auto" size={48} />
-                  <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
-                     {locale === 'am' ? 'ምንም የላኩት ስጦታ የለም።' : 'No sent gifts yet.'}
+               <div className="col-span-full empty-state-cinematic space-y-3 my-4">
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-sm">
+                     <Gift size={28} />
+                  </div>
+                  <h4 className="text-base font-bold text-foreground font-display">
+                     {locale === 'am' ? 'እስካሁን ምንም የላኩት ስጦታ የለም' : 'No sent gifts yet'}
+                  </h4>
+                  <p className="text-xs text-gray-400 max-w-sm leading-relaxed">
+                     {locale === 'am'
+                        ? 'ለወደዷቸው እጩዎች ባህላዊ ወይም ልዩ ስጦታዎችን በመላክ ፍላጎትዎን ይግለጹ።'
+                        : 'Express your genuine intentions by sending cultural and virtual gifts to candidates you like.'}
                   </p>
                </div>
             ) : (

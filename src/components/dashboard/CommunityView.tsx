@@ -19,7 +19,8 @@ import {
   Edit,
   Trash2,
   PlusCircle,
-  Clock
+  Clock,
+  PenTool
 } from 'lucide-react';
 import { translator, SupportedLocale } from '@/lib/translator';
 import { toggleFollowUser, isFollowingUser, toggleSavePost, isPostSaved, repostPost } from '@/lib/social';
@@ -347,7 +348,7 @@ export default function CommunityView({
               </div>
            </div>
            <div className="flex items-center justify-between pt-3 border-t border-gray-50 text-xs font-bold text-gray-400">
-             <span className="flex items-center gap-1.5">✍️ Text-Only Community Hub</span>
+             <span className="flex items-center gap-1.5"><PenTool size={12} className="text-primary" /> <span>Text-Only Community Hub</span></span>
              <span className="text-primary group-hover:underline">{locale === 'am' ? 'ፖስት ፃፍ' : 'Create Post'} &rarr;</span>
            </div>
         </div>

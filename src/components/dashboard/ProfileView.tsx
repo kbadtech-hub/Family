@@ -20,7 +20,13 @@ import {
   Coins,
   Lock,
   LockOpen,
-  Crown
+  Crown,
+  Gem,
+  Award,
+  Shield,
+  Users,
+  Heart,
+  RefreshCw
 } from 'lucide-react';
 import Image from 'next/image';
 import { getUserTier, calculateCompletionRate } from '@/lib/tiers';
@@ -357,13 +363,13 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
 
   const getTierBadge = (tier: string) => {
     switch (tier) {
-      case 'vip': return { label: 'VIP', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', emoji: '👑' };
-      case 'diamond': return { label: 'Diamond', color: 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20', emoji: '💎' };
-      case 'platinum': return { label: 'Platinum', color: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20', emoji: '🌟' };
-      case 'gold': return { label: 'Gold', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', emoji: '🥇' };
-      case 'silver': return { label: 'Silver', color: 'bg-slate-400/10 text-slate-600 border-slate-400/20', emoji: '🥈' };
+      case 'vip': return { label: 'VIP', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', Icon: Crown };
+      case 'diamond': return { label: 'Diamond', color: 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20', Icon: Gem };
+      case 'platinum': return { label: 'Platinum', color: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20', Icon: Sparkles };
+      case 'gold': return { label: 'Gold', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', Icon: Award };
+      case 'silver': return { label: 'Silver', color: 'bg-slate-400/10 text-slate-600 border-slate-400/20', Icon: ShieldCheck };
       case 'bronze':
-      default: return { label: 'Unverified', color: 'bg-orange-500/10 text-orange-600 border-orange-500/20', emoji: '🥉' };
+      default: return { label: 'Unverified', color: 'bg-orange-500/10 text-orange-600 border-orange-500/20', Icon: Shield };
     }
   };
   const badge = getTierBadge(userTier);
@@ -774,8 +780,8 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                 : 'border-white'
             }`}>
                {isRoyal && (
-                 <div className="absolute top-2 left-1/2 -translate-x-1/2 text-2xl z-10 animate-bounce">
-                   👑
+                 <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 animate-bounce">
+                   <Crown className="w-6 h-6 text-amber-500 fill-amber-400" />
                  </div>
                )}
                <Image 
@@ -815,8 +821,9 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
              <div className="flex flex-col md:flex-row md:items-center justify-center md:justify-start gap-2">
                 <h2 className="text-2xl md:text-3xl font-black text-accent italic tracking-tighter flex items-center gap-2 justify-center md:justify-start">
                   <span>{profile?.full_name}</span>
-                  <span className={`px-3 py-1 text-[8px] font-black rounded-full border ${badge.color}`}>
-                     <span>{badge.emoji}</span> <span>{badge.label}</span>
+                  <span className={`px-3 py-1 text-[8px] font-black rounded-full border flex items-center gap-1 ${badge.color}`}>
+                     <badge.Icon size={10} className="shrink-0" />
+                     <span>{badge.label}</span>
                   </span>
                 </h2>
                 <div className="flex items-center justify-center gap-2">
@@ -847,24 +854,24 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
              {/* Community Hub Real-Time Statistics (Followers, Following, Total Post Likes) */}
              <div className="flex items-center gap-3 pt-2">
                 <div className="flex-1 p-3 rounded-2xl bg-white border border-gray-100 shadow-sm text-center">
-                   <div className="text-sm font-black text-gray-900 flex items-center justify-center gap-1">
-                      <span>👥</span>
+                   <div className="text-sm font-black text-gray-900 flex items-center justify-center gap-1.5">
+                      <Users size={14} className="text-gray-500 shrink-0" />
                       <span>{socialStats.followersCount}</span>
                    </div>
                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Followers</p>
                 </div>
 
                 <div className="flex-1 p-3 rounded-2xl bg-white border border-gray-100 shadow-sm text-center">
-                   <div className="text-sm font-black text-gray-900 flex items-center justify-center gap-1">
-                      <span>👤</span>
+                   <div className="text-sm font-black text-gray-900 flex items-center justify-center gap-1.5">
+                      <User size={14} className="text-gray-500 shrink-0" />
                       <span>{socialStats.followingCount}</span>
                    </div>
                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Following</p>
                 </div>
 
                 <div className="flex-1 p-3 rounded-2xl bg-white border border-gray-100 shadow-sm text-center">
-                   <div className="text-sm font-black text-red-500 flex items-center justify-center gap-1">
-                      <span>❤️</span>
+                   <div className="text-sm font-black text-red-500 flex items-center justify-center gap-1.5">
+                      <Heart size={14} className="text-rose-500 fill-rose-500 shrink-0" />
                       <span>{socialStats.totalPostLikes}</span>
                    </div>
                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Post Likes</p>
@@ -1332,7 +1339,7 @@ export default function ProfileView({ profile, onUpdate }: { profile: any, onUpd
                      title={locale === 'am' ? 'ፎቶውን ይቀይሩ (Replace)' : 'Replace Photo'}
                      className="w-9 h-9 bg-primary hover:bg-primary/90 text-white rounded-xl flex items-center justify-center shadow-lg cursor-pointer transition-transform active:scale-95"
                    >
-                      <span className="text-xs">🔄</span>
+                      <RefreshCw size={14} />
                       <input 
                         type="file" 
                         accept="image/*" 

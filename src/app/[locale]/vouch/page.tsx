@@ -141,8 +141,9 @@ function VouchContent() {
           <p className="text-gray-500 text-sm leading-relaxed">
             Your character witness statement has been successfully registered. You have helped build trust and safety in the Beteseb marriage community.
           </p>
-          <p className="text-xs text-primary font-bold uppercase tracking-widest">
-            🛡️ Verified Witness Submission
+          <p className="text-xs text-primary font-bold uppercase tracking-widest flex items-center justify-center gap-1.5">
+            <ShieldCheck size={14} className="text-primary shrink-0" />
+            <span>Verified Witness Submission</span>
           </p>
         </div>
       </div>

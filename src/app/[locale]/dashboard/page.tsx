@@ -33,9 +33,20 @@ import {
   BarChart2,
   User,
   Crown,
+  Zap,
+  FileText,
+  EyeOff,
+  BellOff,
+  Gem,
+  Infinity as InfinityIcon,
+  RefreshCw,
+  Star,
+  Award,
   Loader2,
   Wallet,
-  Bell
+  Bell,
+  LayoutGrid,
+  Layers
 } from 'lucide-react';
 import NotificationDrawerModal from '@/components/NotificationDrawerModal';
 import { fetchUserNotifications } from '@/lib/notifications';
@@ -344,12 +355,12 @@ function DashboardContent() {
 
   const getTierIcon = (tier: string) => {
     switch (tier) {
-      case 'diamond': return '💎';
-      case 'platinum': return '🌟';
-      case 'gold': return '🥇';
-      case 'silver': return '🥈';
+      case 'diamond': return <Gem size={14} className="text-cyan-400 shrink-0 inline" />;
+      case 'platinum': return <ShieldCheck size={14} className="text-indigo-400 shrink-0 inline" />;
+      case 'gold': return <Award size={14} className="text-yellow-400 shrink-0 inline" />;
+      case 'silver': return <Award size={14} className="text-slate-300 shrink-0 inline" />;
       case 'bronze':
-      default: return '🥉';
+      default: return <Award size={14} className="text-amber-700 shrink-0 inline" />;
     }
   };
 
@@ -413,7 +424,7 @@ function DashboardContent() {
         {/* Crown / star above avatar for elevated users */}
         {hasElevatedTier && (
           <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[12px] z-20 drop-shadow-sm select-none">
-            {isVipActive ? '👑' : '⭐'}
+            {isVipActive ? <Crown size={12} className="text-beteseb-gold fill-beteseb-gold" /> : <Star size={12} className="text-beteseb-gold fill-beteseb-gold" />}
           </div>
         )}
         <div className={`${sizeClass} rounded-full overflow-hidden flex items-center justify-center bg-muted transition-all border-2 ${borderClass}`}>
@@ -1713,12 +1724,12 @@ function DashboardContent() {
 
         {/* Onboarding Incomplete Banner */}
         {profile && !profile.onboarding_completed && (
-          <div className="mb-10 bg-gradient-to-r from-accent via-slate-900 to-primary p-8 md:p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden group border border-amber-500/30">
+          <div className="mb-10 ambient-glow-shift bg-gradient-to-r from-accent via-slate-900 to-primary p-8 md:p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden group border border-amber-500/30">
             <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:scale-110 transition-transform duration-700" />
             <div className="relative flex flex-col md:flex-row items-center justify-between gap-8">
                <div className="space-y-4 text-center md:text-left">
                   <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-500/20 text-amber-300 rounded-full text-[10px] font-black uppercase tracking-widest border border-amber-500/40">
-                     ✨ {locale === 'am' ? 'ኦንቦርዲንግ አልተጠናቀቀም' : 'Onboarding Pending'}
+                     <Sparkles size={14} className="text-current shrink-0" /> {locale === 'am' ? 'ኦንቦርዲንግ አልተጠናቀቀም' : 'Onboarding Pending'}
                   </div>
                   <h2 className="text-3xl font-black italic tracking-tighter text-white">
                     {locale === 'am' ? 'የመገለጫ እና የተጣማሪ መስፈርትዎን ያሟሉ' : 'Complete Your Profile & Preferences'}
@@ -1733,7 +1744,7 @@ function DashboardContent() {
                  onClick={() => router.push('/onboarding')}
                  className="bg-primary hover:bg-primary/90 text-white px-10 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all shrink-0 flex items-center gap-3"
                >
-                  {locale === 'am' ? '🚀 ኦንቦርዲንግ ጀምር' : '🚀 Start Onboarding'} <ChevronRight size={20} />
+                  <><Sparkles size={16} className="text-current shrink-0 inline mr-2" />{locale === 'am' ? 'ኦንቦርዲንግ ጀምር' : 'Start Onboarding'}</> <ChevronRight size={20} />
                </button>
             </div>
           </div>
@@ -1758,16 +1769,16 @@ function DashboardContent() {
                   </p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-2 text-[11px] font-bold text-amber-200">
                      <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
-                        <span>💍</span> {locale === 'am' ? 'የትዳር አጋር ማች' : 'Matching'}
+                        <Heart size={14} className="text-current shrink-0" /> {locale === 'am' ? 'የትዳር አጋር ማች' : 'Matching'}
                      </div>
                      <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
-                        <span>💬</span> {locale === 'am' ? 'ቻት እና ጥሪ' : 'Chat & Calls'}
+                        <MessageCircle size={14} className="text-current shrink-0" /> {locale === 'am' ? 'ቻት እና ጥሪ' : 'Chat & Calls'}
                      </div>
                      <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
-                        <span>🎁</span> {locale === 'am' ? 'ስጦታዎችና አካዳሚ' : 'Gifts & Academy'}
+                        <Gift size={14} className="text-current shrink-0" /> {locale === 'am' ? 'ስጦታዎችና አካዳሚ' : 'Gifts & Academy'}
                      </div>
                      <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
-                        <span>👥</span> {locale === 'am' ? 'ኮሚኒቲና ምክር' : 'Community & Counseling'}
+                        <Users size={14} className="text-current shrink-0" /> {locale === 'am' ? 'ኮሚኒቲና ምክር' : 'Community & Counseling'}
                      </div>
                   </div>
                </div>
@@ -1824,7 +1835,7 @@ function DashboardContent() {
               onClick={() => router.push('/onboarding?step=4')}
               className="bg-red-500 hover:bg-red-600 text-white px-10 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs shadow-xl shadow-red-500/10 hover:scale-105 active:scale-95 transition-all shrink-0 flex items-center gap-2"
             >
-              🔄 {locale === 'am' ? 'እንደገና አስገባ (Retry Verification)' : 'Retry Verification'}
+              <RefreshCw size={14} className="text-current shrink-0 inline mr-1" /> {locale === 'am' ? 'እንደገና አስገባ (Retry Verification)' : 'Retry Verification'}
             </button>
           </div>
         )}
@@ -1891,51 +1902,116 @@ function DashboardContent() {
 
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
-            {/* Section heading */}
+            {/* Section heading & View Mode Toggle */}
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-black uppercase tracking-tighter text-[#0F172A] flex items-center gap-2">
                 <Heart size={20} className="text-primary fill-primary/20" />
                 {t('matching.title')}
               </h2>
-              {profile && (
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                  {getCandidatesLabel(matches.filter(m => !dislikedIds.has(m.id)).length, locale)}
-                </span>
-              )}
+              <div className="flex items-center gap-3">
+                {/* View Mode Switcher (Feed vs Stack) */}
+                <div className="flex items-center bg-gray-100 p-0.5 rounded-xl border border-gray-200/80 shadow-xs">
+                  <button
+                    type="button"
+                    onClick={() => setMatchingView('grid')}
+                    className={`p-1.5 rounded-lg transition-all flex items-center gap-1 text-xs font-semibold ${
+                      matchingView === 'grid'
+                        ? 'bg-white text-primary shadow-xs'
+                        : 'text-gray-400 hover:text-gray-600'
+                    }`}
+                    title={locale === 'am' ? 'ዝርዝር እይታ' : 'Feed View'}
+                    aria-label={locale === 'am' ? 'ዝርዝር እይታ' : 'Feed View'}
+                  >
+                    <LayoutGrid size={15} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMatchingView('swipe')}
+                    className={`p-1.5 rounded-lg transition-all flex items-center gap-1 text-xs font-semibold ${
+                      matchingView === 'swipe'
+                        ? 'bg-white text-primary shadow-xs'
+                        : 'text-gray-400 hover:text-gray-600'
+                    }`}
+                    title={locale === 'am' ? 'ካርድ እይታ' : 'Card Stack View'}
+                    aria-label={locale === 'am' ? 'ካርድ እይታ' : 'Card Stack View'}
+                  >
+                    <Layers size={15} />
+                  </button>
+                </div>
+
+                {profile && (
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                    {getCandidatesLabel(matches.filter(m => !dislikedIds.has(m.id)).length, locale)}
+                  </span>
+                )}
+              </div>
             </div>
 
-            {/* Vertical DashboardCard feed */}
-            <div className="flex flex-col items-center gap-8 pb-6">
-              {matches.length === 0 ? (
-                <div className="py-24 text-center text-gray-400 font-bold uppercase tracking-widest text-[10px]">
-                  {t('searching')}
-                </div>
-              ) : (
-                matches
-                  .filter(m => !dislikedIds.has(m.id))
-                  .map(match => (
-                    <DashboardCard
-                      key={match.id}
-                      currentUser={profile}
-                      candidate={match.profile || match}
-                      locale={locale}
-                      onLike={handleLike}
-                      onDislike={handleDislike}
-                      onSendFriendRequest={handleSendFriendRequest}
-                      onSendGift={(c) => {
-                        if (userTier === 'bronze' || userTier === 'silver') {
-                          alert(locale === 'am'
-                            ? "የነሐስ ወይም የሲልቨር (Bronze/Silver Tier) አባላት ስጦታ መላክ አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!"
-                            : "Bronze or Silver Tier members are blocked from sending gifts. Please complete verification first!");
-                          return;
-                        }
-                        setActiveGiftCandidate(c);
-                      }}
-                      onCardClick={() => handleCardClick(match.profile || match)}
-                      friendshipStatus={friendshipStatuses[match.id] || null}
-                    />
-                  ))
-              )}
+            {/* Candidate Matching View (Card Stack or Vertical Feed) */}
+            {matchingView === 'swipe' ? (
+              <div className="w-full flex justify-center pb-6">
+                <SwipeCards
+                  userProfile={profile}
+                  candidates={matches.filter(m => !dislikedIds.has(m.id)).map(m => m.profile || m)}
+                  onLike={handleLike}
+                  onPass={handleDislike}
+                  onViewProfile={handleCardClick}
+                  isPremium={isPremium || isVipActive}
+                />
+              </div>
+            ) : (
+              /* Vertical DashboardCard feed */
+              <div className="flex flex-col items-center gap-8 pb-6">
+                {matches.length === 0 ? (
+                  <div className="w-full max-w-md my-12 p-8 empty-state-cinematic space-y-4">
+                    <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-sm">
+                      <Sparkles size={28} />
+                    </div>
+                    <div className="space-y-1">
+                      <h3 className="text-lg font-bold text-foreground font-display">
+                        {locale === 'am' ? 'አዳዲስ የሚስማሙ አባላትን በማፈላለግ ላይ...' : 'Finding compatible matches...'}
+                      </h3>
+                      <p className="text-xs text-gray-400 max-w-xs leading-relaxed">
+                        {locale === 'am'
+                          ? 'የእርስዎን ምርጫዎች የሚያሟሉ አዳዲስ እጩዎችን እያሰባሰብን ነው። እባክዎ ጥቂት ቆይተው እንደገና ይመልከቱ።'
+                          : "We're curating top verified candidates matching your preferences. Check back shortly or refresh."}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => window.location.reload()}
+                      className="btn-secondary text-xs mt-2"
+                    >
+                      <RefreshCw size={14} /> {locale === 'am' ? 'እንደገና ጫን' : 'Refresh Suggestions'}
+                    </button>
+                  </div>
+                ) : (
+                  matches
+                    .filter(m => !dislikedIds.has(m.id))
+                    .map(match => (
+                      <DashboardCard
+                        key={match.id}
+                        currentUser={profile}
+                        candidate={match.profile || match}
+                        locale={locale}
+                        onLike={handleLike}
+                        onDislike={handleDislike}
+                        onSendFriendRequest={handleSendFriendRequest}
+                        onSendGift={(c) => {
+                          if (userTier === 'bronze' || userTier === 'silver') {
+                            alert(locale === 'am'
+                              ? "የነሐስ ወይም የሲልቨር (Bronze/Silver Tier) አባላት ስጦታ መላክ አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!"
+                              : "Bronze or Silver Tier members are blocked from sending gifts. Please complete verification first!");
+                            return;
+                          }
+                          setActiveGiftCandidate(c);
+                        }}
+                        onCardClick={() => handleCardClick(match.profile || match)}
+                        friendshipStatus={friendshipStatuses[match.id] || null}
+                      />
+                    ))
+                )}
+              </div>
+            )}
 
               {/* ── Premium & VIP Hero Cards ───────────────────────────── */}
               {!isVipActive && (
@@ -1945,7 +2021,7 @@ function DashboardContent() {
                   {!isPremium && (
                     <div
                       onClick={() => setShowBenefitsModal('premium')}
-                      className="w-full cursor-pointer group relative overflow-hidden rounded-[2.5rem] p-8 text-white shadow-2xl shadow-primary/25 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] select-none"
+                      className="w-full ambient-glow-shift cursor-pointer group relative overflow-hidden rounded-[2.5rem] p-8 text-white shadow-2xl shadow-primary/25 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] select-none"
                       style={{ background: 'linear-gradient(135deg, #C2410C 0%, #EA580C 40%, #FB923C 100%)' }}
                     >
                       {/* decorative circles */}
@@ -1974,23 +2050,23 @@ function DashboardContent() {
                           </p>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-semibold text-white/95">
                             <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-xl backdrop-blur-sm">
-                              <span>♾️</span>
+                              <InfinityIcon size={16} className="text-current shrink-0" />
                               <span>{locale === 'am' ? 'ያልተገደበ የትዳር አጋር ማግኘት' : 'Unlimited Matching Feed'}</span>
                             </div>
                             <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-xl backdrop-blur-sm">
-                              <span>💬</span>
+                              <MessageCircle size={16} className="text-current shrink-0" />
                               <span>{locale === 'am' ? 'የቀጥታ ጽሑፍ ውይይት (ከዕጩዎች ጋር)' : 'Direct Private Chat'}</span>
                             </div>
                             <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-xl backdrop-blur-sm">
-                              <span>📋</span>
+                              <FileText size={16} className="text-current shrink-0" />
                               <span>{locale === 'am' ? 'የሰዎች ሙሉ ዝርዝር መረጃና ባዮ' : 'Full Profile Bios & Details'}</span>
                             </div>
                             <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-xl backdrop-blur-sm">
-                              <span>🎓</span>
+                              <GraduationCap size={16} className="text-current shrink-0" />
                               <span>{locale === 'am' ? 'የባለሙያ ክፍሎችና ወርክሾፖች' : 'Access to Expert Classes'}</span>
                             </div>
                             <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-xl backdrop-blur-sm sm:col-span-2">
-                              <span>⚡</span>
+                              <Zap size={16} className="text-current shrink-0" />
                               <span>{locale === 'am' ? 'ቅድሚያ የሚሰጠው የደንበኞች ድጋፍ' : 'Priority Customer Care'}</span>
                             </div>
                           </div>
@@ -2009,7 +2085,7 @@ function DashboardContent() {
                   {/* ── VIP CARD (Visible for all non-VIP users) ── */}
                   <div
                     onClick={() => setShowBenefitsModal('vip')}
-                    className="w-full cursor-pointer group relative overflow-hidden rounded-[2.5rem] p-8 text-white shadow-2xl shadow-amber-500/30 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] select-none"
+                    className="w-full ambient-glow-shift cursor-pointer group relative overflow-hidden rounded-[2.5rem] p-8 text-white shadow-2xl shadow-amber-500/30 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] select-none"
                     style={{ background: 'linear-gradient(135deg, #92400E 0%, #B45309 40%, #D97706 70%, #F59E0B 100%)' }}
                   >
                     <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
@@ -2020,7 +2096,7 @@ function DashboardContent() {
                       <div className="flex justify-between items-center w-full border-b border-white/15 pb-4">
                         <span className="text-sm font-black uppercase tracking-wider text-yellow-200 flex items-center gap-1.5">
                           <Crown size={20} className="text-yellow-200 fill-yellow-200/30" />
-                          {locale === 'am' ? 'የቪ.አይ.ፒ (VIP) ልዩ አባልነት' : 'VIP Elite Membership'} 👑
+                          {locale === 'am' ? 'የቪ.አይ.ፒ (VIP) ልዩ አባልነት' : 'VIP Elite Membership'}
                         </span>
                         <div className="text-white/95 font-black text-right">
                           <span className="text-lg leading-none">{isEthiopiaUser ? '299 ብር ከ 98 ሳንቲም' : '$12.99'}</span>
@@ -2035,23 +2111,23 @@ function DashboardContent() {
                         </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-semibold text-white/95">
                           <div className="flex items-center gap-2 bg-black/20 border border-yellow-400/20 px-3 py-2 rounded-xl backdrop-blur-sm">
-                            <span>👑</span>
+                            <Crown size={16} className="text-yellow-200 shrink-0" />
                             <span>{locale === 'am' ? 'የወርቅ አክሊል ባጅ (Golden Crown)' : 'Golden Crown Status'}</span>
                           </div>
                           <div className="flex items-center gap-2 bg-black/20 border border-yellow-400/20 px-3 py-2 rounded-xl backdrop-blur-sm">
-                            <span>👻</span>
+                            <EyeOff size={16} className="text-yellow-200 shrink-0" />
                             <span>{locale === 'am' ? 'Ghost Mode — ሙሉ የፎቶና ስም ድብቅነት' : 'Ghost Mode & Incognito'}</span>
                           </div>
                           <div className="flex items-center gap-2 bg-black/20 border border-yellow-400/20 px-3 py-2 rounded-xl backdrop-blur-sm">
-                            <span>🔕</span>
+                            <BellOff size={16} className="text-yellow-200 shrink-0" />
                             <span>{locale === 'am' ? 'የመስመር ላይ መገኘትንና የታየ ምልክትን መደበቅ' : 'Hide Online Status & Receipts'}</span>
                           </div>
                           <div className="flex items-center gap-2 bg-black/20 border border-yellow-400/20 px-3 py-2 rounded-xl backdrop-blur-sm">
-                            <span>🛡️</span>
+                            <ShieldCheck size={16} className="text-yellow-200 shrink-0" />
                             <span>{locale === 'am' ? 'ማን እንዳያችሁ የመቆጣጠር መብት' : 'Control Profile Visibility'}</span>
                           </div>
                           <div className="flex items-center gap-2 bg-black/20 border border-yellow-400/20 px-3 py-2 rounded-xl backdrop-blur-sm sm:col-span-2">
-                            <span>💎</span>
+                            <Gem size={16} className="text-yellow-200 shrink-0" />
                             <span>{locale === 'am' ? 'ሁሉንም የዳይመንድ ጥቅሞች ያካትታል' : 'Includes All Diamond Benefits'}</span>
                           </div>
                         </div>
@@ -2068,7 +2144,6 @@ function DashboardContent() {
 
                 </div>
               )}
-            </div>
           </div>
         )}
 
@@ -2235,7 +2310,7 @@ function DashboardContent() {
           <div className="relative w-full max-w-lg max-h-[90vh] flex flex-col animate-in slide-in-from-bottom-6 sm:zoom-in-95 duration-300">
 
             {/* Card shell */}
-            <div className={`rounded-[3rem] overflow-hidden shadow-2xl flex flex-col max-h-[90vh] ${
+            <div className={`rounded-[3rem] overflow-hidden shadow-2xl flex flex-col max-h-[90vh] ambient-glow-shift ${
               showBenefitsModal === 'vip'
                 ? 'bg-gradient-to-b from-[#92400E] to-[#1C0A00]'
                 : 'bg-gradient-to-b from-[#9A3412] to-[#1C0700]'
@@ -2262,8 +2337,8 @@ function DashboardContent() {
                     </div>
                     <h2 className="text-2xl font-black italic tracking-tighter text-white">
                       {showBenefitsModal === 'vip'
-                        ? (locale === 'am' ? 'ቪ.አይ.ፒ አባልነት 👑' : 'VIP Status 👑')
-                        : (locale === 'am' ? 'የዳይመንድ (ፕሪሚየም) አባልነት 💎' : 'Diamond (Premium) Membership 💎')}
+                        ? (locale === 'am' ? 'ቪ.አይ.ፒ አባልነት' : 'VIP Status')
+                        : (locale === 'am' ? 'የዳይመንድ (ፕሪሚየም) አባልነት' : 'Diamond (Premium) Membership')}
                     </h2>
                     <div className="flex items-baseline gap-1 mt-0.5">
                       <span className="text-white font-black text-lg">
@@ -2295,26 +2370,29 @@ function DashboardContent() {
                 </p>
 
                 {(showBenefitsModal === 'premium' ? [
-                  { icon: '♾️', title: locale === 'am' ? 'ያልተገደበ ዕጩ ምግብ' : 'Unlimited Matching Feed', sub: locale === 'am' ? 'የዕለቱን ገደብ ያለፉ ሁሉንም መገለጫዎች ያስሱ።' : 'Bypass daily card limits and explore all profiles freely.' },
-                  { icon: '💬', title: locale === 'am' ? 'ቀጥታ የጽሑፍ ቻት' : 'Direct Private Chat', sub: locale === 'am' ? 'ከዕጩዎቻቸው ጋር ያለ ጊዜ ወሰን ቀጥታ ቻት ጀምሩ።' : 'Start instant conversations with matches — no wait limits.' },
-                  { icon: '📋', title: locale === 'am' ? 'ሙሉ የፕሮፋይል ዝርዝሮች' : 'Full Profile Bios & Details', sub: locale === 'am' ? 'የተደበቁ መረጃዎችን፣ ባዮ እና ምርጫዎችን ይክፈቱ።' : 'Reveal blurred traits, full bios, and personal preferences.' },
-                  { icon: '🎓', title: locale === 'am' ? 'የባለሙያ ክፍሎች' : 'Expert Academy Classes', sub: locale === 'am' ? 'ሁሉንም ወርክሾፖች እና ሴሚናሮች ያለ ኮይን ይድረሱ።' : 'Access all workshops and seminars without spending coins.' },
-                  { icon: '⚡', title: locale === 'am' ? 'ቅድሚያ የደንበኛ ድጋፍ' : 'Priority Customer Support', sub: locale === 'am' ? 'ቅሬታዎ ቀዳሚ ትኩረት ያገኛል።' : 'Your support tickets are handled with top priority.' }
+                  { icon: InfinityIcon, title: locale === 'am' ? 'ያልተገደበ ዕጩ ምግብ' : 'Unlimited Matching Feed', sub: locale === 'am' ? 'የዕለቱን ገደብ ያለፉ ሁሉንም መገለጫዎች ያስሱ።' : 'Bypass daily card limits and explore all profiles freely.' },
+                  { icon: MessageCircle, title: locale === 'am' ? 'ቀጥታ የጽሑፍ ቻት' : 'Direct Private Chat', sub: locale === 'am' ? 'ከዕጩዎቻቸው ጋር ያለ ጊዜ ወሰን ቀጥታ ቻት ጀምሩ።' : 'Start instant conversations with matches — no wait limits.' },
+                  { icon: FileText, title: locale === 'am' ? 'ሙሉ የፕሮፋይል ዝርዝሮች' : 'Full Profile Bios & Details', sub: locale === 'am' ? 'የተደበቁ መረጃዎችን፣ ባዮ እና ምርጫዎችን ይክፈቱ።' : 'Reveal blurred traits, full bios, and personal preferences.' },
+                  { icon: GraduationCap, title: locale === 'am' ? 'የባለሙያ ክፍሎች' : 'Expert Academy Classes', sub: locale === 'am' ? 'ሁሉንም ወርክሾፖች እና ሴሚናሮች ያለ ኮይን ይድረሱ።' : 'Access all workshops and seminars without spending coins.' },
+                  { icon: Zap, title: locale === 'am' ? 'ቅድሚያ የደንበኛ ድጋፍ' : 'Priority Customer Support', sub: locale === 'am' ? 'ቅሬታዎ ቀዳሚ ትኩረት ያገኛል።' : 'Your support tickets are handled with top priority.' }
                 ] : [
-                  { icon: '👑', title: locale === 'am' ? 'የወርቅ አክሊል ባጅ' : 'Golden Crown Badge', sub: locale === 'am' ? 'በሁሉም ቦታ መገለጫዎ ላይ ሚያምር ዘውድ ይጨምሩ።' : 'Stand out with an elegant crown on your avatar across the platform.' },
-                  { icon: '👻', title: locale === 'am' ? 'Ghost Mode — ሙሉ ድብቅ' : 'Ghost Mode — Full Incognito', sub: locale === 'am' ? 'ፎቶዎን ሙሉ በሙሉ ብዥ ያድርጉ እና ስምዎን ይደብቁ።' : 'Completely blur your avatar and hide your full name from others.' },
-                  { icon: '🔕', title: locale === 'am' ? 'Online ሁኔታን ደብቁ' : 'Hide Online Status', sub: locale === 'am' ? 'ንቁ መሆንዎ፣ ታይቷል ምልክት እና ጽሑፍ ሁኔታን ደብቁ።' : 'Conceal your active status, typing state, and read receipts.' },
-                  { icon: '🔍', title: locale === 'am' ? 'ማን እንዳያችሁ ይቆጣጠሩ' : 'Control Who Views You', sub: locale === 'am' ? 'የፕሮፋይልዎን ታይነት ሙሉ በሙሉ ያስተዳድሩ።' : 'Manage profile visibility and who can discover you.' },
-                  { icon: '💎', title: locale === 'am' ? 'ሁሉም ፕሪሚየም ጥቅሞች' : 'All Premium Benefits Included', sub: locale === 'am' ? 'ያልተገደበ ዕጩ፣ ቀጥታ ቻት እና ሁሉም ፕሪሚየም ፊቸሮች።' : 'Enjoy the complete Premium feature set plus exclusive VIP perks.' }
-                ]).map((b, i) => (
-                  <div key={i} className="flex items-start gap-3 bg-white/5 border border-white/10 rounded-2xl px-4 py-3">
-                    <span className="text-lg shrink-0 mt-0.5">{b.icon}</span>
-                    <div>
-                      <p className="text-[11px] font-black text-white uppercase tracking-wide">{b.title}</p>
-                      <p className="text-[10px] text-white/50 font-medium leading-snug mt-0.5">{b.sub}</p>
+                  { icon: Crown, title: locale === 'am' ? 'የወርቅ አክሊል ባጅ' : 'Golden Crown Badge', sub: locale === 'am' ? 'በሁሉም ቦታ መገለጫዎ ላይ ሚያምር ዘውድ ይጨምሩ።' : 'Stand out with an elegant crown on your avatar across the platform.' },
+                  { icon: EyeOff, title: locale === 'am' ? 'Ghost Mode — ሙሉ ድብቅ' : 'Ghost Mode — Full Incognito', sub: locale === 'am' ? 'ፎቶዎን ሙሉ በሙሉ ብዥ ያድርጉ እና ስምዎን ይደብቁ።' : 'Completely blur your avatar and hide your full name from others.' },
+                  { icon: BellOff, title: locale === 'am' ? 'Online ሁኔታን ደብቁ' : 'Hide Online Status', sub: locale === 'am' ? 'ንቁ መሆንዎ፣ ታይቷል ምልክት እና ጽሑፍ ሁኔታን ደብቁ።' : 'Conceal your active status, typing state, and read receipts.' },
+                  { icon: ShieldCheck, title: locale === 'am' ? 'ማን እንዳያችሁ ይቆጣጠሩ' : 'Control Who Views You', sub: locale === 'am' ? 'የፕሮፋይልዎን ታይነት ሙሉ በሙሉ ያስተዳድሩ።' : 'Manage profile visibility and who can discover you.' },
+                  { icon: Gem, title: locale === 'am' ? 'ሁሉም ፕሪሚየም ጥቅሞች' : 'All Premium Benefits Included', sub: locale === 'am' ? 'ያልተገደበ ዕጩ፣ ቀጥታ ቻት እና ሁሉም ፕሪሚየም ፊቸሮች።' : 'Enjoy the complete Premium feature set plus exclusive VIP perks.' }
+                ]).map((b, i) => {
+                  const BIcon = b.icon;
+                  return (
+                    <div key={i} className="flex items-start gap-3 bg-white/5 border border-white/10 rounded-2xl px-4 py-3">
+                      <BIcon size={18} className="text-beteseb-coral shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-[11px] font-black text-white uppercase tracking-wide">{b.title}</p>
+                        <p className="text-[10px] text-white/50 font-medium leading-snug mt-0.5">{b.sub}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* ── Action Buttons ── */}
@@ -2341,7 +2419,7 @@ function DashboardContent() {
                     onClick={() => setShowBenefitsModal('vip')}
                     className="w-full py-3.5 rounded-2xl font-black uppercase tracking-widest text-[10px] border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-all"
                   >
-                    {locale === 'am' ? '👑 ቪ.አይ.ፒ ጥቅሞችን ይመልከቱ' : '👑 View VIP Benefits Instead'}
+                    <><Crown size={15} className="inline mr-1.5 text-beteseb-gold" />{locale === 'am' ? 'ቪ.አይ.ፒ ጥቅሞችን ይመልከቱ' : 'View VIP Benefits Instead'}</>
                   </button>
                 )}
                 {showBenefitsModal === 'vip' && (
@@ -2349,7 +2427,7 @@ function DashboardContent() {
                     onClick={() => setShowBenefitsModal('premium')}
                     className="w-full py-3.5 rounded-2xl font-black uppercase tracking-widest text-[10px] border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-all"
                   >
-                    {locale === 'am' ? '💎 የዳይመንድ ጥቅሞችን ይመልከቱ' : '💎 View Diamond Benefits Instead'}
+                    <><Gem size={15} className="inline mr-1.5 text-cyan-400" />{locale === 'am' ? 'የዳይመንድ ጥቅሞችን ይመልከቱ' : 'View Diamond Benefits Instead'}</>
                   </button>
                 )}
               </div>
@@ -2391,7 +2469,7 @@ function DashboardContent() {
                 ? 'bg-primary/10 border-primary/20 text-primary' 
                 : 'bg-red-50 border-red-200 text-red-500'
             }`}>
-              {paymentNoticeModal.type === 'vip' ? '👑' : paymentNoticeModal.type === 'coins' ? '🪙' : paymentNoticeModal.type === 'premium' ? '⭐' : '❌'}
+              {paymentNoticeModal.type === 'vip' ? <Crown size={28} className="text-beteseb-gold" /> : paymentNoticeModal.type === 'coins' ? <Coins size={28} className="text-beteseb-gold" /> : paymentNoticeModal.type === 'premium' ? <Star size={28} className="text-beteseb-gold" /> : <X size={28} className="text-red-500" />}
             </div>
             <div className="space-y-2">
               <h3 className="text-xl font-black italic text-accent">
@@ -2439,7 +2517,7 @@ function DashboardContent() {
                   </div>
                   <div>
                     <p className="text-[9px] font-black uppercase tracking-widest text-amber-500 mb-0.5">
-                      🎁 {locale === 'am' ? 'ስጦታ ደረሰዎት!' : 'Gift Received!'}
+                      <><Gift size={16} className="inline mr-1.5 text-primary" />{locale === 'am' ? 'ስጦታ ደረሰዎት!' : 'Gift Received!'}</>
                     </p>
                     <h4 className="text-sm font-black text-gray-900 leading-tight">
                       {locale === 'am'

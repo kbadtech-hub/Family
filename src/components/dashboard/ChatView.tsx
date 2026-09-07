@@ -40,7 +40,11 @@ import {
   ChevronLeft,
   Plus,
   ArrowLeft,
-  Plane
+  Plane,
+  AlertTriangle,
+  Ban,
+  Shield,
+  Camera
 } from 'lucide-react';
 import Image from 'next/image';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -1585,20 +1589,23 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                         onClick={() => { setIsReportOpen(true); setShowMenu(false); }}
                         className="w-full text-left px-5 py-3 hover:bg-muted text-xs font-bold text-amber-700 flex items-center gap-2"
                       >
-                        ⚠️ {locale === 'am' ? 'ሪፖርት አድርግ (Report)' : 'Report User'}
+                        <AlertTriangle size={14} className="text-amber-700 shrink-0" />
+                        <span>{locale === 'am' ? 'ሪፖርት አድርግ (Report)' : 'Report User'}</span>
                       </button>
                       <button 
                         onClick={handleBlockUser}
                         className="w-full text-left px-5 py-3 hover:bg-muted text-xs font-bold text-red-600 flex items-center gap-2 border-t border-muted"
                       >
-                        🚫 {locale === 'am' ? 'አግድ (Block)' : 'Block User'}
+                        <Ban size={14} className="text-red-600 shrink-0" />
+                        <span>{locale === 'am' ? 'አግድ (Block)' : 'Block User'}</span>
                       </button>
                       <button 
                         onClick={() => { handleRequestCoins(); setShowMenu(false); }}
                         className="w-full text-left px-5 py-3 hover:bg-muted text-xs font-bold text-amber-600 flex items-center gap-2 border-t border-muted"
                         title={locale === 'am' ? 'ኮይን ጠይቅ' : 'Request Coins'}
                       >
-                        🪙 {locale === 'am' ? 'ኮይን ጠይቅ (Request)' : 'Request Coins'}
+                        <Coins size={14} className="text-amber-600 shrink-0" />
+                        <span>{locale === 'am' ? 'ኮይን ጠይቅ (Request)' : 'Request Coins'}</span>
                       </button>
                     </div>
                   )}
@@ -1608,7 +1615,10 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
 
             {safeSpaceActive && (
               <div className="bg-primary/5 border-b border-primary/20 px-6 py-3 flex items-center justify-between text-xs font-black uppercase tracking-wider text-primary">
-                <span className="flex items-center gap-2">🛡️ Mutual Safe Space Active / የጋራ የደህንነት መድረክ</span>
+                <span className="flex items-center gap-2">
+                  <Shield size={14} className="text-primary shrink-0" />
+                  <span>Mutual Safe Space Active / የጋራ የደህንነት መድረክ</span>
+                </span>
                 <button 
                   onClick={() => {
                     alert("Launching relationship counselor list. Please navigate to Workshops to book!");
@@ -1623,7 +1633,7 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
             {showPulseCheck && (
               <div className="m-6 p-6 bg-amber-50 border border-amber-200 rounded-3xl space-y-4 animate-in slide-in-from-top-4 duration-300">
                 <div className="flex items-start gap-3">
-                  <span className="text-xl">❤️</span>
+                  <Heart size={20} className="text-rose-500 fill-rose-500 shrink-0 mt-0.5" />
                   <div className="space-y-1">
                     <h4 className="font-black text-xs text-amber-800 uppercase tracking-wider">
                       {locale === 'am' ? 'የውይይት ግምገማ (Pulse Check)' : 'Relationship Pulse Check'}
@@ -1669,7 +1679,10 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
             {isReportOpen && (
               <div className="p-6 bg-amber-50/50 border-b border-amber-200 space-y-4 animate-in slide-in-from-top-2 z-20 relative">
                 <div className="flex justify-between items-center">
-                  <h4 className="text-xs font-black text-accent uppercase tracking-wider">⚠️ {locale === 'am' ? 'ተጠቃሚውን ሪፖርት ያድርጉ' : 'Report User'}</h4>
+                  <h4 className="text-xs font-black text-accent uppercase tracking-wider flex items-center gap-1.5">
+                    <AlertTriangle size={14} className="text-amber-600 shrink-0" />
+                    <span>{locale === 'am' ? 'ተጠቃሚውን ሪፖርት ያድርጉ' : 'Report User'}</span>
+                  </h4>
                   <button onClick={() => setIsReportOpen(false)} className="text-gray-400 hover:text-accent"><CloseIcon size={16} /></button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1822,9 +1835,10 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                         key={i}
                         type="button"
                         onClick={() => setNewMessage(promptText)}
-                        className="text-left px-3 py-2 bg-white hover:bg-primary/5 hover:text-primary text-[10px] font-bold rounded-2xl border border-gray-200 transition-all text-accent"
+                        className="text-left px-3 py-2 bg-white hover:bg-primary/5 hover:text-primary text-[10px] font-bold rounded-2xl border border-gray-200 transition-all text-accent flex items-center gap-1.5"
                       >
-                        💬 {promptText}
+                        <MessageCircle size={11} className="text-primary shrink-0" />
+                        <span>{promptText}</span>
                       </button>
                     ))}
                   </div>
@@ -1863,7 +1877,8 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                   {showMediaPicker && (
                     <div className="absolute bottom-14 left-0 bg-white rounded-3xl border border-muted shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 z-50">
                       <label className="flex items-center gap-3 px-5 py-4 text-xs font-bold text-accent hover:bg-muted/30 cursor-pointer border-b border-muted">
-                        📷 {locale === 'am' ? 'ፎቶ / ቪዲዮ' : 'Photo / Video'}
+                        <Camera size={14} className="text-primary shrink-0" />
+                        <span>{locale === 'am' ? 'ፎቶ / ቪዲዮ' : 'Photo / Video'}</span>
                         <input
                           type="file"
                           accept="image/*,video/*"
@@ -1990,8 +2005,9 @@ export default function ChatView({ isPremium = false }: { isPremium?: boolean })
                   {locale === 'am' ? 'የቤተሰብ ማሳተፊያ የጋራ መድረክ' : 'Family-Integrated Dialogue'}
                 </h3>
                 <div className="flex items-center justify-center gap-4">
-                  <p className="text-[10px] text-amber-600 font-bold uppercase tracking-wide">
-                    ⚠️ {locale === 'am' ? 'ማስጠንቀቂያ፡ በዚህ የቡድን ውይይት ውስጥ አስታራቂዎች (Walis) ይገኛሉ' : 'Note: Linked family guardians/mediators are present in this chat'}
+                  <p className="text-[10px] text-amber-600 font-bold uppercase tracking-wide flex items-center gap-1.5">
+                    <AlertTriangle size={12} className="text-amber-600 shrink-0" />
+                    <span>{locale === 'am' ? 'ማስጠንቀቂያ፡ በዚህ የቡድን ውይይት ውስጥ አስታራቂዎች (Walis) ይገኛሉ' : 'Note: Linked family guardians/mediators are present in this chat'}</span>
                   </p>
                   {!isWaliCallActive && (
                     <button 

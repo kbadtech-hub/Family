@@ -18,7 +18,14 @@ import {
   Clock, 
   Loader2,
   Lightbulb,
-  EyeOff
+  EyeOff,
+  Gem,
+  Award,
+  Shield,
+  Crown,
+  AlertTriangle,
+  Ban,
+  Check
 } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import Image from 'next/image';
@@ -81,12 +88,12 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
 
   const getTierBadge = (tier: string) => {
     switch (tier) {
-      case 'diamond': return { label: 'Diamond', color: 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20', emoji: '💎' };
-      case 'platinum': return { label: 'Platinum', color: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20', emoji: '🌟' };
-      case 'gold': return { label: 'Gold', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', emoji: '🥇' };
-      case 'silver': return { label: 'Silver', color: 'bg-slate-400/10 text-slate-600 border-slate-400/20', emoji: '🥈' };
+      case 'diamond': return { label: 'Diamond', color: 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20', Icon: Gem };
+      case 'platinum': return { label: 'Platinum', color: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20', Icon: Sparkles };
+      case 'gold': return { label: 'Gold', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', Icon: Award };
+      case 'silver': return { label: 'Silver', color: 'bg-slate-400/10 text-slate-600 border-slate-400/20', Icon: ShieldCheck };
       case 'bronze':
-      default: return { label: 'Unverified', color: 'bg-orange-500/10 text-orange-600 border-orange-500/20', emoji: '🥉' };
+      default: return { label: 'Unverified', color: 'bg-orange-500/10 text-orange-600 border-orange-500/20', Icon: Shield };
     }
   };
   const badge = getTierBadge(candTier);
@@ -335,10 +342,10 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
             : 'border-none'
         }`}>
            {isRoyal && (
-             <div className="absolute top-4 left-1/2 -translate-x-1/2 text-3xl drop-shadow-xl animate-bounce z-20">
-               👑
-             </div>
-           )}
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 drop-shadow-xl animate-bounce z-20">
+                <Crown className="w-8 h-8 text-amber-400 fill-amber-400" />
+              </div>
+            )}
            <Image 
              src={allPhotos[currentPhotoIndex].url} 
              alt="Profile" 
@@ -390,7 +397,8 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                      <Sparkles size={12} className="fill-primary animate-pulse" /> {matchPercent}% {tMatch('compatibility')}
                   </span>
                   <span className={`px-4 py-2 border text-[10px] font-black rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-sm ${badge.color}`}>
-                     <span>{badge.emoji}</span> <span>{badge.label}</span>
+                     <badge.Icon size={12} className="shrink-0" />
+                     <span>{badge.label}</span>
                   </span>
                   {showCity && (
                     <span className="px-4 py-2 bg-muted text-gray-500 text-[10px] font-black rounded-full uppercase tracking-widest flex items-center gap-2">
@@ -412,8 +420,9 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                     />
                   </div>
                   {candCompletionRate === 100 && (
-                    <p className="text-[8px] text-green-600 font-bold uppercase tracking-widest text-center leading-none">
-                      💯 100% Completed Profile Badge Unlocked
+                    <p className="text-[8px] text-green-600 font-bold uppercase tracking-widest text-center leading-none flex items-center justify-center gap-1">
+                      <Award size={11} className="text-green-600 shrink-0" />
+                      <span>100% Completed Profile Badge Unlocked</span>
                     </p>
                   )}
                </div>
@@ -486,8 +495,9 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                     if (shared.length > 0) {
                       return (
                         <div className="text-xs space-y-1">
-                          <p className="font-black text-accent uppercase tracking-wider">
-                            🎒 {tMatch('sharedHobbies')}
+                          <p className="font-black text-accent uppercase tracking-wider flex items-center gap-1.5">
+                            <Sparkles size={12} className="text-primary" />
+                            <span>{tMatch('sharedHobbies')}</span>
                           </p>
                           <div className="flex flex-wrap gap-1.5 pt-1">
                             {shared.map((h: string, idx: number) => (
@@ -506,14 +516,28 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                   <div className="grid grid-cols-2 gap-3 text-xs">
                     <div className="bg-white p-3 rounded-xl border border-slate-100">
                       <p className="font-bold text-[8px] text-gray-400 uppercase tracking-widest">{tMatch('familyValues')}</p>
-                      <p className="font-black text-accent mt-0.5 uppercase tracking-wide truncate">
-                        {profile?.family_values === currentUserProfile.family_values ? '🤝 Shared' : profile?.family_values || 'Traditional'}
+                      <p className="font-black text-accent mt-0.5 uppercase tracking-wide truncate flex items-center gap-1">
+                        {profile?.family_values === currentUserProfile.family_values ? (
+                          <>
+                            <Check size={12} className="text-emerald-600 shrink-0" />
+                            <span>Shared</span>
+                          </>
+                        ) : (
+                          profile?.family_values || 'Traditional'
+                        )}
                       </p>
                     </div>
                     <div className="bg-white p-3 rounded-xl border border-slate-100">
                       <p className="font-bold text-[8px] text-gray-400 uppercase tracking-widest">{tMatch('conflictStyle')}</p>
-                      <p className="font-black text-accent mt-0.5 uppercase tracking-wide truncate">
-                        {profile?.conflict_resolution === currentUserProfile.conflict_resolution ? '🤝 Shared' : profile?.conflict_resolution || 'Discussion'}
+                      <p className="font-black text-accent mt-0.5 uppercase tracking-wide truncate flex items-center gap-1">
+                        {profile?.conflict_resolution === currentUserProfile.conflict_resolution ? (
+                          <>
+                            <Check size={12} className="text-emerald-600 shrink-0" />
+                            <span>Shared</span>
+                          </>
+                        ) : (
+                          profile?.conflict_resolution || 'Discussion'
+                        )}
                       </p>
                     </div>
                   </div>
@@ -639,13 +663,15 @@ export default function MatchDetailView({ matchId, currentUserProfile, isPremium
                     onClick={() => setIsReportOpen(!isReportOpen)}
                     className="flex-1 bg-amber-50 hover:bg-amber-100 text-amber-700 py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] border border-amber-200 transition-all flex items-center justify-center gap-2"
                   >
-                    ⚠️ {tMatch('reportUser')}
+                    <AlertTriangle size={14} className="text-amber-700 shrink-0" />
+                    <span>{tMatch('reportUser')}</span>
                   </button>
                   <button
                     onClick={handleBlockUser}
                     className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 py-4 rounded-2xl font-bold uppercase tracking-widest text-[10px] border border-red-200 transition-all flex items-center justify-center gap-2"
                   >
-                    🚫 {tMatch('blockUser')}
+                    <Ban size={14} className="text-red-600 shrink-0" />
+                    <span>{tMatch('blockUser')}</span>
                   </button>
                 </div>
 

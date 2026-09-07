@@ -13,7 +13,9 @@ import {
   Zap, 
   MessageCircle,
   HelpCircle,
-  EyeOff
+  EyeOff,
+  Gem,
+  Shield
 } from 'lucide-react';
 import { toEthiopianDate, StarSignLabels } from '@/lib/abushakir';
 
@@ -126,8 +128,8 @@ export default function BetesebVipCard({
         <div className="flex flex-col gap-1.5">
           {/* Dual Badge Stack: Diamond Icon + Golden VIP Tag */}
           <div className="flex items-center gap-1.5">
-            <div className="bg-cyan-500/25 backdrop-blur-xl border border-cyan-500/30 px-3 py-1 rounded-full text-white text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-lg">
-              <span>💎</span>
+            <div className="bg-cyan-500/25 backdrop-blur-xl border border-cyan-500/30 px-3 py-1 rounded-full text-white text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-lg">
+              <Gem size={10} className="text-cyan-300" />
               <span>{t('badges.level4.title').split(' ')[0]}</span>
             </div>
             
@@ -197,8 +199,9 @@ export default function BetesebVipCard({
           </button>
 
           {/* Quick Matchmaker Queue Status indicator */}
-          <div className="bg-white/5 border border-white/10 text-amber-300 text-[8px] font-black uppercase tracking-wider px-3.5 py-3 rounded-xl flex items-center gap-1">
-            <span>🛡️ Elite Queue</span>
+          <div className="bg-white/5 border border-white/10 text-amber-300 text-[8px] font-black uppercase tracking-wider px-3.5 py-3 rounded-xl flex items-center gap-1.5">
+            <Shield size={10} className="text-amber-400" />
+            <span>Elite Queue</span>
           </div>
         </div>
       </div>

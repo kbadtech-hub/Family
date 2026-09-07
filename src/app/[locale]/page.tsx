@@ -191,10 +191,20 @@ export default function Home() {
             className="justify-center pt-4"
           />
 
-          <div className="pt-8 flex flex-wrap items-center justify-center gap-10 opacity-30 grayscale underline decoration-primary/20">
-             <div className="flex items-center gap-2 font-bold text-[10px] tracking-widest uppercase"><CheckCircle2 size={16}/> {t('Hero.verify1')}</div>
-             <div className="flex items-center gap-2 font-bold text-[10px] tracking-widest uppercase"><ShieldCheck size={16}/> {t('Hero.verify2')}</div>
-             <div className="flex items-center gap-2 font-bold text-[10px] tracking-widest uppercase"><Layers size={16}/> {t('Hero.verify3')}</div>
+          {/* ── Phase 5: 3D Parallax Trust Badge Cluster ── */}
+          <div className="pt-8 hero-trust-parallax flex flex-wrap items-center justify-center gap-3 md:gap-5">
+             <div className="hero-trust-card flex items-center gap-2 px-4 py-2 rounded-xl bg-white/90 border border-border/80 shadow-xs backdrop-blur-sm text-foreground font-bold text-[11px] tracking-wider uppercase select-none">
+               <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
+               <span>{t('Hero.verify1')}</span>
+             </div>
+             <div className="hero-trust-card flex items-center gap-2 px-4 py-2 rounded-xl bg-white/90 border border-border/80 shadow-xs backdrop-blur-sm text-foreground font-bold text-[11px] tracking-wider uppercase select-none">
+               <ShieldCheck size={15} className="text-primary shrink-0" />
+               <span>{t('Hero.verify2')}</span>
+             </div>
+             <div className="hero-trust-card flex items-center gap-2 px-4 py-2 rounded-xl bg-white/90 border border-border/80 shadow-xs backdrop-blur-sm text-foreground font-bold text-[11px] tracking-wider uppercase select-none">
+               <Layers size={15} className="text-beteseb-gold shrink-0" />
+               <span>{t('Hero.verify3')}</span>
+             </div>
           </div>
         </div>
       </section>

@@ -790,8 +790,9 @@ export default function CallInterface({
               <div className="w-16 h-16 bg-red-500/20 border border-red-500/40 rounded-2xl flex items-center justify-center mb-4">
                 <ShieldAlert size={36} className="text-red-400 animate-pulse" />
               </div>
-              <p className="text-sm font-black uppercase tracking-[0.2em] text-red-200 mb-3">
-                ⚠️ Policy Violation Detected
+              <p className="text-sm font-black uppercase tracking-[0.2em] text-red-200 mb-3 flex items-center justify-center gap-1.5">
+                <AlertTriangle size={15} className="text-red-400 shrink-0" />
+                <span>Policy Violation Detected</span>
               </p>
               <p className="text-xs font-bold text-red-100/90 leading-relaxed max-w-xs mb-4">
                 {aiViolationMessage}

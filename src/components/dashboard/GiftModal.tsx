@@ -297,8 +297,8 @@ export default function GiftModal({ recipientId, recipientName, locale, onClose,
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-accent/60 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="bg-white w-full max-w-xl rounded-[2.5rem] overflow-hidden shadow-2xl border border-primary/10 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop-cinematic animate-in fade-in duration-150">
+      <div className="bg-card text-card-foreground w-full max-w-xl rounded-[var(--radius-card)] overflow-hidden shadow-2xl border border-primary/20 flex flex-col max-h-[90vh] modal-content-cinematic">
         
         {/* Header */}
         <div className="p-6 border-b border-muted flex justify-between items-center bg-accent text-white">
@@ -324,15 +324,17 @@ export default function GiftModal({ recipientId, recipientName, locale, onClose,
         <div className="flex border-b border-muted bg-muted/30">
           <button 
             onClick={() => setActiveTab('gallery')}
-            className={`flex-1 py-4 font-black uppercase text-[10px] tracking-widest border-b-2 transition-all ${activeTab === 'gallery' ? 'border-primary text-primary bg-white' : 'border-transparent text-gray-400'}`}
+            className={`flex-1 py-4 font-black uppercase text-[10px] tracking-widest border-b-2 transition-all flex items-center justify-center gap-1.5 ${activeTab === 'gallery' ? 'border-primary text-primary bg-white' : 'border-transparent text-gray-400'}`}
           >
-             🎨 {locale === 'am' ? 'የስጦታዎች ጋለሪ' : 'Gifts Gallery'}
+             <Gift size={13} className="shrink-0" />
+             <span>{locale === 'am' ? 'የስጦታዎች ጋለሪ' : 'Gifts Gallery'}</span>
           </button>
           <button 
             onClick={() => setActiveTab('buy_coins')}
-            className={`flex-1 py-4 font-black uppercase text-[10px] tracking-widest border-b-2 transition-all ${activeTab === 'buy_coins' ? 'border-primary text-primary bg-white' : 'border-transparent text-gray-400'}`}
+            className={`flex-1 py-4 font-black uppercase text-[10px] tracking-widest border-b-2 transition-all flex items-center justify-center gap-1.5 ${activeTab === 'buy_coins' ? 'border-primary text-primary bg-white' : 'border-transparent text-gray-400'}`}
           >
-             🪙 {locale === 'am' ? 'ሳንቲም ግዛ (Buy Coins)' : 'Buy Coins'}
+             <Coins size={13} className="shrink-0" />
+             <span>{locale === 'am' ? 'ሳንቲም ግዛ (Buy Coins)' : 'Buy Coins'}</span>
           </button>
         </div>
 

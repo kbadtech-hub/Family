@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { moderateText } from '@/lib/moderation';
-import { X, Send, AlertTriangle, ShieldCheck, Sparkles, Clock, Lock } from 'lucide-react';
+import { X, Send, AlertTriangle, ShieldCheck, Sparkles, Clock, Lock, PenLine } from 'lucide-react';
 import Image from 'next/image';
 
 interface PostCreationModalProps {
@@ -238,8 +238,9 @@ export default function PostCreationModal({
             />
 
             {/* Strict Text-Only Badge */}
-            <div className="absolute bottom-3 left-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-white/80 px-2.5 py-1 rounded-full border border-gray-100">
-              ✍️ Text-Only Policy Enforced
+            <div className="absolute bottom-3 left-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-white/80 px-2.5 py-1 rounded-full border border-gray-100 flex items-center gap-1">
+              <PenLine size={10} className="text-gray-400 shrink-0" />
+              <span>Text-Only Policy Enforced</span>
             </div>
 
             {/* Real-Time Character Counter */}

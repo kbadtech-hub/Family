@@ -18,7 +18,23 @@ import {
   AlertCircle,
   ShieldCheck,
   Lock,
-  Search
+  Search,
+  RefreshCw,
+  Trash2,
+  Lightbulb,
+  Globe,
+  Building2,
+  Sparkles,
+  Bot,
+  CreditCard,
+  Gift,
+  Shield,
+  AlertTriangle,
+  ClipboardList,
+  Pencil,
+  Briefcase,
+  Heart,
+  Image as ImageIcon
 } from 'lucide-react';
 import { resolveLocationFromCoords, detectUserLocation } from '@/lib/location';
 import { calculateStarSign } from '@/lib/abushakir';
@@ -1130,9 +1146,9 @@ function OnboardingContent() {
                   <div className="flex flex-col gap-2">
                     <label className="cursor-pointer bg-primary/10 hover:bg-primary/20 text-primary px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-2">
                       {formData.avatar_url ? (
-                        <span>🔄 {t('replacePhotoBtn')}</span>
+                        <span className="flex items-center gap-1"><RefreshCw size={12} /> {t('replacePhotoBtn')}</span>
                       ) : (
-                        <span>📷 {t('uploadPhotoBtn')}</span>
+                        <span className="flex items-center gap-1"><Camera size={12} /> {t('uploadPhotoBtn')}</span>
                       )}
                       <input 
                         type="file" 
@@ -1164,7 +1180,7 @@ function OnboardingContent() {
                         onClick={() => updateField('avatar_url', '')}
                         className="text-[10px] text-red-500 font-bold hover:underline self-start ml-2 flex items-center gap-1"
                       >
-                        🗑️ {t('removeAvatar')}
+                        <Trash2 size={12} /> {t('removeAvatar')}
                       </button>
                     )}
                   </div>
@@ -1183,8 +1199,8 @@ function OnboardingContent() {
                   className="w-full rounded-2xl border-gray-200 shadow-sm focus:border-primary focus:ring-primary p-4 bg-white text-sm font-semibold border" 
                   placeholder={t('officialNamePlaceholder')}
                 />
-                <p className="text-[10px] text-gray-400 font-medium ml-1">
-                  💡 {t('officialNameHint')}
+                <p className="text-[10px] text-gray-400 font-medium ml-1 flex items-center gap-1">
+                  <Lightbulb size={12} className="text-amber-500 shrink-0" /> {t('officialNameHint')}
                 </p>
               </div>
 
@@ -1571,7 +1587,7 @@ function OnboardingContent() {
                       formData.partner_countries.includes('Anywhere') ? 'bg-accent text-white shadow-xs' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
                     }`}
                   >
-                    🌍 {t('partnerAnywhereLabel')}
+                    <span className="flex items-center gap-1.5"><Globe size={12} /> {t('partnerAnywhereLabel')}</span>
                   </button>
 
                   {COUNTRIES.filter(c => {
@@ -1617,8 +1633,8 @@ function OnboardingContent() {
               {/* Optional Dynamic City Preference */}
               {!formData.partner_countries.includes('Anywhere') && formData.partner_countries.length > 0 && (
                 <div className="space-y-3 bg-white/80 backdrop-blur-md p-5 rounded-2xl border border-gray-150 shadow-sm animate-in slide-in-from-top-3 duration-300">
-                  <label className="text-xs font-black uppercase text-slate-600 tracking-wider block">
-                    🏢 {t('partnerCityOptionalLabel')}
+                  <label className="text-xs font-black uppercase text-slate-600 tracking-wider flex items-center gap-1.5">
+                    <Building2 size={14} className="text-slate-500" /> {t('partnerCityOptionalLabel')}
                   </label>
                   <p className="text-[11px] text-slate-500">
                     {t('partnerCityDesc')}
@@ -1683,7 +1699,7 @@ function OnboardingContent() {
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                     }`}
                   >
-                    ✨ {t('anyReligionBtn')}
+                    <span className="flex items-center gap-1.5"><Sparkles size={12} /> {t('anyReligionBtn')}</span>
                   </button>
 
                   {RELIGIONS.map(r => {
@@ -1756,7 +1772,6 @@ function OnboardingContent() {
                     <span className="text-xs font-black uppercase tracking-widest text-gray-400">{t('idVerification.uploadClick').replace('{type}', '')}</span>
                  </div>
                )}
-               {/* Validation loading overlay — shown while doc-only API check is running */}
                {isValidatingId && (
                  <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3 z-10">
                    <Loader2 size={32} className="animate-spin text-primary" />
@@ -1850,32 +1865,41 @@ function OnboardingContent() {
             {/* Trust & Security Explainer Box */}
             <div className="bg-slate-50 border border-slate-200/80 rounded-[2rem] p-6 text-left space-y-4 shadow-inner">
                <h4 className="font-extrabold text-xs text-accent uppercase tracking-wider flex items-center gap-2">
-                 🔒 {t('whyVerification')}
+                 <Lock size={14} className="text-accent" />
+                 <span>{t('whyVerification')}</span>
                </h4>
                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-gray-600">
                  <div className="flex gap-2.5 items-start bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                   <span className="text-base">🤖</span>
+                   <div className="p-1 rounded-lg bg-primary/10 text-primary shrink-0">
+                     <Bot size={16} />
+                   </div>
                    <div>
                      <p className="font-bold text-gray-900">{t('humanVerification')}</p>
                      <p className="text-[11px] text-gray-500">{t('humanVerificationDesc')}</p>
                    </div>
                  </div>
                  <div className="flex gap-2.5 items-start bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                   <span className="text-base">💳</span>
+                   <div className="p-1 rounded-lg bg-primary/10 text-primary shrink-0">
+                     <CreditCard size={16} />
+                   </div>
                    <div>
                      <p className="font-bold text-gray-900">{t('financialSecurity')}</p>
                      <p className="text-[11px] text-gray-500">{t('financialSecurityDesc')}</p>
                    </div>
                  </div>
                  <div className="flex gap-2.5 items-start bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                   <span className="text-base">🎁</span>
+                   <div className="p-1 rounded-lg bg-primary/10 text-primary shrink-0">
+                     <Gift size={16} />
+                   </div>
                    <div>
                      <p className="font-bold text-gray-900">{t('giftsAndServices')}</p>
                      <p className="text-[11px] text-gray-500">{t('giftsAndServicesDesc')}</p>
                    </div>
                  </div>
                  <div className="flex gap-2.5 items-start bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                   <span className="text-base">🛡️</span>
+                   <div className="p-1 rounded-lg bg-primary/10 text-primary shrink-0">
+                     <Shield size={16} />
+                   </div>
                    <div>
                      <p className="font-bold text-gray-900">{t('dataPrivacy')}</p>
                      <p className="text-[11px] text-gray-500">{t('dataPrivacyDesc')}</p>
@@ -2048,7 +2072,7 @@ function OnboardingContent() {
                 <h2 className="text-3xl font-black text-accent italic">{t('gallery')}</h2>
                 <p className="text-gray-500">{t('gallerySubtitle')}</p>
                 <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-2xl text-[10px] text-amber-800 dark:text-amber-400 font-bold uppercase tracking-wider max-w-sm mx-auto leading-relaxed">
-                   ⚠️ {t('galleryStrictWarning')}
+                   <span className="flex items-center justify-center gap-1.5"><AlertTriangle size={14} className="text-amber-600 shrink-0" /> {t('galleryStrictWarning')}</span>
                 </div>
              </div>
              <div className="grid grid-cols-3 gap-3">
@@ -2068,7 +2092,7 @@ function OnboardingContent() {
                             title={t('replacePhotoBtn')}
                             className="w-8 h-8 bg-primary hover:bg-primary/90 text-white rounded-xl flex items-center justify-center shadow-lg cursor-pointer transition-transform active:scale-95"
                          >
-                            <span className="text-xs">🔄</span>
+                            <RefreshCw size={14} />
                             <input 
                                type="file" 
                                accept="image/*" 
@@ -2160,7 +2184,8 @@ function OnboardingContent() {
              <div className="bg-[#FDFBF9] rounded-[2rem] p-6 border border-gray-200/80 text-left space-y-5 shadow-inner">
                 <div className="flex items-center justify-between border-b border-gray-200 pb-3">
                   <h3 className="font-extrabold text-xs uppercase tracking-wider text-accent flex items-center gap-2">
-                    📋 {t('reviewAndConfirm')}
+                    <ClipboardList size={16} className="text-accent" />
+                    <span>{t('reviewAndConfirm')}</span>
                   </h3>
                   <span className="text-[10px] font-bold text-gray-400">Step 1-6</span>
                 </div>
@@ -2168,15 +2193,17 @@ function OnboardingContent() {
                 {/* Section 1: Basic Info */}
                 <div className="bg-white rounded-2xl p-4 border border-gray-100 space-y-2 relative group hover:border-primary/30 transition-all">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-primary uppercase tracking-wider">
-                      👤 {t('basicProfileLabel')}
+                    <span className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
+                      <User size={13} className="text-primary" />
+                      <span>{t('basicProfileLabel')}</span>
                     </span>
                     <button
                       type="button"
                       onClick={() => setStep(1)}
-                      className="text-[10px] font-extrabold text-primary hover:underline bg-primary/5 px-3 py-1 rounded-full"
+                      className="text-[10px] font-extrabold text-primary hover:underline bg-primary/5 px-3 py-1 rounded-full flex items-center gap-1"
                     >
-                      ✏️ {t('editBtn')}
+                      <Pencil size={10} />
+                      <span>{t('editBtn')}</span>
                     </button>
                   </div>
                   <div className="text-xs text-gray-600 space-y-1 font-medium">
@@ -2190,15 +2217,17 @@ function OnboardingContent() {
                 {/* Section 2: Career & Preferences */}
                 <div className="bg-white rounded-2xl p-4 border border-gray-100 space-y-2 relative group hover:border-primary/30 transition-all">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-primary uppercase tracking-wider">
-                      💼 {t('careerValuesLabel')}
+                    <span className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
+                      <Briefcase size={13} className="text-primary" />
+                      <span>{t('careerValuesLabel')}</span>
                     </span>
                     <button
                       type="button"
                       onClick={() => setStep(2)}
-                      className="text-[10px] font-extrabold text-primary hover:underline bg-primary/5 px-3 py-1 rounded-full"
+                      className="text-[10px] font-extrabold text-primary hover:underline bg-primary/5 px-3 py-1 rounded-full flex items-center gap-1"
                     >
-                      ✏️ {t('editBtn')}
+                      <Pencil size={10} />
+                      <span>{t('editBtn')}</span>
                     </button>
                   </div>
                   <div className="text-xs text-gray-600 space-y-1 font-medium">
@@ -2211,15 +2240,17 @@ function OnboardingContent() {
                 {/* Section 3: Partner Requirements */}
                 <div className="bg-white rounded-2xl p-4 border border-gray-100 space-y-2 relative group hover:border-primary/30 transition-all">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-primary uppercase tracking-wider">
-                      ❤️ {t('partnerPrefLabel')}
+                    <span className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
+                      <Heart size={13} className="text-rose-500 fill-rose-500" />
+                      <span>{t('partnerPrefLabel')}</span>
                     </span>
                     <button
                       type="button"
                       onClick={() => setStep(3)}
-                      className="text-[10px] font-extrabold text-primary hover:underline bg-primary/5 px-3 py-1 rounded-full"
+                      className="text-[10px] font-extrabold text-primary hover:underline bg-primary/5 px-3 py-1 rounded-full flex items-center gap-1"
                     >
-                      ✏️ {t('editBtn')}
+                      <Pencil size={10} />
+                      <span>{t('editBtn')}</span>
                     </button>
                   </div>
                   <div className="text-xs text-gray-600 space-y-1 font-medium">
@@ -2233,15 +2264,17 @@ function OnboardingContent() {
                 {formData.gallery_photos.length > 0 && (
                   <div className="bg-white rounded-2xl p-4 border border-gray-100 space-y-2 relative group hover:border-primary/30 transition-all">
                     <div className="flex justify-between items-center">
-                      <span className="text-xs font-bold text-primary uppercase tracking-wider">
-                        🖼️ {t('galleryPhotosLabel')} ({formData.gallery_photos.length})
+                      <span className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
+                        <ImageIcon size={13} className="text-primary" />
+                        <span>{t('galleryPhotosLabel')} ({formData.gallery_photos.length})</span>
                       </span>
                       <button
                         type="button"
                         onClick={() => setStep(6)}
-                        className="text-[10px] font-extrabold text-primary hover:underline bg-primary/5 px-3 py-1 rounded-full"
+                        className="text-[10px] font-extrabold text-primary hover:underline bg-primary/5 px-3 py-1 rounded-full flex items-center gap-1"
                       >
-                        ✏️ {t('editBtn')}
+                        <Pencil size={10} />
+                        <span>{t('editBtn')}</span>
                       </button>
                     </div>
                     <div className="flex gap-2 overflow-x-auto pt-1">
@@ -2321,7 +2354,7 @@ function OnboardingContent() {
           )}
         </div>
 
-        <div className="bg-white rounded-[2.5rem] shadow-2xl p-8 md:p-12 border border-gray-100 relative overflow-hidden">
+        <div className="bg-white ambient-glow-shift rounded-[2.5rem] shadow-2xl p-8 md:p-12 border border-gray-100 relative overflow-hidden">
           <div className={`absolute top-0 ${locale === 'ar' ? 'left-0' : 'right-0'} w-32 h-32 bg-primary/5 rounded-full ${locale === 'ar' ? '-ml-16' : '-mr-16'} -mt-16 blur-3xl opacity-50`} />
           <div className={`absolute bottom-0 ${locale === 'ar' ? 'right-0' : 'left-0'} w-32 h-32 bg-primary/5 rounded-full ${locale === 'ar' ? '-mr-16' : '-ml-16'} -mb-16 blur-2xl opacity-40`} />
           

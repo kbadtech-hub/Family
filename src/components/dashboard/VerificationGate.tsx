@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useTranslations, useLocale } from 'next-intl';
-import { ShieldCheck, UploadCloud, CheckCircle2, AlertCircle, Camera, Loader2, Sparkles } from 'lucide-react';
+import { ShieldCheck, UploadCloud, CheckCircle2, AlertCircle, Camera, Loader2, Sparkles, Lock, Bot, CreditCard, Gift, Shield } from 'lucide-react';
 
 interface VerificationGateProps {
   userId: string;
@@ -295,32 +295,41 @@ export default function VerificationGate({ userId, onVerified }: VerificationGat
           {/* Trust & Security Explainer Box */}
           <div className="bg-slate-50 border border-slate-200/80 rounded-[2rem] p-6 text-left space-y-4 shadow-inner">
              <h4 className="font-extrabold text-xs text-accent uppercase tracking-wider flex items-center gap-2">
-               🔒 {locale === 'am' ? 'ለምን መታወቂያ እና ሰልፊ ማረጋገጫ ያስፈልጋል?' : 'Why Identity Verification is Required'}
+               <Lock size={14} className="text-accent" />
+               <span>{locale === 'am' ? 'ለምን መታወቂያ እና ሰልፊ ማረጋገጫ ያስፈልጋል?' : 'Why Identity Verification is Required'}</span>
              </h4>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-gray-600">
                <div className="flex gap-2.5 items-start bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                 <span className="text-base">🤖</span>
+                 <div className="p-1 rounded-lg bg-primary/10 text-primary shrink-0">
+                   <Bot size={16} />
+                 </div>
                  <div>
                    <p className="font-bold text-gray-900">{locale === 'am' ? 'የሰውነት ማረጋገጫ (Bot Defense)' : 'Human Verification'}</p>
                    <p className="text-[11px] text-gray-500">{locale === 'am' ? 'ቦት ወይም የውሸት አካውንት አለመሆንዎን ለማረጋገጥ።' : 'To confirm you are a real human and prevent fake/bot accounts.'}</p>
                  </div>
                </div>
                <div className="flex gap-2.5 items-start bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                 <span className="text-base">💳</span>
+                 <div className="p-1 rounded-lg bg-primary/10 text-primary shrink-0">
+                   <CreditCard size={16} />
+                 </div>
                  <div>
                    <p className="font-bold text-gray-900">{locale === 'am' ? 'የገንዘብ ወጪና ትራንዛክሽን' : 'Financial Security'}</p>
                    <p className="text-[11px] text-gray-500">{locale === 'am' ? 'ገንዘብ ወጪ ለማድረግ የስም እና የመታወቂያ መመሳሰል የግዴታ ነው።' : 'Required for safe money withdrawals and bank transactions.'}</p>
                  </div>
                </div>
                <div className="flex gap-2.5 items-start bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                 <span className="text-base">🎁</span>
+                 <div className="p-1 rounded-lg bg-primary/10 text-primary shrink-0">
+                   <Gift size={16} />
+                 </div>
                  <div>
                    <p className="font-bold text-gray-900">{locale === 'am' ? 'ስጦታዎች እና ዲሊቨሪ' : 'Gifts & Services'}</p>
                    <p className="text-[11px] text-gray-500">{locale === 'am' ? 'አካላዊ ስጦታዎች እና አገልግሎቶች ለተረጋገጠ ሰው ብቻ ይደርሳሉ።' : 'Ensures verified physical delivery of gifts and services.'}</p>
                  </div>
                </div>
                <div className="flex gap-2.5 items-start bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                 <span className="text-base">🛡️</span>
+                 <div className="p-1 rounded-lg bg-primary/10 text-primary shrink-0">
+                   <Shield size={16} />
+                 </div>
                  <div>
                    <p className="font-bold text-gray-900">{locale === 'am' ? 'የመረጃ ምስጢራዊነት ጥበቃ' : 'Data Privacy Guarantee'}</p>
                    <p className="text-[11px] text-gray-500">{locale === 'am' ? 'መታወቂያዎ በTLS ተመስጥሮ ለአድሚን ፍተሻ ብቻ ይውላል፤ ለ3ኛ ወገን አይሰጥም።' : 'Encrypted with TLS, used solely for verification, and never shared.'}</p>

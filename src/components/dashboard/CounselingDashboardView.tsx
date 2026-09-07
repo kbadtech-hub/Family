@@ -261,7 +261,9 @@ export default function CounselingDashboardView() {
 
           {bookingSuccess ? (
             <div className="bg-green-50 border border-green-200 rounded-[3rem] p-12 text-center space-y-6">
-              <div className="text-5xl">✅</div>
+              <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 mx-auto shadow-md">
+                <CheckCircle2 size={36} />
+              </div>
               <h3 className="text-2xl font-black text-green-700">{t('ቦታ ተያዘ!', 'Booking Confirmed!')}</h3>
               <p className="text-green-600">{t('ጥያቄዎ ተልኳል። አማካሪው ሲቀበሉ ያሳውቅዎታል።', 'Your request has been sent. Your counselor will confirm shortly.')}</p>
               <div className="flex justify-center gap-4">
