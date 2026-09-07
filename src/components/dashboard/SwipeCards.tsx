@@ -13,7 +13,11 @@ import {
   MoreVertical,
   Undo,
   Zap,
-  EyeOff
+  EyeOff,
+  Crown,
+  Gem,
+  Award,
+  Users
 } from 'lucide-react';
 import { calculateCompatibility } from '@/lib/compatibility';
 import { supabase } from '@/lib/supabase';
@@ -26,10 +30,11 @@ interface SwipeCardsProps {
   candidates: any[];
   onLike: (id: string) => void;
   onPass: (id: string) => void;
+  onViewProfile?: (candidate: any) => void;
   isPremium?: boolean;
 }
 
-export default function SwipeCards({ userProfile, candidates, onLike, onPass, isPremium = false }: SwipeCardsProps) {
+export default function SwipeCards({ userProfile, candidates, onLike, onPass, onViewProfile, isPremium = false }: SwipeCardsProps) {
   const { showConfirm, showPrompt, showToast, showAlert } = useUI();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
@@ -142,18 +147,22 @@ export default function SwipeCards({ userProfile, candidates, onLike, onPass, is
 
   if (!activeCandidate) {
     return (
-      <div className="w-full max-w-md mx-auto aspect-[3/4] bg-white rounded-[3rem] shadow-xl border border-gray-100 flex flex-col items-center justify-center p-8 text-center space-y-6">
-        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center animate-pulse">
-          <Heart className="text-primary fill-primary/20" size={36} />
+      <div className="w-full max-w-md mx-auto aspect-[3/4.2] empty-state-cinematic p-8 text-center space-y-5 rounded-[20px]">
+        <div className="w-18 h-18 rounded-2xl bg-beteseb-coral/10 border border-beteseb-coral/20 flex items-center justify-center text-beteseb-coral shadow-inner">
+          <Heart size={34} className="fill-beteseb-coral/20 text-beteseb-coral" />
         </div>
-        <h3 className="text-2xl font-black text-accent italic">No More Matches</h3>
-        <p className="text-gray-400 text-xs font-bold uppercase tracking-wider max-w-xs leading-relaxed">
-          You have swiped through all available candidates. Check back later for new compatibility recommendations!
-        </p>
+        <div className="space-y-2">
+          <h3 className="text-2xl font-semibold text-foreground font-display tracking-tight">
+            No More Matches Right Now
+          </h3>
+          <p className="text-beteseb-mist text-xs leading-relaxed max-w-xs mx-auto">
+            You have explored all available candidates. New compatible profiles are curated daily based on your preferences.
+          </p>
+        </div>
         {swipeHistory.length > 0 && (
           <button 
             onClick={handleRewind}
-            className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 text-slate-950 font-black text-[10px] uppercase tracking-widest rounded-xl hover:scale-105 transition-all shadow-md"
+            className="btn-secondary text-xs mt-2"
           >
             <Undo size={14} /> Rewind Last Swipe
           </button>
@@ -176,16 +185,17 @@ export default function SwipeCards({ userProfile, candidates, onLike, onPass, is
 
   const getTierBadge = (tier: string) => {
     switch (tier) {
-      case 'vip': return { label: 'VIP', color: 'bg-amber-50/20 text-amber-200 border-amber-500/30', emoji: '👑' };
-      case 'diamond': return { label: 'Diamond', color: 'bg-cyan-500/20 text-cyan-200 border-cyan-500/30', emoji: '💎' };
-      case 'platinum': return { label: 'Platinum', color: 'bg-indigo-500/20 text-indigo-200 border-indigo-500/30', emoji: '🌟' };
-      case 'gold': return { label: 'Gold', color: 'bg-amber-500/20 text-amber-200 border-amber-500/30', emoji: '🥇' };
-      case 'silver': return { label: 'Silver', color: 'bg-slate-400/20 text-slate-200 border-slate-400/30', emoji: '🥈' };
+      case 'vip': return { label: 'VIP', color: 'bg-amber-500/20 text-amber-200 border-amber-400/40', icon: Crown };
+      case 'diamond': return { label: 'Diamond', color: 'bg-cyan-500/20 text-cyan-200 border-cyan-400/40', icon: Gem };
+      case 'platinum': return { label: 'Platinum', color: 'bg-indigo-500/20 text-indigo-200 border-indigo-400/40', icon: Star };
+      case 'gold': return { label: 'Gold', color: 'bg-amber-400/20 text-amber-200 border-amber-300/40', icon: Award };
+      case 'silver': return { label: 'Silver', color: 'bg-slate-300/20 text-slate-200 border-slate-300/40', icon: ShieldCheck };
       case 'bronze':
-      default: return { label: 'Unverified', color: 'bg-orange-850/20 text-orange-200 border-orange-850/30', emoji: '🥉' };
+      default: return { label: 'Unverified', color: 'bg-white/10 text-white/80 border-white/20', icon: ShieldCheck };
     }
   };
   const badge = getTierBadge(candTier);
+  const BadgeIcon = badge.icon;
 
   const showAge = activeCandidate.show_age !== false;
   const showCity = activeCandidate.show_city !== false;
@@ -219,10 +229,10 @@ export default function SwipeCards({ userProfile, candidates, onLike, onPass, is
         onTouchEnd={handleTouchEnd}
         style={{
           transform: `translate(${swipeOffset.x}px, ${swipeOffset.y}px) rotate(${swipeOffset.x * 0.05}deg)`,
-          transition: swipeOffset.x === 0 ? 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)' : 'none'
+          transition: swipeOffset.x === 0 ? 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)' : 'none'
         }}
-        className={`w-full aspect-[3/4.2] rounded-[3.5rem] overflow-hidden shadow-2xl relative border group cursor-grab active:cursor-grabbing ${
-          isCandidateVip ? 'bg-slate-950 border-amber-400/50' : 'bg-accent border-white/10'
+        className={`w-full aspect-[3/4.2] rounded-[20px] overflow-hidden shadow-2xl relative border group cursor-grab active:cursor-grabbing card-poster ${
+          isCandidateVip ? 'bg-beteseb-navy border-beteseb-gold/50' : 'bg-beteseb-navy border-white/10'
         }`}
       >
         {/* Background Image with Unsplash fallback */}
@@ -234,104 +244,107 @@ export default function SwipeCards({ userProfile, candidates, onLike, onPass, is
           priority
         />
 
+        {/* Cinematic Poster Navy Fade Overlay */}
+        <div className="card-poster-overlay" />
+
         {shouldBlur && (
-          <div className="absolute inset-0 bg-slate-950/45 flex flex-col items-center justify-center p-6 text-center z-15 backdrop-blur-[2px] pointer-events-none">
-            <div className="w-10 h-10 bg-amber-500/20 border border-amber-500/30 rounded-2xl flex items-center justify-center text-amber-300 mb-2 animate-pulse">
-              <EyeOff size={18} />
+          <div className="absolute inset-0 bg-beteseb-navy/60 flex flex-col items-center justify-center p-6 text-center z-15 backdrop-blur-[2px] pointer-events-none">
+            <div className="w-11 h-11 bg-beteseb-gold/20 border border-beteseb-gold/40 rounded-2xl flex items-center justify-center text-beteseb-gold mb-2 animate-pulse shadow-sm">
+              <EyeOff size={20} />
             </div>
-            <p className="text-[9px] font-black uppercase text-amber-300 tracking-[0.25em]">Ghost Mode Active</p>
+            <p className="text-[10px] font-black uppercase text-beteseb-gold tracking-[0.25em]">Ghost Mode Active</p>
           </div>
         )}
 
         {/* Gender-specific crown frame around avatars for VIP profiles */}
         {isCandidateVip && (
-          <div className={`absolute inset-0 border-[6px] pointer-events-none rounded-[3.5rem] z-20 ${
+          <div className={`absolute inset-0 border-[4px] pointer-events-none rounded-[20px] z-20 ${
             activeCandidate.gender === 'Male' 
-              ? 'border-amber-400/90 ring-4 ring-amber-300/40 ring-inset' 
-              : 'border-pink-400/90 ring-4 ring-pink-300/40 ring-inset'
+              ? 'border-beteseb-gold/80 ring-2 ring-beteseb-gold/30 ring-inset' 
+              : 'border-pink-400/80 ring-2 ring-pink-300/30 ring-inset'
           }`}>
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2.5 py-0.5 bg-slate-950/95 border border-amber-400/60 rounded-full shadow-md z-30">
-              <span>👑</span>
-              <span className="text-[7.5px] font-black text-amber-300 uppercase tracking-widest">
+            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-0.5 bg-beteseb-navy/95 border border-beteseb-gold/60 rounded-full shadow-md z-30">
+              <Crown size={12} className="text-beteseb-gold fill-beteseb-gold/30" />
+              <span className="text-[8px] font-black text-beteseb-gold uppercase tracking-widest">
                 {activeCandidate.gender === 'Male' ? "King's Crown" : "Queen's Crown"}
               </span>
             </div>
           </div>
         )}
 
-        {/* Legacy Royal Frame Overlay (Phase 4.5) for non-VIP Diamond users */}
+        {/* Legacy Royal Frame Overlay for non-VIP Diamond users */}
         {!isCandidateVip && candCompletionRate === 100 && candTier === 'diamond' && (
-          <div className={`absolute inset-0 border-8 pointer-events-none rounded-[3.5rem] z-10 ${
+          <div className={`absolute inset-0 border-[4px] pointer-events-none rounded-[20px] z-10 ${
             activeCandidate.gender === 'Male' 
-              ? 'border-amber-400/90 ring-4 ring-amber-300/50 ring-inset' 
-              : 'border-pink-400/90 ring-4 ring-pink-300/50 ring-inset'
+              ? 'border-beteseb-gold/80 ring-2 ring-beteseb-gold/40 ring-inset' 
+              : 'border-pink-400/80 ring-2 ring-pink-300/40 ring-inset'
           }`}>
-            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 text-2xl drop-shadow-lg animate-bounce">
-              👑
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-beteseb-navy/90 border border-beteseb-gold/40 rounded-full flex items-center justify-center shadow-lg">
+              <Crown size={13} className="text-beteseb-gold fill-beteseb-gold/30" />
             </div>
           </div>
         )}
 
         {/* Visual Swipe Indicators */}
         {swipeDirection === 'right' && (
-          <div className="absolute top-12 left-12 border-4 border-green-500 text-green-500 font-black text-2xl uppercase tracking-widest px-6 py-2 rounded-2xl rotate-[-12deg] z-20 backdrop-blur-md bg-green-500/10">
-            LIKE
+          <div className="absolute top-10 left-8 border-3 border-beteseb-coral text-white font-black text-xl uppercase tracking-widest px-5 py-1.5 rounded-2xl rotate-[-12deg] z-25 backdrop-blur-md bg-beteseb-coral/30 shadow-lg animate-pulse">
+            INTEREST
           </div>
         )}
         {swipeDirection === 'left' && (
-          <div className="absolute top-12 right-12 border-4 border-red-500 text-red-500 font-black text-2xl uppercase tracking-widest px-6 py-2 rounded-2xl rotate-[12deg] z-20 backdrop-blur-md bg-red-500/10">
-            NOPE
+          <div className="absolute top-10 right-8 border-3 border-beteseb-mist text-white font-black text-xl uppercase tracking-widest px-5 py-1.5 rounded-2xl rotate-[12deg] z-25 backdrop-blur-md bg-beteseb-navy/50 shadow-lg">
+            PASS
           </div>
         )}
 
         {/* Glassmorphic Top Overlay */}
-        <div className="absolute top-6 left-6 right-6 flex justify-between items-center z-25">
-          <div className="bg-primary/20 backdrop-blur-xl border border-white/20 px-5 py-2.5 rounded-full text-white text-xs font-black tracking-widest uppercase flex items-center gap-2 shadow-lg">
-            <Sparkles size={14} className="fill-white" />
-            {matchPercent}% Compatibility
+        <div className="absolute top-5 left-5 right-5 flex justify-between items-center z-25">
+          <div className="bg-beteseb-navy/60 backdrop-blur-xl border border-white/20 px-3.5 py-1.5 rounded-full text-white text-[11px] font-bold tracking-wider flex items-center gap-1.5 shadow-lg">
+            <Sparkles size={13} className="text-beteseb-coral fill-beteseb-coral/40" />
+            <span>{matchPercent}% Compatibility</span>
           </div>
           
           <div className="flex items-center gap-2">
             {/* VIP Dual Badge stack: Diamond badge + Golden VIP Tag */}
             {isCandidateVip ? (
-              <div className="flex items-center gap-1">
-                <div className="backdrop-blur-xl border border-cyan-500/30 px-3 py-1.5 rounded-full text-[9px] font-black uppercase text-cyan-200 tracking-wider bg-cyan-500/10 shadow-lg">
-                  💎 Diamond
+              <div className="flex items-center gap-1.5">
+                <div className="backdrop-blur-xl border border-cyan-400/40 px-2.5 py-1 rounded-full text-[9px] font-black uppercase text-cyan-200 tracking-wider bg-cyan-500/20 shadow-lg flex items-center gap-1">
+                  <Gem size={11} className="text-cyan-300" /> Diamond
                 </div>
-                <div className="backdrop-blur-xl border border-amber-300/50 px-3 py-1.5 rounded-full text-[9px] font-black uppercase text-amber-300 tracking-widest bg-gradient-to-r from-amber-500/20 to-yellow-400/20 shadow-lg animate-pulse">
-                  ⚡ VIP
+                <div className="backdrop-blur-xl border border-beteseb-gold/60 px-2.5 py-1 rounded-full text-[9px] font-black uppercase text-beteseb-gold tracking-widest bg-beteseb-gold/20 shadow-lg flex items-center gap-1 animate-pulse">
+                  <Crown size={11} className="text-beteseb-gold fill-beteseb-gold/40" /> VIP
                 </div>
               </div>
             ) : (
-              <div className={`backdrop-blur-xl border px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-lg ${badge.color}`}>
-                <span>{badge.emoji}</span>
+              <div className={`backdrop-blur-xl border px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-lg ${badge.color}`}>
+                <BadgeIcon size={11} />
                 <span>{badge.label}</span>
               </div>
             )}
 
             {/* Guardian-Linked Identity Badge */}
             {activeCandidate.is_guardian_linked && (
-              <div className="bg-amber-500/20 backdrop-blur-xl border border-amber-500/30 px-3 py-1.5 rounded-full text-[9px] font-black text-amber-200 uppercase tracking-wider flex items-center gap-1 shadow-lg" title="Guardian-Linked Identity">
-                <span>👨‍👩‍👦</span>
+              <div className="bg-beteseb-gold/20 backdrop-blur-xl border border-beteseb-gold/40 px-2.5 py-1 rounded-full text-[9px] font-black text-amber-200 uppercase tracking-wider flex items-center gap-1 shadow-lg" title="Guardian-Linked Identity">
+                <Users size={11} className="text-beteseb-gold" />
                 <span>Wali</span>
               </div>
             )}
             
-            {/* Quick Menu */}
+            {/* Quick Safety Menu */}
             <div className="relative">
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowCardMenu(!showCardMenu);
                 }}
-                className="bg-black/40 backdrop-blur-xl border border-white/25 p-2.5 rounded-full text-white shadow-lg flex items-center justify-center hover:bg-black/60 transition-colors"
+                className="bg-beteseb-navy/60 backdrop-blur-xl border border-white/20 p-2 rounded-full text-white shadow-lg flex items-center justify-center hover:bg-beteseb-navy/80 transition-colors"
                 aria-label="Safety menu"
               >
-                <MoreVertical size={18} />
+                <MoreVertical size={16} />
               </button>
               
               {showCardMenu && (
-                <div className="absolute right-0 mt-2 w-40 bg-white rounded-2xl shadow-2xl z-30 overflow-hidden border border-border">
+                <div className="absolute right-0 mt-2 w-44 bg-card rounded-2xl shadow-2xl z-30 overflow-hidden border border-border">
                   <button
                     onClick={async (e) => {
                       e.stopPropagation();
@@ -349,9 +362,9 @@ export default function SwipeCards({ userProfile, candidates, onLike, onPass, is
                         setShowCardMenu(false);
                       }
                     }}
-                    className="w-full text-left px-4 py-2.5 hover:bg-muted text-[10px] font-bold text-amber-700 flex items-center gap-1.5"
+                    className="w-full text-left px-4 py-2.5 hover:bg-muted text-[11px] font-bold text-beteseb-coral flex items-center gap-2"
                   >
-                    ⚠️ Report User
+                    <ShieldCheck size={14} /> Report User
                   </button>
                   <button
                     onClick={async (e) => {
@@ -368,9 +381,9 @@ export default function SwipeCards({ userProfile, candidates, onLike, onPass, is
                         }
                       }
                     }}
-                    className="w-full text-left px-4 py-2.5 hover:bg-muted text-[10px] font-bold text-red-600 flex items-center gap-1.5 border-t border-muted"
+                    className="w-full text-left px-4 py-2.5 hover:bg-muted text-[11px] font-bold text-red-500 flex items-center gap-2 border-t border-border"
                   >
-                    🚫 Block User
+                    <X size={14} /> Block User
                   </button>
                 </div>
               )}
@@ -379,87 +392,109 @@ export default function SwipeCards({ userProfile, candidates, onLike, onPass, is
         </div>
 
         {/* Dynamic bottom info panel */}
-        <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent flex flex-col justify-end min-h-[40%] text-white space-y-4 z-20">
-          <div className="space-y-2">
-            <div className="flex items-baseline gap-3">
-              <h2 className="text-3xl font-black italic tracking-tighter leading-none">
+        <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col justify-end min-h-[42%] text-white space-y-3 z-20">
+          <div className="space-y-1.5">
+            <div className="flex items-baseline gap-2.5">
+              <h2 className="text-2xl md:text-3xl font-bold font-display tracking-tight leading-none text-white drop-shadow-sm">
                 {shouldBlur ? maskNameToInitials(activeCandidate.full_name) : (activeCandidate.full_name || 'Anonymous')}
               </h2>
               {showAge && activeCandidate.birth_date && (
-                <span className="text-xl font-bold opacity-80 text-amber-300">
+                <span className="text-lg md:text-xl font-bold text-beteseb-gold">
                   {new Date().getFullYear() - new Date(activeCandidate.birth_date).getFullYear()}
                 </span>
               )}
             </div>
             
-            <div className="flex flex-wrap gap-2 pt-1">
+            <div className="flex flex-wrap gap-2 pt-0.5">
               {showAbushakir && activeCandidate.star_sign && (
-                <span className="px-3.5 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-[9px] font-bold tracking-widest uppercase flex items-center gap-1.5 border border-white/5 text-slate-350">
-                  <Star size={10} className="fill-amber-400 text-amber-400" /> {activeCandidate.star_sign}
+                <span className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-semibold tracking-wider flex items-center gap-1.5 border border-white/10 text-white/90">
+                  <Star size={11} className="fill-beteseb-gold text-beteseb-gold" /> {activeCandidate.star_sign}
                 </span>
               )}
               {showCity && activeCandidate.location && (
-                <span className="px-3.5 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-[9px] font-bold tracking-widest uppercase flex items-center gap-1.5 border border-white/5 text-slate-355">
-                  <MapPin size={10} className="text-amber-400" /> {typeof activeCandidate.location === 'string' ? activeCandidate.location : activeCandidate.location?.city || 'Addis Ababa'}
+                <span className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-semibold tracking-wider flex items-center gap-1.5 border border-white/10 text-white/90">
+                  <MapPin size={11} className="text-beteseb-coral" /> {typeof activeCandidate.location === 'string' ? activeCandidate.location : activeCandidate.location?.city || 'Addis Ababa'}
                 </span>
               )}
             </div>
           </div>
 
-          <p className={`text-xs text-slate-300 italic leading-relaxed font-medium line-clamp-2 ${(!isPremium && !isCandidateVip) ? 'blur-sm select-none pointer-events-none' : ''}`}>
+          <p className={`text-xs text-white/80 leading-relaxed font-normal line-clamp-2 ${(!isPremium && !isCandidateVip) ? 'blur-sm select-none pointer-events-none' : ''}`}>
             &quot;{shouldBlur ? 'This VIP profile is in Ghost Mode.' : (activeCandidate.bio || 'Ready for a beautiful family journey.')}&quot;
           </p>
           {!isPremium && !isCandidateVip && (
-            <p className="text-[8px] font-black text-primary uppercase tracking-widest italic text-center leading-none">Upgrade Premium to Read Bio</p>
+            <p className="text-[9px] font-semibold text-beteseb-coral uppercase tracking-wider text-center leading-none">Upgrade Premium to Read Bio</p>
           )}
 
           {/* Action buttons inside the card for VIP candidates */}
           {isCandidateVip && (
-            <div className="flex items-center gap-2 pt-2">
+            <div className="flex items-center gap-2 pt-1">
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
                   triggerIcebreaker();
                 }}
-                className="flex-1 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 text-slate-950 font-black text-[9px] uppercase tracking-wider py-2.5 rounded-xl flex items-center justify-center gap-1.5 shadow-lg"
+                className="flex-1 bg-gradient-to-r from-beteseb-gold to-amber-500 hover:from-amber-500 hover:to-beteseb-gold text-beteseb-navy font-bold text-[10px] uppercase tracking-wider py-2.5 rounded-xl flex items-center justify-center gap-1.5 shadow-md transition-all active:scale-98"
               >
-                <Sparkles size={12} className="fill-slate-950" /> AI Icebreaker
+                <Sparkles size={12} className="fill-beteseb-navy text-beteseb-navy" /> AI Icebreaker
               </button>
-              <div className="px-3 py-2 bg-white/5 border border-white/10 text-amber-300 text-[8px] font-black uppercase tracking-wider rounded-xl">
-                🛡️ Elite Shimagle Queue
+              <div className="px-3 py-2 bg-beteseb-navy/70 border border-beteseb-gold/40 text-beteseb-gold text-[9px] font-bold uppercase tracking-wider rounded-xl flex items-center gap-1">
+                <ShieldCheck size={11} /> Elite Shimagle
               </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Controller Buttons below card */}
-      <div className="flex items-center justify-center gap-6 mt-8">
+      {/* Marriage-First Action Controller Buttons below card */}
+      <div className="w-full flex items-center justify-between gap-3 mt-6 px-2">
+        {/* Pass Button */}
         <button 
           onClick={() => triggerSwipe('left')}
           aria-label="Pass candidate"
-          className="w-16 h-16 rounded-full bg-white border border-gray-150 shadow-lg text-red-500 flex items-center justify-center hover:scale-115 active:scale-90 transition-all"
+          className="w-14 h-14 rounded-full bg-card border border-beteseb-mist/30 text-beteseb-mist hover:text-red-500 hover:border-red-400/40 hover:bg-red-50/10 shadow-md flex items-center justify-center transition-all duration-150 active:scale-95 shrink-0"
+          title="Pass"
         >
-          <X size={28} />
+          <X size={24} />
         </button>
         
+        {/* View Profile Button (Secondary Action) */}
+        <button 
+          onClick={() => {
+            if (onViewProfile) {
+              onViewProfile(activeCandidate);
+            } else {
+              triggerSwipe('right');
+            }
+          }}
+          className="btn-secondary flex-1 py-3.5 text-xs tracking-wider"
+          title="View Full Profile"
+        >
+          <span>View Profile</span>
+        </button>
+
+        {/* Express Interest Button (Primary CTA) */}
+        <button 
+          onClick={() => triggerSwipe('right')}
+          aria-label="Express Interest"
+          className="btn-primary flex-1 py-3.5 text-xs tracking-wider shadow-lg shadow-beteseb-coral/25"
+          title="Express Interest"
+        >
+          <Heart size={16} className="fill-white" />
+          <span>Express Interest</span>
+        </button>
+
+        {/* Rewind Button (if available) */}
         {swipeHistory.length > 0 && (
           <button 
             onClick={handleRewind}
             aria-label="Rewind last swipe"
-            className="w-12 h-12 rounded-full bg-slate-900 border border-amber-400/40 text-amber-300 flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-md"
+            className="w-14 h-14 rounded-full bg-card border border-beteseb-gold/40 text-beteseb-gold hover:bg-beteseb-gold/10 shadow-md flex items-center justify-center transition-all duration-150 active:scale-95 shrink-0"
+            title="Rewind Last Swipe"
           >
             <Undo size={18} />
           </button>
         )}
-
-        <button 
-          onClick={() => triggerSwipe('right')}
-          aria-label="Like candidate"
-          className="w-20 h-20 rounded-full bg-primary text-white shadow-xl shadow-primary/20 flex items-center justify-center hover:scale-115 active:scale-90 transition-all"
-        >
-          <Heart size={34} className="fill-white" />
-        </button>
       </div>
 
       {/* Glassmorphic Icebreaker Opener Modal */}

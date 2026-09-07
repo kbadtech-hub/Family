@@ -44,7 +44,9 @@ import {
   Award,
   Loader2,
   Wallet,
-  Bell
+  Bell,
+  LayoutGrid,
+  Layers
 } from 'lucide-react';
 import NotificationDrawerModal from '@/components/NotificationDrawerModal';
 import { fetchUserNotifications } from '@/lib/notifications';
@@ -1863,7 +1865,7 @@ function DashboardContent() {
                     )}
                     className="flex-1 py-2 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-wider shadow-md hover:bg-primary/90 active:scale-95 transition-all"
                   >
-                    {locale === 'am' ? 'ተቀበል' : 'Accept'}
+                    {locale === 'am' ? 'ተቀበል ' : 'Accept'}
                   </button>
                   <button
                     onClick={() => handleDeclineNotification(activeRequestNotification.friendshipId)}
@@ -1900,25 +1902,12 @@ function DashboardContent() {
 
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
-            {/* Section heading */}
+            {/* Section heading & View Mode Toggle */}
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-black uppercase tracking-tighter text-[#0F172A] flex items-center gap-2">
                 <Heart size={20} className="text-primary fill-primary/20" />
                 {t('matching.title')}
               </h2>
-              {profile && (
-                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                  {getCandidatesLabel(matches.filter(m => !dislikedIds.has(m.id)).length, locale)}
-                </span>
-              )}
-            </div>
-
-            {/* Vertical DashboardCard feed */}
-            <div className="flex flex-col items-center gap-8 pb-6">
-              {matches.length === 0 ? (
-                <div className="w-full max-w-md my-12 p-8 empty-state-cinematic space-y-4">
-                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-sm">
-                    <Sparkles size={28} />
                   </div>
                   <div className="space-y-1">
                     <h3 className="text-lg font-bold text-foreground font-display">
