@@ -331,13 +331,13 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Halls & Catering */}
-        <div className="bg-white p-8 md:p-10 rounded-[3rem] border border-muted shadow-sm space-y-6">
+        <div className="bg-white dark:bg-card p-8 md:p-10 rounded-[3rem] border border-muted dark:border-white/10 shadow-sm space-y-6">
           <div className="flex items-center gap-3">
             <div className="p-3.5 bg-primary/10 text-primary rounded-2xl">
               <UtensilsCrossed size={24} />
             </div>
             <div>
-              <h3 className="font-black text-accent italic uppercase tracking-tighter text-lg">
+              <h3 className="font-black text-accent dark:text-white italic uppercase tracking-tighter text-lg">
                 {t('hallCatering')}
               </h3>
               <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Select Category Package</p>
@@ -348,7 +348,7 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
               <label 
                 key={pkg.id} 
                 className={`block p-5 rounded-[2rem] border transition-all cursor-pointer relative ${
-                  selectedHall === pkg.id ? 'bg-primary/5 border-primary/45 ring-1 ring-primary/20' : 'bg-muted/10 border-muted hover:bg-muted/30'
+                  selectedHall === pkg.id ? 'bg-primary/5 border-primary/45 ring-1 ring-primary/20' : 'bg-muted/10 dark:bg-white/5 border-muted dark:border-white/10 hover:bg-muted/30 dark:hover:bg-white/10'
                 }`}
               >
                 <input 
@@ -359,11 +359,11 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
                   onChange={() => setSelectedHall(pkg.id)}
                   className="absolute top-5 right-5 accent-primary" 
                 />
-                <h4 className="font-bold text-sm text-accent pr-6">{getPkgName(pkg)}</h4>
+                <h4 className="font-bold text-sm text-accent dark:text-white pr-6">{getPkgName(pkg)}</h4>
                 <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wider">
                   {currency === 'USD' ? '$' : 'Br'} {currency === 'USD' ? pkg.priceUsd.toLocaleString() : pkg.priceEtb.toLocaleString()}
                 </p>
-                <p className="text-[10px] text-gray-500 font-medium mt-3 leading-relaxed">
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-3 leading-relaxed">
                   {getPkgDesc(pkg)}
                 </p>
               </label>
@@ -372,13 +372,13 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
         </div>
 
         {/* Photo & Video */}
-        <div className="bg-white p-8 md:p-10 rounded-[3rem] border border-muted shadow-sm space-y-6">
+        <div className="bg-white dark:bg-card p-8 md:p-10 rounded-[3rem] border border-muted dark:border-white/10 shadow-sm space-y-6">
           <div className="flex items-center gap-3">
             <div className="p-3.5 bg-primary/10 text-primary rounded-2xl">
               <Camera size={24} />
             </div>
             <div>
-              <h3 className="font-black text-accent italic uppercase tracking-tighter text-lg">
+              <h3 className="font-black text-accent dark:text-white italic uppercase tracking-tighter text-lg">
                 {t('photoCinema')}
               </h3>
               <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Select Camera Package</p>
@@ -389,7 +389,7 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
               <label 
                 key={pkg.id} 
                 className={`block p-5 rounded-[2rem] border transition-all cursor-pointer relative ${
-                  selectedPhoto === pkg.id ? 'bg-primary/5 border-primary/45 ring-1 ring-primary/20' : 'bg-muted/10 border-muted hover:bg-muted/30'
+                  selectedPhoto === pkg.id ? 'bg-primary/5 border-primary/45 ring-1 ring-primary/20' : 'bg-muted/10 dark:bg-white/5 border-muted dark:border-white/10 hover:bg-muted/30 dark:hover:bg-white/10'
                 }`}
               >
                 <input 
@@ -400,11 +400,11 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
                   onChange={() => setSelectedPhoto(pkg.id)}
                   className="absolute top-5 right-5 accent-primary" 
                 />
-                <h4 className="font-bold text-sm text-accent pr-6">{getPkgName(pkg)}</h4>
+                <h4 className="font-bold text-sm text-accent dark:text-white pr-6">{getPkgName(pkg)}</h4>
                 <p className="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-wider">
                   {currency === 'USD' ? '$' : 'Br'} {currency === 'USD' ? pkg.priceUsd.toLocaleString() : pkg.priceEtb.toLocaleString()}
                 </p>
-                <p className="text-[10px] text-gray-500 font-medium mt-3 leading-relaxed">
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-3 leading-relaxed">
                   {getPkgDesc(pkg)}
                 </p>
               </label>
@@ -413,13 +413,13 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
         </div>
 
         {/* Beauty & Attire */}
-        <div className="bg-white p-8 md:p-10 rounded-[3rem] border border-muted shadow-sm space-y-6">
+        <div className="bg-white dark:bg-card p-8 md:p-10 rounded-[3rem] border border-muted dark:border-white/10 shadow-sm space-y-6">
           <div className="flex items-center gap-3">
             <div className="p-3.5 bg-primary/10 text-primary rounded-2xl">
               <Crown size={24} />
             </div>
             <div>
-              <h3 className="font-black text-accent italic uppercase tracking-tighter text-lg">
+              <h3 className="font-black text-accent dark:text-white italic uppercase tracking-tighter text-lg">
                 {t('beautyAttire')}
               </h3>
               <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Select Styling Package</p>
@@ -459,23 +459,23 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         
         {/* Dynamic Cost Estimator summary */}
-        <div className="bg-[#FAF8F5] p-10 rounded-[3rem] border border-border/80 lg:col-span-1 space-y-6">
+        <div className="bg-[#FAF8F5] dark:bg-card p-10 rounded-[3rem] border border-border/80 dark:border-white/10 lg:col-span-1 space-y-6">
           <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-wider">
             <Calculator size={14} /> {t('costEstimation')}
           </div>
           
-          <div className="space-y-3 border-b border-border pb-6 text-xs font-semibold text-gray-600">
+          <div className="space-y-3 border-b border-border dark:border-white/10 pb-6 text-xs font-semibold text-gray-600 dark:text-gray-300">
             <div className="flex justify-between">
               <span>{t('venueFood')}</span>
-              <span className="text-accent">{currency === 'USD' ? '$' : 'Br'} {hallPrice.toLocaleString()}</span>
+              <span className="text-accent dark:text-white">{currency === 'USD' ? '$' : 'Br'} {hallPrice.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span>{t('photosVideo')}</span>
-              <span className="text-accent">{currency === 'USD' ? '$' : 'Br'} {photoPrice.toLocaleString()}</span>
+              <span className="text-accent dark:text-white">{currency === 'USD' ? '$' : 'Br'} {photoPrice.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span>{t('beautyClothes')}</span>
-              <span className="text-accent">{currency === 'USD' ? '$' : 'Br'} {beautyPrice.toLocaleString()}</span>
+              <span className="text-accent dark:text-white">{currency === 'USD' ? '$' : 'Br'} {beautyPrice.toLocaleString()}</span>
             </div>
           </div>
           
@@ -488,9 +488,9 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
         </div>
 
         {/* Inquiry Form */}
-        <div className="bg-white p-10 md:p-12 rounded-[3rem] border border-muted lg:col-span-2 space-y-8">
+        <div className="bg-white dark:bg-card p-10 md:p-12 rounded-[3rem] border border-muted dark:border-white/10 lg:col-span-2 space-y-8">
           <div>
-            <h3 className="text-2xl font-black text-accent italic tracking-tighter">{t('inquireBook')}</h3>
+            <h3 className="text-2xl font-black text-accent dark:text-white italic tracking-tighter">{t('inquireBook')}</h3>
             <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mt-1">{locale === 'am' ? 'ከየሰርግ ዲዛይነሮቻችን ጋር ነፃ የምክክር መጠይቅ' : locale === 'ti' ? 'ምስ ዲዛይነራት መርዓና ነጻ ናይ ምኽሪ ሕቶ' : locale === 'om' ? 'Mariidha bilisaa dizaayinaroota cidhaa keenya wajjin' : locale === 'so' ? 'Weydiinta la-tashiga bilaashka ah ee naqshadeeyayaasha arooskayaga' : locale === 'ar' ? 'طلب استشارة مجانية مع مصممي حفلات الزفاف لدينا' : 'Free consultation inquiry with our wedding designers'}</p>
           </div>
           
@@ -503,7 +503,7 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
                   required
                   value={weddingDate}
                   onChange={(e) => setWeddingDate(e.target.value)}
-                  className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none focus:ring-1 focus:ring-primary/20"
+                  className="w-full bg-muted/30 dark:bg-white/5 border border-muted dark:border-white/10 rounded-xl p-4 text-xs focus:outline-none focus:ring-1 focus:ring-primary/20 dark:text-white"
                 />
               </label>
 
@@ -512,7 +512,7 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
                 <select
                   value={selectedSlot}
                   onChange={(e) => setSelectedSlot(e.target.value)}
-                  className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none focus:ring-1 focus:ring-primary/20 text-accent font-semibold"
+                  className="w-full bg-muted/30 dark:bg-card border border-muted dark:border-white/10 rounded-xl p-4 text-xs focus:outline-none focus:ring-1 focus:ring-primary/20 text-accent dark:text-white font-semibold"
                 >
                   <option value="10:00 AM">10:00 AM</option>
                   <option value="11:30 AM">11:30 AM</option>
@@ -530,7 +530,7 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
                   max={2000}
                   value={estimatedGuests}
                   onChange={(e) => setEstimatedGuests(parseInt(e.target.value))}
-                  className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none focus:ring-1 focus:ring-primary/20"
+                  className="w-full bg-muted/30 dark:bg-white/5 border border-muted dark:border-white/10 rounded-xl p-4 text-xs focus:outline-none focus:ring-1 focus:ring-primary/20 dark:text-white"
                 />
               </label>
             </div>
@@ -542,7 +542,7 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
                 placeholder={t('customRequirements')}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full bg-muted/30 border border-muted rounded-xl p-4 text-xs focus:outline-none focus:ring-1 focus:ring-primary/20 font-medium"
+                className="w-full bg-muted/30 dark:bg-white/5 border border-muted dark:border-white/10 rounded-xl p-4 text-xs focus:outline-none focus:ring-1 focus:ring-primary/20 font-medium dark:text-white"
               />
             </label>
 
@@ -566,7 +566,7 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
       {/* Verified Vendors Grid Section (Step 4) */}
       <div className="space-y-6">
         <div>
-          <h3 className="text-xl font-black text-accent tracking-tighter uppercase italic flex items-center gap-2">
+          <h3 className="text-xl font-black text-accent dark:text-white tracking-tighter uppercase italic flex items-center gap-2">
             <Sparkles className="text-primary fill-primary/10" size={20} />
             {t('verifiedVendors')}
           </h3>
@@ -577,18 +577,18 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {vendors.map((vendor) => (
-            <div key={vendor.id} className="bg-white rounded-[2rem] p-6 border border-muted shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+            <div key={vendor.id} className="bg-white dark:bg-card rounded-[2rem] p-6 border border-muted dark:border-white/10 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
               <div>
                 <span className="inline-block text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg bg-primary/10 text-primary mb-2">
                   {vendor.category}
                 </span>
-                <h4 className="font-black text-sm text-accent">{vendor.name}</h4>
+                <h4 className="font-black text-sm text-accent dark:text-white">{vendor.name}</h4>
                 <p className="text-gray-400 text-[10px] font-semibold mt-1 flex items-center gap-1">
                   <MapPin size={11} className="text-primary shrink-0" />
                   <span>{vendor.location}</span>
                 </p>
               </div>
-              <div className="flex justify-between items-center pt-3 border-t border-muted/50 text-[10px] font-bold text-gray-500">
+              <div className="flex justify-between items-center pt-3 border-t border-muted/50 dark:border-white/5 text-[10px] font-bold text-gray-500">
                 <span className="flex items-center gap-1">
                   <Phone size={11} className="text-primary shrink-0" />
                   <span>{vendor.contact}</span>
@@ -606,7 +606,7 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
       {/* Existing Bookings & Counselor Inquiries Section (Step 5) */}
       <div className="space-y-6 pt-6">
         <div>
-          <h3 className="text-xl font-black text-accent tracking-tighter uppercase italic flex items-center gap-2">
+          <h3 className="text-xl font-black text-accent dark:text-white tracking-tighter uppercase italic flex items-center gap-2">
             <Calendar className="text-primary fill-primary/10" size={20} />
             {t('bookings')}
           </h3>
@@ -615,13 +615,13 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
           </p>
         </div>
 
-        <div className="bg-white rounded-[2.5rem] border border-muted p-8 shadow-sm">
+        <div className="bg-white dark:bg-card rounded-[2.5rem] border border-muted dark:border-white/10 p-8 shadow-sm">
           {bookings.length === 0 ? (
             <p className="text-center text-xs text-gray-400 font-bold uppercase tracking-wider py-6">
               {t('noBookings')}
             </p>
           ) : (
-            <div className="divide-y divide-muted/50">
+            <div className="divide-y divide-muted/50 dark:divide-white/5">
               {bookings.map((booking) => {
                 let details: any = {};
                 try {
@@ -631,7 +631,7 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
                 return (
                   <div key={booking.id} className="py-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 first:pt-0 last:pb-0">
                     <div className="space-y-1">
-                      <h4 className="font-bold text-sm text-accent">{booking.expert_name}</h4>
+                      <h4 className="font-bold text-sm text-accent dark:text-white">{booking.expert_name}</h4>
                       <p className="text-[10px] text-gray-400 font-medium flex items-center gap-2">
                         <span className="inline-flex items-center gap-1"><Calendar size={11} className="text-primary" /> {booking.scheduled_date}</span>
                         <span>•</span>
