@@ -466,21 +466,24 @@ export default function GiftsView({ locale }: { locale: string }) {
       <div className="flex bg-white rounded-3xl p-1.5 border border-muted shadow-sm max-w-md">
          <button 
            onClick={() => setActiveSubTab('received')}
-           className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all ${activeSubTab === 'received' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-accent'}`}
+           className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center gap-1.5 ${activeSubTab === 'received' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-accent'}`}
          >
-            📥 {locale === 'am' ? 'የደረሱኝ ስጦታዎች' : 'Received'}
+            <ArrowDownLeft size={13} className="shrink-0" />
+            <span>{locale === 'am' ? 'የደረሱኝ ስጦታዎች' : 'Received'}</span>
          </button>
          <button 
            onClick={() => setActiveSubTab('sent')}
-           className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all ${activeSubTab === 'sent' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-accent'}`}
+           className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center gap-1.5 ${activeSubTab === 'sent' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-accent'}`}
          >
-            📤 {locale === 'am' ? 'የላክኳቸው' : 'Sent'}
+            <ArrowUpRight size={13} className="shrink-0" />
+            <span>{locale === 'am' ? 'የላክኳቸው' : 'Sent'}</span>
          </button>
          <button 
            onClick={() => setActiveSubTab('topup')}
-           className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all ${activeSubTab === 'topup' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-accent'}`}
+           className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-2xl transition-all flex items-center justify-center gap-1.5 ${activeSubTab === 'topup' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-accent'}`}
          >
-            🪙 {locale === 'am' ? 'የሳንቲም ጥቅሎች' : 'Packs'}
+            <Coins size={13} className="shrink-0" />
+            <span>{locale === 'am' ? 'የሳንቲም ጥቅሎች' : 'Packs'}</span>
          </button>
       </div>
 

@@ -117,7 +117,7 @@ export default function CommunityHubPage() {
       <section className="py-24 bg-accent text-white text-center">
         <div className="max-w-3xl mx-auto px-6">
            <h2 className="text-4xl font-bold mb-8 tracking-tight">{t('cta')}</h2>
-           <Link href="/signup" className="btn-primary bg-white text-accent hover:bg-white/90">
+           <Link href="/signup" className="btn-secondary px-10 py-4 font-bold text-sm uppercase tracking-wider inline-block">
              {locale === 'am' ? 'አባል ይሁኑ' : 'Become a Member'}
            </Link>
         </div>

@@ -15,7 +15,11 @@ import {
   Check, 
   Calendar,
   Layers,
-  ArrowRight
+  ArrowRight,
+  MapPin,
+  Phone,
+  Star,
+  Clock
 } from 'lucide-react';
 
 interface PlannerPackage {
@@ -579,11 +583,20 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
                   {vendor.category}
                 </span>
                 <h4 className="font-black text-sm text-accent">{vendor.name}</h4>
-                <p className="text-gray-400 text-[10px] font-semibold mt-1">📍 {vendor.location}</p>
+                <p className="text-gray-400 text-[10px] font-semibold mt-1 flex items-center gap-1">
+                  <MapPin size={11} className="text-primary shrink-0" />
+                  <span>{vendor.location}</span>
+                </p>
               </div>
               <div className="flex justify-between items-center pt-3 border-t border-muted/50 text-[10px] font-bold text-gray-500">
-                <span>📞 {vendor.contact}</span>
-                <span className="text-yellow-600">★ {vendor.rating}</span>
+                <span className="flex items-center gap-1">
+                  <Phone size={11} className="text-primary shrink-0" />
+                  <span>{vendor.contact}</span>
+                </span>
+                <span className="flex items-center gap-1 text-yellow-600">
+                  <Star size={11} className="fill-yellow-500 text-yellow-500 shrink-0" />
+                  <span>{vendor.rating}</span>
+                </span>
               </div>
             </div>
           ))}
@@ -619,8 +632,10 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
                   <div key={booking.id} className="py-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 first:pt-0 last:pb-0">
                     <div className="space-y-1">
                       <h4 className="font-bold text-sm text-accent">{booking.expert_name}</h4>
-                      <p className="text-[10px] text-gray-400 font-medium">
-                        📅 {booking.scheduled_date} | ⏰ {booking.scheduled_time}
+                      <p className="text-[10px] text-gray-400 font-medium flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1"><Calendar size={11} className="text-primary" /> {booking.scheduled_date}</span>
+                        <span>•</span>
+                        <span className="inline-flex items-center gap-1"><Clock size={11} className="text-primary" /> {booking.scheduled_time}</span>
                       </p>
                       {details.guests && (
                         <p className="text-[10px] text-slate-500 font-semibold">
@@ -634,9 +649,10 @@ export default function WeddingPlannerView({ currency = 'ETB' }: { currency?: 'E
                            href={getGoogleCalendarLink(booking)}
                            target="_blank"
                            rel="noopener noreferrer"
-                           className="px-3 py-1 bg-primary/10 hover:bg-primary/20 text-primary text-[9px] font-black rounded-lg border border-primary/20 uppercase tracking-widest decoration-transparent transition-all"
+                           className="px-3 py-1 bg-primary/10 hover:bg-primary/20 text-primary text-[9px] font-black rounded-lg border border-primary/20 uppercase tracking-widest decoration-transparent transition-all inline-flex items-center gap-1.5"
                          >
-                           🗓️ Sync Calendar
+                           <Calendar size={11} />
+                           <span>Sync Calendar</span>
                          </a>
                        )}
                        <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider ${

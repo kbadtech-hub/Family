@@ -50,10 +50,19 @@ export default function ContactPage() {
       icon: Phone, 
       label: t('phone'), 
       value: (
-        <div className="space-y-1.5 text-sm">
-          <p>🇬🇧 +44 7347 663254</p>
-          <p>🇸🇦 +966 50 155 8268</p>
-          <p>🇪🇹 +251 946 414018</p>
+        <div className="space-y-2 text-sm font-medium">
+          <p className="flex items-center gap-2">
+            <span className="px-2 py-0.5 rounded-md bg-muted text-[10px] font-black uppercase text-gray-500 border border-border">UK</span>
+            <span>+44 7347 663254</span>
+          </p>
+          <p className="flex items-center gap-2">
+            <span className="px-2 py-0.5 rounded-md bg-muted text-[10px] font-black uppercase text-gray-500 border border-border">KSA</span>
+            <span>+966 50 155 8268</span>
+          </p>
+          <p className="flex items-center gap-2">
+            <span className="px-2 py-0.5 rounded-md bg-muted text-[10px] font-black uppercase text-gray-500 border border-border">ET</span>
+            <span>+251 946 414018</span>
+          </p>
         </div>
       ),
       href: '#' 

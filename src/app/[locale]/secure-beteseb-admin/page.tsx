@@ -67,7 +67,8 @@ import {
   Star,
   Receipt,
   Award,
-  Gem
+  Gem,
+  AlertTriangle
 } from 'lucide-react';
 
 interface UserProfile {
@@ -2055,8 +2056,17 @@ export default function AdminPortal() {
 
             <div className="flex-1 overflow-y-auto space-y-3 pr-1">
               {realtimeAlerts.length === 0 ? (
-                <div className="text-center py-20 text-slate-400 text-xs italic">
-                  ምንም አዲስ የቀጥታ ማሳወቂያ የለም (No recent activity)
+                <div className="text-center py-20 px-4 space-y-3">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-[11px] font-semibold text-primary">
+                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                    <span>የቀጥታ ክትትል ዝግጁ ነው • Live monitoring active</span>
+                  </div>
+                  <p className="text-slate-400 text-xs font-medium max-w-xs mx-auto">
+                    ምንም አዲስ የቀጥታ ማሳወቂያ የለም። አዳዲስ ምዝገባዎች እና ክፍያዎች ሲከናወኑ እዚህ በቀጥታ ይታያሉ።
+                  </p>
+                  <p className="text-[11px] text-slate-400 italic">
+                    (No recent activity. New registrations, payments, and verifications will appear here in real time.)
+                  </p>
                 </div>
               ) : (
                 realtimeAlerts.map(alert => (
@@ -4015,9 +4025,10 @@ export default function AdminPortal() {
                       </div>
                    </div>
                    
-                   <p className="text-xs text-amber-600 bg-amber-50 p-4 rounded-2xl font-medium border border-amber-100">
-                      ⚠️ **Warning**: Once updated, you must use the new key for all future logins. There is no recovery email for the system access key.
-                   </p>
+                   <p className="text-xs text-amber-600 bg-amber-50 p-4 rounded-2xl font-medium border border-amber-100 flex items-start gap-2">
+                       <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                       <span><strong>Warning:</strong> Once updated, you must use the new key for all future logins. There is no recovery email for the system access key.</span>
+                    </p>
 
                    <button 
                      onClick={handleUpdateAdminPassword}

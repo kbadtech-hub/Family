@@ -17,7 +17,8 @@ import {
   Globe, 
   Eye, 
   EyeOff, 
-  ArrowLeft 
+  ArrowLeft,
+  Clock 
 } from 'lucide-react';
 import { COUNTRIES } from '@/lib/countries';
 
@@ -281,7 +282,7 @@ function LoginContent() {
             {/* Coming Soon Toast */}
             {toast.show && (
               <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3 text-amber-800 text-xs animate-in fade-in slide-in-from-top-2">
-                <span className="text-lg">⏳</span>
+                <Clock size={18} className="text-amber-700 shrink-0 mt-0.5" />
                 <p className="font-medium leading-relaxed">{toast.message}</p>
               </div>
             )}
@@ -375,7 +376,7 @@ function LoginContent() {
               /* ── Phone Verification Gate (for Email/Social users without phone) ── */
               <form onSubmit={handleVerifyGatePhone} className="space-y-5">
                 <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-center">
-                  <span className="text-2xl block mb-2">🔐</span>
+                  <Lock size={26} className="text-amber-700 mx-auto mb-2" />
                   <p className="text-amber-800 text-xs font-bold">
                     {locale === 'am'
                       ? 'ደህንነትዎን ለማረጋገጥ ስልክ ቁጥርዎን ያስገቡ'
