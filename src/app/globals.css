@@ -573,3 +573,17 @@ html[dir="rtl"] .justify-start {
 html[dir="rtl"] .justify-end {
   justify-content: flex-start !important;
 }
+
+/* ── Accessibility & Performance: prefers-reduced-motion Fallback ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+    transform: none !important;
+  }
+}
+
