@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Heart, X, UserPlus, Gift, MoreVertical, Sparkles, MapPin, Star, EyeOff } from 'lucide-react';
+import { Heart, X, UserPlus, Gift, MoreVertical, Sparkles, MapPin, Star, EyeOff, Crown, Gem, Award, ShieldCheck } from 'lucide-react';
 import { calculateCompatibility } from '@/lib/compatibility';
 import { getUserTier } from '@/lib/tiers';
 import { supabase } from '@/lib/supabase';
@@ -85,18 +85,18 @@ export default function DashboardCard({
   const getTierLabel = (tier: string) => {
     switch (tier) {
       case 'vip':
-        return { label: 'VIP Label', color: 'bg-amber-500/20 text-amber-200 border-amber-500/30', emoji: '👑' };
+        return { label: 'VIP', color: 'bg-amber-500/20 text-amber-200 border-amber-500/30', icon: Crown };
       case 'diamond':
-        return { label: 'Diamond Label', color: 'bg-cyan-500/20 text-cyan-200 border-cyan-500/30', emoji: '💎' };
+        return { label: 'Diamond', color: 'bg-cyan-500/20 text-cyan-200 border-cyan-500/30', icon: Gem };
       case 'platinum':
-        return { label: 'Platinum Label', color: 'bg-indigo-500/20 text-indigo-200 border-indigo-500/30', emoji: '🌟' };
+        return { label: 'Platinum', color: 'bg-indigo-500/20 text-indigo-200 border-indigo-500/30', icon: Award };
       case 'gold':
-        return { label: 'Golden Label', color: 'bg-amber-500/20 text-amber-200 border-amber-500/30', emoji: '🥇' };
+        return { label: 'Gold', color: 'bg-amber-500/20 text-amber-200 border-amber-500/30', icon: Award };
       case 'silver':
-        return { label: 'Silver Label', color: 'bg-slate-400/20 text-slate-200 border-slate-400/30', emoji: '🥈' };
+        return { label: 'Silver', color: 'bg-slate-400/20 text-slate-200 border-slate-400/30', icon: ShieldCheck };
       case 'bronze':
       default:
-        return { label: 'Bronze Label', color: 'bg-orange-850/20 text-orange-200 border-orange-850/30', emoji: '🥉' };
+        return { label: 'Bronze', color: 'bg-orange-800/20 text-orange-200 border-orange-800/30', icon: ShieldCheck };
     }
   };
 
@@ -119,7 +119,7 @@ export default function DashboardCard({
   return (
     <div 
       onClick={() => onCardClick(candidate.id)}
-      className="w-full max-w-md mx-auto bg-accent rounded-[3rem] overflow-hidden shadow-2xl relative border border-white/10 group cursor-pointer aspect-[3/4.2] transition-transform duration-500 hover:scale-[1.01]"
+      className="w-full max-w-md mx-auto bg-accent rounded-[var(--radius-card)] overflow-hidden shadow-2xl relative border border-white/10 group cursor-pointer aspect-[3/4.2] transition-transform duration-500 hover:scale-[1.01] card-poster"
     >
       {/* Background Image with smooth transitions */}
       <div className="absolute inset-0 bg-accent">
@@ -143,13 +143,13 @@ export default function DashboardCard({
 
       {/* Royal Frame Overlay */}
       {candidate.completion_rate === 100 && candTier === 'diamond' && (
-        <div className={`absolute inset-0 border-8 pointer-events-none rounded-[3rem] z-10 ${
+        <div className={`absolute inset-0 border-8 pointer-events-none rounded-[var(--radius-card)] z-10 ${
           candidate.gender === 'Male' 
             ? 'border-amber-400/90 ring-4 ring-amber-300/50 ring-inset' 
             : 'border-pink-400/90 ring-4 ring-pink-300/50 ring-inset'
         }`}>
-          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 text-2xl drop-shadow-lg animate-bounce">
-            👑
+          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 drop-shadow-lg animate-bounce">
+            <Crown size={22} className="text-amber-400 fill-amber-300" />
           </div>
         </div>
       )}
@@ -169,7 +169,7 @@ export default function DashboardCard({
           </button>
           
           {showMenu && (
-            <div className="absolute right-0 mt-2 w-44 bg-white rounded-2xl shadow-2xl z-30 overflow-hidden border border-border">
+            <div className="absolute right-0 mt-2 w-44 bg-card rounded-2xl shadow-2xl z-30 overflow-hidden border border-border">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -187,10 +187,10 @@ export default function DashboardCard({
       </div>
 
       {/* Card Info Overlay */}
-      <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-accent/95 via-accent/60 to-transparent flex flex-col justify-end min-h-[40%] text-white space-y-4">
+      <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[var(--beteseb-navy)] via-[rgba(11,18,38,0.7)] to-transparent flex flex-col justify-end min-h-[42%] text-white space-y-4">
         <div className="space-y-1">
           <div className="flex items-baseline gap-2">
-            <h2 className="text-2xl font-black italic tracking-tighter leading-none">
+            <h2 className="text-2xl font-bold italic tracking-tighter leading-none font-display">
               {shouldBlur ? maskNameToInitials(candidate.full_name) : (candidate.full_name || 'Anonymous')}
             </h2>
             {showAge && age !== null && (
@@ -218,7 +218,7 @@ export default function DashboardCard({
             </span>
             {/* ── Tier badge — moved from top overlay ── */}
             <span className={`px-3 py-1 backdrop-blur-md rounded-full text-[8px] font-black tracking-widest uppercase flex items-center gap-1 border ${badge.color}`}>
-              <span className="text-[9px]">{badge.emoji}</span>
+              <badge.icon size={10} />
               <span>{badge.label}</span>
             </span>
           </div>
@@ -235,7 +235,7 @@ export default function DashboardCard({
           <button 
             onClick={() => onDislike(candidate.id)}
             aria-label="Pass candidate"
-            className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-white/20 active:scale-95 transition-all shadow-md"
+            className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-white/20 active:scale-[0.98] transition-all shadow-md"
           >
             <X size={20} className="text-red-400" />
           </button>
@@ -244,7 +244,7 @@ export default function DashboardCard({
           <button 
             onClick={() => onLike(candidate.id)}
             aria-label="Like candidate"
-            className="w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg"
+            className="w-14 h-14 rounded-full btn-primary !p-0 text-white flex items-center justify-center hover:scale-105 active:scale-[0.98] transition-all shadow-lg cursor-pointer"
           >
             <Heart size={24} className="fill-white" />
           </button>
@@ -255,7 +255,7 @@ export default function DashboardCard({
               onClick={() => onSendFriendRequest(candidate.id)}
               disabled={friendshipStatus === 'pending' || friendshipStatus === 'accepted'}
               aria-label="Send Friend Request"
-              className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-white/20 active:scale-95 transition-all shadow-md disabled:opacity-40 disabled:pointer-events-none"
+              className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-white/20 active:scale-[0.98] transition-all shadow-md disabled:opacity-40 disabled:pointer-events-none"
             >
               <UserPlus size={20} className="text-primary" />
             </button>

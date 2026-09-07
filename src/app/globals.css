@@ -123,24 +123,242 @@ p, span, div {
 }
 
 @layer components {
-  .btn-primary {
-    @apply bg-[var(--primary)] text-white px-10 py-4 rounded-full font-bold uppercase tracking-[0.15em] text-[10px] hover:shadow-2xl hover:-translate-y-0.5 transition-all active:scale-95;
+  /* ── Cinematic Primary Button ────────────────────────────────────────── */
+  .btn-primary,
+  button.btn-primary,
+  a.btn-primary {
+    background-image: linear-gradient(135deg, var(--beteseb-coral) 0%, var(--beteseb-coral-deep) 100%) !important;
+    color: #FFFFFF !important;
+    padding: 0.875rem 2rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.75rem;
+    box-shadow: 0 4px 14px 0 rgba(255, 107, 107, 0.39);
+    transition: all var(--duration-fast) var(--ease-cinematic);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+  }
+  .btn-primary:hover:not(:disabled),
+  button.btn-primary:hover:not(:disabled),
+  a.btn-primary:hover {
+    box-shadow: 0 6px 20px 0 rgba(255, 107, 107, 0.48);
+    transform: translateY(-1px);
+  }
+  .btn-primary:active:not(:disabled),
+  button.btn-primary:active:not(:disabled),
+  a.btn-primary:active {
+    transform: scale(0.98);
+  }
+  .btn-primary:disabled,
+  button.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none !important;
+    transform: none !important;
   }
   
-  .btn-secondary {
-    @apply bg-white text-accent border border-border px-10 py-4 rounded-full font-bold uppercase tracking-[0.15em] text-[10px] hover:bg-muted transition-all active:scale-95;
+  /* ── Cinematic Secondary Button ──────────────────────────────────────── */
+  .btn-secondary,
+  button.btn-secondary,
+  a.btn-secondary {
+    background-color: var(--beteseb-cream);
+    color: var(--beteseb-navy);
+    border: 1px solid var(--border);
+    padding: 0.875rem 2rem;
+    border-radius: 9999px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.75rem;
+    transition: all var(--duration-fast) var(--ease-cinematic);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+  }
+  .dark .btn-secondary,
+  .dark button.btn-secondary,
+  .dark a.btn-secondary {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #F8FAFC;
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+  .btn-secondary:hover:not(:disabled),
+  button.btn-secondary:hover:not(:disabled),
+  a.btn-secondary:hover {
+    background-color: var(--muted);
+    border-color: rgba(255, 107, 107, 0.35);
+    transform: translateY(-1px);
+  }
+  .btn-secondary:active:not(:disabled),
+  button.btn-secondary:active:not(:disabled),
+  a.btn-secondary:active {
+    transform: scale(0.98);
+  }
+  .btn-secondary:disabled,
+  button.btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
   }
 
+  /* ── Cinematic Cards ─────────────────────────────────────────────────── */
   .card-premium {
-    @apply bg-[var(--card)] text-[var(--card-foreground)] rounded-[2rem] md:rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[var(--border)] p-6 md:p-10 transition-all hover:shadow-[0_20px_40px_rgb(0,0,0,0.06)];
+    background-color: var(--card);
+    color: var(--card-foreground);
+    border-radius: var(--radius-card);
+    box-shadow: 0 8px 30px rgba(11, 18, 38, 0.04);
+    border: 1px solid rgba(139, 147, 167, 0.18);
+    padding: 1.5rem;
+    transition: all var(--duration-fast) var(--ease-cinematic);
+  }
+  .card-premium:hover {
+    box-shadow: var(--shadow-elevated);
+    border-color: rgba(139, 147, 167, 0.28);
   }
 
-  .input-premium {
-    @apply w-full bg-muted border-none rounded-2xl p-4 text-sm focus:ring-2 focus:ring-primary/20 transition-all font-medium text-accent outline-none;
+  /* Poster-style Profile & Match Cards */
+  .card-poster {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-card);
+    background-color: var(--beteseb-navy);
+    box-shadow: var(--shadow-elevated);
+    transition: all var(--duration-fast) var(--ease-cinematic);
+  }
+  .card-poster-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(11, 18, 38, 0.9) 0%, rgba(11, 18, 38, 0.45) 45%, rgba(11, 18, 38, 0.05) 75%, transparent 100%);
+    pointer-events: none;
+  }
+
+  /* Stat & Metric Cards (soft background, clean borders using --beteseb-mist at 20% opacity) */
+  .card-metric {
+    background-color: var(--card);
+    color: var(--card-foreground);
+    border-radius: var(--radius-card);
+    border: 1px solid rgba(139, 147, 167, 0.2);
+    padding: 1.5rem;
+    transition: all var(--duration-fast) var(--ease-cinematic);
+    box-shadow: 0 4px 20px -2px rgba(11, 18, 38, 0.03);
+  }
+  .card-metric:hover {
+    border-color: rgba(255, 107, 107, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px -4px rgba(11, 18, 38, 0.08);
+  }
+
+  /* ── Form Inputs (1.5px focus border using --beteseb-coral, smooth transition) ── */
+  .input-premium,
+  .input-cinematic {
+    width: 100%;
+    background-color: var(--muted);
+    border: 1.5px solid transparent;
+    border-radius: 1rem;
+    padding: 0.875rem 1.25rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--foreground);
+    outline: none;
+    transition: border-color var(--duration-fast) var(--ease-cinematic), box-shadow var(--duration-fast) var(--ease-cinematic), background-color var(--duration-fast) var(--ease-cinematic);
+  }
+  .input-premium:focus,
+  .input-cinematic:focus {
+    border-color: var(--beteseb-coral);
+    box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.18);
+    background-color: var(--card);
+  }
+
+  /* ── Modals & Sheets (Backdrop rgba(11, 18, 38, 0.6) with backdrop-blur-md) ── */
+  .modal-backdrop-cinematic {
+    background-color: rgba(11, 18, 38, 0.6) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+
+  .modal-content-cinematic {
+    border-radius: 1.75rem;
+    background-color: var(--card);
+    color: var(--card-foreground);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow-elevated);
+    animation: modalEnter var(--duration-fast) var(--ease-cinematic) forwards;
+  }
+
+  /* ── Visually Rich Empty States ───────────────────────────────────────── */
+  .empty-state-cinematic {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 3.5rem 1.5rem;
+    border-radius: var(--radius-card);
+    border: 1px dashed rgba(139, 147, 167, 0.3);
+    background-color: rgba(251, 247, 242, 0.5);
+  }
+  .dark .empty-state-cinematic {
+    background-color: rgba(21, 30, 58, 0.4);
+    border-color: rgba(139, 147, 167, 0.2);
   }
 
   .glass-effect {
     @apply backdrop-blur-md bg-white/70 border border-white/20;
+  }
+}
+
+/* ── Universal Button Active Micro-interaction ────────────────────────── */
+button:not(:disabled):active,
+[role="button"]:not([aria-disabled="true"]):active {
+  transform: scale(0.98);
+  transition: transform 50ms ease-out;
+}
+
+/* ── Primary Button Coral Gradient Auto-upgrade ───────────────────────── */
+button.bg-primary:not(.btn-primary),
+a.bg-primary:not(.btn-primary) {
+  background-image: linear-gradient(135deg, var(--beteseb-coral) 0%, var(--beteseb-coral-deep) 100%);
+  box-shadow: 0 4px 14px 0 rgba(255, 107, 107, 0.35);
+  transition: all var(--duration-fast) var(--ease-cinematic);
+}
+button.bg-primary:hover:not(:disabled),
+a.bg-primary:hover {
+  box-shadow: 0 6px 20px 0 rgba(255, 107, 107, 0.48);
+}
+
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button:not(:disabled):active,
+  [role="button"]:not([aria-disabled="true"]):active,
+  .btn-primary:active:not(:disabled),
+  .btn-secondary:active:not(:disabled),
+  button.bg-primary:active:not(:disabled) {
+    transform: none !important;
+  }
+  .modal-content-cinematic {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .card-metric:hover {
+    transform: none !important;
   }
 }
 

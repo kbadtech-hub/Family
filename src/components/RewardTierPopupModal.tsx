@@ -111,8 +111,8 @@ export default function RewardTierPopupModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="relative w-full max-w-md bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border border-amber-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-amber-500/10 text-center overflow-hidden">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 modal-backdrop-cinematic animate-in fade-in duration-150">
+      <div className="relative w-full max-w-md bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border border-amber-500/30 rounded-[var(--radius-card)] p-6 sm:p-8 shadow-2xl shadow-amber-500/10 text-center overflow-hidden modal-content-cinematic">
         {/* Decorative Background Rays & Glow */}
         <div className="absolute -top-24 -left-24 w-48 h-48 bg-amber-500/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
@@ -145,8 +145,9 @@ export default function RewardTierPopupModal({
         </div>
 
         {/* Title & Message */}
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-2 tracking-tight">
-          እንኳን ደስ አለዎት! 🎁
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-2 tracking-tight flex items-center justify-center gap-2">
+          <span>እንኳን ደስ አለዎት!</span>
+          <Sparkles className="w-6 h-6 text-amber-400 inline" />
         </h2>
         <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
           {config.descriptionAm}

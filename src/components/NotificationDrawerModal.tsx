@@ -119,7 +119,7 @@ export default function NotificationDrawerModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex justify-end bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[200] flex justify-end modal-backdrop-cinematic animate-in fade-in duration-150">
       <div 
         className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300 border-l border-gray-100"
         onClick={(e) => e.stopPropagation()}
@@ -181,9 +181,12 @@ export default function NotificationDrawerModal({
               Loading notifications...
             </div>
           ) : filteredNotifications.length === 0 ? (
-            <div className="py-16 text-center text-gray-400 space-y-3">
-              <Bell size={40} className="mx-auto opacity-20" />
-              <p className="text-sm font-bold">No notifications in this category</p>
+            <div className="empty-state-cinematic my-8 mx-2 space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-sm">
+                <Bell size={24} />
+              </div>
+              <p className="text-sm font-bold text-foreground">No notifications in this category</p>
+              <p className="text-xs text-gray-400 max-w-xs">You're all caught up with your updates and messages.</p>
             </div>
           ) : (
             filteredNotifications.map((n) => (

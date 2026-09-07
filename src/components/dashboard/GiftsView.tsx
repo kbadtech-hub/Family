@@ -488,10 +488,17 @@ export default function GiftsView({ locale }: { locale: string }) {
       {activeSubTab === 'received' && (
          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {receivedGifts.length === 0 ? (
-               <div className="col-span-full bg-white p-12 rounded-[2.5rem] border border-muted text-center space-y-4">
-                  <Gift className="text-gray-300 mx-auto" size={48} />
-                  <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
-                     {locale === 'am' ? 'ምንም የደረሶት ስጦታ የለም።' : 'No received gifts yet.'}
+               <div className="col-span-full empty-state-cinematic space-y-3 my-4">
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-sm">
+                     <Gift size={28} />
+                  </div>
+                  <h4 className="text-base font-bold text-foreground font-display">
+                     {locale === 'am' ? 'እስካሁን ምንም የደረሶት ስጦታ የለም' : 'No received gifts yet'}
+                  </h4>
+                  <p className="text-xs text-gray-400 max-w-sm leading-relaxed">
+                     {locale === 'am'
+                        ? 'ከሌሎች አባላት የሚላኩ ስጦታዎች በዚህ ገጽ ላይ ይታያሉ። የእርስዎን መገለጫ በማሟላት የበለጠ ተደራሽ ይሁኑ።'
+                        : 'Gifts sent to you from admirers and matches will appear here. Keep your profile updated and active.'}
                   </p>
                </div>
             ) : (
@@ -589,10 +596,17 @@ export default function GiftsView({ locale }: { locale: string }) {
       {activeSubTab === 'sent' && (
          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {sentGifts.length === 0 ? (
-               <div className="col-span-full bg-white p-12 rounded-[2.5rem] border border-muted text-center space-y-4">
-                  <Gift className="text-gray-300 mx-auto" size={48} />
-                  <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
-                     {locale === 'am' ? 'ምንም የላኩት ስጦታ የለም።' : 'No sent gifts yet.'}
+               <div className="col-span-full empty-state-cinematic space-y-3 my-4">
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-sm">
+                     <Gift size={28} />
+                  </div>
+                  <h4 className="text-base font-bold text-foreground font-display">
+                     {locale === 'am' ? 'እስካሁን ምንም የላኩት ስጦታ የለም' : 'No sent gifts yet'}
+                  </h4>
+                  <p className="text-xs text-gray-400 max-w-sm leading-relaxed">
+                     {locale === 'am'
+                        ? 'ለወደዷቸው እጩዎች ባህላዊ ወይም ልዩ ስጦታዎችን በመላክ ፍላጎትዎን ይግለጹ።'
+                        : 'Express your genuine intentions by sending cultural and virtual gifts to candidates you like.'}
                   </p>
                </div>
             ) : (

@@ -1916,8 +1916,26 @@ function DashboardContent() {
             {/* Vertical DashboardCard feed */}
             <div className="flex flex-col items-center gap-8 pb-6">
               {matches.length === 0 ? (
-                <div className="py-24 text-center text-gray-400 font-bold uppercase tracking-widest text-[10px]">
-                  {t('searching')}
+                <div className="w-full max-w-md my-12 p-8 empty-state-cinematic space-y-4">
+                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-sm">
+                    <Sparkles size={28} />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-bold text-foreground font-display">
+                      {locale === 'am' ? 'አዳዲስ የሚስማሙ አባላትን በማፈላለግ ላይ...' : 'Finding compatible matches...'}
+                    </h3>
+                    <p className="text-xs text-gray-400 max-w-xs leading-relaxed">
+                      {locale === 'am'
+                        ? 'የእርስዎን ምርጫዎች የሚያሟሉ አዳዲስ እጩዎችን እያሰባሰብን ነው። እባክዎ ጥቂት ቆይተው እንደገና ይመልከቱ።'
+                        : "We're curating top verified candidates matching your preferences. Check back shortly or refresh."}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="btn-secondary text-xs mt-2"
+                  >
+                    <RefreshCw size={14} /> {locale === 'am' ? 'እንደገና ጫን' : 'Refresh Suggestions'}
+                  </button>
                 </div>
               ) : (
                 matches

@@ -297,8 +297,8 @@ export default function GiftModal({ recipientId, recipientName, locale, onClose,
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-accent/60 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="bg-white w-full max-w-xl rounded-[2.5rem] overflow-hidden shadow-2xl border border-primary/10 flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop-cinematic animate-in fade-in duration-150">
+      <div className="bg-card text-card-foreground w-full max-w-xl rounded-[var(--radius-card)] overflow-hidden shadow-2xl border border-primary/20 flex flex-col max-h-[90vh] modal-content-cinematic">
         
         {/* Header */}
         <div className="p-6 border-b border-muted flex justify-between items-center bg-accent text-white">
