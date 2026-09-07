@@ -1865,7 +1865,7 @@ function DashboardContent() {
                     )}
                     className="flex-1 py-2 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-wider shadow-md hover:bg-primary/90 active:scale-95 transition-all"
                   >
-                    {locale === 'am' ? 'ተቀበል ' : 'Accept'}
+                    {locale === 'am' ? 'ተቀበል' : 'Accept'}
                   </button>
                   <button
                     onClick={() => handleDeclineNotification(activeRequestNotification.friendshipId)}
@@ -1908,50 +1908,110 @@ function DashboardContent() {
                 <Heart size={20} className="text-primary fill-primary/20" />
                 {t('matching.title')}
               </h2>
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="text-lg font-bold text-foreground font-display">
-                      {locale === 'am' ? 'አዳዲስ የሚስማሙ አባላትን በማፈላለግ ላይ...' : 'Finding compatible matches...'}
-                    </h3>
-                    <p className="text-xs text-gray-400 max-w-xs leading-relaxed">
-                      {locale === 'am'
-                        ? 'የእርስዎን ምርጫዎች የሚያሟሉ አዳዲስ እጩዎችን እያሰባሰብን ነው። እባክዎ ጥቂት ቆይተው እንደገና ይመልከቱ።'
-                        : "We're curating top verified candidates matching your preferences. Check back shortly or refresh."}
-                    </p>
-                  </div>
+              <div className="flex items-center gap-3">
+                {/* View Mode Switcher (Feed vs Stack) */}
+                <div className="flex items-center bg-gray-100 p-0.5 rounded-xl border border-gray-200/80 shadow-xs">
                   <button
-                    onClick={() => window.location.reload()}
-                    className="btn-secondary text-xs mt-2"
+                    type="button"
+                    onClick={() => setMatchingView('grid')}
+                    className={`p-1.5 rounded-lg transition-all flex items-center gap-1 text-xs font-semibold ${
+                      matchingView === 'grid'
+                        ? 'bg-white text-primary shadow-xs'
+                        : 'text-gray-400 hover:text-gray-600'
+                    }`}
+                    title={locale === 'am' ? 'ዝርዝር እይታ' : 'Feed View'}
+                    aria-label={locale === 'am' ? 'ዝርዝር እይታ' : 'Feed View'}
                   >
-                    <RefreshCw size={14} /> {locale === 'am' ? 'እንደገና ጫን' : 'Refresh Suggestions'}
+                    <LayoutGrid size={15} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMatchingView('swipe')}
+                    className={`p-1.5 rounded-lg transition-all flex items-center gap-1 text-xs font-semibold ${
+                      matchingView === 'swipe'
+                        ? 'bg-white text-primary shadow-xs'
+                        : 'text-gray-400 hover:text-gray-600'
+                    }`}
+                    title={locale === 'am' ? 'ካርድ እይታ' : 'Card Stack View'}
+                    aria-label={locale === 'am' ? 'ካርድ እይታ' : 'Card Stack View'}
+                  >
+                    <Layers size={15} />
                   </button>
                 </div>
-              ) : (
-                matches
-                  .filter(m => !dislikedIds.has(m.id))
-                  .map(match => (
-                    <DashboardCard
-                      key={match.id}
-                      currentUser={profile}
-                      candidate={match.profile || match}
-                      locale={locale}
-                      onLike={handleLike}
-                      onDislike={handleDislike}
-                      onSendFriendRequest={handleSendFriendRequest}
-                      onSendGift={(c) => {
-                        if (userTier === 'bronze' || userTier === 'silver') {
-                          alert(locale === 'am'
-                            ? "የነሐስ ወይም የሲልቨር (Bronze/Silver Tier) አባላት ስጦታ መላክ አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!"
-                            : "Bronze or Silver Tier members are blocked from sending gifts. Please complete verification first!");
-                          return;
-                        }
-                        setActiveGiftCandidate(c);
-                      }}
-                      onCardClick={() => handleCardClick(match.profile || match)}
-                      friendshipStatus={friendshipStatuses[match.id] || null}
-                    />
-                  ))
-              )}
+
+                {profile && (
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                    {getCandidatesLabel(matches.filter(m => !dislikedIds.has(m.id)).length, locale)}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Candidate Matching View (Card Stack or Vertical Feed) */}
+            {matchingView === 'swipe' ? (
+              <div className="w-full flex justify-center pb-6">
+                <SwipeCards
+                  userProfile={profile}
+                  candidates={matches.filter(m => !dislikedIds.has(m.id)).map(m => m.profile || m)}
+                  onLike={handleLike}
+                  onPass={handleDislike}
+                  onViewProfile={handleCardClick}
+                  isPremium={isPremium || isVipActive}
+                />
+              </div>
+            ) : (
+              /* Vertical DashboardCard feed */
+              <div className="flex flex-col items-center gap-8 pb-6">
+                {matches.length === 0 ? (
+                  <div className="w-full max-w-md my-12 p-8 empty-state-cinematic space-y-4">
+                    <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-sm">
+                      <Sparkles size={28} />
+                    </div>
+                    <div className="space-y-1">
+                      <h3 className="text-lg font-bold text-foreground font-display">
+                        {locale === 'am' ? 'አዳዲስ የሚስማሙ አባላትን በማፈላለግ ላይ...' : 'Finding compatible matches...'}
+                      </h3>
+                      <p className="text-xs text-gray-400 max-w-xs leading-relaxed">
+                        {locale === 'am'
+                          ? 'የእርስዎን ምርጫዎች የሚያሟሉ አዳዲስ እጩዎችን እያሰባሰብን ነው። እባክዎ ጥቂት ቆይተው እንደገና ይመልከቱ።'
+                          : "We're curating top verified candidates matching your preferences. Check back shortly or refresh."}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => window.location.reload()}
+                      className="btn-secondary text-xs mt-2"
+                    >
+                      <RefreshCw size={14} /> {locale === 'am' ? 'እንደገና ጫን' : 'Refresh Suggestions'}
+                    </button>
+                  </div>
+                ) : (
+                  matches
+                    .filter(m => !dislikedIds.has(m.id))
+                    .map(match => (
+                      <DashboardCard
+                        key={match.id}
+                        currentUser={profile}
+                        candidate={match.profile || match}
+                        locale={locale}
+                        onLike={handleLike}
+                        onDislike={handleDislike}
+                        onSendFriendRequest={handleSendFriendRequest}
+                        onSendGift={(c) => {
+                          if (userTier === 'bronze' || userTier === 'silver') {
+                            alert(locale === 'am'
+                              ? "የነሐስ ወይም የሲልቨር (Bronze/Silver Tier) አባላት ስጦታ መላክ አይችሉም። እባክዎ መጀመሪያ ፕሮፋይልዎን ያረጋግጡ!"
+                              : "Bronze or Silver Tier members are blocked from sending gifts. Please complete verification first!");
+                            return;
+                          }
+                          setActiveGiftCandidate(c);
+                        }}
+                        onCardClick={() => handleCardClick(match.profile || match)}
+                        friendshipStatus={friendshipStatuses[match.id] || null}
+                      />
+                    ))
+                )}
+              </div>
+            )}
 
               {/* ── Premium & VIP Hero Cards ───────────────────────────── */}
               {!isVipActive && (
@@ -2084,7 +2144,6 @@ function DashboardContent() {
 
                 </div>
               )}
-            </div>
           </div>
         )}
 
